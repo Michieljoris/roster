@@ -1,0 +1,8 @@
+* remove edit details from 
+** editwindow
+** rightclick menu
+   
+* Make where a dropdown box for all locations
+
+* Make Notes box bigger
+
