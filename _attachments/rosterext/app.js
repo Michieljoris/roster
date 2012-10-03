@@ -17,7 +17,7 @@ function pp() {
     }
 }
 
-var db='idb://testshifts';
+var db='idb://rosterdb';
 // var db='http://localhost:1234/testext';
 function pdestroy() {
     Pouch.destroy(db);

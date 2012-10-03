@@ -612,8 +612,8 @@ var _4=this.getPrimaryKeyFields(),_1=isc.applyMask(_1,_4);this.performDSOperatio
 for(var i=0;i<_5.sortBy.length;i++){var _7=_5.sortBy[i];if(!isc.isA.String(_7))continue;var _8=this.getField(_7.charAt(0)=="-"?_7.substring(1):_7);if(_8&&_8.canSortClientOnly)_5.sortBy[i]=null}
 _5.sortBy.removeEmpty();if(_5.sortBy.length==0)delete _5.sortBy}
 return this.sendDSRequest(_5)}
-,isc.A.sendDSRequest=function isc_DataSource_sendDSRequest(_1){isc.addDefaults(_1,this.getOperationBinding(_1.operationType).requestProperties);isc.addDefaults(_1,this.requestProperties);var _2=this.getDataFormat(_1);if(_2=="iscServer"&&!this.clientOnly&&!isc.hasOptionalModule("SCServer")){if(this.dataURL==null&&this.testFileName==null){this.logError("DataSource: "+this.ID+": attempt to use DataSource of type iscServer without SmartClient Server option."+" Please either set clientOnly: true for one-time fetch against"+" dataURL/testFileName or upgrade to SmartClient Pro, Power or Enterprise");return}
-this.logInfo("Switching to clientOnly - no SmartClient Server installed.");this.clientOnly=true}
+,isc.A.sendDSRequest=function isc_DataSource_sendDSRequest(_1){isc.addDefaults(_1,this.getOperationBinding(_1.operationType).requestProperties);isc.addDefaults(_1,this.requestProperties);var _2=this.getDataFormat(_1);/*if(_2=="iscServer"&&!this.clientOnly&&!isc.hasOptionalModule("SCServer")){if(this.dataURL==null&&this.testFileName==null){this.logError("DataSource: "+this.ID+": attempt to use DataSource of type iscServer without SmartClient Server option."+" Please either set clientOnly: true for one-time fetch against"+" dataURL/testFileName or upgrade to SmartClient Pro, Power or Enterprise");return}
+this.logInfo("Switching to clientOnly - no SmartClient Server installed.");this.clientOnly=true}*/
 if(_1.bypassCache==null){_1.bypassCache=this.shouldBypassCache(_1)}
 if(_1.showPrompt==null){_1.showPrompt=_1.downloadResult?false:this.showPrompt}
 if(!this.cacheAllData&&this.autoCacheAllData&&_1.downloadResult!=true&&_1.operationType=="fetch"&&_1.startRow==null&&_1.endRow==null&&(_1.data==null||isc.isAn.emptyObject(_1.data)))

@@ -1,30 +1,16 @@
 var roster ={
-  dummy: null
-  ,dbname:'rosterdb'
-  ,tags:[
-    {name:"_id", primaryKey:true},
-    {name:"_rev"}
-    // ,{name:"text"}
-    ,{name:"type"}
-    ,{name:"cid"}
-    ,{name:"start"}
-    ,{name:"end"}
-    ,{name:"loc"}
-    ,{name:"notes"}
-    ,{name:"rrule"}
-    ,{name:"duration"}
-    ,{name:"origid"}
-    ,{name:"ristart"}
-    ,{name:"redit"}
-  ]
+    dbname:'rosterdb'
 };
 
 
 isc.DataSource.create(
     {
 	ID: "pouchDS",
-      fields: roster.tags,
-    autoDeriveTitles:true,
+	fields:[
+	    {name:"_id", title:"_id", primaryKey:true},
+	    {name:"_rev", title:"_rev"},
+	    {name:"text", title:"text"}
+	],
 	dataProtocol: "clientCustom",
 	db: 'idb://' + roster.dbname 
 	,transformRequest: function (dsRequest) {
@@ -85,9 +71,9 @@ isc.DataSource.create(
 	}
       ,fetch: function(dsResponse, ds, requestId ) {
 	function map(doc) {
-	  // if(doc.text) {
+	  if(doc.text) {
 	    emit(doc,null);
-		// }
+		}
 	    }
 	  this.doPouch(function(db) {
     			 db.query( {map:map},{reduce:false},
@@ -99,8 +85,7 @@ isc.DataSource.create(
 				       dsResponse.data=[];
 				       for (var i = 0; i< response.rows.size();i++) {
 					 var key=response.rows[i].key;
-			    		 // dsResponse.data.push({ _id:key._id, _rev:key._rev, text:key.text});
-			    		 dsResponse.data.push(key);
+			    		 dsResponse.data.push({ _id:key._id, _rev:key._rev, text:key.text});
     				       }
 				       ds.processResponse(requestId, dsResponse);
 				       
@@ -262,15 +247,15 @@ var testData = [
   }
 ]; 
 
-// isc.DataSource.create({
-// 			ID: "testDS",
-// 			fields:[
-// 			  {title:"time", name:"time", primaryKey: true, type: "sequence"},
-// 			  {title:"text", name:"text"}
-// 			  // {name:"description"},
-// 			  // {name:"startDate", type: "datetime"},
-// 			  // {name:"endDate", type: "datetime"}
-// 			],
-// 			clientOnly: true,
-// 			testData: testData
-// 		      });     
+isc.DataSource.create({
+			ID: "testDS",
+			fields:[
+			  {title:"time", name:"time", primaryKey: true, type: "sequence"},
+			  {title:"text", name:"text"}
+			  // {name:"description"},
+			  // {name:"startDate", type: "datetime"},
+			  // {name:"endDate", type: "datetime"}
+			],
+			clientOnly: true,
+			testData: testData
+		      });     

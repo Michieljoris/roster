@@ -1,5 +1,3 @@
-
-
 Ext.define(
     'AM.store.Shifts', {
 	// extend: 'Extensible.calendar.data.MemoryEventStore'
@@ -22,11 +20,11 @@ Ext.define(
             type: 'pouchdb',
 	    // protocol:"http://localhost:1234",
 	    protocol:"idb://",
-	    database:"testshifts",
+	    database:"rosterdb",
 	    map: function (doc) {
-		      // if(doc.text) {
+		      if(doc.type && doc.type === 'shift') {
 		       emit(doc,null);
-		       // }
+		       }
 	 	   },
 	    // reduce: function() {
 		

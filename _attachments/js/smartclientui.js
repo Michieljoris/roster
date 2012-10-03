@@ -1,6 +1,9 @@
+//have to call this otherwise dynamic form won't save
+Offline.goOnline();
+
 isc.ListGrid.create(
     {   ID: "pouchList",
-	width:500, height:224, alternateRecordStyles:true, 
+	width:'100%', height:224, alternateRecordStyles:true, 
 	position:"relative",
 	dataSource: pouchDS,
 	autoFetchData: true,
@@ -18,7 +21,7 @@ isc.ListGrid.create(
 	// Function to update details based on selection
 	updateDetails : function () {
             var record = this.getSelectedRecord();
-	    // console.log(record, "Recorod");
+	    console.log(record, "Recorod");
             // if (record == null) return itemDetailTabs.clearDetails();
 	    editForm.editRecord(record);
 	    // console.log(record);
@@ -45,18 +48,21 @@ isc.DynamicForm.create(
 	dataSource:pouchDS,
 	useAllDataSourceFields:true,
 	fields:[
-	    {name:"id"},
-	    {name:"text"},
-	    {name:"savebtn", editorType:"button",
-	     width:100, title:"Save Item", click:"editForm.saveData()"}
-	    ,{name:"updatebtn", editorType:"button",
-	     width:100, title:"Update Item", click:"editForm.saveData()"}
-	    ,{name:"deletebtn", editorType:"button", 
-	     width:100, title:"Delete Item", click:"pouchList.removeSelectedData();"}
+	    // {name:"_id"},
+	    // {name:"_rev"},
+	    // {name:"text"},
+	    // {name:"testbtn", type:"button",
+	    //  width:100, title:"test", click:"pouchDS.addData({text:'hello'})"},
+	    // {name:"savebtn", type:"button",
+	    //  width:100, title:"Save Item", click:"editForm.saveData()"}
+	    // ,{name:"updatebtn", type:"button",
+	    //  width:100, title:"Update Item", click:"editForm.saveData()"}
+	    // ,{name:"deletebtn", type:"button", 
+	    //  width:100, title:"Delete Item", click:"pouchList.removeSelectedData();"}
 	],
 	width:650,
-	// numCols:4,
-	// colWidths:[100,200,100,200],
+	numCols:4,
+	// colWidths:[30,150,30,150],
 	margin:25,
 	cellPadding:5,
 	autoFocus:false
@@ -97,7 +103,7 @@ isc.VLayout.create(
 // var extroster_url = 'http://localhost:8000/mysrc/javascript/rosterext/index.html';
 // var extroster_url = 'http://localhost:8080/rosterext/';
 // var extroster_url='file:///home/michieljoris/mysrc/javascript/rosterext/index.html';
-var extroster_url='http://localhost:8000/mysrc/javascript/roster/_attachments/rosterext/index.html';
+var extroster_url='http://localhost:8000/_attachments/rosterext/index.html';
 isc.VLayout.create(
     {ID: "extcalendar", width:"100%", height:"100%", members:[
 	 isc.HTMLPane.create({

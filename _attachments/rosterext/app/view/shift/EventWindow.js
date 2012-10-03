@@ -465,7 +465,7 @@ Ext.define('Shifts.view.shift.EventWindow', {
             obj[EventMappings.Duration.name] = Extensible.Date.diff(startDate, obj[EventMappings.EndDate.name],
                 Extensible.calendar.data.EventModel.resolution);
         }
-
+      obj[EventMappings.Type.name] = 'shift';
         record.beginEdit();
         record.set(obj);
         

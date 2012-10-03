@@ -1,9 +1,17 @@
 <HTML>
   <HEAD>
-    <script src=lib/pouch.alpha.min.js></script> 
-    <script src=js/utils.js></script>   
-    <SCRIPT>var isomorphicDir="lib/isomorphic/";</SCRIPT>  
-    <script> window.isc_expirationOff=true; </script> 
+    <script>
+      window.bootstrap = { 
+      main: 'start',
+      pathPrefix: './',   
+      verbosity: 'warn',  
+      <!-- verbosity: 'info',  -->
+      timeOut: 3,
+      testing: false
+      };
+      window.isc_expirationOff=true;  
+      window.isomorphicDir="lib/isomorphic/"
+    </script> 
     <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Core.js></SCRIPT>  
     <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Foundation.js></SCRIPT>  
     <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Containers.js></SCRIPT>  
@@ -13,23 +21,22 @@
     <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Calendar.js></SCRIPT>  
     <SCRIPT SRC=lib/isomorphic/skins/Simplicity/load_skin.js></SCRIPT>  
     
+    <script src=lib/pouch.alpha.min.js></script>   
     
-    
-    <!-- <\!-- <SCRIPT SRC=js/data-structures.js></SCRIPT>    -\-> -->
-    <!-- <script src=js/testpouch.js></script>    -->
-    <script src=js/datasources.js></script>    
   </HEAD>
   <BODY>
-    <SCRIPT SRC=js/smartclientui.js></SCRIPT>     
-    <!-- <SCRIPT SRC=js/testsc.js></SCRIPT>    -->
-   <!--  <div>  -->
-   <!--  <ul id="todoItems"></ul>  -->
-   <!--  <input type="text" id="todo" name="todo" placeholder="What do you need to do?" style="width: 200px;" />  -->
-   <!--  <input type="submit" value="Add Todo Item" onclick="addTodo();  -->
-   <!--  return false;"/>  -->
-   <!--  <input type="button" onclick="replicate(); " value="replicate"/>  -->
-   <!--  <input type="button" onclick="replicate2(); " value="replicate2"/>  -->
-   <!-- </div>   -->
+    <script src=js/datasources.js></script>     
+    <SCRIPT SRC=js/smartclientui.js></SCRIPT>       
+    <script src=lib/bootstrap.js></script>  
+    <!-- <SCRIPT SRC=js/testsc.js></SCRIPT>     -->
+   <!--  <div>   -->
+   <!--  <ul id="todoItems"></ul>   -->
+   <!--  <input type="text" id="todo" name="todo" placeholder="What do you need to do?" style="width: 200px;" />   -->
+   <!--  <input type="submit" value="Add Todo Item" onclick="addTodoItem();   -->
+   <!--  return false;"/>   -->
+   <!--  <input type="button" onclick="replicate(); " value="replicate"/>   -->
+   <!--  <input type="button" onclick="replicate2(); " value="replicate2"/>   -->
+   <!-- </div>    -->
     <!-- <script src=../lib/swank-js-inject.js></script>   -->
   </BODY> 
 </HTML>
