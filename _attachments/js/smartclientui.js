@@ -1,5 +1,6 @@
 //have to call this otherwise dynamic form won't save
 Offline.goOnline();
+Date.setInputFormat('YMD');
 
 isc.ListGrid.create(
     {   ID: "pouchList",
@@ -37,22 +38,62 @@ isc.ListGrid.create(
 	}
     });
 
+
 isc.Calendar.create(
-    {   ID: "eventcalendar", 
-	datasource: eventDS, 
-	autofetchdata: true
-    }) ;
+    {   ID: "eventCalendar", 
+	dataSource: pouchDS, 
+	autoFetchData: true,
+	descriptionField: 'notes'
+	,nameField: 'person'
+	
+	// eventAdded: function(event) {
+	//   console.log("Event added", event);
+	// },
+	// eventChanged: function(event) {
+	//   console.log("Event changed", event);
+	// }
+	// ,eventClick: function(event, viewName) {
+	//   console.log("Event click", event, viewName);
+	//   event.group = 'shift';
+	//   return true;
+	// }
+	,backgroundClick: function(startDate, endDate) {
+	  console.log('New event',startDate, endDate);
+	  
+	  // isc.Dialog.create({
+	  // 		      message : "Please choose whether to proceed",
+	  // 		      icon:"[SKIN]ask.png",
+	  // 		      buttons : [
+	  // 			isc.Button.create({ title:"OK" }),
+	  // 			isc.Button.create({ title:"Cancel" })
+	  // 		      ],
+	  // 		      buttonClick : function (button, index) {
+	  // 			this.hide();
+	  // 		      }
+	  // 		    });
+	  
+	  eventCalendar.addEvent(startDate, endDate, '1', 'notes', { group: 'shift', ad: false});
+	 return false;
+	}
+}); 
+
+// isc.IButton.create({
+//     top:250,
+//     title:"Edit New",
+//     click:"pouchList.startEditingNew()"
+// });
+
 
 isc.DynamicForm.create(
-    {   ID:"editForm",
+    {   ID:"editAllForm",
 	dataSource:pouchDS,
 	useAllDataSourceFields:true,
 	fields:[
 	    // {name:"_id"},
 	    // {name:"_rev"},
 	    // {name:"text"},
-	    // {name:"testbtn", type:"button",
-	    //  width:100, title:"test", click:"pouchDS.addData({text:'hello'})"},
+	    {name:"editnew", type:"button",
+	     width:100, title:"Edit new", click:"pouchList.startEditingNew()"}
 	    // {name:"savebtn", type:"button",
 	    //  width:100, title:"Save Item", click:"editForm.saveData()"}
 	    // ,{name:"updatebtn", type:"button",
@@ -97,7 +138,7 @@ isc.Menu.create(
 
 isc.VLayout.create(
     {ID: "pouchpane", width:"100%", height:"100%", members:[
-	 pouchList, editForm
+	 pouchList, editAllForm
      ]});
 
 // var extroster_url = 'http://localhost:8000/mysrc/javascript/rosterext/index.html';
@@ -129,7 +170,7 @@ isc.TabSet.create({
 	       },
 	       {
 		   title: "SmartClient Calendar",
-		   pane:eventcalendar 
+		   pane:eventCalendar 
 	       }
 	       ,{ title: "Extjs Calendar",
 		  pane: extcalendar 

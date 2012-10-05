@@ -22,7 +22,8 @@ Ext.define(
 	    protocol:"idb://",
 	    database:"rosterdb",
 	    map: function (doc) {
-		      if(doc.type && doc.type === 'shift') {
+	     if (doc[Extensible.calendar.data.EventMappings.Group.mapping] === 'shift')  {
+		      // if(doc.type === 'shift') {
 		       emit(doc,null);
 		       }
 	 	   },
