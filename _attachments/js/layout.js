@@ -107,7 +107,7 @@ isc.SectionStack.
 	   animateSections:true,
 	   showResizeBar:true,
 	   visibilityMode:'multiple',
-	   width:280,
+	   width:200,
 	   sections:[
 	     {showHeader:false, items:[dataTree]},
 	     {title:"Admin", expanded:false, autoShow:true, items:[adminTree]},
@@ -119,23 +119,28 @@ isc.SectionStack.
 //TABLE
 isc.ListGrid.create(
     {   ID: "dataTable",
-	 // height:'90%', 
-	alternateRecordStyles:true, 
-	// position:"relative",
 	dataSource: pouchDS,
-	autoFetchData: true,
 	useAllDataSourceFields:true,
+	//looks
+	alternateRecordStyles:true, 
+	//behaviour
+	selectionType:"single",
+	headerAutoFitEvent:"doubleClick",
+	canHover:true,
+	canReorderRecords:true,
+	autoFetchData: true,
+	//editing
 	recordClick:"this.updateDetails()",
 	canEdit:true,
 	modalEditing:true,
 	cellChanged:"this.updateDetails()",
-	alternateRecordStyles:true,
-	// canDragRecordsOut:true,
-	// hoverWidth:200,
-	// hoverHeight:20,
-	selectionType:"single",
-	// showResizeBar:true,
-	// resizeBarTarget:'next',
+	editByCell: true,
+	//filteringg
+	showFilterEditor:true,
+	filterOnKeypress: true,
+	 allowFilterExpressions: true,
+    // 	  showEmptyMessage: true,
+    // emptyMessage: "<br>Click the <b>Set data</b> button to populate this grid.",
 	// cellContextClick:"return itemListMenu.showContextMenu()",
 	// Function to update details based on selection
 	updateDetails : function () {
@@ -160,14 +165,18 @@ isc.DynamicForm.create(
     {   ID:"editForm",
 	dataSource:pouchDS,
 	useAllDataSourceFields:true
-	 ,overflow:'auto'	
+	 // ,overflow:'auto'	
 	,titleOrientation: 'top'
 	,fields:[
 	    // {name:"_id"},
 	    // {name:"_rev"},
 	    // {name:"text"},
-	    {name:"editnew", type:"button",
-	     title:"Edit new", click:"dataTable.startEditingNew()"}
+	    {name:"editnew", type:"button", width:130,
+	     title:"Create New Item", click:"dataTable.startEditingNew()"},
+	    {name:"save", type:"button", width: 130,
+	     title:"Save Form Data", click:"dataTable.startEditingNew()"},
+	    {name:"delete", type:"button",
+	     width:130, title:"Delete Selected Item", click:"dataTable.removeSelectedData();"}
 	    // {name:"savebtn", type:"button",
 	    //  width:100, title:"Save Item", click:"editForm.saveData()"}
 	    // ,{name:"updatebtn", type:"button",
@@ -175,28 +184,50 @@ isc.DynamicForm.create(
 	    // ,{name:"deletebtn", type:"button", 
 	    //  width:100, title:"Delete Item", click:"dataTable.removeSelectedData();"}
 	],
-	// width:650,
-	numCols:4,
+	width:650,
+	numCols:6,
 	// colWidths:[30,150,30,150],
-	margin:5,
-	cellPadding:3,
+	margin:3,
+	cellPadding:5,
 	autoFocus:false
     });
 
-isc.Canvas.create({
-		    // height:'25%',
-		    ID: "ds3"
-		  });
+isc.FilterBuilder.create({
+    ID:"advancedFilter",
+    dataSource:"pouchDS",
+    criteria: { _constructor: "AdvancedCriteria",
+        operator: "and", criteria: [
+            {fieldName: "group", operator: "iEquals", value: ""}
+            // {operator: "or", criteria: [
+            //     {fieldName: "countryName", operator: "iEndsWith", value: "land"},
+            //     {fieldName: "population", operator: "lessThan", value: 3000000}
+            // ]}
+        ]
+    }
+});
 
+isc.IButton.create({
+    ID:"filterButton",
+    title:"Filter",
+    click : function () {
+        dataTable.filterData(advancedFilter.getCriteria());
+    }
+});
+
+isc.VStack.create({
+		    ID:'filterStack',
+		    membersMargin:10,
+		    members:[ advancedFilter, filterButton]
+		  });
 
 isc.TabSet.
   create({
 	   ID: "tabSet",
 	   tabBarPosition: "top"
-	   ,height:'75%'
-	   ,selectedTab: 1,
-	   tabs: [{ title: "View",
-		    pane: ds3 
+	   ,height:'60%'
+	   ,selectedTab: 0,
+	   tabs: [{ title: "Filter",
+		    pane: filterStack 
 		  }, 
 		  {title: "Item",
 		   pane:editForm
@@ -217,7 +248,7 @@ isc.SectionStack.
 	   animateSections:true,
 	   sections:[
 	     {showHeader:false, title:'Data', autoShow:true, items:[dataTable]},
-	     {title:"Edit", expanded:false, autoShow:true, items:[tabSet]}
+	     {title:"Edit", expanded:true, autoShow:true, items:[tabSet]}
 	   ]
 	 });
 
