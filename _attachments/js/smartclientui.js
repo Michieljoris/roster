@@ -24,7 +24,7 @@ isc.ListGrid.create(
             var record = this.getSelectedRecord();
 	    console.log(record, "Recorod");
             // if (record == null) return itemDetailTabs.clearDetails();
-	    editForm.editRecord(record);
+	    editAllForm.editRecord(record);
 	    // console.log(record);
             // if (itemDetailTabs.getSelectedTabNumber() == 0) {
 	    // 	// View tab: show selected record
@@ -40,13 +40,13 @@ isc.ListGrid.create(
 
 
 isc.Calendar.create(
-    {   ID: "eventCalendar", 
+    {   ID: "shiftCalender", 
 	dataSource: pouchDS, 
 	autoFetchData: true,
 	descriptionField: 'notes'
 	,nameField: 'person'
-	
-	// eventAdded: function(event) {
+	// ,initialCriteria: { group:'shift'  }
+	  // eventAdded: function(event) {
 	//   console.log("Event added", event);
 	// },
 	// eventChanged: function(event) {
@@ -72,10 +72,12 @@ isc.Calendar.create(
 	  // 		      }
 	  // 		    });
 	  
-	  eventCalendar.addEvent(startDate, endDate, '1', 'notes', { group: 'shift', ad: false});
+	  shiftCalender.addEvent(startDate, endDate, '1', 'notes', { group: 'shift', ad: false});
 	 return false;
 	}
 }); 
+shiftCalender.setCriteria({group:'shift'});
+// shiftCalender.fetchData({group:'shift'});
 
 // isc.IButton.create({
 //     top:250,
@@ -87,8 +89,9 @@ isc.Calendar.create(
 isc.DynamicForm.create(
     {   ID:"editAllForm",
 	dataSource:pouchDS,
-	useAllDataSourceFields:true,
-	fields:[
+	useAllDataSourceFields:true
+	,titleOrientation: 'top'
+	,fields:[
 	    // {name:"_id"},
 	    // {name:"_rev"},
 	    // {name:"text"},
@@ -170,7 +173,7 @@ isc.TabSet.create({
 	       },
 	       {
 		   title: "SmartClient Calendar",
-		   pane:eventCalendar 
+		   pane:shiftCalender 
 	       }
 	       ,{ title: "Extjs Calendar",
 		  pane: extcalendar 

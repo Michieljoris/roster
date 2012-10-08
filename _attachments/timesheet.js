@@ -188,7 +188,8 @@ text(managerSign,
      { align: 'start' } , {weight: 'normal'});
 //fill a grid cell with a value
 grid('2200', 5,6);
+grid('2400', 6,6);
 //set a field with data
-setData('name', 'Michiel');
+setData('name', 'Simone Ivy');
 //draws a rect around the viewport/canvas
 // paper.rect(0,0, portWidth, portHeight).attr("fill", "#00"); 
