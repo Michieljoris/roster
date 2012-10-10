@@ -3,52 +3,190 @@
 Offline.goOnline();
 Date.setInputFormat('YMD');
 
+isc.ToolStripButton.create({
+    ID: "loginButton",    
+    // icon: "other/printer.png",  
+    title: "Logout"
+    
+});
+isc.ToolStrip.create({
+    ID: "gridEditControls",
+    // width: "100%", height:24, 
+    members: [
+        // isc.Label.create({
+        //     padding:5,
+        //     ID:"totalsLabel"
+        // }),
+      loginButton
+        ,isc.LayoutSpacer.create({ width:"*" })
+      
+        ,isc.ToolStripButton.create({
+            icon: "[SKIN]/actions/add.png", 
+            prompt: "Create a new view",
+            click: "viewTree.removeSelectedData()"
+        })
+        ,isc.ToolStripButton.create({
+            icon: "[SKIN]/FileBrowser/createNewFolder.png", 
+            prompt: "Create a new folder",
+            click: "viewTree.removeSelectedData()"
+        })
+        ,isc.ToolStripButton.create({
+            icon: "[SKIN]/actions/edit.png",
+            prompt: "Rename selected item",
+            click: function () {
+                var record = viewTree.getSelectedRecord();
+                if (record == null) return;
+               viewTree.startEditing(viewTree.data.indexOf(record));
+            }
+        })
+        ,isc.ToolStripButton.create({
+            icon: "[SKIN]/actions/remove.png", 
+            prompt: "Remove selected item",
+            click: "viewTree.removeSelectedData()"
+        })
+    ]
+});
+
+    isc.Tree.create({
+				  ID:'mytree',
+        modelType: "parent",
+        nameProperty: "EmployeeId",
+        idField: "EmployeeId",
+        parentIdField: "ReportsTo",
+		     // dataChanged:function() {
+		     //   console.log('data changed in the tree');
+		     // },
+    // dataChanged : function () {
+    //     this.Super("dataChanged", arguments);
+    //     var totalRows = this.data.getLength();
+    //     if (totalRows > 0 && this.data.lengthIsKnown()) {
+    //         totalsLabel.setContents(totalRows + " Records");
+    //     } else {
+    //         totalsLabel.setContents("&nbsp;");
+    //     }
+    // },
+		      
+		      
+		      
+        data: [
+            {EmployeeId:"4", ReportsTo:"1", Name:"Charles Madigen"},
+            {EmployeeId:"188", ReportsTo:"4", Name:"Rogine Leger"},
+            {EmployeeId:"189", ReportsTo:"4", Name:"Gene Porter"},
+            {EmployeeId:"265", ReportsTo:"189", Name:"Olivier Doucet"},
+            {EmployeeId:"264", ReportsTo:"189", Name:"Cheryl Pearson"}
+        ]
+    });
 
 
+
+
+isc.TreeGrid.create({
+		      ID: "viewTree",
+		      canDragRecordsOut:true,
+		      canAcceptDroppedRecords:true,
+		      canEdit: true
+		      // ,dataSource:'pouchDS'      
+		      ,useAllDataSourceFields:true,
+		      canReorderRecords: true,
+		      canAcceptDroppedRecords: true
+		      ,data:mytree 
+	  ,showHeader:false
+		      // dataSource:'pouchDS',
+		      ,autoFetchData:true
+		      ,gridComponents:[gridEditControls, "header", "body" ]
+		      // ,fetchData:function() {
+		      // 	console.log('fetchdata changed in the treegrid');
+		      // }
+		      
+		      
+		      ,fields:[{
+				 title:"Name",
+				 name:"Name",
+				 length:128,
+				 type:"text"
+			       },
+			       {
+				 title:"Employee ID",
+				 primaryKey:true,
+				 name:"EmployeeId",
+				 type:"integer",
+				 required:true
+			       },
+			       {
+				 // title:"Manager",
+				 // detail:false,
+				 rootValue:"1",
+				 name:"ReportsTo",
+				 type:"integer",
+				 required:true,
+				 foreignKey:"pouchDS.EmployeeId"
+			       },
+			       {
+				 // title:"Title",
+				 name:"Job",
+				 length:128,
+				 type:"text"
+			       }]
+
+		      // customize appearance
+		      // width: 500,
+		      // height: 400,
+		      // nodeIcon:"icons/16/person.png",
+		      // folderIcon:"icons/16/person.png",
+		      // showOpenIcons:false,
+		      // showDropIcons:false,
+		      // closedIconSuffix:""
+		    });
 
 //**********Left hand side************************ 
 //data tree
-isc.TreeGrid.
-  create({
-	   ID: "dataTree",
-	   showHeader:false,
-    	   nodeClick: function() {
-    	     console.log("Hello from nodeClick");
-	     
-    	   },
-    	   nodeContextClick: function() {
-    	     console.log("Hello from nodeContextclick");
-    	   },
+// isc.TreeGrid.
+//   create({
+// 	   ID: "viewTree",t
+// 	   dataSource: pouchDS,
+// 	   autoFetchData:true,
+// 	     fields: [
+//         {name: "viewName"},
+//         {name: "_id"}
+//     ],
+// 	   // showHeader:false,
+//     	   // nodeClick: function() {
+//     	   //   console.log("Hello from nodeClick");
+
+//     	   // },
+//     	   // nodeContextClick: function() {
+//     	   //   console.log("Hello from nodeContextclick");
+//     	   // },
 	   
-    	   leafClick: function() {
-    	     console.log("Hello from leafclick");
+//     	   // leafClick: function() {
+//     	   //   console.log("Hello from leafclick");
 	     
-    	   },
-    	   leafContextClick: function() {
-    	     console.log("Hello from leafContextclick");
-    	   },
-	   data: isc.Tree.
-	     create({
-		      modelType: "parent",
-		      nameProperty: "title",
-		      idField: "id",
-		      parentIdField: "parent",
-		      data: [
-			// shifts, locations, people, roles, calendars, timesheets, rosters,
-			// specialized rosterviews, admin
-			{ id:'People'}
-			,{ id:'AllPeople', parent:'People', title: 'All'}
-			,{ id:'Locations'}
-			,{ id:'AllLocations', parent:'Locations', title: 'All'}
-			,{ id:'Shifts'}
-			,{ id:'AllShifts', parent:'Shifts', title: 'All'}
-			,{ id:'Calendars'}
-			,{ id:'Rosters'}
-			,{ id:'Timesheets'}
+//     	   // },
+//     	   // leafContextClick: function() {
+//     	   //   console.log("Hello from leafContextclick");
+//     	   // },
+// 	   data: isc.Tree.
+// 	     create({
+// 		      modelType: "parent",
+// 		      nameProperty: "viewName",
+// 		      idField: "_id",
+// 		      parentIdField: "treeParent",
+// 		      data: [
+// 			// shifts, locations, people, roles, calendars, timesheets, rosters,
+// 			// specialized rosterviews, admin
+// 			{ _id:'All', viewName :'rootnode'}
+// 			,{ id:'myleaf', treeParent:'All', viewName: 'myleaf name'}
+// 			// ,{ id:'Locations'}
+// 			// ,{ id:'AllLocations', parent:'Locations', title: 'All'}
+// 			// ,{ id:'Shifts'}
+// 			// ,{ id:'AllShifts', parent:'Shifts', title: 'All'}
+// 			// ,{ id:'Calendars'}
+// 			// ,{ id:'Rosters'}
+// 			// ,{ id:'Timesheets'}
 			
-		      ]
-		    })
-	 });
+// 		      ]
+// 		    })
+// 	 });
 
 
 isc.TreeGrid.
@@ -109,7 +247,7 @@ isc.SectionStack.
 	   visibilityMode:'multiple',
 	   width:200,
 	   sections:[
-	     {showHeader:false, items:[dataTree]},
+	     {showHeader:false, items:[viewTree]},
 	     {title:"Admin", expanded:false, autoShow:true, items:[adminTree]},
 	     {title:"Help", expanded:false,  items:[helpCanvas]}
 	   ]
@@ -225,7 +363,7 @@ isc.TabSet.
 	   ID: "tabSet",
 	   tabBarPosition: "top"
 	   ,height:'60%'
-	   ,selectedTab: 0,
+	   ,selectedTab: 1,
 	   tabs: [{ title: "Filter",
 		    pane: filterStack 
 		  }, 

@@ -6,25 +6,57 @@ var roster =
     var tagArray = [
       {name:"_id", primaryKey:true}
       ,{name:"_rev"}
-      ,{name:"group"} //shift, location, person, role
+      // ,{name:"group"} //shift, location, person, role
       
-      ,{name:"startDate", type: "datetime", group: ['shift']}
-      ,{name:"endDate", type: "datetime", group: ['shift']}
-      ,{name:"person", type: 'ref', group: ['shift']} //ref to person obj ,,,change to person..
-      ,{name:"location", group: ['shift']} //ref to loc object,,, change to location
-      ,{name:"notes", group: ['shift']}//,,, change to notes
-      ,{name:"ad", type: 'boolean', group: ['shift']}
-      ,{name:"annualLeave", type: 'boolean', group: ['shift']}
-      ,{name:"sickLeave", type: 'boolean', group: ['shift']}
-      ,{name:"longServiceLeave", type: 'boolean', group: ['shift']}
-      ,{name:"otherLeave", type: 'boolean', group: ['shift']}
-      ,{name:"sleepOver", type: 'boolean', group: ['shift']}
-      ,{name:"awayFromBase", type: 'boolean', group: ['shift']}
-      ,{name:"adminHours", type: 'float', group: ['shift']}
-      ,{name:"disturbedSleep", type: 'float', group: ['shift']}
-      //needed for recurrence
-      ,{name:"rrule", group: ['shift']}
-      ,{name:"duration", group: ['shift']}
+      // ,{name:"startDate", type: "datetime", group: ['shift']}
+      // ,{name:"endDate", type: "datetime", group: ['shift']}
+      // ,{name:"person", type: 'ref', group: ['shift']} //ref to person obj ,,,change to person..
+      // ,{name:"location", group: ['shift']} //ref to loc object,,, change to location
+      // ,{name:"notes", group: ['shift']}//,,, change to notes
+      // ,{name:"ad", type: 'boolean', group: ['shift']}
+      // ,{name:"annualLeave", type: 'boolean', group: ['shift']}
+      // ,{name:"sickLeave", type: 'boolean', group: ['shift']}
+      // ,{name:"longServiceLeave", type: 'boolean', group: ['shift']}
+      // ,{name:"otherLeave", type: 'boolean', group: ['shift']}
+      // ,{name:"sleepOver", type: 'boolean', group: ['shift']}
+      // ,{name:"awayFromBase", type: 'boolean', group: ['shift']}
+      // ,{name:"adminHours", type: 'float', group: ['shift']}
+      // ,{name:"disturbedSleep", type: 'float', group: ['shift']}
+      // //needed for recurrence
+      // ,{name:"rrule", group: ['shift']}
+      // ,{name:"duration", group: ['shift']}
+        ,{
+            title:"Name",
+            name:"Name",
+            length:128,
+            type:"text"
+        },
+        {
+            title:"Employee ID",
+            primaryKey:true,
+            name:"EmployeeId",
+            type:"integer",
+            required:true
+        },
+        {
+            title:"Manager",
+            detail:false,
+            rootValue:"1",
+            name:"ReportsTo",
+            type:"integer",
+            required:true,
+            foreignKey:"pouchDS.EmployeeId"
+        },
+        {
+            title:"Title",
+            name:"Job",
+            length:128,
+            type:"text"
+        }
+      
+      //treeGrids:
+      // ,{name:"treeParent", foreignKey: pouchDS._id', group: []}
+      // ,{name:"viewName", group: []}
       //these props need not be persistent, see extensible's Eventmappings.js
       // ,{name:"origid"}
       // ,{name:"ristart"},
@@ -90,7 +122,8 @@ isc.DataSource.create(
 			    if (err) console.log("Error from pouch query in fetch:", err,
 						 "resp:", response);
 			    else {
-			      console.log(response);
+			      
+			      console.log('Response is: ', response);
 			      dsResponse.data=[];
 			      for (var i = 0; i< response.rows.size();i++) {
 				var key=response.rows[i].key;
@@ -99,6 +132,7 @@ isc.DataSource.create(
 				
 			    	dsResponse.data.push(key);
     			      }
+			      console.log('data: ', dsResponse.data);
 			      pouchDS.processResponse(requestId, dsResponse);}});});}
     function add(data, dsResponse, requestId) {
       doPouch(function(db) {
@@ -140,6 +174,10 @@ isc.DataSource.create(
     pouchds.fields= roster.tagArray;
     pouchds.autoDeriveTitles=true;
     pouchds.dataProtocol= "clientCustom";
+    
+     pouchds.recordName="employee";
+   pouchds.titleField="Name";
+    
     var db =  'idb://' + roster.dbname;
     pouchds.transformRequest= function (dsRequest) {
       DS = this;
@@ -147,11 +185,11 @@ isc.DataSource.create(
       var dsResponse;
       switch (dsRequest.operationType) {
       case "fetch":
-	console.log(dsRequest.componentId);
 	var fetchView = view.all;
 	switch (dsRequest.componentId) {
-	case 'shiftCalender' :fetchView = view.shifts;  console.log('fetchView', fetchView); break;
-	default: console.log('default??', dsRequest.componentId); 
+	case 'shiftCalender' :fetchView = view.shifts;  
+	  console.log('fetchView', fetchView); break;
+	default: console.log('getting all objects for: ', dsRequest.componentId); 
 	}
 	console.log("Fetch");
 	dsResponse = {
@@ -182,7 +220,7 @@ isc.DataSource.create(
 	  status: 1};
 	remove(dsRequest.data._id, dsResponse, dsRequest.requestId); 
 	break; 
-      default: console.log("default??");
+      default: console.log("This is unknown operation on pouchdb: ", dsRequest.operationType );
       };
     };
     //this filter out the proper objects when the objects are in cache, and not retrieved from
