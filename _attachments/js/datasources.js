@@ -1,7 +1,7 @@
 var roster =
   function() {
     var exp = {};
-    
+    exp.user='guest',
     exp.dbname='rosterdb';
     var tagArray = [
       {name:"_id", primaryKey:true}
@@ -202,6 +202,8 @@ isc.DataSource.create(
 	console.log("old values", dsRequest.oldValues); 
 	dsResponse = {
 	  clientContext: dsRequest.clientContext,
+	  errors: {},
+	  
 	  status: 1};
 	update(isc.addProperties({}, dsRequest.oldValues, dsRequest.data), 
 	       dsResponse, dsRequest.requestId);
