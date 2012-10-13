@@ -153,23 +153,6 @@ isc.IButton.create({
 		     }
 		   });
 
-isc.DynamicForm.create({
-			 ID:'useFilterEditor',
-			 fields: [
-			   {width: 150, align:'left',title:"Show simple filter", type:"checkbox" ,ID: 'usingSimpleFilter', changed:'console.log(2);'}
-			 ]
-		       });
-
-isc.ImgButton.create({
-		       ID: "simpleFilterOn",
-		       size:15 
-		       ,src: "toggleOn.png", 
-		       showRollOver: false,
-		       showFocused: false,
-		       actionType: "checkbox"
-		     });
-
-
 function setGridState(state) {
   dataTable.setViewState(state.state);
   setSimpleFilter(state.usingSimpleFilter);

@@ -1,6 +1,10 @@
 // tree.removeList, .linkNodes, getAllNodes
 // viewTree.setData(tree)
 
+function saveViewTree(user, tree) {
+  
+}
+
 
 
 
@@ -58,7 +62,7 @@ var viewTreeActions = {
 };
 
 var newViews = [
-  {itle:"Table", //, submenu: chooseTableMenu
+  {title:"Table", //, submenu: chooseTableMenu
    click:'viewTreeActions.newView("table")'
   },
   {title:"Table with editor", //, submenu: chooseTableMenu
@@ -74,7 +78,6 @@ var newViews = [
 isc.Menu.create({
 		  ID:"newViewMenu",
 		  width:150
-		  ,autodraw:false 
 		  ,data: newViews
 		});
 

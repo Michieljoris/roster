@@ -1,9 +1,11 @@
 <HTML>
   <HEAD>
+  </HEAD>
+  <BODY>
     <script>
       window.bootstrap = { 
-      main: 'start',
-      pathPrefix: './',   
+      main: 'layout.js',
+      pathPrefix: './js',   
       verbosity: 'warn',  
       <!-- verbosity: 'info',  -->
       timeOut: 3,
@@ -29,22 +31,32 @@
     <!-- <SCRIPT SRC=lib/isomorphic/skins/SmartClient/load_skin.js></SCRIPT>     -->
     <!-- <SCRIPT SRC=lib/isomorphic/skins/SilverWave/load_skin.js></SCRIPT> -- -->
     <!-- <SCRIPT SRC=lib/isomorphic/skins/EnterpriseBlue/load_skin.js></SCRIPT> -->
-    <SCRIPT SRC=lib/isomorphic/skins/Enterprise/load_skin.js></SCRIPT> --
-    --
+    <SCRIPT SRC=lib/isomorphic/skins/Enterprise/load_skin.js></SCRIPT>
+    <script>
+      isc.setAutoDraw(false) 
+    </script>
+    <!-- <script language="JavaScript" src="md4.js"></script> -->
+    <!-- <script language="JavaScript" src="md5.js"></script> -->
+    <script src="lib/sha1.js"></script>
+    <!-- When you want to calculate a hash, use the following functions: -->
+    <!-- <script language="JavaScript"> -->
+    <!--   hash = calcMD4("input string"); -->
+    <!--   hash = calcMD5("input string"); -->
+    <!--   hash = calcSHA1("input string"); -->
+    <!-- </script> -->
     
     <script src=lib/pouchdb/pouch.alpha.js></script>   
+    <script src=js/quickpouch.js></script>     
     
     <!-- it would be nice to use my bootstrap... -->
-    <!-- <script src=lib/bootstrap.js></script>   -->
-  </HEAD>
-  <BODY>
-    
-    <script src=js/quickpouch.js></script>     
+    <!-- <script src=lib/bootstrap.js></script> -->
+    <script src=js/roster.js></script>     
     <script src=js/datasources.js></script>     
     <script src=js/datatable.js></script>     
-    <script src=js/calendar.js></script>
+    <!-- <script src=js/calendar.js></script> -->
     <script src=js/viewtree.js></script>     
     <SCRIPT SRC=js/layout.js></SCRIPT>       
+    <script src=js/init.js></script>
   </BODY> 
 </HTML>
 

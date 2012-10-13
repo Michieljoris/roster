@@ -1,3 +1,7 @@
+(function() {
+  
+
+
 //***********************init*******************8
 //have to call this otherwise dynamic form won't save
 Offline.goOnline();
@@ -96,13 +100,13 @@ isc.SectionStack.
 	   // sections:view.datatable
 	   ,sections:[
 	     {name:'datatable', showHeader:false, title:'Data', autoShow:true, items:[dataTable]}
-	     ,{name: 'calendar', title:"Calendar", expanded:true, autoShow:true, hidden: false,items:[shiftCalendar]}
+	     // ,{name: 'calendar', title:"Calendar", expanded:true, autoShow:true, hidden: false,items:[shiftCalendar]}
 	     ,{name: 'tabset', title:"Edit", expanded:true, autoShow:true, items:[tabSet]}
 	   ]
 	 });
 rightSideLayout.hideSection('datatable');
 rightSideLayout.hideSection('tabset');
-rightSideLayout.hideSection('calendar');
+// rightSideLayout.hideSection('calendar');
 
 
 
@@ -118,3 +122,7 @@ isc.HLayout.
 	 });
 
 isc.Page.setEvent("load", "mainLayout.redraw()");
+   
+   
+   
+})();
