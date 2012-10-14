@@ -41,7 +41,7 @@ define(
 				else currentUser = response;
 				layout.draw();	
 				// isc.Page.setEvent("load", "module.layout.draw()");
-				// layout.show('datatable');
+				layout.show('datatable');
 				
 			      });
 		  });
