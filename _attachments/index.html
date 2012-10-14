@@ -4,11 +4,13 @@
   <BODY>
     <script>
       window.bootstrap = { 
-      main: 'layout.js',
+      main: 'init',
       pathPrefix: './js',   
-      verbosity: 'warn',  
+      verbosity: 'debug', 
+      
+      scriptInsertionLocation : 'body',
       <!-- verbosity: 'info',  -->
-      timeOut: 3,
+      timeOut: 2,
       testing: false
       };
       <!-- get rid of annoying msg when testing licensed version -->
@@ -48,15 +50,15 @@
     <script src=lib/pouchdb/pouch.alpha.js></script>   
     <script src=js/quickpouch.js></script>     
     
-    <!-- it would be nice to use my bootstrap... -->
-    <!-- <script src=lib/bootstrap.js></script> -->
     <script src=js/roster.js></script>     
     <script src=js/datasources.js></script>     
     <script src=js/datatable.js></script>     
     <!-- <script src=js/calendar.js></script> -->
     <script src=js/viewtree.js></script>     
-    <SCRIPT SRC=js/layout.js></SCRIPT>       
-    <script src=js/init.js></script>
+    <!-- <SCRIPT SRC=js/layout.js></SCRIPT> -->
+    <!-- <script src=js/init.js></script> -->
+    <!-- it would be nice to use my bootstrap... -->
+    <script src=lib/bootstrap.js></script>
   </BODY> 
 </HTML>
 
