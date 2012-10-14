@@ -2,7 +2,7 @@ define
 ({factory: function() {
     var roster = {};
     roster.user='guest',
-    roster.dbname='rosterdb';
+    roster.dbname='idb://rosterdb';
     var tagArray = [
       {name:"_id", primaryKey:true}
       ,{name:"_rev"}

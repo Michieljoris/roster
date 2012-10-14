@@ -739,7 +739,7 @@
        // 	       });  
        
        if (testing) execJasmine();
-       console.debug('definers', definers, 'dependencies', dependencies,'resources', resources); 
+       log(D,'definers', definers, 'dependencies', dependencies,'resources', resources); 
        log(I, "THE END THE END THE END THE END THE END THE END THE END THE END THE END THE END ");
      }
      

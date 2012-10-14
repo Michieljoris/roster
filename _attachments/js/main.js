@@ -48,6 +48,8 @@ define(
       
       function startApp() {
 	layout.draw();	
+	layout.show('datatable');
+	layout.show('tabset');
       }
       
     }});

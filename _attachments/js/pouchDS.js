@@ -1,7 +1,7 @@
 define
 ({inject: ['roster'],
   factory: function(roster) {
-    var db =  'idb://' + roster.dbname;
+    // var db =  'idb://' + roster.dbname;
     function typefyProps(obj) {
       Object.keys(obj).forEach(
 	function(k) {
@@ -25,7 +25,7 @@ define
     }
     function remove (id, dsResponse, requestId) {
       doPouch(function(db) {
-		console.log(id);
+		// console.log(id);
 		db.get( id,
 			function (err,doc){
 			  console.log('err', err);
@@ -43,7 +43,7 @@ define
 						 "resp:", response);
 			    else {
 			      
-			      console.log('Response is: ', response);
+			      // console.log('Response is: ', response);
 			      dsResponse.data=[];
 			      for (var i = 0; i< response.rows.size();i++) {
 				var key=response.rows[i].key;
@@ -52,7 +52,7 @@ define
 				
 				dsResponse.data.push(key);
     			      }
-			      console.log('data: ', dsResponse.data);
+			      // console.log('data: ', dsResponse.data);
 			      pouchDS.processResponse(requestId, dsResponse);}});});}
     function add(data, dsResponse, requestId) {
       doPouch(function(db) {
@@ -70,7 +70,7 @@ define
     }
 
     function update(data, dsResponse, requestId) {
-      console.log('data', data);
+      // console.log('data', data);
       doPouch(function(db) {
     		db.put(data,
     		       function (err,response){
@@ -82,9 +82,11 @@ define
 			   pouchDS.processResponse(requestId, dsResponse);}});});} 
 
     function doPouch(f) {
-      Pouch(db, function(err, db) {
-	      if (err) console.log("Error opening database", db, "err:", err, "db:", db);
-	      else f(db);});}			 
+      // Pouch(db, function(err, db) {
+	      // if (err) console.log("Error opening database", db, "err:", err, "db:", db);
+	      // else f(db);});
+      f(roster.db);
+    }			 
 
     var view = {
       all: {   map : function(doc) { emit(doc,null); }
@@ -105,25 +107,26 @@ define
 	titleField:"Name",
 	transformRequest: function (dsRequest) {
 	  // DS = this;
-	  console.log('dsRequest:',dsRequest);
+	  // console.log('dsRequest:',dsRequest);
 	  var dsResponse;
 	  switch (dsRequest.operationType) {
 	  case "fetch":
 	    var fetchView = view.all;
 	    switch (dsRequest.componentId) {
 	    case 'shiftCalender' :fetchView = view.shifts;  
-	      console.log('fetchView', fetchView); break;
-	    default: console.log('getting all objects for: ', dsRequest.componentId); 
+	      // console.log('fetchView', fetchView); 
+	      break;
+	    default: ; //console.log('getting all objects for: ', dsRequest.componentId); 
 	    }
-	    console.log("Fetch");
+	    // console.log("Fetch");
 	    dsResponse = {
 	      clientContext: dsRequest.clientContext,
 	      status: 1};
 	    fetch(fetchView, dsResponse, dsRequest.requestId);
 	    break;
 	  case "update" : 
-	    console.log("update", dsRequest); 
-	    console.log("old values", dsRequest.oldValues); 
+	    // console.log("update", dsRequest); 
+	    // console.log("old values", dsRequest.oldValues); 
 	    dsResponse = {
 	      clientContext: dsRequest.clientContext,
 	      errors: {},
@@ -133,14 +136,15 @@ define
 		   dsResponse, dsRequest.requestId);
 	    break; 
 	  case "add" : 
-	    console.log("add"); 
-	    console.log('data', dsRequest.data);
+	    // console.log("add"); 
+	    // console.log('data', dsRequest.data);
 	    dsResponse = {
 	      clientContext: dsRequest.clientContext,
 	      status: 1};
 	    add(dsRequest.data, dsResponse, dsRequest.requestId);
 	    break;
-	  case "remove" : console.log("remove"); 
+	  case "remove" :
+	     // console.log("remove"); 
 	    dsResponse = {
 	      clientContext: dsRequest.clientContext,
 	      status: 1};
