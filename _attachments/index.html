@@ -6,25 +6,31 @@
       window.bootstrap = { 
       main: 'init',
       pathPrefix: './js',   
-      verbosity: 'debug', 
-      
-      scriptInsertionLocation : 'body',
       <!-- verbosity: 'info',  -->
+      <!-- verbosity: 'debug', -->
+      verbosity: 'warn',
+      paths: {
+       'lib': '../lib'
+      },
+      scriptInsertionLocation : 'body',
       timeOut: 2,
       testing: false
       };
       <!-- get rid of annoying msg when testing licensed version -->
       window.isc_expirationOff=true;  
-      window.isomorphicDir="lib/isomorphic/"
+      window.isomorphicDir="lib/isomorphic/";
+      window.isc_useSimpleNames = false;
     </script> 
-    <!-- maybe we should concatenate all these files? -->
-    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Core.js></SCRIPT>  
-    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Foundation.js></SCRIPT>  
-    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Containers.js></SCRIPT>  
-    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Grids.js></SCRIPT>  
-    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Forms.js></SCRIPT>  
-    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_DataBinding.js></SCRIPT>  
-    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Calendar.js></SCRIPT>  
+    <!-- maybe we should concatenate all these files? Done..-->
+    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Core.js></SCRIPT>   -->
+    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Foundation.js></SCRIPT>   -->
+    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Containers.js></SCRIPT>   -->
+    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Grids.js></SCRIPT>   -->
+    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Forms.js></SCRIPT>   -->
+    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_DataBinding.js></SCRIPT>   -->
+    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Calendar.js></SCRIPT>
+    -->
+    <SCRIPT SRC=lib/isomorphic/system/modules/ISC.js></SCRIPT>   --
     <!-- set the skin of the ui -
     <!-- <SCRIPT SRC=lib/isomorphic/skins/Simplicity/load_skin.js></SCRIPT>   -->
     <!-- <SCRIPT SRC=lib/isomorphic/skins/standard/load_skin.js></SCRIPT>   -->
@@ -34,27 +40,21 @@
     <!-- <SCRIPT SRC=lib/isomorphic/skins/SilverWave/load_skin.js></SCRIPT> -- -->
     <!-- <SCRIPT SRC=lib/isomorphic/skins/EnterpriseBlue/load_skin.js></SCRIPT> -->
     <SCRIPT SRC=lib/isomorphic/skins/Enterprise/load_skin.js></SCRIPT>
+    <!-- Don't pollute global namespace -->
     <script>
       isc.setAutoDraw(false) 
     </script>
-    <!-- <script language="JavaScript" src="md4.js"></script> -->
-    <!-- <script language="JavaScript" src="md5.js"></script> -->
-    <script src="lib/sha1.js"></script>
-    <!-- When you want to calculate a hash, use the following functions: -->
-    <!-- <script language="JavaScript"> -->
-    <!--   hash = calcMD4("input string"); -->
-    <!--   hash = calcMD5("input string"); -->
-    <!--   hash = calcSHA1("input string"); -->
-    <!-- </script> -->
     
     <script src=lib/pouchdb/pouch.alpha.js></script>   
+    
     <script src=js/quickpouch.js></script>     
     
-    <script src=js/roster.js></script>     
-    <script src=js/datasources.js></script>     
-    <script src=js/datatable.js></script>     
+    <!-- <script src=js/roster.js></script>      -->
+    <!-- <script src=js/pouchDS.js></script> -->
+    <!-- <script src=js/datasources.js></script> -->
+    <!-- <script src=js/datatable.js></script>      -->
     <!-- <script src=js/calendar.js></script> -->
-    <script src=js/viewtree.js></script>     
+    <!-- <script src=js/viewtree.js></script>      -->
     <!-- <SCRIPT SRC=js/layout.js></SCRIPT> -->
     <!-- <script src=js/init.js></script> -->
     <!-- it would be nice to use my bootstrap... -->

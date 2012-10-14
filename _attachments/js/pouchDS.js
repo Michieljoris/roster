@@ -1,8 +1,7 @@
-
-isc.DataSource.create(
-  function() {
-    var pouchds = {};
-    var DS;
+define
+({inject: ['roster'],
+  factory: function(roster) {
+    var db =  'idb://' + roster.dbname;
     function typefyProps(obj) {
       Object.keys(obj).forEach(
 	function(k) {
@@ -49,9 +48,9 @@ isc.DataSource.create(
 			      for (var i = 0; i< response.rows.size();i++) {
 				var key=response.rows[i].key;
 				typefyProps(key); 
-			    	// dsResponse.data.push({ _id:key._id, _rev:key._rev, text:key.text});
+				// dsResponse.data.push({ _id:key._id, _rev:key._rev, text:key.text});
 				
-			    	dsResponse.data.push(key);
+				dsResponse.data.push(key);
     			      }
 			      console.log('data: ', dsResponse.data);
 			      pouchDS.processResponse(requestId, dsResponse);}});});}
@@ -67,8 +66,9 @@ isc.DataSource.create(
       			   data._rev = response.rev; 
       			   dsResponse.data = data;
       			   pouchDS.processResponse(requestId, dsResponse);}});
-});
-}
+	      });
+    }
+
     function update(data, dsResponse, requestId) {
       console.log('data', data);
       doPouch(function(db) {
@@ -80,74 +80,76 @@ isc.DataSource.create(
 			   data._rev = response.rev; 
 			   dsResponse.data = data;
 			   pouchDS.processResponse(requestId, dsResponse);}});});} 
+
     function doPouch(f) {
       Pouch(db, function(err, db) {
 	      if (err) console.log("Error opening database", db, "err:", err, "db:", db);
 	      else f(db);});}			 
+
     var view = {
       all: {   map : function(doc) { emit(doc,null); }
 	       ,reduce: false}
       ,shifts: { map : function(doc) {
-	       if (doc.group === 'shift') emit(doc,null);}
-	     ,reduce: false}
-      };
-    
-    
-    pouchds.ID = "pouchDS";
-    pouchds.fields= roster.tagArray;
-    pouchds.autoDeriveTitles=true;
-    pouchds.dataProtocol= "clientCustom";
-    
-     pouchds.recordName="employee";
-   pouchds.titleField="Name";
-    
-    var db =  'idb://' + roster.dbname;
-    pouchds.transformRequest= function (dsRequest) {
-      DS = this;
-      console.log('dsRequest:',dsRequest);
-      var dsResponse;
-      switch (dsRequest.operationType) {
-      case "fetch":
-	var fetchView = view.all;
-	switch (dsRequest.componentId) {
-	case 'shiftCalender' :fetchView = view.shifts;  
-	  console.log('fetchView', fetchView); break;
-	default: console.log('getting all objects for: ', dsRequest.componentId); 
-	}
-	console.log("Fetch");
-	dsResponse = {
-	  clientContext: dsRequest.clientContext,
-	  status: 1};
-	fetch(fetchView, dsResponse, dsRequest.requestId);
-	break;
-      case "update" : 
-	console.log("update", dsRequest); 
-	console.log("old values", dsRequest.oldValues); 
-	dsResponse = {
-	  clientContext: dsRequest.clientContext,
-	  errors: {},
-	  
-	  status: 1};
-	update(isc.addProperties({}, dsRequest.oldValues, dsRequest.data), 
-	       dsResponse, dsRequest.requestId);
-	break; 
-      case "add" : 
-	console.log("add"); 
-	console.log('data', dsRequest.data);
-	dsResponse = {
-	  clientContext: dsRequest.clientContext,
-	  status: 1};
-	add(dsRequest.data, dsResponse, dsRequest.requestId);
-	break;
-      case "remove" : console.log("remove"); 
-	dsResponse = {
-	  clientContext: dsRequest.clientContext,
-	  status: 1};
-	remove(dsRequest.data._id, dsResponse, dsRequest.requestId); 
-	break; 
-      default: console.log("This is unknown operation on pouchdb: ", dsRequest.operationType );
-      };
+		   if (doc.group === 'shift') emit(doc,null);}
+		 ,reduce: false}
     };
+
+    return isc.DataSource.create(
+      {
+	ID : "pouchDS",
+	fields: roster.tagArray,
+	autoDeriveTitles:true,
+	dataProtocol: "clientCustom",
+	
+	recordName:"employee",
+	titleField:"Name",
+	transformRequest: function (dsRequest) {
+	  // DS = this;
+	  console.log('dsRequest:',dsRequest);
+	  var dsResponse;
+	  switch (dsRequest.operationType) {
+	  case "fetch":
+	    var fetchView = view.all;
+	    switch (dsRequest.componentId) {
+	    case 'shiftCalender' :fetchView = view.shifts;  
+	      console.log('fetchView', fetchView); break;
+	    default: console.log('getting all objects for: ', dsRequest.componentId); 
+	    }
+	    console.log("Fetch");
+	    dsResponse = {
+	      clientContext: dsRequest.clientContext,
+	      status: 1};
+	    fetch(fetchView, dsResponse, dsRequest.requestId);
+	    break;
+	  case "update" : 
+	    console.log("update", dsRequest); 
+	    console.log("old values", dsRequest.oldValues); 
+	    dsResponse = {
+	      clientContext: dsRequest.clientContext,
+	      errors: {},
+	      
+	      status: 1};
+	    update(isc.addProperties({}, dsRequest.oldValues, dsRequest.data), 
+		   dsResponse, dsRequest.requestId);
+	    break; 
+	  case "add" : 
+	    console.log("add"); 
+	    console.log('data', dsRequest.data);
+	    dsResponse = {
+	      clientContext: dsRequest.clientContext,
+	      status: 1};
+	    add(dsRequest.data, dsResponse, dsRequest.requestId);
+	    break;
+	  case "remove" : console.log("remove"); 
+	    dsResponse = {
+	      clientContext: dsRequest.clientContext,
+	      status: 1};
+	    remove(dsRequest.data._id, dsResponse, dsRequest.requestId); 
+	    break; 
+	  default: console.log("This is unknown operation on pouchdb: ", dsRequest.operationType );
+	  };
+	}
+      });    
     //this filter out the proper objects when the objects are in cache, and not retrieved from
     //the server. Using views for that. (See fetch)
     // pouchds.applyFilter = function(data, criteria, requestProps) {
@@ -161,7 +163,6 @@ isc.DataSource.create(
     //   	function(d) { return group ? (d.group === group ? true : false) : true; } 
     //   );
     // };
-    return pouchds;
-  }());
-
-
+    // return pouchds;
+    // }());
+  }});

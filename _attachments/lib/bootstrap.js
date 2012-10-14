@@ -283,7 +283,6 @@
 	 noresponse.forEach(function(r) {
 			      log(E,r.id); }); } 
        
-       // executeLater();
 }
      
      //------------------------------------------------------------ 
@@ -298,8 +297,6 @@
 	   if (parts[i]) {
 	     if (value && i==parts.length-1) {
 	       ns[parts[i]] = value; 
-	       
-	       
 	     }
 	     else if (ns[parts[i]] === undefined) {
 	       // ns[parts[i]] = {}; //Object.create(null);
@@ -638,8 +635,8 @@
 				    log(W,'Warning: injecting undefined (' + d.id + ') into ' + dep.id ); });
        
        var ret = dep.definer.factory.apply(dep.value, depobjs);
-       // if (ret)  dep.value = getObject(namespace, dep.namespace, ret); 
-       if (ret)  dep.value = ret;
+       if (ret)  dep.value = getObject(namespace, dep.namespace, ret); 
+       // if (ret)  dep.value = ret;
        // else dep.value = getObject(namespace, dep.namespace, self);
        // if (namespace) getObject(namespace, dep.namespace, dep.value);
      }

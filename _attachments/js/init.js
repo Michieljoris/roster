@@ -1,8 +1,7 @@
 define(
-  { inject: ['layout'], 
-    factory: function(layout) 
+  { inject: ['roster', 'layout', 'lib/sha1'], 
+    factory: function(roster, layout, crypt) 
     {
-      console.log('layout in init is: ', layout.main.vertical);
       pouch.setdb('idb://' + roster.dbname);
       var rootUser = {
 	_id:'root',
@@ -40,11 +39,10 @@ define(
 				  }
 				}  
 				else currentUser = response;
-				// mainLayout.draw();
-				layout.main.draw();
-      // isc.Page.setEvent("load", "layout.draw()");
-				// rightSideLayout.showSection('datatable');
-				// rightSideLayout.showSection('tabset');
+				layout.draw();	
+				// isc.Page.setEvent("load", "module.layout.draw()");
+				// layout.show('datatable');
+				
 			      });
 		  });
       }

@@ -1,8 +1,8 @@
-define
-({factory: function() {
-    var roster = {};
-    roster.user='guest',
-    roster.dbname='rosterdb';
+var roster =
+  function() {
+    var exp = {};
+    exp.user='guest',
+    exp.dbname='rosterdb';
     var tagArray = [
       {name:"_id", primaryKey:true}
       ,{name:"_rev"}
@@ -25,34 +25,34 @@ define
       // //needed for recurrence
       // ,{name:"rrule", group: ['shift']}
       // ,{name:"duration", group: ['shift']}
-      ,{
-        title:"Name",
-        name:"Name",
-        length:128,
-        type:"text"
-      },
-      {
-        title:"Employee ID",
-        primaryKey:true,
-        name:"EmployeeId",
-        type:"integer",
-        required:true
-      },
-      {
-        title:"Manager",
-        detail:false,
-        rootValue:"1",
-        name:"ReportsTo",
-        type:"integer",
-        required:true,
-        foreignKey:"pouchDS.EmployeeId"
-      },
-      {
-        title:"Title",
-        name:"Job",
-        length:128,
-        type:"text"
-      }
+        ,{
+            title:"Name",
+            name:"Name",
+            length:128,
+            type:"text"
+        },
+        {
+            title:"Employee ID",
+            primaryKey:true,
+            name:"EmployeeId",
+            type:"integer",
+            required:true
+        },
+        {
+            title:"Manager",
+            detail:false,
+            rootValue:"1",
+            name:"ReportsTo",
+            type:"integer",
+            required:true,
+            foreignKey:"pouchDS.EmployeeId"
+        },
+        {
+            title:"Title",
+            name:"Job",
+            length:128,
+            type:"text"
+        }
       
       //treeGrids:
       // ,{name:"treeParent", foreignKey: pouchDS._id', group: []}
@@ -73,7 +73,7 @@ define
       function(t) {
 	tags[t.name] = t;	
       });
-    roster.tagArray = tagArray;
-    roster.tags = tags;
-    return roster; 
-  }});
+    exp.tagArray = tagArray;
+    exp.tags = tags;
+    return exp; 
+  }(); 
