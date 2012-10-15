@@ -1,26 +1,74 @@
 define
-({inject: ['roster'],
-  factory: function(roster) {
-    // tree.removeList, .linkNodes, getAllNodes
-    // viewTree.setData(tree)
-    function setJSON(json) {
-      clearTree();
-      mytree.linkNodes(isc.JSON.decode(json));
-    }
-
+({inject: ['roster', 'table'],
+  factory: function(roster, table) {
+    
     function getJSON() {
       var tree = viewTree.getData().getAllNodes();
       return isc.JSON.encode(
-	tree.map(function(n) {return {
-				id: n.id,
-				parentId: n.parentId,
-				isFolder: n.isFolder,
-				name: n.name,
-				isOpen: n.isOpen	
-				
-			      };
-			     })
-      );
+	{ 
+	  width: viewTree.getWidth(),
+	  selectedPaths: viewTree.getSelectedPaths(),
+	  state: tree.map(function(n) {return {
+					 view: n.view,
+					 id: n.id,
+					 parentId: n.parentId,
+					 isFolder: n.isFolder,
+					 name: n.name,
+					 isOpen: n.isOpen,	
+					 viewState: n.viewState
+				       };
+			 })
+	  });
+    }
+    
+    var saveOnChange = false;
+    function setSaveOnChange(bool) {
+      saveOnChange = bool;
+      // switch (method) {
+      // 	case 'auto' : saveOnUnload();  break;
+      // 	case 'onchange' : autoSave = false; break;
+      // 	default: console.log('ERROR: setSaveMethod was called with an invalid parameter');
+      // }
+    }
+    
+    //if called it sets up saving at intervals and when navigating away
+    //not working because the callback from pouch comes to late, 
+    //everything is wiped already I think
+    // function saveOnUnload() {
+    //   window.setInterval(save, 300000);
+    //   window.onbeforeunload= save;
+    // }
+    
+    //this function gets called everytime a change in the viewtree occurs
+    function saveViewTreeState() {
+      if (saveOnChange) save();
+    }
+    
+    function save() {
+      roster.user.viewTreeState = getJSON();
+      roster.db.put(roster.user, function(err, response) {
+		      if (err) {
+			console.log('Could not save changed state of the view tree.' 
+				    + err.error + ' ' + err.reason);}
+		      else {
+			// alert('saved');
+			roster.user._rev = response.rev;
+		      }
+		    })
+      // return 'are you sure?';
+    }
+    
+    function setState(viewTreeState) {
+      var viewTreeState = isc.JSON.decode(viewTreeState);
+      if (viewTreeState) {
+	clearTree();
+	mytree.linkNodes(viewTreeState.state);
+	viewTree.setSelectedPaths(viewTreeState.selectedPaths);
+	var selRecord = viewTree.getSelectedRecord();
+	viewTree.setWidth(viewTreeState.width);
+	// if (!selRecord.isFolder)
+	//   viewTree.openLeaf(selRecord);
+      }
     }
     
     function clearTree (){
@@ -28,63 +76,73 @@ define
     }
 
 
-    // var viewTreeActions = {
     function newView(view) {
       var selRecord = viewTree.getSelectedRecord();
-      switch (view) { 
-      // case 'table+editor': 
-      // 	// roster.show('tabset');
-	
-      case 'table': 
-      	//roster.show('tabset');
-	//roster.show('datatable');
-	// setGridState({});
-	break; 
-	
-      default: console.log(view + ' not yet implemented'); 
-      } 
       if (!selRecord)  selRecord = '/';
       else {
-	if (!selRecord.isFolder) selRecord = selRecord['_parent_' + mytree.ID];
+	viewTree.selectRecord(selRecord, false);
+	selRecord = selRecord['_parent_' + mytree.ID];
       }
-      // console.log('we are adding to mytree');
-      mytree.add({id:isc.timeStamp(),isFolder:false, name:'New ' + view},selRecord);
-      // mytree.add({id:isc.timeStamp(),isFolder:false, name:'New' + view},'/');
+      var newRecord = mytree.add({id:isc.timeStamp(),isFolder:false, 
+				  name:'New ' + view, view: view},selRecord)
+      viewTree.selectRecord(newRecord);
       viewTree.openFolder(selRecord);
+      saveViewTreeState();
+      viewTree.openLeaf(newRecord);
     };
     
     function newFolder() {
       var selRecord = viewTree.getSelectedRecord();
       if (!selRecord)  selRecord = '/';
       else {
-	if (!selRecord.isFolder) selRecord = selRecord['_parent_' + mytree.ID];
+	viewTree.selectRecord(selRecord, false);
+	selRecord = selRecord['_parent_' + mytree.ID];
       }
-      mytree.add({id:isc.timeStamp(),isFolder:true, name:'New folder'},selRecord || '/');
+	var newRecord = mytree.add({id:isc.timeStamp(),isFolder:true, 
+				    name:'New folder'},selRecord || '/')
+      viewTree.selectRecord(newRecord);
       viewTree.openFolder(selRecord);
+      saveViewTreeState();
+      viewTree.openFolder(newRecord);
     };
     
     function rename() {
       var record = viewTree.getSelectedRecord();
       if (record == null) return;
       viewTree.startEditing(viewTree.data.indexOf(record));
+      
     };
     
     function remove() {
-      viewTree.removeSelectedData();
+      var selRecord = viewTree.getSelectedRecord();
+      if (selRecord) {
+	var index = viewTree.getRecordIndex(selRecord);
+	viewTree.removeSelectedData();
+	if (viewTree.getTotalRows() === index) index--;
+	console.log(viewTree.getTotalRows(), index);
+	viewTree.selectRecord(index);
+	saveViewTreeState();
+      }
     }
 
     var newViews = [
-      {title:"Table", //, submenu: chooseTableMenu
-       click: function() { newView('table'); } //'viewTreeActions.newView("table")'
+      {title:"Table", 
+       click: function() { newView(this.title); } 
+       ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
       },
-      // {title:"Table with editor", //, submenu: chooseTableMenu
-      //  click: function() { newView('table+editor');} //'viewTreeActions.newView("table+editor")'
-      // },
-      {title:"B/W Calendar"},
-      {title:"Color Calendar"},
-      {title:"Roster"},
-      {title:"Timesheet"
-      }];
+      {title:"Calendar",
+       click: function() { newView(this.title); } 
+       ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
+      },
+      {title:"Roster",
+       click: function() { newView(this.title); } 
+       ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
+      },
+      {title:"Timesheet",
+       click: function() { newView(this.title); } 
+       ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
+      }
+      ];
 
 
     var newViewMenu = isc.Menu.create(
@@ -112,22 +170,29 @@ define
 	{// ID:"rightClickMenu",
 	  width:150
 	  ,data:newViews.concat(
-	    [{title:"New folder"
-	      ,icon: isc.Page.getSkinDir() +"images/FileBrowser/createNewFolder.png"
-	      ,click: function() { newFolder(); } //'viewTreeActions.newView("table")'
-	       // ,click: 'viewTreeActions.newFolder()'
-	      }, 
-	      {isSeparator:true},
-	      {title:"Rename"
-	       ,icon: isc.Page.getSkinDir() +"images/actions/edit.png"
-	       // ,click: 'viewTreeActions.rename()'
-	       ,click: function() { rename(); } //'viewTreeActions.newView("table")'
-	      },
-	      {title:"Remove"
-	       ,icon: isc.Page.getSkinDir() +"images/actions/remove.png"
-	       ,click: function() { remove(); } //'viewTreeActions.newView("table")'
-	       // ,click: 'viewTreeActions.remove()'
-	      }
+	    [
+	      {isSeparator:true}
+	      ,{title:"Copy"
+		,icon: isc.Page.getSkinDir() +"images/RichTextEditor/copy.png"
+		,click: function() { copy(); } 
+	       } 
+	      ,{title:"New folder"
+		,icon: isc.Page.getSkinDir() +"images/FileBrowser/createNewFolder.png"
+		,click: function() { newFolder(); } 
+	       } 
+	      ,{title:"Rename"
+		,icon: isc.Page.getSkinDir() +"images/actions/edit.png"
+		,click: function() { rename(); } 
+	       }
+	      ,{title:"Remove"
+		,icon: isc.Page.getSkinDir() +"images/actions/remove.png"
+		,click: function() { remove(); } 
+		}
+	      ,{isSeparator:true}
+	      ,{title:"Save tree"
+		,icon: isc.Page.getSkinDir() +"images/actions/save.png"
+		,click: function() { save(); }
+	       }
 	    ])
 	});
 
@@ -141,7 +206,13 @@ define
         //     ID:"totalsLabel"
         // }),
 	     loginButton
-             ,isc.LayoutSpacer. create({ width:"*" })
+             // ,isc.LayoutSpacer. create({ width:"*" })
+	  
+             ,isc.ToolStripButton.create({
+					   icon: "[SKIN]/actions/save.png",
+					   prompt: "Save this view"
+					   ,click: function() { save(); }
+					 })
              ,isc.IconMenuButton.create({title:''
 					,ID:'addButton'
 					 ,iconClick: "this.showMenu()"
@@ -152,43 +223,28 @@ define
 					   ,menu:newViewMenu
 					 })
              ,isc.ToolStripButton.create({
+					   icon: "[SKIN]/RichTextEditor/copy.png",
+					   prompt: "Copy this view"
+					   ,click: function() { copy(); }
+					 })
+             ,isc.ToolStripButton.create({
 					   icon: "[SKIN]/FileBrowser/createNewFolder.png", 
 					   prompt: "Create a new folder"
 					   ,click: function() { newFolder(); }
-					   // ,click: 'viewTreeActions.newFolder()'
 					 })
              ,isc.ToolStripButton.create({
 					   icon: "[SKIN]/actions/edit.png",
 					   prompt: "Rename selected item"
-					   // click: 'viewTreeActions.rename'
 					   ,click: function() { rename(); }
 					 })
              ,isc.ToolStripButton.create({
 					   icon: "[SKIN]/actions/remove.png", 
 					   prompt: "Remove selected item"
 					   ,click: function() { remove(); }
-					   // click: 'viewTreeActions.remove()'
 					 })
 		 ]
 	       });
 
-
-      var treetest = isc.Tree.
-	create({
-		 // ID:'treetest',
-		 modelType: "parent",
-		 nameProperty: "id",
-		 idField: "id",
-		 parentIdField: "parentId"
-	       });
-
-      // viewTree.removeSelectedRecord
-      // drag and rearrange, rename by double clicking
-      // mytree.add(node, parent)
-      // viewTree.setData and getData , then use indexNodes to extraxt data for
-      // saving and loading, after setData call viewTree.redraw 
-      // Make a tree from data loaded from the database
-      // mytree.add({EmployeeId:'306',isFolder:true, Name:'xfolderd'},a);
       var mytree = isc.Tree.
 	create({
 		 // ID:'mytree',
@@ -197,111 +253,43 @@ define
 		 idField: "id",
 		 parentIdField: "parentId",
 		 openProperty :'isOpen'
-		 // dataChanged:function() {
-		 //   console.log('data changed in the tree');
-		 // },
-		 // dataChanged : function () {
-		 //     this.Super("dataChanged", arguments);
-		 //     var totalRows = this.data.getLength();
-		 //     if (totalRows > 0 && this.data.lengthIsKnown()) {
-		 //         totalsLabel.setContents(totalRows + " Records");
-		 //     } else {
-		 //         totalsLabel.setContents("&nbsp;");
-		 //     }
-		 // },
-		 
-		 // data: [
-		 //   {id:"4", parentId:"1", name:"Charles Madigen"},
-		 //   {id:"188", parentId:"5", name:"Rogine Leger"},
-		 //   {id:"189", parentId:"4", name:"Gene Porter"},
-		 //   {id:"265", parentId:"189", name:"Olivier Doucet"},
-		 //   {id:"264", parentId:"189", name:"Cheryl Pearson"}
-		 // ]
 	       });
 
     var viewTree = isc.TreeGrid.
       create({
-	       // ID: "viewTree",
 	       contextMenu:rightClickMenu
 	       ,canDragRecordsOut:true,
-	       canAcceptDroppedRecords:true,
-	       canEdit: true
-	       // ,useAllDataSourceFields:true,
+	       canAcceptDroppedRecords:true
 	       ,canReorderRecords: true,
 	       canAcceptDroppedRecords: true
 	       ,data: mytree 
 	       ,showHeader:false
-	       // dataSource:'pouchDS',
+	       ,modalEditing: true
+	       ,selectOnEdit: false
+	       ,escapeKeyEditAction: 'cancel'
+	       ,editorExit: function() { this.canEdit = false;}
+	       ,viewStateChanged: function() {
+		 saveViewTreeState();
+	       }
+	       ,cellChanged: function() {
+		 saveViewTreeState();
+	       }
+	       ,onFolderDrop: function() {
+		 saveViewTreeState();
+	       }
 	       ,autoFetchData:true
 	       ,gridComponents:[gridEditControls, "header", "body" ]
-	       // ,fetchData:function() {
-	       // 	console.log('fetchdata changed in the treegrid');
-	       // }
-	       
-    	       // ,nodeClick: function() {
-    	       //   console.log("Hello from nodeClick");
-
-    	       // },
-    	       // nodeContextClick: function() {
-    	       //   console.log("Hello from nodeContextclick");
-    	       // },
-	       
-    	       // leafClick: function() {
-    	       //   console.log("Hello from leafclick");
-	       
-    	       // },
-    	       // leafContextClick: function() {
-    	       //   console.log("Hello from leafContextclick");
-    	       // }
 	       ,fields:[{
-			  // title:"name",
 			  name:"name",
 			  length:128,
 			  type:"text"
 			}
-			,{
-			  // title:"group",
-			  
-			  // shift, location, people, role, calendar, timesheet, roster,
-			  // specialized rosterviews, admin
-			  name:"group",
-			  length:128,
-			  detail: true,
-			  type:"text"
-			}
-			// ,{
-			//   title:"Employee ID",
-			//   primaryKey:true,
-			//   name:"id",
-			//   type:"integer",
-			//   required:true
-			// },
-			// {
-			//   // title:"Manager",
-			//   // detail:false,
-			//   rootValue:"1",
-			//   name:"parentId",
-			//   type:"integer",
-			//   required:true,
-			//   foreignKey:"pouchDS.id"
-			// }
 		       ]
-
-	       // customize appearance
-	       // width: 500,
-	       // height: 400,
-	       // nodeIcon:"icons/16/person.png",
-	       // folderIcon:"icons/16/person.png",
-	       // showOpenIcons:false,
-	       // showDropIcons:false,
-	       // closedIconSuffix:""
 	     });
-    // console.log('viewTree is: ' , viewTree);
-    // viewTree.mytree = mytree;
-    // viewTree.treetest = treetest;
-    // viewTree.clear = clearTree;
-    viewTree.getJSON = getJSON;
-    viewTree.setJSON = setJSON;
+    
+    // viewTree.getJSON = getJSON;
+    viewTree.setState = setState;
     viewTree.loginButton = loginButton;
+    viewTree.setSaveOnChange = setSaveOnChange;
     return viewTree;
   }});

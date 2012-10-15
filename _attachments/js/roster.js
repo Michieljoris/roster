@@ -1,10 +1,7 @@
 define
 ({factory: function() {
     
-   function setUser(user) {
-      this.user = user;
-      this.permissions = user.permissions;
-    }
+    var roster = Object.create(null);
     
     // var rootUser = {
     //   _id:'root',
@@ -28,6 +25,7 @@ define
       permissions: {
 	
       }
+      // ,viewTreeStateDocId: 'defaultViewTreeStateDoc'
     };
     
     var tagArray = [
@@ -100,11 +98,24 @@ define
       function(t) {
 	tags[t.name] = t;	
       });
+      
+    // function setViewStateDoc(viewStateDoc) {
+    //   roster.viewStateDoc = viewStateDoc;
+    // }
     
-    //if the guest or any other user is not in the database the user is set to the guest defined here by default
-    setUser(guestUser);
+    function setDb(db) {
+      roster.db = db; 
+    }
     
-    return {
+    function setUser(user) {
+      roster.user = user;
+      roster.permissions = user.permissions;
+    }
+    
+    roster = {
+      user:guestUser,
+      setDb: setDb,
+      // saveViewTreeState: saveViewTreeState,
       setUser: setUser,
       tagArray: tagArray,
       tags: tags,
@@ -112,5 +123,5 @@ define
       guestUser: guestUser,
       dbname: 'idb://rosterdb'
     }
-
+    return roster; 
   }});

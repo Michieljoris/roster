@@ -68,7 +68,7 @@ define
 	       animateSections:true,
 	       showResizeBar:true,
 	       visibilityMode:'multiple',
-	       width:200,
+	       width:290,
 	       sections:[
 		 {showHeader:false, items:[viewTree]},
 		 {title:"Admin", hidden: true, expanded:false, items:[adminTree]},
@@ -86,13 +86,13 @@ define
 	       animateSections:true
 	       // sections:view.datatable
 	       ,sections:[
-		 {name:'table', showHeader:false, hidden: true, title:'Data', items:[table.table]}
+		 {name:'Table', showHeader:false, hidden: true, title:'Data', items:[table.table]}
 		 // ,{name: 'calendar', title:"Calendar", expanded:true, hidden: false,items:[shiftCalendar]}
-		 ,{name: 'tableEditor', title:"Edit", expanded:true,  hidden: true, items:[table.editor]}
+		 ,{name: 'TableEditor', title:"Edit", expanded:true,  hidden: true, items:[table.editor]}
 	       ]
 	     });
     //need to do this, the sectionstack seems to show the first section regardless of its hidden prop.
-    rightSideLayout.hideSection('table');
+    rightSideLayout.hideSection('Table');
     
     // console.log(rightSideLayout);
     function show(cmp) {
@@ -102,8 +102,8 @@ define
     function hide(cmp) {
       rightSideLayout.hideSection(cmp);
     }
-    roster.show = show;
-    roster.hide = hide;
+    // roster.show = show;
+    // roster.hide = hide;
     // rightSideLayout.hideSection('tableEditor');
     // rightSideLayout.hideSection('calendar');
 
@@ -120,16 +120,39 @@ define
 	       ]
 	     });
     
+    function openLeaf(leaf) {
+      //TODO record this in the viewtreestate...
+      console.log('in openleaf');
+      switch (leaf.view) { 
+      case 'Table': 
+	table.table.link(leaf);
+	// table.setGridState(node.viewState);
+	show('Table');
+	show('TableEditor');
+	break; 
+	
+      default: 
+	console.log(node.view + ' not yet implemented'); 
+	return; 	
+      } 
+      // console.log(l);
+    }
+    
+    function draw(user) {
+      mainLayout.draw();
+      viewTree.openLeaf = openLeaf;
+      viewTree.getWidth = function() {
+      	return leftSideLayout.getWidth();
+      }; 
+      viewTree.setWidth = function(w) {
+      	return leftSideLayout.setWidth(w);
+      };
+      viewTree.setState(user.viewTreeState); 
+      
+    }
+    
     return {
-      draw : function() { mainLayout.draw(); },
-      show:show,
-      hide:hide,
-      getLeftSideWidth: function() {
-	return leftSideLayout.getWidth();
-      }, 
-      setLeftSideWidth: function(w) {
-	return leftSideLayout.setWidth(w);
-      }
+      draw : draw,
     };
-    //------------      
+    
   }});

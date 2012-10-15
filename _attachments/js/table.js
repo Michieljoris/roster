@@ -2,23 +2,7 @@ define
 ({inject: ['pouchDS'],
   factory: function() {
     var  savedCriteria, savedAdvCriteria, usingSimpleFilter= true;
-
-    function getGridState() {
-      return {
-	state: dataTable.getViewState(),
-	criteria : dataTable.getFilterEditorCriteria(),
-	advCriteria: savedAdvCriteria,
-	usingSimpleFilter: usingSimpleFilter
-	
-      }
-    } 
-
-    function setGridState(state) {
-      dataTable.setViewState(state.state);
-      setSimpleFilter(state.usingSimpleFilter, state.criteria);
-      advancedFilter.setCriteria(state.advCriteria);
-      dataTable.filterData(state.advCriteria);
-    }
+    var leaf;
 
     var dataTable = isc.ListGrid.create(
       {   
@@ -64,7 +48,34 @@ define
 	    // return 0;
 	  }
       });
+    
+    
+    function getGridState() {
+      return isc.JSON.encode({
+	state: dataTable.getViewState(),
+	criteria : dataTable.getFilterEditorCriteria(),
+	advCriteria: savedAdvCriteria,
+	usingSimpleFilter: usingSimpleFilter
+      });
+    } 
 
+    function setGridState(state) {
+      if (!state) return;
+      state = isc.JSON.decode(state);
+      dataTable.setViewState(state.state);
+      setSimpleFilter(state.usingSimpleFilter, state.criteria);
+      advancedFilter.setCriteria(state.advCriteria);
+      dataTable.filterData(state.advCriteria);
+    }
+
+    
+    function link(newLeaf) {
+      leaf = newLeaf;
+      // console.log('in link', leaf.viewState);
+      setGridState(leaf.viewState);
+    }
+    dataTable.link = link;
+    
     var editForm = isc.DynamicForm.create(
       {   
 	// ID:"editForm",
@@ -78,11 +89,14 @@ define
 	    // {name:"_rev"},
 	    // {name:"text"},
 	    {name:"editnew", type:"button", width:130,
-	     title:"Create New Item", click:"dataTable.startEditingNew()"},
+	     title:"Create New Item", click: function() { dataTable.startEditingNew(); }},
+	     // title:"Create New Item", click:"dataTable.startEditingNew()"},
 	    {name:"save", type:"button", width: 130,
-	     title:"Save Form Data", click:'saveFormData(editForm)'},
+	     title:"Save Form Data", click: function() { saveFormData(editForm); }},
+	     // title:"Save Form Data", click:'saveFormData(editForm)'},
 	    {name:"delete", type:"button",
-	     width:130, title:"Delete Selected Item", click:"dataTable.removeSelectedData();"}
+	     width:130, title:"Delete Selected Item", click:function() { dataTable.removeSelectedData(); }}
+	     // width:130, title:"Delete Selected Item", click:"dataTable.removeSelectedData();"}
 	    // {name:"savebtn", type:"button",
 	    //  width:100, title:"Save Item", click:"editForm.saveData()"}
 	    // ,{name:"updatebtn", type:"button",
@@ -157,12 +171,6 @@ define
 			 }
 		       });
     
-    function setGridState(state) {
-      dataTable.setViewState(state.state);
-      setSimpleFilter(state.usingSimpleFilter);
-      advancedFilter.setCriteria(state.savedAdvCriteria);
-      dataTable.filterData(state.savedAdvCriteria);
-    }
 
     function setSimpleFilter(use, criteria) {
       if (use) {
@@ -211,6 +219,7 @@ define
 			 title:"Store table",
 			 width:100,
 			 click : function () {
+			   leaf.viewState = getGridState();
 			 }
 		       });
 

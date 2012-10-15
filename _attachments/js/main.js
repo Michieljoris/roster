@@ -9,13 +9,13 @@ define(
 		     return; }
 	  
 	  //save db reference for global use
-	  roster.db = db;
+	  roster.setDb(db);
 	  //if we stored Last user, use that otherwise user = guest
 	  db.get(
 	    'Last user', 
 	    function(err, lastUser) {
 	      var currentUserId;
-	      if (err) {console.log('No init doc found..');
+	      if (err) {console.log('No init doc found. Setting user to guest');
 			currentUserId = 'guest'}			
 	      else currentUserId = lastUser.id;
 	      //get the current user's record from the database
@@ -35,7 +35,7 @@ define(
 		      db.put( //put guest in the database
 			user, 
 			function(err,resp) { 
-			  if (err) console.log('ERROR: Could not save the guest user\' details to the database!!!');
+			  if (err) console.log('ERROR: Could not save the guest user\' details to the database!!!', err);
 			  else {
 			    user._rev = resp.rev;
 			    startApp();}});}  
@@ -43,51 +43,58 @@ define(
 		    user = response;
 		    startApp();}   })})});
       
+      
+      
       function checkCredentials(credentials, reportToLoginDialog) {
 	// console.log(credentials);
-	roster.checkUser = credentials.username;
+	window.temp = credentials.username;
 	function map(doc) {
-	  if (doc.login === module.roster.checkUser) { console.log(doc.login); emit(doc, null); }
+	  //this function needs a global to compare doc.login with,
+	  // nothing else closes over this function apparently.. 
+	  if (doc.login === window.temp) { console.log(doc.login); emit(doc, null); }
 	}
 	roster.db.query({map:map}, {reduce: false},
 		 function(err,response) {
-		   if (err) { console.log('ERROR: Could not query database to find user ' + credentials.login); }
+		   if (err) { console.log('ERROR: Could not query database to find user ' +
+					  credentials.login, err); }
 		   else {
 		     console.log(response);
-		     if (response.rows.length > 0 &&
-			 credentials.password === response.rows[0].key.password) {
+		     if (credentials.username === 'guest'  || 
+			 (response.rows.length > 0 &&
+			 credentials.password === response.rows[0].key.password)) {
 		       var user = response.rows[0].key;
 		       roster.setUser(user);
 		       reportToLoginDialog(true);
 		       viewTree.loginButton.setTitle(user.login);
 		       viewTree.loginButton.action = function() {
-			 isc.showLoginDialog(checkCredentials, {username: user.login, password: user.password, dismissable:true});
+			 isc.showLoginDialog(checkCredentials,
+					      {username: user.login, password: user.password,
+					       dismissable:true});
 		       };
 		     }
 		     else reportToLoginDialog(false);
 		   }
 		 })};
+      
+      
 		 
       function startApp() {
 	pp(user);
 	var loginButton = viewTree.loginButton;
 	loginButton.setTitle('guest');
 	loginButton.action = function() {
-	  isc.showLoginDialog(checkCredentials, {username: user.login, password: user.password, dismissable:true});
+	  isc.showLoginDialog(checkCredentials, {username: user.login, dismissable:true});
 	};
 	
 	if (!user.autoLogin) {
 	  loginButton.action();
 	}
 	else roster.setUser(user);
-	layout.draw();	
-	
-	// layout.show('datatable');
-	// layout.show('tabset');
+	layout.draw(user);	
+	// viewTree.setSaveOnChange(false);	
       }
       
     }});
 
 
 // isc.Page.setEvent("load", "module.layout.draw()");
-// layout.show('datatable');
