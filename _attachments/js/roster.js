@@ -1,8 +1,35 @@
 define
 ({factory: function() {
-    var roster = {};
-    roster.user='guest',
-    roster.dbname='idb://rosterdb';
+    
+   function setUser(user) {
+      this.user = user;
+      this.permissions = user.permissions;
+    }
+    
+    // var rootUser = {
+    //   _id:'root',
+    //   // name: 'super-admin',
+    //   group: 'people',
+    //   login: 'root',
+    //   autoLogin: false,
+    //   password:'1511e358bea6f50b2ddb2ca19c6422e871a0086f',
+    //   permissions: {
+	
+    //   }
+    // // };
+    
+    var guestUser = {
+      _id:'guest',
+      // name: 'super-admin',
+      group: 'people',
+      login: 'guest',
+      autoLogin: true,
+      password:'guest',
+      permissions: {
+	
+      }
+    };
+    
     var tagArray = [
       {name:"_id", primaryKey:true}
       ,{name:"_rev"}
@@ -73,7 +100,17 @@ define
       function(t) {
 	tags[t.name] = t;	
       });
-    roster.tagArray = tagArray;
-    roster.tags = tags;
-    return roster; 
+    
+    //if the guest or any other user is not in the database the user is set to the guest defined here by default
+    setUser(guestUser);
+    
+    return {
+      setUser: setUser,
+      tagArray: tagArray,
+      tags: tags,
+      // rootUser: rootUser,
+      guestUser: guestUser,
+      dbname: 'idb://rosterdb'
+    }
+
   }});

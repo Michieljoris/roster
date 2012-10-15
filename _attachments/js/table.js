@@ -241,7 +241,8 @@ define
 	       ]
 	     });
     return {
-      tabSet: tabSet,
-      dataTable: dataTable
+      editor: tabSet,
+      table: dataTable
+      
     };
   }});

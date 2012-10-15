@@ -103,7 +103,7 @@ define
 	  
 	//   isc.showLoginDialog(function(a,cb) {console.log(a); cb(true);}, {dismissable:true});
 	// },
-	// title: "Logout"
+	title: "Logout"
 	
       });
 
@@ -143,7 +143,7 @@ define
 	     loginButton
              ,isc.LayoutSpacer. create({ width:"*" })
              ,isc.IconMenuButton.create({title:''
-					,ID:'addButton'
+					// ,ID:'addButton'
 					 ,iconClick: "this.showMenu()"
 					 ,showMenuIcon:false
 					 ,width :20

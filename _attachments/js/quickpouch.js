@@ -3,7 +3,7 @@ var pp = function() {
   for (var i=0; i< arguments.length; i++) {
     var arg= arguments[i];
     if (typeof  arg == "string") {console.log(arg);} 
-    else if (typeof arg == 'object') for (j in arg) console.log(" " + j + ":" + arg[j]);
+    else if (typeof arg == 'object') for (j in arg) console.log("  " + j + ":" + arg[j]);
     else console.log(arg);
   }
 };
@@ -36,7 +36,7 @@ var pouch =
        // 	 else callback(null, response);		       
        // };
        // console.log('POUCH', op,opargs, opcallback);
-       Pouch(dbname, function(err, db) {
+       Pouch(db, function(err, db) {
 	       if (err) console.log("Error opening database", dbname, "err:", err.error, err.reason, " db:", db);
 	       else db[op].apply(db,opargs.concat(callback));
 	     }
@@ -51,7 +51,7 @@ var pouch =
      };
 
      var pinfo = function () {
-       Pouch('idb://' + roster.dbname, function(err, db) {
+       Pouch(db, function(err, db) {
 	       if (err) {
 		  console.log(err.error, err.reason); 
 		 return;
@@ -68,7 +68,10 @@ var pouch =
 	       db.query({map: map}, {reduce: false}, function(err, response) {
 			  if (err) console.log(err.error, err.reason); 
   			  else {
+			   var i=0; 
 			    response.rows.forEach(function(e) {
+						    
+			    console.log(i + '------------------');
 						    pp(e.key); 
 						  });
 			  }
@@ -78,7 +81,7 @@ var pouch =
      
      
      var pquery = function(map, callback) {
-       Pouch('idb://' + roster.dbname, function(err, db) {
+       Pouch(db, function(err, db) {
 	       if (err) {
 		 console.log(err.error, err.reason); 
 		 return;
@@ -121,3 +124,5 @@ var pouch =
      };
      
    })();
+
+pouch.setdb('idb://rosterdb');

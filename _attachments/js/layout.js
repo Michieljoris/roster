@@ -1,6 +1,6 @@
 define
-({inject: ['viewTree', 'table'],
-  factory: function(viewTree, table) 
+({inject: ['viewTree', 'table', 'roster'],
+  factory: function(viewTree, table, roster) 
   {
     //***********************init*******************8
     //have to call this otherwise dynamic form won't save
@@ -71,7 +71,7 @@ define
 	       width:200,
 	       sections:[
 		 {showHeader:false, items:[viewTree]},
-		 {title:"Admin", expanded:false, autoShow:true, items:[adminTree]},
+		 {title:"Admin", hidden: true, expanded:false, items:[adminTree]},
 		 {title:"Help", expanded:false,  items:[helpCanvas]}
 	       ]
 	     });
@@ -86,13 +86,13 @@ define
 	       animateSections:true
 	       // sections:view.datatable
 	       ,sections:[
-		 {name:'datatable', showHeader:false, hidden: true, title:'Data', items:[table.dataTable]}
+		 {name:'table', showHeader:false, hidden: true, title:'Data', items:[table.table]}
 		 // ,{name: 'calendar', title:"Calendar", expanded:true, hidden: false,items:[shiftCalendar]}
-		 ,{name: 'tabset', title:"Edit", expanded:true,  hidden: true, items:[table.tabSet]}
+		 ,{name: 'tableEditor', title:"Edit", expanded:true,  hidden: true, items:[table.editor]}
 	       ]
 	     });
     //need to do this, the sectionstack seems to show the first section regardless of its hidden prop.
-    rightSideLayout.hideSection('datatable');
+    rightSideLayout.hideSection('table');
     
     // console.log(rightSideLayout);
     function show(cmp) {
@@ -102,7 +102,9 @@ define
     function hide(cmp) {
       rightSideLayout.hideSection(cmp);
     }
-    // rightSideLayout.hideSection('tabset');
+    roster.show = show;
+    roster.hide = hide;
+    // rightSideLayout.hideSection('tableEditor');
     // rightSideLayout.hideSection('calendar');
 
 
@@ -121,7 +123,13 @@ define
     return {
       draw : function() { mainLayout.draw(); },
       show:show,
-      hide:hide	
+      hide:hide,
+      getLeftSideWidth: function() {
+	return leftSideLayout.getWidth();
+      }, 
+      setLeftSideWidth: function(w) {
+	return leftSideLayout.setWidth(w);
+      }
     };
     //------------      
   }});
