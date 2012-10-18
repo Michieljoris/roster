@@ -28,10 +28,13 @@ define
 		// console.log(id);
 		db.get( id,
 			function (err,doc){
-			  console.log('err', err);
-			  console.log('doc', doc);
+			  if (err) { console.log('ERRROR: can\'t find doc ', 
+						 err.error, err.reason); 
+				     return; }
 			  db.remove(doc, function(err,response) {
-				      console.log('err',err);
+				      if (err) { console.log('ERRROR: can\'t find doc ', 
+							     err.error, err.reason); 
+						 return; }
 				      dsResponse.data = doc;
 				      if (err) console.log("could not remove doc");	
 				      else  pouchDS.processResponse(requestId, dsResponse);} );});});}
