@@ -6,6 +6,7 @@ define
       var API = {};
       //only one...
       var observer;
+      // var modified;
           
       //--------------------@handling state----------------------------- 
       function useSimpleFilter(bool, criteria) {
@@ -22,21 +23,49 @@ define
 	      clearSimpleFilterButton.hide(true);}}
       
       function getTableState() {
-          return isc.JSON.encode({
-	      state: dataTable.getViewState(),
+          // console.log('getting table state'); 
+          //isc.JSON.encode(
+          var state =  {
+	      grid: dataTable.getViewState(),
 	      criteria : dataTable.getFilterEditorCriteria(),
 	      advCriteria: savedAdvCriteria,
-	      usingSimpleFilter: usingSimpleFilter});} 
+	      usingSimpleFilter: usingSimpleFilter,
+              //editor
+              hidden: false,
+              tab: tabSet.getSelectedTabNumber(),
+              height:dataTable.getHeight()
+              ,isExpanded: stack.sectionIsExpanded('Editor')
+
+          };
+          // pp('getting table editor state', state.editor);
+          return state;
+      } 
+      
+      API.getState = getTableState;
 
       function setTableState(state) {
-          // if (!state) state = "{ }";
+          //to 
+          // if (!state) state = '{}';
           // pp('before',state);
-          state = isc.JSON.decode(state);
+          // else state = isc.JSON.decode(state);
           // pp('after',state.state);
-          dataTable.setViewState(state.state);
-          useSimpleFilter(state.usingSimpleFilter, state.criteria);
-          advancedFilter.setCriteria(state.advCriteria);
-          dataTable.filterData(state.advCriteria);
+          pp('setting table state: ' ,  state);
+          if (state) {
+              // state = isc.JSON.decode(state);
+              dataTable.setViewState(state.grid);
+              useSimpleFilter(state.usingSimpleFilter, state.criteria);
+              advancedFilter.setCriteria(state.advCriteria);
+              dataTable.filterData(state.advCriteria);
+              tabSet.selectTab(state.tab);
+              // if (state.editor.height > stack.getHeight() - 26)
+              //     dataTable.setHeight(stack.getHeight() - 26);
+              // else dataTable.setHeight(state.editor.height);
+              if (state.isExpanded) stack.expandSection('Editor');
+              else stack.collapseSection('Editor');
+              if (state.hidden) stack.hideSection('Editor');
+              else stack.showSection('Editor');
+          }
+         // else tableViewStateChanged();
           pp('****************finished setting table state');
       }
       // API.put = setTableState;
@@ -49,8 +78,9 @@ define
       //   leaf.onModified();}
       
       //called when table's view is modified
-      function tableViewStateChanged(){
-          console.log('**************table changed');
+      function tableViewStateChanged(origin){
+          console.log('**************table changed: ' + origin);
+          
           // if (display.init) {
           // 	console.log('setting init to false');
           // 	display.init = false;
@@ -59,19 +89,21 @@ define
           // console.log('modified');
           // storeTableViewState();
           //let our observer know and give him the new state
-          observer(getTableState());
+          if (observer) observer();
+          // modified = true;
       }
       
       //onViewChange we call when the state of this table changes
       //set by viewTree
       API.setObserver = function (f) {
-          // console.log('setobserver', f);
+          console.log('setobserver', f);
           observer = f;
       };
       
       //called from viewTree when a leaf is double clicked
       API.notify = function (newState) {
           pp('**************setting table to new state');
+          //to prevent the ext table from producing errors
           setTableState(newState);
           // setTableState(leaf.viewState);
       };
@@ -80,7 +112,7 @@ define
       //----------------@TABLE----------------------------
       var dataTable = isc.ListGrid.create(
           {   
-	      // ID: "dataTable",
+	      ID: "dataTable",
 	      dataSource: pouchDS,
 	      // useAllDataSourceFields:true,
 	      //looks
@@ -101,14 +133,14 @@ define
 	      showFilterEditor:true,
 	      filterOnKeypress: true,
 	      allowFilterExpressions: true,
-	      viewStateChanged: tableViewStateChanged,
+	      viewStateChanged: function() { tableViewStateChanged('viewStateChanged') },
 	      // 	  showEmptyMessage: true,
 	      // emptyMessage: "<br>Click the <b>Set data</b> button to populate this grid.",
 	      // cellContextClick:"return itemListMenu.showContextMenu()",
 	      // Function to update details based on selection
 	      filterEditorSubmit: function() {
 	          console.log('modified filter');
-                  tableViewStateChanged();
+                  tableViewStateChanged('filterEditorSubmit');
 	          // storeTableViewState();
 	      },
 	      updateDetails : function () {
@@ -217,7 +249,7 @@ define
 	  click : function () {
 	      savedAdvCriteria = advancedFilter.getCriteria(); 
 	      dataTable.filterData(savedAdvCriteria);
-              tableViewStateChanged();
+              tableViewStateChanged('applyAdvFilter');
 	      // storeTableViewState();
 	      }
       });
@@ -241,14 +273,16 @@ define
 	          height: 20,
 	          width:50
 	          ,iconClick: function() {
-	              usingSimpleFilter = (usingSimpleFilter ^ true) ? true : false;
+                      if (usingSimpleFilter) usingSimpleFilter = false;
+                      else usingSimpleFilter = true;
+	              // usingSimpleFilter = (usingSimpleFilter ^ true) ? true : false;
 	              useSimpleFilter(usingSimpleFilter, null);
 	              dataTable.filterData(savedAdvCriteria);
 	              if (usingSimpleFilter) dataTable.filterData(savedCriteria);
 	              // if (!usingSimpleFilter) {
 	              // clearSimpleFilterButton.click();
 	              // }
-                      tableViewStateChanged();
+                      tableViewStateChanged('simpleFilterToggle');
 	              // storeTableViewState();
 	              
 	          }
@@ -284,9 +318,15 @@ define
       //------------------@TABSET-------------------
       var tabSet = isc.TabSet.
           create({
-	      // ID: "tabSet",
-	      tabBarPosition: "top"
-	      ,height:'60%'
+	      ID: "tabSet"
+              ,tabSelected: function() {
+                  tableViewStateChanged('tabSelected');
+              }
+              ,resized: function() {
+                  tableViewStateChanged('tabSetResized');
+              }
+	      ,tabBarPosition: "top"
+	      ,height:'30%'
 	      ,selectedTab: 1,
 	      tabs: [
 		  {title: "Details",
@@ -298,10 +338,35 @@ define
 	      ]
 	  });
       
+      
+      var stack = isc.SectionStack.
+          create({ 
+              ID: 'stack',
+	      visibilityMode:"multiple",
+	      animateSections:true
+              // ,sectionHeaderClick: function() {
+              //     console.log('sectionHeaderClick');
+              // }
+              ,onSectionHeaderClick :function() {
+                  if (stack.sectionIsExpanded('Editor')) 
+                      stack.collapseSection('Editor');
+                  else stack.expandSection('Editor');
+                  tableViewStateChanged('sectionHeaderClick');
+                  return false; }
+              // ,showExpandControls : false
+	      ,sections:[
+		  {ID: 'grid', name:'Table', showHeader:false, false: true, title:'Data', items:[dataTable]}
+		  // ,{name: 'calendar', title:"Calendar", expanded:true, hidden: false,items:[shiftCalendar]}
+		 ,{ID: 'g2', name: 'Editor', title:"Edit", expanded:true,  hidden: false, items:[tabSet]}
+	      ]
+	  });
+      //need to do this, the sectionstack seems to show the first section regardless of its hidden prop.
+      // rightSideLayout.hideSection('Table');
+      
       //------------------@API----------------------------- 
       //for use in layout to show these components
-      API.grid = dataTable;
-      API.editor = tabSet;
+      API.grid = stack;
+      // API.editor = tabSet;
       return API;
       // return {
       //   editor: tabSet,

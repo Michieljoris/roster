@@ -21,10 +21,10 @@ define
       group: 'people',
       login: 'guest',
       autoLogin: true,
-      password:'guest',
-      permissions: {
+      password:'guest'
+      // ,permissions: {
 	
-      }
+      // }
       // ,viewTreeStateDocId: 'defaultViewTreeStateDoc'
     };
     
@@ -80,7 +80,7 @@ define
     
     function setUser(user) {
       roster.user = user;
-      roster.permissions = user.permissions;
+      // roster.permissions = user.permissions;
     }
     
     roster = {

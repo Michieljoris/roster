@@ -83,7 +83,7 @@ define
 	      ,sections:[
 		  {name:'Table', showHeader:false, hidden: true, title:'Data', items:[table.grid]}
 		  // ,{name: 'calendar', title:"Calendar", expanded:true, hidden: false,items:[shiftCalendar]}
-		  ,{name: 'TableEditor', title:"Edit", expanded:true,  hidden: true, items:[table.editor]}
+		  // ,{name: 'TableEditor', title:"Edit", expanded:true,  hidden: true, items:[table.editor]}
 	      ]
 	  });
       //need to do this, the sectionstack seems to show the first section regardless of its hidden prop.
