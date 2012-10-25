@@ -8,14 +8,13 @@ define
   factory: function(roster, table, utils) {
       //with this table can notify us when it has changed and give us the
       //new state so that we can store it in the tree
-      table.setObserver(viewStateChanged); 
-      
+      table.setObserver(viewStateChanged);     
+      var views = {
+          'Table':table
+      };
       var show, //to be set by layout so we can show/hide views in the layout
-          saveOnChange = false,
-          modified, //so we know whether to let the user navigate away or not
-          leafShowing = { view: '' },
-          ignoreChangeState,
-          originalStateOfView,
+          modified, //whether the ui has changed. This
+          leafShowing = {},
           autoSaveInterval = 2;
       
       //--------------------@HANDLING STATE----------------------------- 
@@ -32,7 +31,12 @@ define
 	      if (selRecord && !selRecord.isFolder) { 
 	          viewTree.openLeaf(selRecord);
 	      }
+              //not much use because there will be state change
+              //callbacks from smartclient to come after this
 	      setModified(false);
+              //so set a interval time to see if the state is really
+              //different from the stored state and if so setModified to true
+              // window.setInterval(checkState, 2000);
 	      pp('finished changing tree state');
               //do an autosave every minute..
               // window.setInterval(autoSave, autoSaveInterval * 60000);
@@ -40,8 +44,13 @@ define
           
       } 
       
-      //reads state of tree and returns a JSON string
-      function getStateJSON() {
+      function checkState() {
+          // console.log("hello");
+          setModified(!isEqual(table.getState(), leafShowing.viewState));
+      }
+      
+      //reads state of tree
+      function getTreeState() {
           var tree = viewTree.getData().getAllNodes();
           //isc.JSON.encode(
           return { width: viewTree.getWidth(),
@@ -61,155 +70,62 @@ define
       }
       
       function setModified(bool) {
-          console.log('modified =' + bool);
+          // console.log('modified =' + bool);
           modified = bool;
-          if (modified) saveButton.show(true);// saveButton.setTitle('! modified');
-          else {
-              saveButton.hide(true);// saveButton.setTitle('');
-          }                
-          
-          
+          if (modified) saveButton.show(true);
+          else {saveButton.hide(true);}                
       }
       
       //gets called by currently showing views when their state changes
       //should be set to the observer of any view implemented
       function viewStateChanged() {
-          // if (ignoreChangeState) {
-          //     ignoreChangeState = false;
-          //     pp('ignoring this callback');
-          //     return;
-          // }
-          //store state in leaf currently selected leaf
-          // pp('viewStateChanged: assigning ', state , 'to', leafShowing);  
-          // leafShowing.viewState = state;
-          // console.log('************viewstateschanged', state);
-          // pp(leafShowing);
-          // leafShowing.modified = true;
-          // treeStateChanged();
+          console.log('************viewstateschanged');
+          setModified(true);
       }
       
       //this function gets called everytime a change in the viewtree occurs
       function treeStateChanged(origin) {
           console.log('******************tree changed: ' +  origin);
           setModified(true);
-          // tree.$27m.forEach(function(l) {
-          //     pp(l.name);
-              
-          //     // pp(l.viewState.grid);
-          //     if (l && l.viewState && l.viewState.grid)
-          //         var temp = isc.JSON.decode( l.viewState.grid);
-          //     pp(temp);
-          //     if (l && l.viewState && l.viewState.editor)
-          //         pp(l.viewState.editor);
-          // });
-          // pp(leafShowing);
-          // if (!modified) {
-          //     setModified(true);
-          //     pp('setting onbeforeunload..');
-          //     window.onbeforeunload= 
-	  //         function() { 
-          //             console.log(table.getState());
-          //             console.log(leafShowing.viewTreeState);
-                      
-	  //             return 'Changes have been made. Leaving will discard these changes.';
-          //         };}
-          if (saveOnChange) saveTreeToDb();
+          // if (saveOnChange) saveTreeToDb();
       }
-      var confirmButton = isc.Button.create({
-          title: "Ask",
-          click : function () {
-          }
-      });
       
       function openLeaf(leaf) {
           pp('**************************---------------openLeaf');
-          function openView(view) {
-              
-              // if (!isEqual(table.getState(), leafShowing.viewState) || modified) {
-                 leafShowing.viewState = table.getState(); 
-                 // saveTreeToDb();
-              // }
-              switch (view) { 
-                case 'Table': 
-                  //if viewState is set , then there will be a callback
-                  //notification for a changed stated of the the view. just
-                  //ignore this callback.
-                  // if (leaf.viewState) ignoreChangeState = true;
-	          table.notify(leaf.viewState);
-	          if (leafShowing.view !== 'Table') {
-	              show(leafShowing.view, false);
-	              show('Table', true);
-	              //TODO depends onp viewstate whether to show editor..
-	              // show('TableEditor', true);
-	          }
-                  // leaf.viewState = leaf.viewState || table.getState();
-                  // console.log(leaf);
-	          break; 
-	      
-              default: 
-	          console.log(node.view + ' not yet implemented'); 
-	          return; 	
-              } 
-              leafShowing = leaf;
-              
-              pp('finished opening leaf');
-          }
-          
-          var dialog = isc.Dialog.create({
-              message : "Keep changes?",
-              icon:"[SKIN]ask.png",
-              isModal: true,
-              buttons : [
-                  isc.Button.create({ title:"Save" }),
-                  isc.Button.create({ title:"Discard" })
-              ],
-              buttonClick : function (button, index) {
-                  this.hide();
-                  // leafShowing.modified = false;
-                  console.log(button.title);
-                  if (button.title === 'Save') {
-                      saveTreeToDb(
-                          function() {
-                              openView(leaf.view);
-                          }  );
-                  }   
-                  else {
-                      leafShowing.viewState = originalStateOfView; 
-                      pp(originalStateOfView);
-                      openView(leaf.view);
-                     
-                  } 
-              }
-          });
-              
           //opening same leaf, do nothing
           if (leaf === leafShowing) return;
-          //navigating away, just save the viewstate 
-          // if (leafShowing.modified){
-          openView(leaf.view);
-          // saveTreeToDb(
-          //     function() {
-          //         leafShowing.modified = false;
-          //         //     // openView(leaf.view);
-          //         //     // leafShowing.modified = false;
-          //     }
-          // );
-          // dialog.show();
-          // if (value) {
-          //     saveTreeToDb();
-          // }
-          // else {
-          //     leafShowing.modified = false;
-          // }
-          // }
-          // else openView(leaf.view);
+          
+          //save any changes that might have occured in the leaf
+          leafShowing.viewState = table.getState(); 
+          //we're changing views, so set modified flag
+          setModified(true);
+          views[leaf.view].notify(leaf.viewState);
+          //show the new view
+          // switch (leaf.view) { 
+          //   case 'Table': 
+	  //     table.notify(leaf.viewState);
+	  //     break; 
+	      
+          // default: 
+	  //     console.log(leaf.view + ' not yet implemented'); 
+	  //     return; 	
+          // } 
+	  if (leafShowing.view !== leaf.view) {
+	      show(leafShowing.view, false);
+	      show(leaf.view, true);
+	  }
+          //set a pointer to the leaf that's now showing
+          leafShowing = leaf;
+              
+          pp('finished opening leaf');
+          
       }
       
       var autoSaveState= { id: 'autosave' };
       function autoSave(callback) {
           if (!modified) return; 
           // if (!autoSaved) return;
-          autoSaveState.state = getStateJSON();
+          autoSaveState.state = getTreeState();
           // if (autoSaveState.time )
           autoSaveState.time = isc.timeStamp();
           roster.db.put(autoSaveState, function(err, response) {
@@ -227,7 +143,7 @@ define
       }
       
       function saveTreeToDb(callback) {
-          roster.user.viewTreeState = isc.JSON.encode(getStateJSON());
+          roster.user.viewTreeState = isc.JSON.encode(getTreeState());
           console.log('saving tree');
           roster.db.put(roster.user, function(err, response) {
               if (err) {
@@ -520,6 +436,8 @@ define
 		          ]
 	  });
       function isEqual(a,b) {
+          if (!a && !b) return true;
+          if (!a || !b) return false;
           for (p in a) {
               var same = true;
               if (typeof a[p] === 'object') same = isEqual(a[p], b[p]);
@@ -530,6 +448,7 @@ define
               
               if (!same){
                   console.log(p);
+                  console.log(a, b);
                 return false;  
               } 
           };
@@ -538,20 +457,19 @@ define
       
       window.onbeforeunload= 
 	  function() { 
-              // console.log('in beforeunload');
-              // console.log(table.getState());
-              pp('current state', table.getState());
-              pp('original state', leafShowing.viewState);
-              pp(isEqual(table.getState(), leafShowing.viewState));                   
+              // pp('current state', table.getState());
+              // pp('original state', leafShowing.viewState);
+              // pp(isEqual(table.getState(), leafShowing.viewState));                   
               
               if (isEqual(table.getState(), leafShowing.viewState)) {
                   if (!modified) return null;
-                  else return 'Leaving will discard changes made to the organising tree';
+                  else return 'Leaving will discard changes made to the organising tree.\\nSelect "Stay on this page" and then click the icon next to the login name to save the changes.';
               }
               leafShowing.viewState = table.getState();
               setModified(true);
               // saveTreeToDb();
-	      return 'Leaving will discard changes made to a view.';
+              return 'Leaving will discard changes made to a view.\n\nSelect "Stay on this page" and then click the icon next to the login name to save the changes.';
+	      // return 'Leaving will discard changes made to a view.\nStay to save the changes.';
           };
       //-----------------------@API-----------------------
       //sets the show function so that viewTree has a means to show/hide 
