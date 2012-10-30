@@ -18,7 +18,7 @@ define
     var guestUser = {
         _id:'guest',
         // name: 'super-admin',
-        group: 'people',
+        group: 'person',
         login: 'guest',
         autoLogin: true,
         password:'guest',
@@ -33,7 +33,7 @@ define
         //shift 
         ,{name:"endDate", type: "datetime", group: 'shift'}
         ,{name:"startDate", type: "datetime", group: 'shift'}
-        ,{name:"person", type: 'ref', group: 'shift'} //ref to person obj ,,,change to person..
+        ,{name:"person", type: 'ref', group: 'shift', foreignKey: '_id'} //ref to person obj ,,,change to person..
         ,{name:"location", group: 'shift'} //ref to loc object,,, change to location
         ,{name:"notes", group: 'shift'}//,,, change to notes
         ,{name:"ad", type: 'boolean', group: 'shift'} //allday
@@ -158,7 +158,8 @@ define
         tagArray: isc.shallowClone(tagArray),
         tags: tags,
         guestUser: guestUser,
-        dbname: 'idb://rosterdb'
+        // dbname: 'http://127.0.0.1:2020/roster'
+        dbname: 'idb://roster'
     };
     return roster; 
 }});

@@ -58,7 +58,7 @@ define(
       //@startup logic 
       Pouch(
 	roster.dbname, function(err, db) {
-	  if (err) { console.log("Error opening database", dbname, 
+	  if (err) { console.log("Error opening database", roster.dbname, 
 				 "err:", err.error, err.reason, " db:", db);
 		     return; }
 	  

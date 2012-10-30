@@ -106,16 +106,17 @@ define
           var fieldsCloner = roster.getTags(state.groups);
           //select out the non-relevant tags for the table
           dataTable.setFields(fieldsCloner());
-          //and alsow for the advanced filter
+          //and also for the advanced filter
           filterFields.setCacheData(fieldsCloner());
-          // console.log(fieldsCloner());
           //reset it so the fields take effect
           //this means a change of groups will reset the filter
           advancedFilter.setCriteria(); 
           //we need to set the relevant editor fields
           editForm.setGroupFields(fieldsCloner());
           //we need to filter the group...
-          groupFilter = makeGroupFilter(state.group);
+          groupFilter = makeGroupFilter();
+          console.log('GROUPFILTER', groupFilter);
+          dataTable.filterData(groupFilter);
          
       } 
       
@@ -303,6 +304,7 @@ define
               criteria: [],
               operator: 'or'
           };
+          // console.log('making filter with', state.groups);
           state.groups.forEach(function(g){
               filter.criteria.push({
                   fieldName: 'group',
@@ -310,6 +312,7 @@ define
                   value: g
               }); 
           });
+          return filter;
       } 
       
       var objectGroupList = isc.ListGrid.create({

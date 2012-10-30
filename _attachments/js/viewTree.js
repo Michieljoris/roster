@@ -113,8 +113,9 @@ define
 	          show(leafShowing.view, false);
 	      }
           } 
-          else show(leaf.view, true);
-          
+          else {
+           show(leaf.view, true);   
+          }
           views[leaf.view].notify(leaf.viewState);
           //set a pointer to the leaf that's now showing
           leafShowing = leaf;
@@ -209,6 +210,7 @@ define
       
       
       function newView(view) {
+       console.log('newView')   ;
           var selRecord = viewTree.getSelectedRecord();
           // var state = selRecord.viewState;
           var parent; 

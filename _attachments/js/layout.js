@@ -81,7 +81,7 @@ define
 	      animateSections:true
 	      // sections:view.datatable
 	      ,sections:[
-		  {name:'Table', showHeader:false, hidden: true, title:'Data', items:[table.grid]}
+		  {name:'Table', showHeader:false, hidden: false, title:'Data', items:[table.grid]}
 		  // ,{name: 'calendar', title:"Calendar", expanded:true, hidden: false,items:[shiftCalendar]}
 		  // ,{name: 'TableEditor', title:"Edit", expanded:true,  hidden: true, items:[table.editor]}
 	      ]
@@ -113,6 +113,8 @@ define
       };
       //with this viewTree can show/hide sections in this layout
       viewTree.setShow(function(cmp, bool) {
+          
+       console.log('show')   ;
 	  if (bool) rightSideLayout.showSection(cmp);
 	  else rightSideLayout.hideSection(cmp);		       
       });

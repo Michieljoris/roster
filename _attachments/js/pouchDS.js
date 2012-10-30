@@ -41,6 +41,7 @@ define
       function fetch(view, dsResponse, requestId ) {
           doPouch(function(db) {
     	      db.query( {map:view.map},{reduce: view.reduce},
+    	      // db.query( 'pouch/alldocs',
     			function (err,response){
 			    if (err) console.log("Error from pouch query in fetch:", err,
 						 "resp:", response);
