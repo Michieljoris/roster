@@ -29,7 +29,7 @@ define
         {name:"_id", primaryKey:true}
         ,{name:"_rev"}
       
-        ,{name:"group"} //shift, location, person, role
+        ,{name:"group", type: 'text' } //shift, location, person, role
         //shift 
         ,{name:"endDate", type: "datetime", group: 'shift'}
         ,{name:"startDate", type: "datetime", group: 'shift'}
@@ -96,15 +96,16 @@ define
     
     tagArray.forEach(
         function(t) {
+            t.title = isc.DataSource.getAutoTitle(t.name); 
 	    tags[t.name] = t;	
             if (t.group) {
                 if (typeof t.group === 'string') {
                     addTagToGroup(t, t.group); 
                 } 
                 else if (isc.isA.Array(t.group)) {
-                 t.group.forEach(function(g) {
-                    addTagToGroup(t, g); 
-                 });  
+                    t.group.forEach(function(g) {
+                        addTagToGroup(t, g); 
+                    });  
                 }
                 else console.log('ERROR: group prop is neither a string or array');
             }
@@ -121,8 +122,11 @@ define
     
     
     function getTags(groups) {
-        var result = []; 
-        console.log(groups);
+       var result = []; 
+        // console.log(groups);
+        if (groups.length > 1) {
+            result.push({name:'group', type:'text', title:'Group'});
+        }
         tagArray.forEach(function(t){
             if (t.group) {
                 if (typeof t.group === 'string') {
@@ -134,7 +138,10 @@ define
                  });  
                 }
         }});
-        return result;
+        return function () {
+            return isc.shallowClone(result);
+        };
+        // return result;
     }
     
     roster = {
@@ -144,11 +151,11 @@ define
             for (var e in tagGroups) groups.push(e);
             return groups;
         })(),
-        tagGroups: tagGroups,
+        // tagGroups: tagGroups,
         getTags: getTags,
         setDb: setDb,
         setUser: setUser,
-        tagArray: tagArray,
+        tagArray: isc.shallowClone(tagArray),
         tags: tags,
         guestUser: guestUser,
         dbname: 'idb://rosterdb'

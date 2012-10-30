@@ -14,8 +14,8 @@ define
       };
       var show, //to be set by layout so we can show/hide views in the layout
           modified, //whether the ui has changed. This
-          leafShowing = {},
-          autoSaveInterval = 2;
+          leafShowing = null;
+          // autoSaveInterval = 2;
       
       //--------------------@HANDLING STATE----------------------------- 
       function notify(newState) {
@@ -36,7 +36,12 @@ define
 	      setModified(false);
               //so set a interval time to see if the state is really
               //different from the stored state and if so setModified to true
-              // window.setInterval(checkState, 2000);
+              window.setTimeout(checkState, 2000);
+              //now any changes made by user will be stored in the
+              //leaf and tree when opening up another leaf, when the
+              //user saves the tree to the db and when the user
+              //navigates away and he gets a chance to mend his ways
+              //and to save before leaving.
 	      pp('finished changing tree state');
               //do an autosave every minute..
               // window.setInterval(autoSave, autoSaveInterval * 60000);
@@ -45,7 +50,7 @@ define
       } 
       
       function checkState() {
-          // console.log("hello");
+          console.log("Checking state");
           setModified(!isEqual(table.getState(), leafShowing.viewState));
       }
       
@@ -56,6 +61,7 @@ define
           return { width: viewTree.getWidth(),
                    time: isc.timeStamp(),
                    selectedPaths: viewTree.getSelectedPaths(),
+                   //only store data needed to rebuild the tree 
                    state: tree.map(function(n) {return {
 	               view: n.view,
 	               id: n.id,
@@ -96,53 +102,52 @@ define
           if (leaf === leafShowing) return;
           
           //save any changes that might have occured in the leaf
-          leafShowing.viewState = table.getState(); 
-          //we're changing views, so set modified flag
-          setModified(true);
+          //for a new leaf...
+          if (leafShowing) {
+          // console.log('leafShowing name, groups and gridstate',leafShowing.name,
+          //             leafShowing.viewState.groups, leafShowing.viewState.grid); 
+              leafShowing.viewState = views[leafShowing.view].getState(); 
+          // console.log('after: name, groups and gridstate',leafShowing.name,
+          //             leafShowing.viewState.groups, leafShowing.viewState.grid); 
+	      if (leafShowing.view !== leaf.view) {
+	          show(leafShowing.view, false);
+	      }
+          } 
+          else show(leaf.view, true);
+          
           views[leaf.view].notify(leaf.viewState);
-          //show the new view
-          // switch (leaf.view) { 
-          //   case 'Table': 
-	  //     table.notify(leaf.viewState);
-	  //     break; 
-	      
-          // default: 
-	  //     console.log(leaf.view + ' not yet implemented'); 
-	  //     return; 	
-          // } 
-	  if (leafShowing.view !== leaf.view) {
-	      show(leafShowing.view, false);
-	      show(leaf.view, true);
-	  }
           //set a pointer to the leaf that's now showing
           leafShowing = leaf;
+          //we're changing views, so set modified flag
+          setModified(true);
               
           pp('finished opening leaf');
           
       }
       
-      var autoSaveState= { id: 'autosave' };
-      function autoSave(callback) {
-          if (!modified) return; 
-          // if (!autoSaved) return;
-          autoSaveState.state = getTreeState();
-          // if (autoSaveState.time )
-          autoSaveState.time = isc.timeStamp();
-          roster.db.put(autoSaveState, function(err, response) {
-              if (err) {
-	          console.log('ERRROR: Could not save changed state of the view tree.' 
-		              + err.error + ' ' + err.reason);
-                  isc.warn('ERROR: Could not save the state of the ui..');
-              }
-              else {
-                  console.log('autosaved state');
-	          autoSaveState._rev = response.rev;
-              }
-              if (callback) callback();
-          });
-      }
+      // var autoSaveState= { id: 'autosave' };
+      // function autoSave(callback) {
+      //     if (!modified) return; 
+      //     // if (!autoSaved) return;
+      //     autoSaveState.state = getTreeState();
+      //     // if (autoSaveState.time )
+      //     autoSaveState.time = isc.timeStamp();
+      //     roster.db.put(autoSaveState, function(err, response) {
+      //         if (err) {
+      //             console.log('ERRROR: Could not save changed state of the view tree.' 
+      //   	              + err.error + ' ' + err.reason);
+      //             isc.warn('ERROR: Could not save the state of the ui..');
+      //         }
+      //         else {
+      //             console.log('autosaved state');
+      //             autoSaveState._rev = response.rev;
+      //         }
+      //         if (callback) callback();
+      //     });
+      // }
       
       function saveTreeToDb(callback) {
+          leafShowing.viewState = views[leafShowing.view].getState();
           roster.user.viewTreeState = isc.JSON.encode(getTreeState());
           console.log('saving tree');
           roster.db.put(roster.user, function(err, response) {
@@ -178,8 +183,6 @@ define
       // }
       
       //------------------@manipulate tree---------------------
-      
-      // var temp = '"{   "state":"({selected:\"[{_id:\\\"guest\\\"}]\",field:\"[{name:\\\"_rev\\\",width:null},{name:\\\"person\\\",width:null},{name:\\\"startDate\\\",width:100},{name:\\\"endDate\\\",width:100},{name:\\\"group\\\",width:null},{name:\\\"_id\\\",width:null},{name:\\\"location\\\",width:null}]\",sort:\"({fieldName:\\\"person\\\",sortDir:\\\"ascending\\\",sortSpecifiers:[{property:\\\"person\\\",direction:\\\"ascending\\\"}]})\",hilite:null,group:\"\"})",    "criteria":null,    "advCriteria":null,    "usingSimpleFilter":true}"';
       
       function clone() {
           var selRecord = viewTree.getSelectedRecord();
@@ -220,14 +223,13 @@ define
                                    }, parent);
           
           viewTree.selectRecord(newRecord);
-          viewTree.openFolder(selRecord);
-          pp('---------',leafShowing.viewState);
-          treeStateChanged('newView');
+          //open the parent folder, otherwise we can't see the the new record/view
+          viewTree.openFolder(parent);
+          // pp('In newView: leafShowing.viewState---------',leafShowing.viewState);
           viewTree.openLeaf(newRecord);
-          leafShowing.viewState = table.getState();
-          pp('---------',leafShowing.viewState);
-          
-          // ignoreChangeState = true;
+          // eafShowing.viewState = table.getState();
+          // pp('In newView: table.getState---------',leafShowing.viewState);
+          // treeStateChanged('newView');
       };
       
       function newFolder() {
@@ -403,6 +405,7 @@ define
 
       var viewTree = isc.TreeGrid.
           create({
+              ID: 'treegrid',
 	      contextMenu:rightClickMenu
 	      ,canDragRecordsOut:true,
 	      canAcceptDroppedRecords:true
@@ -447,8 +450,8 @@ define
               }
               
               if (!same){
-                  console.log(p);
-                  console.log(a, b);
+                  // console.log(p);
+                  // console.log(a, b);
                 return false;  
               } 
           };
@@ -460,12 +463,11 @@ define
               // pp('current state', table.getState());
               // pp('original state', leafShowing.viewState);
               // pp(isEqual(table.getState(), leafShowing.viewState));                   
-              
               if (isEqual(table.getState(), leafShowing.viewState)) {
                   if (!modified) return null;
                   else return 'Leaving will discard changes made to the organising tree.\\nSelect "Stay on this page" and then click the icon next to the login name to save the changes.';
               }
-              leafShowing.viewState = table.getState();
+              leafShowing.viewState = views[leafShowing.view].getState();
               setModified(true);
               // saveTreeToDb();
               return 'Leaving will discard changes made to a view.\n\nSelect "Stay on this page" and then click the icon next to the login name to save the changes.';
@@ -477,7 +479,17 @@ define
       viewTree.setShow = function(f) { show = f; };
       //to set viewTree to a new state
       viewTree.notify = notify;
+      viewTree.ls = function() {
+          console.log(leafShowing);
+      };
       //exposes the loginButton, not really part of this component.
       viewTree.loginButton = loginButton;
       return viewTree;
   }});
+
+
+function inf() {
+    var temp = module.viewTree.getData().root.children;
+   console.log(temp[0].name, temp[0].viewState.grid);
+   console.log(temp[1].name, temp[1].viewState.grid);
+}

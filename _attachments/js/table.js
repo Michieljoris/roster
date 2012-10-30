@@ -1,40 +1,27 @@
 define
 ({inject: ['roster', 'pouchDS'],
   factory: function(roster, pouchDS) {
-      var  savedCriteria, savedAdvCriteria, usingSimpleFilter= true, usingAdvFilter;
-      var groups;
+      // var  savedCriteria, savedAdvCriteria, usingSimpleFilter= true, editableAdvFilter = false;
+      // var groups=[];
       var currentHeight= 300;
-      var settings = {}; //TODO put above persistables in settings..
+      var groupFilter;
+      var state; 
+      var defaultState = { height: 300, usingSimpleFilter: true, editableAdvFilter : true
+                           ,groups: ["shift"], isExpanded: true, tab: 1, hidden: false};
       
       var API = {};
       //only one observer...
       var observer;
           
       //--------------------@handling state----------------------------- 
-      function useSimpleFilter(bool, criteria) {
-          if (bool) {
-	      simpleFilterToggle.setIcon('toggleOn.png');
-	      dataTable.setShowFilterEditor(true);
-              console.log('setting simple criteria:', criteria);
-	      dataTable.setFilterEditorCriteria(criteria);
-	      clearSimpleFilterButton.show(true);}
-          else {
-	      simpleFilterToggle.setIcon('toggleOff.png');
-	      savedCriteria = dataTable.getFilterEditorCriteria();
-	      dataTable.clearCriteria();
-	      dataTable.setShowFilterEditor(false);
-	      clearSimpleFilterButton.hide(true);}}
-      
       function getTableState() {
-          var state =  {
+          state =  isc.addProperties(state, {
 	      grid: dataTable.getViewState(),
 	      criteria : dataTable.getFilterEditorCriteria(),
-	      advCriteria: savedAdvCriteria,
-	      usingSimpleFilter: usingSimpleFilter,
-              
-              usingAdvFilter: usingAdvFilter,
-              isObjectGroupListVisible: objectGroupList.isVisible(),
-              groups: isc.JSON.encode(groups),
+	      // advCriteria: state.savedAdvCriteria, // ? savedAdvCriteria : {},
+	      // usingSimpleFilter: state.usingSimpleFilter,
+              // editableAdvFilter: state.editableAdvFilter,
+              // groups: state.groups, //isc.JSON.encode(state.groups),
               
               //editor
               hidden: false,
@@ -45,45 +32,92 @@ define
                   return currentHeight;
               })(),
               isExpanded: stack.sectionIsExpanded('Editor')
-          };
-          return state;
+          });
+          
+          console.log('getTableState', isc.clone(state));
+          // pp(state);
+          return isc.clone(state);
       } 
       
       API.getState = getTableState;
 
-      function setTableState(state) {
-          // pp('setting table state: ' ,  state);
-          if (state) {
-              usingSimpleFilter = state.usingSimpleFilter;
-              usingAdvFilter = state.usingAdvFilter;
-              // isObjectGroupListVisible = state.isObjectGroupListVisible;
-              groups = isc.JSON.decode(state.groups);
-              // console.log(groups);
-              objectGroupList.setSelection(groups);
-              showObjectGroupList(state.isObjectGroupListVisible);
-              objectGroupLabel.setLabel(groups);
-              dataTable.setViewState(state.grid);
+      function setTableState(newstate) {
+          console.log('setTableState:', newstate);
+          
+          state = isc.addProperties(defaultState, isc.clone(newstate));
+          pp(newstate);
+          pp(state);
+          // state.groups = isc.clone(newstate.groups);
+          console.log('what ?setTableState:', state);
+          // console.log(state);
+          // if (!state) state = defaultState;
+          // pp('setting table state: ' ,  state);Login
+          //restoring variables
+          // usingSimpleFilter = state.usingSimpleFilter;
+          // editableAdvFilter = state.editableAdvFilter;
+          // savedCriteria = state.criteria;
+          // savedAdvCriteria = state.advCriteria;
+          
+          //groups
+          // console.log('blablabla', state.groups, typeof state.groups);
+          // state.groups = isc.JSON.decode(state.groups);
+          // console.log(state.groups, typeof state.groups);
+          // console.log(state.groups);
+          if (state.groups.length === 0) state.groups = ['shift'];
+          setGroupingState();
+          objectGroupList.setSelection();
+          // currentHeight = state.height;
+          // var tableState = state.grid;
               
-              savedCriteria = state.criteria;
-              savedAdvCriteria = state.advCriteria;
-              advancedFilter.setCriteria(state.advCriteria);
-              dataTable.filterData(state.advCriteria);
-              tabSet.selectTab(state.tab);
-              useSimpleFilter(usingSimpleFilter, state.criteria);
-              
-              useAdvFilter(usingAdvFilter);
-              dataTable.setHeight(state.height);
-              currentHeight = state.height;
-              if (state.isExpanded) {
-                  stack.expandSection('Editor');   
-                  dataTable.setHeight(currentHeight);
-              }
-              else stack.collapseSection('Editor');
-              if (state.hidden) stack.hideSection('Editor');
-              else stack.showSection('Editor');
+          //layout
+          tabSet.selectTab(state.tab);
+          dataTable.setHeight(state.height);
+          if (state.isExpanded) {
+              stack.expandSection('Editor');   
+              dataTable.setHeight(currentHeight);
           }
+          else stack.collapseSection('Editor');
+          if (state.hidden) stack.hideSection('Editor');
+          else stack.showSection('Editor');
+          
+          //dataTable state
+          dataTable.setViewState(state.grid);
+              
+          //filters
+          advancedFilter.setCriteria(state.savedAdvCriteria);
+          dataTable.filterData(state.savedAdvCriteria);
+          useSimpleFilter(state.usingSimpleFilter, state.savedCriteria);
+          layoutFilters(false); //start in normal mode
+          setAdvFilterVisible(state.editableAdvFilter);
+          
+          setFilterDescription();
+              
           // pp('****************finished setting table state');
       }
+      
+      
+      function setGroupingState() {
+          // set the label
+          pp('setGroupingState', state);
+          objectGroupLabel.setLabel(state.groups);
+              
+          //apply group selection by ..
+          //get the fields relevant to the group(s)
+          var fieldsCloner = roster.getTags(state.groups);
+          //select out the non-relevant tags for the table
+          dataTable.setFields(fieldsCloner());
+          //and alsow for the advanced filter
+          filterFields.setCacheData(fieldsCloner());
+          // console.log(fieldsCloner());
+          //reset it so the fields take effect
+          //this means a change of groups will reset the filter
+          advancedFilter.setCriteria(); 
+          //we need to set the relevant editor fields
+          editForm.setGroupFields(fieldsCloner());
+          //we need to filter the group...
+          groupFilter = makeGroupFilter(state.group);
+         
+      } 
       
       //called when table's view is modified
       function tableViewStateChanged(origin){
@@ -130,6 +164,19 @@ define
 	      filterOnKeypress: true,
 	      allowFilterExpressions: true,
               showDetailFields: false, 
+              filterButtonPrompt: 'Clear filter',
+              filterButtonProperties: {
+	          click : function () {
+	              dataTable.clearCriteria();
+	              dataTable.filterData(state.savedAdvCriteria);
+                      tableViewStateChanged('clearSimpleFilter');
+	          },
+                  icon:'clear.png',
+                  showRollOverIcon: false,
+                  showDownIcon: true
+              },
+              // headerContextMenu: true,
+              // clearFilterText: 'Clear inline filter',
 	      viewStateChanged: function() { tableViewStateChanged('viewStateChanged') },
 	      // 	  showEmptyMessage: true,
 	      // emptyMessage: "<br>Click the <b>Set data</b> button to populate this grid.",
@@ -157,7 +204,7 @@ define
                   // }
 	          // return 0;
 	      }
-              ,fields: roster.tagGroups.role
+              // ,fields: roster.tagGroups.role
               // ,fields: [         
               //     {name:"_rev"}
               //     ,{name:"startDate", type: "datetime", group: ['shift']}
@@ -171,37 +218,29 @@ define
       
       //---------------@EDITFORM----------------------------
       var editForm = isc.DynamicForm.create(
-          {// ID:"editForm",
-	      dataSource:pouchDS,
-	      useAllDataSourceFields:true
-	      // ,overflow:'auto'	
-	      ,titleOrientation: 'top'
-	      ,fields:[
-	          // {name:"_id"},
-	          // {name:"_rev"},
-	          // {name:"text"},
-	          {name:"editnew", type:"button", width:130,
-	           title:"Create New Item", click: function() { dataTable.startEditingNew(); }},
-	          // title:"Create New Item", click:"dataTable.startEditingNew()"},
-	          {name:"save", type:"button", width: 130,
-	           title:"Save Form Data", click: function() { saveFormData(editForm); }},
-	          // title:"Save Form Data", click:'saveFormData(editForm)'},
-	          {name:"delete", type:"button",
-	           width:130, title:"Delete Selected Item", 
-	           click:function() { dataTable.removeSelectedData(); }}
-	          // {name:"savebtn", type:"button",
-	          //  width:100, title:"Save Item", click:"editForm.saveData()"}
-	          // ,{name:"updatebtn", type:"button",
-	          //  width:100, title:"Update Item", click:"editForm.saveData()"}
-	          // ,{name:"deletebtn", type:"button", 
-	          //  width:100, title:"Delete Item", click:"dataTable.removeSelectedData();"}
-	      ],
-	      width:650,
-	      numCols:3,
-	      // colWidths:[30,150,30,150],
-	      margin:3,
-	      cellPadding:5,
-	      autoFocus:false
+          { ID:"editForm",
+	    dataSource:pouchDS
+	    // ,useAllDataSourceFields:true
+	    // ,overflow:'auto'	
+	    ,titleOrientation: 'top'
+            ,setGroupFields: function(fields) {
+                this.setFields(this.fields.concat(fields));   
+            }
+	    ,fields:[
+	        {name:"editnew", type:"button", width:130,
+	         title:"Create New Item", click: function() { dataTable.startEditingNew(); }},
+	        {name:"save", type:"button", width: 130,
+	         title:"Save Form Data", click: function() { saveFormData(editForm); }},
+	        {name:"delete", type:"button",
+	         width:130, title:"Delete Selected Item", 
+	         click:function() { dataTable.removeSelectedData(); }}
+	    ],
+	    width:650,
+	    numCols:3,
+	    // colWidths:[30,150,30,150],
+	    margin:3,
+	    cellPadding:5,
+	    autoFocus:false
           });
       
       function saveFormData(form) {
@@ -210,55 +249,182 @@ define
           var newValues = form.getValues();
           pouchDS.updateData(newValues, function(resp, data, req) 
 			     { editForm.setValues(data); console.log(resp,data,req);});
-          
-
       }
       
-      // var filterFields = [
-      //     { name: 'group', type: 'string'}
-      // ];
+      //--------------------@EDIT FILTER SETUP------------------ 
+      var editButton = isc.Button.create({
+	  title:"Edit",
+	  width:50,
+	  height:20,
+	  click : function () {
+              // var isObjectGroupListVisible = objectGroupList.isVisible(); //isObjectGroupListVisible ? false : true;
+              //TODO filter out the right groups...
+              layoutFilters(!objectGroupList.isVisible());
+              
+              
+	  }
+      });
       
-      // isc.DataSource.create({
-      //     ID: 'filterFieldsDS',
-      //     fields: filterFields,
-      //     clientOnly:true
-      // });
-      // var testData =[];
-
-      // for (var i=0; i<1; i++) {
-      //     testData[i] = { name: "field"+i, title: "Field "+i, type: "text" };
-      // }
-
-      // isc.DataSource.create({
-      //     ID: "bigFilterDS",
-      //     clientOnly: true,
-      //     fields: [
-      //         { name: "name", type: "text" },
-      //         { name: "title", type: "text" },
-      //         { name: "type", type: "text" }
-      //     ],
-      //     testData: [{name:'group', title: 'group', type: 'text'}]
-      // });
+      function layoutFilters(bool) { //
+          // console.log('editfilterSetup');
+          if (bool) { //more mode
+              //reset it in case user has been meddling with it and has not clicked apply
+              objectGroupList.setSelection();
+              groupSelectWarnLabel.hide(true);
+              applyGroupSelectionButton.setDisabled(true);
+              selectGroupsRow.show(true);
+              advFilterToggle.show(true);
+              simpleFilterToggle.show(true);
+              editButton.setTitle('Less'); }
+          else { //less mode
+              selectGroupsRow.hide(true);
+              //hide the toggles 
+              advFilterToggle.hide(true);
+              simpleFilterToggle.hide(true);
+              //set the button text back to more 
+              editButton.setTitle('More');
+          }
+      }
       
-      var test2 = isc.DataSource.create({
-          ID: "test2",
+      
+      //-------------@OBJECTGROUPS------------------------------------------------------------------- 
+      var filterFields = isc.DataSource.create({
+          ID: "filterFields",
           clientOnly: true,
           fields: [
               { name: "name", type: "text" },
               { name: "title", type: "text" },
               { name: "type", type: "text" }
-          ],
-          cacheData: [{name:'location', title: 'location', type: 'text'}]
+          ]
       });
       
-      test2.setCacheData( [{name:'bla', title: 'bla', type: 'text'}]);
-      //-----------------------@FILTER BUILDER--------------------------------------
+      function makeGroupFilter() {
+          var filter = {
+              criteria: [],
+              operator: 'or'
+          };
+          state.groups.forEach(function(g){
+              filter.criteria.push({
+                  fieldName: 'group',
+                  operator: 'equals',
+                  value: g
+              }); 
+          });
+      } 
+      
+      var objectGroupList = isc.ListGrid.create({
+          ID: "objectGroupList",
+          width:100, 
+          alternateRecordStyles:true,
+          autoFitData: 'both',
+	  autoFetchData: true,
+          showHeader:false,
+          showHeaderContextMenu:false,
+          showHeaderMenuButton:false,
+          selectionAppearance:"checkbox"
+          ,fields: [{name: 'group', title: 'type'}]
+          ,data: (function() {
+              return roster.groups.map(function(g) {
+                  return { group : g };
+              });})()
+          ,selectionChanged: function(rec, bool) {
+              
+              groupSelectWarnLabel.show(true);
+              applyGroupSelectionButton.setDisabled(false);
+              // console.log('----------selection changed----------');
+              // var sel = objectGroupList.getSelection();
+              //make sure at least one group is selected, by not
+              //letting the user deselect the last one.
+              // if (sel.length === 0) {
+              //     objectGroupList.selectRecord(rec); 
+              //     sel = objectGroupList.getSelection();
+              // }
+          }
+          ,setSelection: function() {
+              // console.log('----------setting group selection----------');
+              objectGroupList.deselectAllRecords();  
+              if (state.groups)
+                  objectGroupList.getData().forEach(function(e) {
+                      if (state.groups.contains(e.group)) objectGroupList.selectRecord(e);
+                  });
+          }
+      }); 
+      
+      var applyGroupSelectionButton = isc.IButton.create({
+	  // ID:"clearAdvFilterButton",
+	  title:"Apply",
+	  width:50,
+	  click : function () {
+              var sel = objectGroupList.getSelection();
+              if (sel.length === 0) {
+                  alert('Select at least one group.');
+                  return;   
+              }
+              // make a proper groups array out of the selection
+              state.groups = sel.map(function(g) {
+                  return g.group;
+              });
+              setGroupingState();
+              tableViewStateChanged();
+              
+              groupSelectWarnLabel.hide(true);
+              applyGroupSelectionButton.setDisabled(true);
+	  }
+      });
+      
+      var objectGroupLabel = isc.Label.create(
+          {
+              ID: 'mylabel',
+              width:'100%',
+              setLabel: function() {
+                  // console.log('setting groups label', groups);
+                  var maxGroups = roster.groups.length;
+                  if (state.groups.length === 0) {
+                      contents = 'ERROR: No type selected, this should not happen!!!';}
+                  else if (state.groups.length === roster.groups.length) {
+                      contents = 'Showing all items in database.';
+                  }
+                  else {
+                      var contents = 'This table is limited to showing objects of type ';
+                      // console.error("hello");
+                      pp('lable', state);
+                      contents += state.groups.join(', ') + '.';
+                      var comma = contents.lastIndexOf(',');
+                      if (comma >= 0)
+                          contents = contents.slice(0,comma) + ' and' + contents.slice(comma+1);
+                  }
+                  this.setContents(contents);
+              }
+          }         
+      );
+      
+      
+      var objectGroupLine = isc.HLayout.
+	  create({height: 30, 
+		  members: [objectGroupLabel, 
+			    isc.LayoutSpacer.create({width:'*'}),
+			    editButton]});
+      
+      var groupSelectWarnLabel = isc.Label.create({
+          contents:'Applying this selection will reset the table layout'});
+      
+      var selectGroupsRow = isc.HLayout.
+	  create({height: 30, 
+		  members: [objectGroupList,  
+			    applyGroupSelectionButton,
+			    isc.LayoutSpacer.create({width:20}),
+                            groupSelectWarnLabel
+                           ]});
+      
+      
+      // filterFields.setCacheData( [{name:'bla', title: 'bla', type: 'text'}]);
+      //-----------------------@ADVANCED FILTER--------------------------------------
       var advancedFilter = isc.FilterBuilder.
           create({ ID:"filter"
 	           // ,topOperatorAppearance: "inline"
 	           // ,dataSource:"pouchDS"
                    // ,dataSource: 'filterFieldsDS'
-                   ,fieldDataSource: 'test2'
+                   ,fieldDataSource: 'filterFields'
 	           // ,criteria: { _constructor: "AdvancedCriteria",
 		   //             operator: "and", criteria: [
 		   //                 {fieldName: "group", operator: "iEquals", value: ""}
@@ -270,214 +436,153 @@ define
 		   //               }
 	         });
       
-      
       var clearAdvFilterButton = isc.IButton.create({
 	  // ID:"clearAdvFilterButton",
 	  title:"Reset",
 	  width:50,
-	  click : function () {
-	      advancedFilter.clearCriteria();
-	      filterButton.click();
-	  }
+	      click : function () {
+	          advancedFilter.clearCriteria();
+	          filterButton.click();
+	      }
       });
 
       var filterButton = isc.IButton.create({
 	  // ID:"filterButton",
 	  title:"Filter",
 	  width:50,
-	  click : function () {
-	      savedAdvCriteria = advancedFilter.getCriteria(); 
-	      dataTable.filterData(savedAdvCriteria);
-              tableViewStateChanged('applyAdvFilter');
-	      // storeTableViewState();
-	  }
+	      click : function () {
+              
+	          state.savedAdvCriteria = advancedFilter.getCriteria(); 
+                  console.log(isc.FilterBuilder.getFilterDescription(state.savedAdvCriteria, pouchDS));
+	          dataTable.filterData(state.savedAdvCriteria);
+                  setFilterDescription();
+                  tableViewStateChanged('applyAdvFilter');
+	      }
       });
+      
+      
+      function setFilterDescription() {
+          console.log('setFilterDescription');
+          if (state.savedAdvCriteria) {
+              console.log('setFilterDescription',state.savedAdvCriteria);
+              var filterDescription =
+                  isc.FilterBuilder.getFilterDescription(state.savedAdvCriteria, pouchDS);
+              console.log('setFilterDescription', filterDescription, state.savedAdvCriteria);
+          }
+          if (!filterDescription) filterDescription = 'No filter set';
+          filterLabel.setContents(filterDescription);
+          
+          console.log('filterDescription: '+ filterDescription);
+      };
       
       var advancedFilterButtons = isc.HLayout.
 	  create({height: 30, 
-		  members: [filterButton, 
-			    isc.LayoutSpacer.create({width:'*'}),
-			    clearAdvFilterButton]});
+		      members: [filterButton, 
+			        isc.LayoutSpacer.create({width:'*'}),
+			        clearAdvFilterButton]});
 
 
-      var clearSimpleFilterButton = isc.IButton.create({
-	  // ID:"clearSimpleFilterButton",
-	  title:"Clear inline filter",
-	  // layoutAlign: 'right',
-	  width:150,
-	  hieght:50,
-	  click : function () {
-	      dataTable.clearCriteria();
-	      dataTable.filterData(savedAdvCriteria);
-              tableViewStateChanged('clearSimpleFilter');
-	  }
-      });
-
-      var simpleFilterToggle = 
-          isc.Label.create(
-	      { ID:'simpleFilterToggle',
-	          height: 20,
-	          width:50
-	          ,iconClick: function() {
-                      if (usingSimpleFilter) usingSimpleFilter = false;
-                      else usingSimpleFilter = true;
-	              // usingSimpleFilter = (usingSimpleFilter ^ true) ? true : false;
-	              useSimpleFilter(usingSimpleFilter, null);
-	              dataTable.filterData(savedAdvCriteria);
-	              if (usingSimpleFilter) dataTable.filterData(savedCriteria);
-	              // if (!usingSimpleFilter) {
-	              // clearSimpleFilterButton.click();
-	              // }
-                      tableViewStateChanged('simpleFilterToggle');
-	              // storeTableViewState();
-	              
-	          }
-	          // padding: 10,
-	          ,align: "left",
-	          valign: "center",
-	          wrap: false
-	          ,icon: usingSimpleFilter ? "toggleOn.png" : "toggleOff.png"
-	          // showEdges: true,
-	          // ,contents: "<i>Approved</i> for release"
-	          ,contents: "Simple filter"
-	          
-	      });
-      
-      
-      function useAdvFilter(bool, criteria) {
+      function setAdvFilterVisible(bool) {
+          console.log('setAdvFiltervisible');
           if (bool) {
 	      advFilterToggle.setIcon('toggleOn.png');
               advancedFilter.show(true);
               advancedFilterButtons.show(true);
-	      // dataTable.setShowFilterEditor(true);
-              // console.log('setting simple criteria:', criteria);
-	      // dataTable.setFilterEditorCriteria(criteria);
-	      // clearSimpleFilterButton.show(true);
           }
           else {
 	      advFilterToggle.setIcon('toggleOff.png');
               advancedFilter.hide(false);
               advancedFilterButtons.hide(false);
-	      // savedCriteria = dataTable.getFilterEditorCriteria();
-	      // dataTable.clearCriteria();
-	      // dataTable.setShowFilterEditor(false);
-	      // clearSimpleFilterButton.hide(true);
           }
       }
       
       var advFilterToggle = 
           isc.Label.create(
-	      { ID:'advFilterToggle',
-	          height: 20,
-	          width:50
-	          ,iconClick: function() {
-                      if (usingAdvFilter) usingAdvFilter = false;
-                      else usingAdvFilter = true;
-	              useAdvFilter(usingAdvFilter, null);
-	              // dataTable.filterData(savedAdvCriteria);
-	              // if (usingSimpleFilter) dataTable.filterData(savedCriteria);
-	              // if (!usingSimpleFilter) {
-	              // clearSimpleFilterButton.click();
-	              // }
-                      tableViewStateChanged('advFilterToggle');
+	          { ID:'advFilterToggle',
+	            height: 20,
+	            width:50
+	            ,iconClick: function() {
+                        if (state.editableAdvFilter) {
+                            state.editableAdvFilter = false;
+	                    // advFilterToggle.setIcon('toggleOff.png');
+                        }
+                        else {
+                            state.editableAdvFilter = true;
+	                    // advFilterToggle.setIcon('toggleOn.png');
+                        }
+	                setAdvFilterVisible(state.editableAdvFilter);
 	              
-	          }
-	          // padding: 10,
-	          ,align: "left",
-	          valign: "center",
-	          wrap: false
-	          ,icon: usingAdvFilter ? "toggleOn.png" : "toggleOff.png"
-	          // showEdges: true,
-	          // ,contents: "<i>Approved</i> for release"
-	          ,contents: "Advanced filter"
+	            }
+	            // padding: 10,
+	            ,align: "left",
+	            valign: "center",
+	            wrap: false
+	            ,icon: defaultState.editableAdvFilter ? "toggleOn.png" : "toggleOff.png"
+	            // showEdges: true,
+	            // ,contents: "<i>Approved</i> for release"
+	            ,contents: "Editable advanced filter"
+	          
+	          });
+      
+      var filterLabel = 
+          isc.Label.create(
+	      { ID: 'filterLabel',
+                height: 20, width: '100%',
+                contents: '' });
+      
+      //-----------------@SIMPLEFILTER----------------
+      function useSimpleFilter(bool, criteria) {
+          if (bool) {
+	      dataTable.setShowFilterEditor(true);
+              console.log('setting simple criteria:', criteria);
+	      dataTable.setFilterEditorCriteria(criteria);
+          }
+          else {
+	      // simpleFilterToggle.setIcon('toggleOff.png');
+	      state.savedCriteria = dataTable.getFilterEditorCriteria();
+	      dataTable.clearCriteria();
+	      dataTable.setShowFilterEditor(false);
+              }
+      };          
+
+      var simpleFilterToggle = 
+          isc.Label.create(
+	      { ID:'simpleFilterToggle',
+	        height: 20,
+	        width:50
+	        ,iconClick: function() {
+                    if (state.usingSimpleFilter) {
+                        state.usingSimpleFilter = false;   
+	                simpleFilterToggle.setIcon('toggleOff.png');
+                    }
+                    else {
+                        state.usingSimpleFilter = true;   
+	                simpleFilterToggle.setIcon('toggleOn.png');
+                    }
+	            useSimpleFilter(state.usingSimpleFilter,
+                                    isc.DataSource.combineCriteria(state.savedAdvCriteria,
+                                                                   state.savedCriteria));
+                    //TODO sort out the use of two filters and their correct interaction
+	            // dataTable.filterData(state.savedAdvCriteria);
+	            // if (state.usingSimpleFilter) dataTable.filterData(state.savedCriteria);
+                    tableViewStateChanged('simpleFilterToggle');
+	              
+	        }
+	        ,align: "left",
+	        valign: "center",
+	        wrap: false
+	        ,icon: defaultState.usingSimpleFilter ? "toggleOn.png" : "toggleOff.png"
+	        ,contents: "Enable simple filter"
 	          
 	      });
       
-     //-------------------------------------------------------------------------------- 
-      var objectGroupList = isc.ListGrid.create({
-          ID: "objectGroupList",
-          width:100, height:140, alternateRecordStyles:true,
-	  autoFetchData: true,
-          // showHeader:false,
-          selectionAppearance:"checkbox"
-          ,fields: [{name: 'group', title: 'type'}]
-          ,data: (function() {
-              return roster.groups.map(function(g) {
-                  return { group : g };
-              });})()
-          ,selectionChanged: function() {
-              var sel = objectGroupList.getSelection();
-              var contents = '';
-              groups = sel.map(function(g) {
-                  return g.group;
-              });
-              
-              objectGroupLabel.setLabel(groups);
-              tableViewStateChanged();
-          }
-          ,setSelection: function(groups) {
-            objectGroupList.deselectAllRecords();  
-              objectGroupList.getData().forEach(function(e) {
-                  if (groups.contains(e.group)) objectGroupList.selectRecord(e);
-                  
-              });
-          }
-      }); 
+      // var simpleFilterLine = isc.HLayout.
+      //     create({height: 30, 
+      //   	  membersMargin:15, 
+      //   	  members: [ simpleFilterToggle, clearSimpleFilterButton]});
       
-      var objectGroupLabel = isc.Label.create(
-          {
-              ID: 'mylabel',
-              width:'100%',
-              // contents: 'People',
-              setLabel: function(groups) {
-                  // console.log(groups);
-                  var contents = '';
-                  groups.forEach(function(g) {
-                      //TODO format nicely, with capitals and commas
-                      contents += g + ' ';
-                  });
-                  this.setContents(contents);
-              }
-          }         
-      );
-      var selectObjectGroupButton = isc.Button.create({
-	  title:"Select",
-	  width:50,
-	  height:20,
-	  click : function () {
-              // var isObjectGroupListVisible = objectGroupList.isVisible(); //isObjectGroupListVisible ? false : true;
-              showObjectGroupList(!objectGroupList.isVisible());
-              tableViewStateChanged();
-	  }
-      });
       
-      function showObjectGroupList(bool) {
-          if (bool)  {
-              objectGroupList.show(true);
-              selectObjectGroupButton.setTitle('Done');
-          }
-          else {
-              objectGroupList.hide(true);   
-              //apply group selection
-              console.log(groups);
-              
-              // advancedFiltero
-              var fields = roster.getTags(groups);
-              console.log(fields);
-              dataTable.setFields(roster.getTags(groups));
-              
-              test2.setCacheData(roster.getTags(groups));
-              advancedFilter.setCriteria();
-              selectObjectGroupButton.setTitle('Edit');
-          }
-      }
-      
-      var objectGroupLine = isc.HLayout.
-	  create({height: 30, 
-		  members: [objectGroupLabel, 
-			    isc.LayoutSpacer.create({width:'*'}),
-			    selectObjectGroupButton]});
-
+      //---------------@FILTERSTACK------------------
       var filterStack = isc.VLayout.
           create(
 	      {// ID:'filterStack',
@@ -486,12 +591,10 @@ define
  	          members:
 	          [
                       objectGroupLine
-                      ,objectGroupList
-	              ,isc.HLayout.
-	                  create({height: 30, 
-		                  membersMargin:15, 
-		                  members: [ simpleFilterToggle, clearSimpleFilterButton]})
+                      ,selectGroupsRow
+                      ,simpleFilterToggle
                       ,advFilterToggle
+                      ,filterLabel
                       ,advancedFilter
                       ,advancedFilterButtons
 	          ]
@@ -500,9 +603,9 @@ define
       var tabSet = isc.TabSet.
           create({
 	      ID: "tabSet"
-                  ,tabSelected: function() {
-                      tableViewStateChanged('tabSelected');
-                  }
+              ,tabSelected: function() {
+                  tableViewStateChanged('tabSelected');
+              }
               ,resized: function() {
                   tableViewStateChanged('tabSetResized');
               }
@@ -519,15 +622,12 @@ define
 	      ]
 	  });
       
-      
+      //---------------------- @total component-------------
       var stack = isc.SectionStack.
           create({ 
               ID: 'stack',
 	      visibilityMode:"multiple",
 	      animateSections:true
-              // ,sectionHeaderClick: function() {
-              //     console.log('sectionHeaderClick');
-              // }
               ,onSectionHeaderClick :function() {
                   if (stack.sectionIsExpanded('Editor')) {
                       //save height
@@ -540,10 +640,8 @@ define
                   }
                   tableViewStateChanged('sectionHeaderClick');
                   return false; }
-              // ,showExpandControls : false
 	      ,sections:[
 		  {ID: 'grid', name:'Table', showHeader:false, false: true, title:'Data', items:[dataTable]}
-		  // ,{name: 'calendar', title:"Calendar", expanded:true, hidden: false,items:[shiftCalendar]}
 		  ,{ID: 'g2', name: 'Editor', title:"Edit", expanded:true,  hidden: false, items:[tabSet]}
 	      ]
 	  });
@@ -553,11 +651,7 @@ define
       //------------------@API----------------------------- 
       //for use in layout to show these components
       API.grid = stack;
-      // API.editor = tabSet;
       return API;
-      // return {
-      //   editor: tabSet,
-      //   grid: dataTable,
-      //   display: display
-      // };
   }});
+
+//TODO get rid of all ID:
