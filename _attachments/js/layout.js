@@ -1,6 +1,6 @@
 define
-({inject: ['viewTree', 'table', 'roster'],
-  factory: function(viewTree, table, roster) 
+({inject: [ 'roster','viewTree', 'table', 'calendar'],
+  factory: function(roster, viewTree, table, calendar) 
   {
 
       //**********@Left hand side************************ 
@@ -78,12 +78,11 @@ define
           create({ 
 	      // ID:'rightSideLayout',
 	      visibilityMode:"multiple",
-	      animateSections:true
-	      // sections:view.datatable
+	      animateSections:false
+              
 	      ,sections:[
-		  {name:'Table', showHeader:false, hidden: false, title:'Data', items:[table.grid]}
-		  // ,{name: 'calendar', title:"Calendar", expanded:true, hidden: false,items:[shiftCalendar]}
-		  // ,{name: 'TableEditor', title:"Edit", expanded:true,  hidden: true, items:[table.editor]}
+		  {name: 'Table', showHeader:false, hidden: true, items:[table.grid]}
+		  ,{name: 'Calendar', showHeader: false, hidden: true,items:[calendar]}
 	      ]
 	  });
       //need to do this, the sectionstack seems to show the first section regardless of its hidden prop.
@@ -114,7 +113,7 @@ define
       //with this viewTree can show/hide sections in this layout
       viewTree.setShow(function(cmp, bool) {
           
-       console.log('show')   ;
+       // console.log('show')   ;
 	  if (bool) rightSideLayout.showSection(cmp);
 	  else rightSideLayout.hideSection(cmp);		       
       });

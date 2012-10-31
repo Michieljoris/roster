@@ -1,21 +1,73 @@
-function help() {  
-    console.log(module.viewTree.getData().$27m);
-}
-
 /* -----@ TOP ----- */
 define
-({inject: ['roster', 'table', 'utils'],
-  factory: function(roster, table, utils) {
-      //with this table can notify us when it has changed and give us the
-      //new state so that we can store it in the tree
-      table.setObserver(viewStateChanged);     
-      var views = {
-          'Table':table
-      };
+({inject: ['roster', 'table', ,'calendar'],
+  factory: function(roster, table, calendar) {
+      //dummy empty view for initialization purposes. Also a template
+      //for more views.
+      var emptyView = 
+          { name: 'Empty' 
+            ,getState: function() {} 
+            ,setObserver: function() {}};
+      
+      //add new views to this list. Unfortunately you have to add it
+      //three times. Once to inject, once to pass it in, and then to
+      //add it to views;
+      var views = [
+          ,emptyView
+          ,table
+          ,calendar];
+      
+      var newViewMenu = [];
+      
+      views = (function() {
+          var result = {};
+          var proto = {
+           click: function() { newView(this.name); } 
+           ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
+          };
+          views.forEach(function(v) {
+              v.setObserver(viewStateChanged);
+              var aview = Object.create(proto);
+              aview.name = v.name;
+              if (aview.name !== 'Empty')
+                  newViewMenu.push(aview);
+              result[v.name] = v;
+          });
+          return result;
+      })();
+      
+      // var views = {
+      //     'Empty':{ //dummy empty view for initialization purposes
+      //         getState: function() {}
+      //     }
+      //     ,'Table':table
+      //     ,'Calendar': calendar 
+      // };
       var show, //to be set by layout so we can show/hide views in the layout
-          modified, //whether the ui has changed. This
-          leafShowing = null;
-          // autoSaveInterval = 2;
+      modified, //whether the ui has changed
+      
+      leafShowing = {
+          view: 'Empty'
+      };
+      
+      // var newViewMenu = [
+      //     {title:"Table", 
+      //      click: function() { newView(this.title); } 
+      //      ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
+      //     },
+      //     {title:"Calendar",
+      //      click: function() { newView(this.title); } 
+      //      ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
+      //     },
+      //     {title:"Roster",
+      //      click: function() { newView(this.title); } 
+      //      ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
+      //     },
+      //     {title:"Timesheet",
+      //      click: function() { newView(this.title); } 
+      //      ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
+      //     }
+      // ];
       
       //--------------------@HANDLING STATE----------------------------- 
       function notify(newState) {
@@ -51,7 +103,8 @@ define
       
       function checkState() {
           console.log("Checking state");
-          setModified(!isEqual(table.getState(), leafShowing.viewState));
+          // setModified(!isEqual(table.getState(), leafShowing.viewState));
+          setModified(!isEqual(views[leafShowing.view].getState(), leafShowing.viewState));
       }
       
       //reads state of tree
@@ -102,30 +155,28 @@ define
           if (leaf === leafShowing) return;
           
           //save any changes that might have occured in the leaf
-          //for a new leaf...
-          if (leafShowing) {
-          // console.log('leafShowing name, groups and gridstate',leafShowing.name,
-          //             leafShowing.viewState.groups, leafShowing.viewState.grid); 
-              leafShowing.viewState = views[leafShowing.view].getState(); 
-          // console.log('after: name, groups and gridstate',leafShowing.name,
-          //             leafShowing.viewState.groups, leafShowing.viewState.grid); 
-	      if (leafShowing.view !== leaf.view) {
-	          show(leafShowing.view, false);
-	      }
-          } 
-          else {
-           show(leaf.view, true);   
-          }
+          // if (leafShowing) { //if the tree is empty
+          leafShowing.viewState =
+              views[leafShowing.view].getState(); 
+	  if (leafShowing.view !== leaf.view) {
+	      show(leafShowing.view, false);
+	  }
+          // } 
+          //give the component that's about to be shown the specific
+          //data of the new leaf
           views[leaf.view].notify(leaf.viewState);
+          //show the leaf, redundant, harmless call if it's the same
+          //type of view
+          show(leaf.view, true);   
           //set a pointer to the leaf that's now showing
           leafShowing = leaf;
           //we're changing views, so set modified flag
           setModified(true);
               
-          pp('finished opening leaf');
+          pp('finished opening leaf');;
           
       }
-      
+                                                              
       // var autoSaveState= { id: 'autosave' };
       // function autoSave(callback) {
       //     if (!modified) return; 
@@ -192,7 +243,7 @@ define
           var state = selRecord.viewState;
           var name = selRecord.name;
           console.log(state);
-              if (!selRecord)  selRecord = '/';
+          if (!selRecord)  selRecord = '/';
           else {
               viewTree.selectRecord(selRecord, false);
               selRecord = selRecord['_parent_' + tree.ID];
@@ -210,15 +261,15 @@ define
       
       
       function newView(view) {
-       console.log('newView')   ;
+          console.log('newView')   ;
           var selRecord = viewTree.getSelectedRecord();
           // var state = selRecord.viewState;
           var parent; 
-          if (!selRecord)  parent = '/';
-              else {
-                  viewTree.selectRecord(selRecord, false);
-                  parent = selRecord['_parent_' + tree.ID];
-              }
+              if (!selRecord)  parent = '/';
+          else {
+              viewTree.selectRecord(selRecord, false);
+              parent = selRecord['_parent_' + tree.ID];
+          }
           var newRecord = tree.add({id:isc.timeStamp(),isFolder:false, 
                                     name:'New ' + view, view: view
                                     // ,viewState : '{}'
@@ -272,79 +323,61 @@ define
       //--------------------@MENUS AND TOOLSTRIP
       //for use in both toolstrip and context menu
       
-      var tableSubMenu = [
-          {title:"Everything", 
-           click: function() { newView(this.title); } 
-           // ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-           // ,submenu:tableSubMenu  
-          },
-          {title:"People",
-           click: function() { newView(this.title); } 
-           // ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-          },
-          {title:"Locations",
-           click: function() { newView(this.title); } 
-           // ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-          },
-          {title:"Shifts",
-           click: function() { newView(this.title); } 
-           // ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-          }
+      // var tableSubMenu = [
+      //     {title:"Everything", 
+      //      click: function() { newView(this.title); } 
+      //      // ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
+      //      // ,submenu:tableSubMenu  
+      //     },
+      //     {title:"People",
+      //      click: function() { newView(this.title); } 
+      //      // ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
+      //     },
+      //     {title:"Locations",
+      //      click: function() { newView(this.title); } 
+      //      // ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
+      //     },
+      //     {title:"Shifts",
+      //      click: function() { newView(this.title); } 
+      //      // ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
+      //     }
 
           
-      ];
-      var newViews = [
-          {title:"Table", 
-           click: function() { newView(this.title); } 
-           ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-           // ,submenu:tableSubMenu  
-          },
-          {title:"Calendar",
-           click: function() { newView(this.title); } 
-           ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-          },
-          {title:"Roster",
-           click: function() { newView(this.title); } 
-           ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-          },
-          {title:"Timesheet",
-           click: function() { newView(this.title); } 
-           ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-          }
-      ];
+      // ];
 
+      
       var rightClickMenu = isc.Menu.create(
-              {// ID:"rightClickMenu",
-                  width:150
-                  ,data:[
-                      {title:"Select"
-	               // ,icon: isc.Page.getSkinDir() +"images/RichTextEditor/copy.png"
-	               ,click: function() { select(); } 
-	              } 
-	              ,{isSeparator:true}
-	              ,{title:"Clone"
-		        ,icon: isc.Page.getSkinDir() +"images/RichTextEditor/copy.png"
-		        ,click: function() { clone(); } 
-	               } 
-                      ,{isSeparator:true}
-	              ,{title:"New folder"
-		        ,icon: isc.Page.getSkinDir() +"images/FileBrowser/createNewFolder.png"
-		        ,click: function() { newFolder(); } 
-	               } 
-	              ,{title:"Rename"
-		        ,icon: isc.Page.getSkinDir() +"images/actions/edit.png"
-		        ,click: function() { rename(); } 
-	               }
-	              ,{title:"Remove"
-		        ,icon: isc.Page.getSkinDir() +"images/actions/remove.png"
-		        ,click: function() { remove(); } 
-	               }
-	              ,{isSeparator:true}
-	              ,{title:"Save tree"
-		        ,icon: isc.Page.getSkinDir() +"images/actions/save.png"
-		        ,click: function() { saveTreeToDb(); }
-	               }]
-              });
+          {// ID:"rightClickMenu",
+              width:150
+              ,data:[
+                  {title:"Select"
+	           // ,icon: isc.Page.getSkinDir() +"images/RichTextEditor/copy.png"
+	           ,click: function() { select(); } 
+	          } 
+	          ,{isSeparator:true}
+	          ,{title:"Clone"
+		    ,icon: isc.Page.getSkinDir() +"images/RichTextEditor/copy.png"
+		    ,click: function() { clone(); } 
+	           } 
+                  ,{isSeparator:true}
+	          ,{title:"New folder"
+		    ,icon: isc.Page.getSkinDir() +"images/FileBrowser/createNewFolder.png"
+		    ,click: function() { newFolder(); } 
+	           } 
+	          ,{title:"Rename"
+		    ,icon: isc.Page.getSkinDir() +"images/actions/edit.png"
+		    ,click: function() { rename(); } 
+	           }
+	          ,{title:"Remove"
+		    ,icon: isc.Page.getSkinDir() +"images/actions/remove.png"
+		    ,click: function() { remove(); } 
+	           }
+	          ,{isSeparator:true}
+	          ,{title:"Save tree"
+		    ,icon: isc.Page.getSkinDir() +"images/actions/save.png"
+		    ,click: function() { saveTreeToDb(); }
+	           }]
+          });
       
       var loginButton = isc.ToolStripButton.create(
           {
@@ -352,10 +385,10 @@ define
           });
       
       var saveButton = isc.ToolStripButton.create({
-	  icon: "[SKIN]/actions/save.png",
+	      icon: "[SKIN]/actions/save.png",
 	  prompt: "Save this view"
 	  ,click: function() { saveTreeToDb(); }
-      });
+          });
 
       var toolStrip = isc.ToolStrip.create(
           {members: [
@@ -369,7 +402,7 @@ define
 				          ,width :20
 				          ,icon: "[SKIN]/actions/add.png", 
 				          prompt: "Create a new view"
-				          ,menu: {width:150 ,data: newViews}
+				          ,menu: {width:150 ,data: newViewMenu}
 				         })
               ,isc.ToolStripButton.create({
 	          icon: "[SKIN]/RichTextEditor/copy.png",
@@ -410,7 +443,7 @@ define
               ID: 'treegrid',
 	      contextMenu:rightClickMenu
 	      ,canDragRecordsOut:true,
-	      canAcceptDroppedRecords:true
+	          canAcceptDroppedRecords:true
 	      ,canReorderRecords: true,
 	      canAcceptDroppedRecords: true
 	      ,data: tree 
@@ -438,7 +471,7 @@ define
 	          length:128,
 	          type:"text"
 	      }
-		          ]
+		      ]
 	  });
       function isEqual(a,b) {
           if (!a && !b) return true;
@@ -454,7 +487,7 @@ define
               if (!same){
                   // console.log(p);
                   // console.log(a, b);
-                return false;  
+                  return false;  
               } 
           };
           return true;   
@@ -465,7 +498,8 @@ define
               // pp('current state', table.getState());
               // pp('original state', leafShowing.viewState);
               // pp(isEqual(table.getState(), leafShowing.viewState));                   
-              if (isEqual(table.getState(), leafShowing.viewState)) {
+              if (isEqual(views[leafShowing.view].getState(), leafShowing.viewState)) {
+              // if (isEqual(table.getState(), leafShowing.viewState)) {
                   if (!modified) return null;
                   else return 'Leaving will discard changes made to the organising tree.\\nSelect "Stay on this page" and then click the icon next to the login name to save the changes.';
               }

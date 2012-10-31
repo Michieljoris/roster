@@ -35,7 +35,7 @@ define(
 		 });};
 		 
       function startApp() {
-	pp(user);
+	// pp(user);
 	var loginButton = viewTree.loginButton;
 	loginButton.setTitle('guest');
 	loginButton.action = function() {

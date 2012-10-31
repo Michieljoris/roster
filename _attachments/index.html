@@ -2,6 +2,7 @@
   <HEAD>
   </HEAD>
   <BODY>
+    <!-- setup bootstrap -->
     <script>
       window.bootstrap = { 
       main: 'main',
@@ -16,12 +17,17 @@
       timeOut: 2,
       testing: false
       };
+      
       <!-- get rid of annoying msg when testing licensed version -->
       window.isc_expirationOff=true;  
+      
       window.isomorphicDir="lib/isomorphic/";
+      
+    <!-- Don't pollute global namespace -->
       window.isc_useSimpleNames = false;
     </script> 
-    <!-- maybe we should concatenate all these files? Done..-->
+    
+    <!-- concatenated all these files into the ISC.js below-->
     <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Core.js></SCRIPT>   -->
     <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Foundation.js></SCRIPT>   -->
     <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Containers.js></SCRIPT>   -->
@@ -31,6 +37,7 @@
     <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Calendar.js></SCRIPT>
     -->
     <SCRIPT SRC=lib/isomorphic/system/modules/ISC.js></SCRIPT>  
+    
     <!-- set the skin of the ui -
     <!-- <SCRIPT SRC=lib/isomorphic/skins/Simplicity/load_skin.js></SCRIPT>   -->
     <!-- <SCRIPT SRC=lib/isomorphic/skins/standard/load_skin.js></SCRIPT>   -->
@@ -40,24 +47,18 @@
     <!-- <SCRIPT SRC=lib/isomorphic/skins/SilverWave/load_skin.js></SCRIPT> -- -->
     <!-- <SCRIPT SRC=lib/isomorphic/skins/EnterpriseBlue/load_skin.js></SCRIPT> -->
     <SCRIPT SRC=lib/isomorphic/skins/Enterprise/load_skin.js></SCRIPT>
-    <!-- Don't pollute global namespace -->
+    
     <script>
       isc.setAutoDraw(false) 
     </script>
     
+    <!-- database adapter -->
     <script src=lib/pouch.alpha.js></script>   
     
+    <!--/temp for testing purposes, can be removed  -->
     <script src=js/quickpouch.js></script>    
     
-    <!-- <script src=js/roster.js></script>      -->
-    <!-- <script src=js/pouchDS.js></script> -->
-    <!-- <script src=js/datasources.js></script> -->
-    <!-- <script src=js/datatable.js></script>      -->
-    <!-- <script src=js/calendar.js></script> -->
-    <!-- <script src=js/viewtree.js></script>      -->
-    <!-- <SCRIPT SRC=js/layout.js></SCRIPT> -->
-    <!-- <script src=js/init.js></script> -->
-    <!-- it would be nice to use my bootstrap... -->
+    <!-- load and start -->
     <script src=lib/bootstrap.js></script>
   </BODY> 
 </HTML>

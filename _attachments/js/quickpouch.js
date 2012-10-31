@@ -125,4 +125,4 @@ var pouch =
      
    })();
 
-pouch.setdb('idb://rosterdb');
+pouch.setdb('idb://roster');

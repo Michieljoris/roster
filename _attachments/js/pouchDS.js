@@ -47,7 +47,7 @@ define
 						 "resp:", response);
 			    else {
 			      
-			        // console.log('Response is: ', response);
+			        console.log('Response is: ', response);
 			        dsResponse.data=[];
 			        for (var i = 0; i< response.rows.size();i++) {
 				    var key=response.rows[i].key;
@@ -116,17 +116,22 @@ define
 	          switch (dsRequest.operationType) {
 	            case "fetch":
 	              var fetchView = view.all;
+                      // console.log('about to switch......', dsRequest);
 	              switch (dsRequest.componentId) {
-	                case 'shiftCalender' :fetchView = view.shifts;  
-	                  // console.log('fetchView', fetchView); 
+	                case 'isc_ShiftCalendar' :
+                          fetchView = view.shifts;  
+	                  // console.log('in shiftCalendar', fetchView); 
 	                  break;
 	              default: ; //console.log('getting all objects for: ', dsRequest.componentId); 
 	              }
+	              console.log('fetchView', fetchView); 
+	              break;
 	              // console.log("Fetch");
 	              dsResponse = {
 	                  clientContext: dsRequest.clientContext,
 	                  status: 1};
 	              fetch(fetchView, dsResponse, dsRequest.requestId);
+                      console.log('dsResponse', dsResponse);
 	              break;
 	            case "update" : 
 	              // console.log("update", dsRequest); 

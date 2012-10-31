@@ -654,6 +654,7 @@ define
       //------------------@API----------------------------- 
       //for use in layout to show these components
       API.grid = stack;
+      API.name = 'Table';
       return API;
   }});
 

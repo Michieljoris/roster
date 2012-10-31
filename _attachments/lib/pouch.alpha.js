@@ -1696,7 +1696,7 @@ var IdbPouch = function(opts, callback) {
       opts = {};
     }
     if (!opts) {
-      opts = {}
+      opts = {};
     }
 
     if (!req.docs) {
@@ -1704,7 +1704,6 @@ var IdbPouch = function(opts, callback) {
     }
 
     var newEdits = 'new_edits' in opts ? opts.new_edits : true;
-     console.log(req.docs); 
     var userDocs = JSON.parse(JSON.stringify(req.docs));
 
     // Parse the docs, give them a sequence number for the result
