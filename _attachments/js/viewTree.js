@@ -1,29 +1,33 @@
-/* -----@ TOP ----- */
+/*global pp:false isc:false define:false */
+/*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
+/*jshint maxparams:4 maxcomplexity:7 maxlen:90 devel:true*/
+
+// -----@ TOP ----- */
 define
-({inject: ['roster', 'table', ,'calendar'],
+({inject: ['roster', 'table', 'calendar'],
   factory: function(roster, table, calendar) {
+      "use strict";
       //dummy empty view for initialization purposes. Also a template
       //for more views.
-      var emptyView = 
-          { name: 'Empty' 
-            ,getState: function() {} 
+      var emptyView =
+          { name: 'Empty'
+            ,getState: function() {}
             ,setObserver: function() {}};
       
       //add new views to this list. Unfortunately you have to add it
       //three times. Once to inject, once to pass it in, and then to
       //add it to views, although we could read the args list..
       var views = [
-          ,emptyView
+          emptyView
           ,table
           ,calendar];
-      
       var newViewMenu = [];
       
       views = (function() {
           var result = {};
           var proto = {
-           click: function() { newView(this.name); } 
-           ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
+              click: function() { newView(this.name); } 
+              ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
           };
           views.forEach(function(v) {
               v.setObserver(viewStateChanged);
@@ -37,19 +41,19 @@ define
       })();
       
       var show, //to be set by layout so we can show/hide views in the layout
-      modified, //whether the ui has changed
+          modified, //whether the ui has changed
       
       //for initialization purposes when there is no view at all defined
-      leafShowing = {
-          view: 'Empty'
-      };
+          leafShowing = {
+              view: 'Empty'
+          };
       
       //--------------------@HANDLING STATE----------------------------- 
       function notify(newState) {
           var viewTreeState = isc.JSON.decode(newState);
           if (viewTreeState) {
               //width of side bar
-	      viewTree.setWidth(viewTreeState.width);
+              viewTree.setWidth(viewTreeState.width);
 	      //clear the tree
 	      tree.removeList(tree.getChildren(tree.getRoot()));
               //set the tree to the saved state
@@ -74,14 +78,14 @@ define
 	      pp('finished changing tree state');
               //do an autosave every minute..
               // window.setInterval(autoSave, autoSaveInterval * 60000);
-          };
+          }
           
       } 
       
       function checkState() {
           console.log("Checking state");
           // setModified(!isEqual(table.getState(), leafShowing.viewState));
-          setModified(!isEqual(views[leafShowing.view].getState(), leafShowing.viewState));
+          setModified(!isEqual(views[leafShowing.view].getState(),leafShowing.viewState));
       }
       
       //reads state of tree
@@ -151,11 +155,11 @@ define
           leafShowing.path = viewTree.getSelectedPaths();
           //we're changing views, so set modified flag
           setModified(true);
-              
-          pp('finished opening leaf');;
+          
+          pp('finished opening leaf');
           
       }
-                                                              
+      
       // var autoSaveState= { id: 'autosave' };
       // function autoSave(callback) {
       //     if (!modified) return; 
@@ -166,7 +170,7 @@ define
       //     roster.db.put(autoSaveState, function(err, response) {
       //         if (err) {
       //             console.log('ERRROR: Could not save changed state of the view tree.' 
-      //   	              + err.error + ' ' + err.reason);
+      //             + err.error + ' ' + err.reason);
       //             isc.warn('ERROR: Could not save the state of the ui..');
       //         }
       //         else {
@@ -185,8 +189,8 @@ define
           console.log('saving tree');
           roster.db.put(roster.user, function(err, response) {
               if (err) {
-	          console.log('ERRROR: Could not save changed state of the view tree.' 
-		              + err.error + ' ' + err.reason);
+	          console.log('ERRROR: Could not save changed state of the view tree.' +
+                              err.error + ' ' + err.reason);
                   isc.warn('ERROR: Could not save the state of the ui..');
               }
               else {
@@ -198,14 +202,11 @@ define
           });
       }
       
-      // function setSaveOnChange(bool) {
-      //   saveOnChange = bool;
-      //   // switch (method) {
-      //   // 	case 'auto' : saveOnUnload();  break;
-      //   // 	case 'onchange' : autoSave = false; break;
-      //   // 	default: console.log('ERROR: setSaveMethod was called with an invalid parameter');
-      //   // }
-      // }
+      // function setSaveOnChange(bool) { saveOnChange = bool; //
+      //   switch (method) { //case 'auto' : saveOnUnload(); break;
+      //   //case 'onchange' : autoSave = false; break; //default:
+      //   console.log('ERROR: setSaveMethod was called with an
+      //   invalid parameter'); // } }
       
       //if called it sets up saving at intervals and when navigating away
       //not working because the callback from pouch comes to late, 
@@ -217,42 +218,61 @@ define
       
       //------------------@manipulate tree---------------------
       
-      function clone() {
-          var selRecord = viewTree.getSelectedRecord();
-          if (!selRecord) return;
-          var view = selRecord.view;
-          var state = selRecord.viewState;
-          var name = selRecord.name;
-          console.log(state);
-          if (!selRecord)  selRecord = '/';
-          else {
-              viewTree.selectRecord(selRecord, false);
-              selRecord = selRecord['_parent_' + tree.ID];
+      // function clone() {
+      //     var selRecord = viewTree.getSelectedRecord();
+      //     if (!selRecord) return;
+      //     var view = selRecord.view;
+      //     var state = selRecord.viewState;
+      //     var name = selRecord.name;
+      //     console.log(state);
+      //     if (!selRecord)  selRecord = '/';
+      //     else {
+      //         viewTree.selectRecord(selRecord, false);
+      //         selRecord = selRecord['_parent_' + tree.ID];
+      //     }
+      //     var newRecord = tree.add({id:isc.timeStamp(),isFolder:false, 
+      //                               name: name + ' (clone)', view: view,
+      //                               viewState : state}, selRecord);
+      //     viewTree.selectRecord(newRecord);
+      //     viewTree.openFolder(selRecord);
+      //     treeStateChanged('clone');
+      //     viewTree.openLeaf(newRecord);
+      //     // ignoreChangeState = true;
+      // }
+      
+      function getUniqueName(baseName, parent) {
+          function nameExists(siblings, name) {
+              for (var i=0; i < siblings.length; i++) {
+                  var sibling = siblings[i];
+                  if (sibling.name === name) break;
+              } 
+              return i !== siblings.length;
           }
-          var newRecord = tree.add({id:isc.timeStamp(),isFolder:false, 
-                                    name: 'Clone of ' + name, view: view,
-                                    viewState : state}, selRecord);
-          viewTree.selectRecord(newRecord);
-          viewTree.openFolder(selRecord);
-          treeStateChanged('clone');
-          viewTree.openLeaf(newRecord);
-          // ignoreChangeState = true;
-      };
-      
-      
+          var newName = baseName; 
+          var version = 2;
+          if (parent && parent.children) {
+              while (nameExists(parent.children, newName)) {
+                  newName = baseName + ' (' + version + ')';
+                  version++;
+              }
+          }
+          return newName;
+      } 
       
       function newView(view) {
           console.log('newView')   ;
           var selRecord = viewTree.getSelectedRecord();
           // var state = selRecord.viewState;
           var parent; 
-              if (!selRecord)  parent = '/';
+          if (!selRecord)  parent = '/';
           else {
               viewTree.selectRecord(selRecord, false);
               parent = selRecord['_parent_' + tree.ID];
+              
           }
+          var newName = getUniqueName(view, parent);
           var newRecord = tree.add({id:isc.timeStamp(),isFolder:false, 
-                                    name:'New ' + view, view: view
+                                    name:newName, view: view
                                     // ,viewState : '{}'
                                    }, parent);
           
@@ -262,31 +282,33 @@ define
           // pp('In newView: leafShowing.viewState---------',leafShowing.viewState);
           viewTree.openLeaf(newRecord);
           // eafShowing.viewState = table.getState();
-          // pp('In newView: table.getState---------',leafShowing.viewState);
-          // treeStateChanged('newView');
-      };
+          // pp('In newView: table.getState---------',leafShowing.viewState);t
+          treeStateChanged('newView');
+      }
       
       function newFolder() {
           var selRecord = viewTree.getSelectedRecord();
-          if (!selRecord)  selRecord = '/';
+          var parent;
+          if (!selRecord)  parent = '/';
           else {
               viewTree.selectRecord(selRecord, false);
-              selRecord = selRecord['_parent_' + tree.ID];
+             parent = selRecord['_parent_' + tree.ID];
           }
+          var newName = getUniqueName('Folder', parent);
           var newRecord = tree.add({id:isc.timeStamp(),isFolder:true, 
-                                    name:'New folder'},selRecord || '/');
+                                    name: newName}, parent);
           viewTree.selectRecord(newRecord);
-          viewTree.openFolder(selRecord);
+          viewTree.openFolder(parent);
           treeStateChanged('newFolder');
           viewTree.openFolder(newRecord);
-      };
-          
+      }
+      
       function rename() {
           var record = viewTree.getSelectedRecord();
-          if (record == null) return;
+          if (record === null) return;
           viewTree.startEditing(viewTree.data.indexOf(record));
           
-      };
+      }
       
       function remove() {
           var selRecord = viewTree.getSelectedRecord();
@@ -323,7 +345,7 @@ define
       //      // ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
       //     }
 
-          
+      
       // ];
 
       
@@ -331,20 +353,20 @@ define
           {// ID:"rightClickMenu",
               width:150
               ,data:[
-                  {title:"Select"
-	           // ,icon: isc.Page.getSkinDir() +"images/RichTextEditor/copy.png"
-	           ,click: function() { select(); } 
+                  // {title:"Select"
+	          //  // ,icon: isc.Page.getSkinDir() +"images/RichTextEditor/copy.png"
+	          //  ,click: function() { select(); } 
+	          // } 
+	          // ,{isSeparator:true}
+	          // {title:"Clone"
+		  //   ,icon: isc.Page.getSkinDir() +"images/RichTextEditor/copy.png"
+		  //   ,click: function() { clone(); } 
+	          //  } 
+                  // ,{isSeparator:true}
+	          {title:"New folder"
+		   ,icon: isc.Page.getSkinDir() +"images/FileBrowser/createNewFolder.png"
+		   ,click: function() { newFolder(); } 
 	          } 
-	          ,{isSeparator:true}
-	          ,{title:"Clone"
-		    ,icon: isc.Page.getSkinDir() +"images/RichTextEditor/copy.png"
-		    ,click: function() { clone(); } 
-	           } 
-                  ,{isSeparator:true}
-	          ,{title:"New folder"
-		    ,icon: isc.Page.getSkinDir() +"images/FileBrowser/createNewFolder.png"
-		    ,click: function() { newFolder(); } 
-	           } 
 	          ,{title:"Rename"
 		    ,icon: isc.Page.getSkinDir() +"images/actions/edit.png"
 		    ,click: function() { rename(); } 
@@ -352,8 +374,8 @@ define
 	          ,{title:"Remove"
 		    ,icon: isc.Page.getSkinDir() +"images/actions/remove.png"
 		    ,click: function() { remove(); } 
-	           }
-	          ,{isSeparator:true}
+	           },
+	          {isSeparator:true}
 	          ,{title:"Save tree"
 		    ,icon: isc.Page.getSkinDir() +"images/actions/save.png"
 		    ,click: function() { saveTreeToDb(); }
@@ -366,30 +388,30 @@ define
           });
       
       var saveButton = isc.ToolStripButton.create({
-	      icon: "[SKIN]/actions/save.png",
+	  icon: "[SKIN]/actions/save.png",
 	  prompt: "Save this view"
 	  ,click: function() { saveTreeToDb(); }
-          });
+      });
 
       var toolStrip = isc.ToolStrip.create(
           {members: [
               loginButton
 	      ,saveButton     
-              ,isc.LayoutSpacer.create({  width:"*" })
+              // ,isc.LayoutSpacer.create({  width:"*" })
               ,isc.IconMenuButton.create({title:''
 				          ,ID:'addButton'
 				          ,iconClick: "this.showMenu()"
 				          ,showMenuIcon:false
 				          ,width :20
 				          ,icon: "[SKIN]/actions/add.png", 
-				          prompt: "Create a new view"
+				          prompt: "Create/clone a view"
 				          ,menu: {width:150 ,data: newViewMenu}
 				         })
-              ,isc.ToolStripButton.create({
-	          icon: "[SKIN]/RichTextEditor/copy.png",
-	          prompt: "Clone selected view"
-	          ,click: function() { clone(); }
-              })
+              // ,isc.ToolStripButton.create({
+	      //     icon: "[SKIN]/RichTextEditor/copy.png",
+	      //     prompt: "Clone selected view"
+	      //     ,click: function() { clone(); }
+              // })
               ,isc.ToolStripButton.create({
 	          icon: "[SKIN]/FileBrowser/createNewFolder.png", 
 	          prompt: "Create a new folder"
@@ -426,7 +448,6 @@ define
 	      ,canDragRecordsOut:true,
 	      canAcceptDroppedRecords:true
 	      ,canReorderRecords: true
-	      ,canAcceptDroppedRecords: true
 	      ,data: tree 
 	      ,showHeader:false
 	      ,modalEditing: true
@@ -461,7 +482,7 @@ define
       function isEqual(a,b) {
           if (!a && !b) return true;
           if (!a || !b) return false;
-          for (p in a) {
+          for (var p in a) {
               var same = true;
               if (typeof a[p] === 'object') same = isEqual(a[p], b[p]);
               else {
@@ -474,9 +495,9 @@ define
                   // console.log(a, b);
                   return false;  
               } 
-          };
+          }
           return true;   
-      };
+      }
       
       window.onbeforeunload= 
 	  function() { 
@@ -484,15 +505,21 @@ define
               // pp('original state', leafShowing.viewState);
               // pp(isEqual(table.getState(), leafShowing.viewState));                   
               if (isEqual(views[leafShowing.view].getState(), leafShowing.viewState)) {
-              // if (isEqual(table.getState(), leafShowing.viewState)) {
+                  // if (isEqual(table.getState(), leafShowing.viewState)) {
                   if (!modified) return null;
-                  else return 'Leaving will discard changes made to the organising tree.\\nSelect "Stay on this page" and then click the icon next to the login name to save the changes.';
+                  else return 'Leaving will discard changes made to the organising tree.'+
+                      '\\n Select "Stay on this page" and then click the icon next to '+
+                      'the login name to save the changes.';
               }
               leafShowing.viewState = views[leafShowing.view].getState();
               setModified(true);
               // saveTreeToDb();
-              return 'Leaving will discard changes made to a view.\n\nSelect "Stay on this page" and then click the icon next to the login name to save the changes.';
-	      // return 'Leaving will discard changes made to a view.\nStay to save the changes.';
+              return 'Leaving will discard changes made to a view.\n\nSelect "Stay on '+
+                  'this page" and then click the icon next to the login name to ' +
+                  'save the changes.';
+              
+	      // return 'Leaving will discard changes made to a
+	      // view.\nStay to save the changes.';
           };
       //-----------------------@API-----------------------
       //sets the show function so that viewTree has a means to show/hide 
@@ -509,8 +536,8 @@ define
   }});
 
 
-function inf() {
-    var temp = module.viewTree.getData().root.children;
-   console.log(temp[0].name, temp[0].viewState.grid);
-   console.log(temp[1].name, temp[1].viewState.grid);
-}
+// function inf() {
+//     var temp = module.viewTree.getData().root.children;
+//     console.log(temp[0].name, temp[0].viewState.grid);
+//     console.log(temp[1].name, temp[1].viewState.grid);
+// }
