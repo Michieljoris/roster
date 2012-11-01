@@ -1,4 +1,3 @@
-
 var pp = function() {
   for (var i=0; i< arguments.length; i++) {
     var arg= arguments[i];
@@ -125,4 +124,4 @@ var pouch =
      
    })();
 
-pouch.setdb('idb://roster');
+pouch.setdb('idb://testdb');

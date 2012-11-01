@@ -56,7 +56,7 @@ define
 				
 				    dsResponse.data.push(key);
     			        }
-			        // console.log('data: ', dsResponse.data);
+			        console.log('data: ', dsResponse.data);
 			        pouchDS.processResponse(requestId, dsResponse);}});});}
       function add(data, dsResponse, requestId) {
           doPouch(function(db) {
@@ -69,6 +69,9 @@ define
       			     data._id = response.id; 
       			     data._rev = response.rev; 
       			     dsResponse.data = data;
+                             console.log("hello",  data.endDate);
+                             module.temp= data;
+                             
       			     pouchDS.processResponse(requestId, dsResponse);}});
 	  });
       }
@@ -107,11 +110,11 @@ define
 	      autoDeriveTitles:true,
 	      dataProtocol: "clientCustom",
 	
-	      recordName:"employee",
-	      titleField:"Name",
+	      // recordName:"employee",
+	      // titleField:"Name",
 	      transformRequest: function (dsRequest) {
 	          // DS = this;
-	          // console.log('dsRequest:',dsRequest);
+	          console.log('dsRequest:',dsRequest);
 	          var dsResponse;
 	          switch (dsRequest.operationType) {
 	            case "fetch":
@@ -126,7 +129,7 @@ define
 	              }
 	              console.log('fetchView', fetchView); 
 	              break;
-	              // console.log("Fetch");
+	              console.log("Fetch");
 	              dsResponse = {
 	                  clientContext: dsRequest.clientContext,
 	                  status: 1};
@@ -134,8 +137,8 @@ define
                       console.log('dsResponse', dsResponse);
 	              break;
 	            case "update" : 
-	              // console.log("update", dsRequest); 
-	              // console.log("old values", dsRequest.oldValues); 
+	              console.log("update", dsRequest); 
+	              console.log("old values", dsRequest.oldValues); 
 	              dsResponse = {
 	                  clientContext: dsRequest.clientContext,
 	                  errors: {},
@@ -145,15 +148,15 @@ define
 		             dsResponse, dsRequest.requestId);
 	              break; 
 	            case "add" : 
-	              // console.log("add"); 
-	              // console.log('data', dsRequest.data);
+	              console.log("add"); 
+	              console.log('data', dsRequest.data);
 	              dsResponse = {
 	                  clientContext: dsRequest.clientContext,
 	                  status: 1};
 	              add(dsRequest.data, dsResponse, dsRequest.requestId);
 	              break;
 	            case "remove" :
-	              // console.log("remove"); 
+	              console.log("remove"); 
 	              dsResponse = {
 	                  clientContext: dsRequest.clientContext,
 	                  status: 1};

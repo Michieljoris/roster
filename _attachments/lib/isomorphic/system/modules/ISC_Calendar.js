@@ -95,8 +95,8 @@ return _4}
 ,isc.A.$64i=function isc_Calendar__findEventWindow(_1,_2){var _3=(_2?this.weekView:this.dayView);if(!_3.body||!_3.body.children)return;var _4=_3.body.children;if(this.dataSource)this.$53s=isc.DataSource.get(this.dataSource).getLocalPrimaryKeyFields();for(var i=0;i<_4.length;i++){if(isc.isAn.EventWindow(_4[i])&&_3.areSame(_4[i].event,_1)&&_4[i].$53i==_2){return _4[i]}}
 return false}
 ,isc.A.$64j=function isc_Calendar__prepareAutoArrangeOffsets(_1,_2){var _3=[],_4=60/this.eventSnapGap,_5=24*_4,_6=[new Array(_5),new Array(_5),new Array(_5),new Array(_5),new Array(_5),new Array(_5),new Array(_5)];for(var i=0;i<_5;i++){_3.add({usedCol:[0,0,0,0,0,0,0],assignedCol:[0,0,0,0,0,0,0],exactTime:[0,0,0,0,0,0,0]})}
-for(var i=0;i<_1.getLength();i++){var _8=_1.get(i);var _9=_8[this.startDateField].getDay();var _10=_8[this.startDateField].getUTCHours(),_11=_8[this.startDateField].getUTCMinutes(),_12=_11%this.eventSnapGap;if(_12){_11=_11-_12}
-if(_10==24)_10=0;var _13=_8[this.endDateField].getDay(),_14=_8[this.endDateField].getUTCHours(),_15=_8[this.endDateField].getUTCMinutes(),_16=_15%this.eventSnapGap;if(_13>_9){_14=24;_15=0;_16=0}
+for(var i=0;i<_1.getLength();i++){var _8=_1.get(i);var _9=_8[this.startDateField].getDay();var _10=_8[this.startDateField].getHours(),_11=_8[this.startDateField].getMinutes(),_12=_11%this.eventSnapGap;if(_12){_11=_11-_12}
+if(_10==24)_10=0;var _13=_8[this.endDateField].getDay(),_14=_8[this.endDateField].getHours(),_15=_8[this.endDateField].getMinutes(),_16=_15%this.eventSnapGap;if(_13>_9){_14=24;_15=0;_16=0}
 if(_16){_15=_15+(this.eventSnapGap-_16);if(_15==60){_15=0;_14++}}
 var _17=(_10*_4)+(_11/ this.eventSnapGap),_18=(_14*_4)+(_15/ this.eventSnapGap);_8.$64k=0;_8.$64l=0;_8.$85h=_17;_8.$85i=_18;for(var _19=_17;_19<_18;_19++){var _20=_3[_19];var _21=_3[_19].usedCol[_9];var _22=_3[_19].assignedCol[_9];var _23=_3[_19].exactTime[_9];if(_6[_9][_19]==null)_6[_9][_19]=0;if(_19==_17){var _24=_22!=0;_8.$64k=_22;if(this.eventOverlap){if(!this.eventOverlapIdenticalStartTimes){_8.$64m=_23==0}else{_8.$64m=true}
 _23=1}

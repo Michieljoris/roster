@@ -11,7 +11,7 @@ define
       
       //add new views to this list. Unfortunately you have to add it
       //three times. Once to inject, once to pass it in, and then to
-      //add it to views;
+      //add it to views, although we could read the args list..
       var views = [
           ,emptyView
           ,table
@@ -36,52 +36,29 @@ define
           return result;
       })();
       
-      // var views = {
-      //     'Empty':{ //dummy empty view for initialization purposes
-      //         getState: function() {}
-      //     }
-      //     ,'Table':table
-      //     ,'Calendar': calendar 
-      // };
       var show, //to be set by layout so we can show/hide views in the layout
       modified, //whether the ui has changed
       
+      //for initialization purposes when there is no view at all defined
       leafShowing = {
           view: 'Empty'
       };
-      
-      // var newViewMenu = [
-      //     {title:"Table", 
-      //      click: function() { newView(this.title); } 
-      //      ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-      //     },
-      //     {title:"Calendar",
-      //      click: function() { newView(this.title); } 
-      //      ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-      //     },
-      //     {title:"Roster",
-      //      click: function() { newView(this.title); } 
-      //      ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-      //     },
-      //     {title:"Timesheet",
-      //      click: function() { newView(this.title); } 
-      //      ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-      //     }
-      // ];
       
       //--------------------@HANDLING STATE----------------------------- 
       function notify(newState) {
           var viewTreeState = isc.JSON.decode(newState);
           if (viewTreeState) {
-	      // table.display.init = true;
+              //width of side bar
+	      viewTree.setWidth(viewTreeState.width);
 	      //clear the tree
 	      tree.removeList(tree.getChildren(tree.getRoot()));
+              //set the tree to the saved state
 	      tree.linkNodes(viewTreeState.state);
-	      viewTree.setSelectedPaths(viewTreeState.selectedPaths);
+              console.log('path:::::',viewTreeState.pathOfLeafShowing);
+	      viewTree.setSelectedPaths(viewTreeState.pathOfLeafShowing);
 	      var selRecord = viewTree.getSelectedRecord();
-	      viewTree.setWidth(viewTreeState.width);
 	      if (selRecord && !selRecord.isFolder) { 
-	          viewTree.openLeaf(selRecord);
+	          openLeaf(selRecord);
 	      }
               //not much use because there will be state change
               //callbacks from smartclient to come after this
@@ -113,7 +90,8 @@ define
           //isc.JSON.encode(
           return { width: viewTree.getWidth(),
                    time: isc.timeStamp(),
-                   selectedPaths: viewTree.getSelectedPaths(),
+                   pathOfLeafShowing: leafShowing.path,
+                   // selectedPaths: pathShowing, //viewTree.getSelectedPaths(),
                    //only store data needed to rebuild the tree 
                    state: tree.map(function(n) {return {
 	               view: n.view,
@@ -170,6 +148,7 @@ define
           show(leaf.view, true);   
           //set a pointer to the leaf that's now showing
           leafShowing = leaf;
+          leafShowing.path = viewTree.getSelectedPaths();
           //we're changing views, so set modified flag
           setModified(true);
               
@@ -201,6 +180,8 @@ define
       function saveTreeToDb(callback) {
           leafShowing.viewState = views[leafShowing.view].getState();
           roster.user.viewTreeState = isc.JSON.encode(getTreeState());
+          
+          console.log('save',leafShowing);
           console.log('saving tree');
           roster.db.put(roster.user, function(err, response) {
               if (err) {
@@ -443,18 +424,22 @@ define
               ID: 'treegrid',
 	      contextMenu:rightClickMenu
 	      ,canDragRecordsOut:true,
-	          canAcceptDroppedRecords:true
-	      ,canReorderRecords: true,
-	      canAcceptDroppedRecords: true
+	      canAcceptDroppedRecords:true
+	      ,canReorderRecords: true
+	      ,canAcceptDroppedRecords: true
 	      ,data: tree 
 	      ,showHeader:false
 	      ,modalEditing: true
 	      ,selectOnEdit: false
 	      ,escapeKeyEditAction: 'cancel'
-	      ,editorExit: function() { this.canEdit = false;}
+	      // ,editorExit: function() { this.canEdit = false;}
+              ,canEdit: true
 	      ,viewStateChanged: function() {
                   // console.log('vsw');
-	          treeStateChanged('treeStateChanged');
+	          // treeStateChanged('treeStateChanged');
+                  var leaf = viewTree.getSelectedRecord();
+                  if (!leaf.isFolder)
+                      openLeaf(viewTree.getSelectedRecord());
 	      }
 	      ,cellChanged: function() {
                   console.log('cell');
@@ -463,8 +448,8 @@ define
 	      ,onFolderDrop: function() {
 	          treeStateChanged('onFolderDrop');
 	      }
-	      ,openLeaf: openLeaf
-	      ,autoFetchData:true
+	      // ,openLeaf: openLeaf
+	      // ,autoFetchData:true //no datasource, so not needed
 	      ,gridComponents:[toolStrip, "header", "body" ]
 	      ,fields:[{
 	          name:"name",

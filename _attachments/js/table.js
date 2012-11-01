@@ -1,5 +1,5 @@
 define
-({inject: ['roster', 'pouchDS'],
+({inject: ['roster', 'datasources'],
   factory: function(roster, pouchDS) {
       // var  savedCriteria, savedAdvCriteria, usingSimpleFilter= true, editableAdvFilter = false;
       // var groups=[];

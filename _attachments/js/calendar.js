@@ -1,5 +1,5 @@
 define
-({inject: ['pouchDS', 'roster'],
+({inject: ['datasources', 'roster'],
   factory: function(pouchDS, roster) 
   {
       var observer;
@@ -10,6 +10,9 @@ define
 	      autoFetchData: true,
 	      descriptionField: 'notes'
 	      ,nameField: 'person'
+              ,eventOverlapIdenticalStartTimes: true
+              ,eventOverlap:false
+              
 	      // ,initialCriteria: { group:'shift'  }
 	      // eventAdded: function(event) {
 	      //   console.log("Event added", event);
@@ -23,8 +26,8 @@ define
 	      //   return true;
 	      // }
 	      ,backgroundClick: function(startDate, endDate) {
-	          console.log('New event',startDate, endDate);
-	  
+	          console.log('New event',startDate.getUTCHours(), endDate.getUTCHours());
+	          module.temp=startDate;
 	          // isc.Dialog.create({
 	          // 		      message : "Please choose whether to proceed",
 	          // 		      icon:"[SKIN]ask.png",

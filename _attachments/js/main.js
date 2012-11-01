@@ -50,10 +50,6 @@ define(
       }
       
       //***********************@init*******************8
-      //have to call this otherwise dynamic form won't save
-      isc.Offline.goOnline();
-      
-      Date.setInputFormat('YMD');
       
       //@startup logic 
       Pouch(

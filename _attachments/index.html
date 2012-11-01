@@ -28,18 +28,19 @@
     </script> 
     
     <!-- concatenated all these files into the ISC.js below-->
-    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Core.js></SCRIPT>   -->
-    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Foundation.js></SCRIPT>   -->
-    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Containers.js></SCRIPT>   -->
-    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Grids.js></SCRIPT>   -->
-    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Forms.js></SCRIPT>   -->
-    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_DataBinding.js></SCRIPT>   -->
-    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Calendar.js></SCRIPT>
-    -->
-    <SCRIPT SRC=lib/isomorphic/system/modules/ISC.js></SCRIPT>  
+    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Core.js></SCRIPT>   
+    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Foundation.js></SCRIPT>   
+    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Containers.js></SCRIPT>   
+    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Grids.js></SCRIPT>   
+    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Forms.js></SCRIPT>   
+    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_DataBinding.js></SCRIPT>   
+    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Calendar.js></SCRIPT>
+    
+    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC.js></SCRIPT>   -->
     
     <!-- set the skin of the ui -
-    <!-- <SCRIPT SRC=lib/isomorphic/skins/Simplicity/load_skin.js></SCRIPT>   -->
+    <!-- <SCRIPT SRC=lib/isomorphic/skins/Simplicity/load_skin.js></SCRIPTfyProps(obj) {
+       Object.key>   -->
     <!-- <SCRIPT SRC=lib/isomorphic/skins/standard/load_skin.js></SCRIPT>   -->
     <!-- <SCRIPT SRC=lib/isomorphic/skins/Mobile/load_skin.js></SCRIPT>   -->
     <!-- <SCRIPT SRC=lib/isomorphic/skins/Cupertino/load_skin.js></SCRIPT>   -->
@@ -50,13 +51,20 @@
     
     <script>
       isc.setAutoDraw(false) 
+      
+      //have to call this otherwise dynamic form won't save
+      isc.Offline.goOnline();
+      
+      Date.setInputFormat('YMD');
+      isc.Time.setDefaultDisplayTimezone(0);
     </script>
     
     <!-- database adapter -->
-    <script src=lib/pouch.alpha.js></script>   
+    <script src=lib/pouch.alpha.min.js></script>   
     
     <!--/temp for testing purposes, can be removed  -->
     <script src=js/quickpouch.js></script>    
+    <!-- <script src=js/datasources.js></script>     -->
     
     <!-- load and start -->
     <script src=lib/bootstrap.js></script>
