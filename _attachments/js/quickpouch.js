@@ -124,4 +124,4 @@ var pouch =
      
    })();
 
-pouch.setdb('idb://testdb');
+pouch.setdb(window.dbname);

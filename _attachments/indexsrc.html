@@ -1,0 +1,77 @@
+<!-- This version uses the unminified smartclient sources for debugging -->
+
+<HTML>
+  <HEAD>
+  </HEAD>
+  <BODY>
+    <!-- setup bootstrap -->
+    <script>
+      window.bootstrap = {  
+      main: 'main', 
+      pathPrefix: './js',    
+      <!-- verbosity: 'info',  --> 
+      <!-- verbosity: 'debug', --> 
+      verbosity: 'warn', 
+      paths: { 
+       'lib': '../lib' 
+      }, 
+      scriptInsertionLocation : 'body', 
+      timeOut: 2, 
+      testing: false 
+      }; 
+      
+      <!-- get rid of annoying msg when testing licensed version -->
+      window.isc_expirationOff=true;  
+      
+      window.isomorphicDir="lib/isomorphic/";
+      window.dbname = 'idb://rosterdb'
+      
+    <!-- Don't pollute global namespace -->
+      window.isc_useSimpleNames = false;
+    </script> 
+    
+    <SCRIPT SRC=lib/isomorphic/client/modules/ISC_Core.js></SCRIPT>
+    <SCRIPT SRC=lib/isomorphic/client/modules/ISC_Foundation.js></SCRIPT>
+    <SCRIPT SRC=lib/isomorphic/client/modules/ISC_Containers.js></SCRIPT>    
+    <SCRIPT SRC=lib/isomorphic/client/modules/ISC_Grids.js></SCRIPT>    
+    <SCRIPT SRC=lib/isomorphic/client/modules/ISC_Forms.js></SCRIPT>    
+    <SCRIPT SRC=lib/isomorphic/client/modules/ISC_DataBinding.js></SCRIPT>    
+    <SCRIPT SRC=lib/isomorphic/client/modules/ISC_Calendar.js></SCRIPT> 
+    
+    
+    <!-- set the skin of the ui -
+    <!-- <SCRIPT SRC=lib/isomorphic/skins/Simplicity/load_skin.js></SCRIPTfyProps(obj) {
+       Object.key>   -->
+    <!-- <SCRIPT SRC=lib/isomorphic/skins/standard/load_skin.js></SCRIPT>   -->
+    <!-- <SCRIPT SRC=lib/isomorphic/skins/Mobile/load_skin.js></SCRIPT>   -->
+    <!-- <SCRIPT SRC=lib/isomorphic/skins/Cupertino/load_skin.js></SCRIPT>   -->
+    <!-- <SCRIPT SRC=lib/isomorphic/skins/SmartClient/load_skin.js></SCRIPT>     -->
+    <!-- <SCRIPT SRC=lib/isomorphic/skins/SilverWave/load_skin.js></SCRIPT> -- -->
+    <!-- <SCRIPT SRC=lib/isomorphic/skins/EnterpriseBlue/load_skin.js></SCRIPT> -->
+    <SCRIPT SRC=lib/isomorphic/skins/Enterprise/load_skin.js></SCRIPT>
+    
+    <script> 
+      isc.setAutoDraw(false)  
+      
+      //have to call this otherwise dynamic form won't save 
+      isc.Offline.goOnline(); 
+      
+      Date.setInputFormat('YMD'); 
+      isc.Time.setDefaultDisplayTimezone(0); 
+    </script> 
+    
+    <!-- <\!-- database adapter -\-> -->
+    <script src=lib/pouch.alpha.min.js></script>
+    
+    <!-- <\!--/temp for testing purposes, can be removed  -\-> -->
+    <script src=js/quickpouch.js></script>
+    <!-- <script src=js/datasources.js></script> -->
+    
+    <!-- <\!-- load and start -\-> -->
+    <script src=lib/bootstrap.js></script>
+  </BODY> 
+</HTML>
+
+
+
+

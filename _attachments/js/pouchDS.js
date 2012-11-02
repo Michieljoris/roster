@@ -1,6 +1,11 @@
+/*global pp:false emit:false isc:false define:false */
+/*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
+/*jshint maxparams:4 maxcomplexity:7 maxlen:90 devel:true*/
+
 define
 ({inject: ['roster'],
   factory: function(roster) {
+      "use strict";
       // var db =  'idb://' + roster.dbname;
       function typefyProps(obj) {
           Object.keys(obj).forEach(
@@ -31,7 +36,7 @@ define
 			  if (err) { console.log('ERRROR: can\'t find doc ', 
 						 err.error, err.reason); 
 				     return; }
-			  db.remove(doc, function(err,response) {
+                          db.remove(doc, function(err,response) {
 			      if (err) { console.log('ERRROR: can\'t find doc ', 
 						     err.error, err.reason); 
 					 return; }
@@ -40,9 +45,9 @@ define
 			      else  pouchDS.processResponse(requestId, dsResponse);} );});});}
       function fetch(view, dsResponse, requestId ) {
           doPouch(function(db) {
-    	      db.query( {map:view.map},{reduce: view.reduce},
-    	      // db.query( 'pouch/alldocs',
-    			function (err,response){
+              db.query( {map:view.map},{reduce: view.reduce},
+                        // db.query( 'pouch/alldocs',
+                        function (err,response){
 			    if (err) console.log("Error from pouch query in fetch:", err,
 						 "resp:", response);
 			    else {
@@ -55,7 +60,7 @@ define
 				    // dsResponse.data.push({ _id:key._id, _rev:key._rev, text:key.text});
 				
 				    dsResponse.data.push(key);
-    			        }
+                                }
 			        console.log('data: ', dsResponse.data);
 			        pouchDS.processResponse(requestId, dsResponse);}});});}
       function add(data, dsResponse, requestId) {
@@ -113,8 +118,10 @@ define
 	      // recordName:"employee",
 	      // titleField:"Name",
 	      transformRequest: function (dsRequest) {
+                  
 	          // DS = this;
-	          console.log('dsRequest:',dsRequest);
+	          console.log('transform dsRequest:',dsRequest);
+                  console.log(dsRequest.data);
 	          var dsResponse;
 	          switch (dsRequest.operationType) {
 	            case "fetch":
@@ -123,13 +130,12 @@ define
 	              switch (dsRequest.componentId) {
 	                case 'isc_ShiftCalendar' :
                           fetchView = view.shifts;  
-	                  // console.log('in shiftCalendar', fetchView); 
+	                  console.log('in shiftCalendar', fetchView); 
 	                  break;
-	              default: ; //console.log('getting all objects for: ', dsRequest.componentId); 
+	              default:
+                       //console.log('getting all objects for: ', dsRequest.componentId); 
 	              }
-	              console.log('fetchView', fetchView); 
-	              break;
-	              console.log("Fetch");
+	              console.log('fetch', fetchView); 
 	              dsResponse = {
 	                  clientContext: dsRequest.clientContext,
 	                  status: 1};

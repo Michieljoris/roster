@@ -1,5 +1,5 @@
 define
-({inject: ['datasources', 'roster'],
+({inject: ['pouchDS', 'roster'],
   factory: function(pouchDS, roster) 
   {
       var observer;
@@ -13,7 +13,7 @@ define
               ,eventOverlapIdenticalStartTimes: true
               ,eventOverlap:false
               
-	      // ,initialCriteria: { group:'shift'  }
+	      ,initialCriteria: { group:'shift'  }
 	      // eventAdded: function(event) {
 	      //   console.log("Event added", event);
 	      // },

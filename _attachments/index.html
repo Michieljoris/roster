@@ -18,6 +18,9 @@
       testing: false
       };
       
+      <!-- for test purposes in quickpouch-->
+      window.dbname= 'idb://rosterdb';
+      
       <!-- get rid of annoying msg when testing licensed version -->
       window.isc_expirationOff=true;  
       
@@ -60,7 +63,7 @@
     </script>
     
     <!-- database adapter -->
-    <script src=lib/pouch.alpha.min.js></script>   
+    <script src=lib/pouch.alpha.js></script>   
     
     <!--/temp for testing purposes, can be removed  -->
     <script src=js/quickpouch.js></script>    

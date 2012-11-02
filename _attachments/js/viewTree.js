@@ -120,7 +120,7 @@ define
       //gets called by currently showing views when their state changes
       //should be set to the observer of any view implemented
       function viewStateChanged() {
-          console.log('************viewstateschanged');
+          // console.log('************viewstateschanged');
           setModified(true);
       }
       
@@ -397,7 +397,7 @@ define
           {members: [
               loginButton
 	      ,saveButton     
-              // ,isc.LayoutSpacer.create({  width:"*" })
+              ,isc.LayoutSpacer.create({  width:"*" })
               ,isc.IconMenuButton.create({title:''
 				          ,ID:'addButton'
 				          ,iconClick: "this.showMenu()"
