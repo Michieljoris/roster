@@ -39,21 +39,16 @@ define
             ,{name:"_rev"}
             ,groupField
             //shift 
-            ,{name:"endDate", required: true, type: "datetime", group: 'shift'}
             ,{name:"startDate", required: true, type: "datetime", group: 'shift'}
-            ,{name:"person",  type: 'ref', group: 'shift',
-              foreignKey: '_id'} //ref to person obj ,,,change to person..
+            // ,{name:"startTime", required: true, type: "time", group: 'shift'}
+            ,{name:"endDate", required: true, type: "datetime", group: 'shift'}
+            // ,{name:"endTime", required: true, type: "time", group: 'shift'}
+            ,{name:"person",  type: 'list', group: 'shift'}
             ,{name:"location", group: 'shift'} 
             ,{name:"notes", group: 'shift'}//,,, change to notes
             ,{name:"ad", type: 'boolean', group: 'shift'} //allday
-            ,{name:"annualLeave", type: 'boolean', group: 'shift'}
-            ,{name:"sickLeave", type: 'boolean', group: 'shift'}
-            ,{name:"longServiceLeave", type: 'boolean', group: 'shift'}
-            ,{name:"otherLeave", type: 'boolean', group: 'shift'}
+            ,{name:"claim", type: 'text', group: 'shift'} 
             ,{name:"sleepOver", type: 'boolean', group: 'shift'}
-            ,{name:"awayFromBase", type: 'boolean', group: 'shift'}
-            ,{name:"adminHours", type: 'float', group: 'shift'}
-            ,{name:"disturbedSleep", type: 'float', group: 'shift'}
         
             // location
             ,{name:"name", type: 'text', group: ['location', 'person']}

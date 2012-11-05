@@ -1,4 +1,4 @@
-/*global pp:false emit:false isc:false define:false */
+/*global  emit:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:4 maxcomplexity:7 maxlen:90 devel:true*/
 
@@ -13,12 +13,17 @@ define
 	          if (roster.tags[k]) {
 	              var type = roster.tags[k].type;
 	              switch (type) {
+                        case 'list':
+                          // obj[k] = isc.JSON.decode(obj[k]);
+                          break; 
 	                case 'datetime': 
 	                  var d = Date.parseDate(obj[k].slice(0, obj[k].length-5));
+                          // console.log('in typefy',d);
 	                  var timezoneOffset = d.getTimezoneOffset();
+                          // timezoneOffset = 0;
 	                  obj[k] = new Date(d.getTime() - (timezoneOffset * 60000));
 	                  break;
-	              default: ;
+	              default: 
 	              }
 	          }
 	          else {
@@ -52,10 +57,11 @@ define
 						 "resp:", response);
 			    else {
 			      
-			        console.log('Response is: ', response);
+			        console.log('Response in fetch is: ', response);
 			        dsResponse.data=[];
 			        for (var i = 0; i< response.rows.size();i++) {
 				    var key=response.rows[i].key;
+                                    // console.log('calling typefy');
 				    typefyProps(key); 
 				    // dsResponse.data.push({ _id:key._id, _rev:key._rev, text:key.text});
 				

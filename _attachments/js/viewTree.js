@@ -187,6 +187,11 @@ define
           
           console.log('save',leafShowing);
           console.log('saving tree');
+          //TODO get the roster.user from the database and then use
+          //that object to save the ui, or put the ui in a separate
+          //doc...  at the moment there is an update error when you try to
+          //save after modifying the current user in a table for
+          //instance
           roster.db.put(roster.user, function(err, response) {
               if (err) {
 	          console.log('ERRROR: Could not save changed state of the view tree.' +
