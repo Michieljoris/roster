@@ -213,11 +213,12 @@ define
                   var record;
                  if (index) record = dataTable.getRecord(index); 
                   else record = this.getSelectedRecord();
-	          // console.log(record, "Selected Record");
+	          console.log(record, "Selected Record");
 	          editForm.editRecord(record);
-                  // editForm.getField('saveButton').setTitle('Update record');
-                  // editForm.getField('saveButton').method = 'updateData';
+                  editForm.getField('saveButton').setTitle('Update record');
+                  editForm.getField('saveButton').method = 'updateData';
                    editForm.getField('editnew').setDisabled(false);
+                  editForm.clearErrors(true);
 	      }
           });
       
@@ -233,7 +234,7 @@ define
             }
 	    ,fields:[
 	        {name:"editnew", type:"button", width:130,
-	         title:"Create New Item", click: function()
+	         title:"Clear form", click: function()
                  { var newValues = {};
                    if (state.groups.length === 1)
                        newValues.group = state.groups[0];
@@ -242,7 +243,8 @@ define
                    editForm.setValues(newValues);
                    editForm.getField('saveButton').setTitle('Save form');
                    editForm.getField('saveButton').method = 'addData';
-                   editForm.getField('editnew').setDisabled(true);
+                   // editForm.getField('editnew').setDisabled(true);
+                   editForm.clearErrors(true);
                    
                    console.log(dataTable.getSelectedRecord());
                  }
@@ -279,9 +281,10 @@ define
       }
       
       function saveFormData(form, method) {
-          if (!form.validate()) return; 
+          if (!form.valuesHaveChanged() || !form.validate()) return; 
           console.log(form.getValues());
           var newValues = form.getValues();
+          
           // newValues.group = 'shift';
           // var method = 'addData';
           var f = pouchDS[method];
@@ -289,7 +292,7 @@ define
 			     {   dataTable.selectRecord(data);
                                  editForm.setValues(data); console.log(resp,data,req);}];
           
-          editForm.getField('editnew').setDisabled(false);
+          // editForm.getField('editnew').setDisabled(false);
           editForm.getField('saveButton').setTitle('Update record');
           editForm.getField('saveButton').method = 'updateData';
           f.apply(pouchDS, args );

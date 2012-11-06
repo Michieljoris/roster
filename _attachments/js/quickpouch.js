@@ -136,18 +136,22 @@ var pouch =
             return result; 
         })(pmax);
         
+        function random(rangeStart, rangeEnd) {
+            var span = rangeEnd - rangeStart + 1;
+            return rangeStart +  Math.floor(Math.random() * span);
+        }
+        
         function makeRandomShift(period) {
             var start = new Date();
-            var hour = Math.floor(Math.random() * 24);
+            var hour = random(0,23);
+            var offset = random(0,period); 
+            start.setDate(start.getDate() + offset);
             start.setHours(hour);
             start.setMinutes(0);
             start.setSeconds(0);
-            var length= Math.ceil(Math.random() * 10);
+            var length= random(1,20)/2;
             if (hour + length > 24) length = 24 - hour;
             var end = new Date( start.getTime() + length*3600000);
-            
-            var offset = Math.ceil(Math.random() * period); 
-            start.setDate(start.getDate() + offset);
 	    var timezoneOffset = start.getTimezoneOffset();
             console.log(timezoneOffset);
 	    start = new Date(start.getTime() + (timezoneOffset * 60000));
@@ -159,9 +163,6 @@ var pouch =
                 endDate: end,
                 notes: 'notes',
                 ad: getBool(),
-                annualLeave: getBool(),
-                sickLeave:getBool(),
-                sleepOver: getBool(),
                 person: persons[Math.floor(Math.random() * pmax)],
                 location: locations[Math.floor(Math.random() * lmax)]
             };

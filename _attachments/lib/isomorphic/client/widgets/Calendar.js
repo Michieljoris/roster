@@ -3889,9 +3889,10 @@ isc.DaySchedule.addProperties({
     // helper function for detecting when a weekend is clicked, and weekends are disabled
     colDisabled : function (colNum) {
         var dayNum = this._isWeek ? this.getDayFromCol(colNum) : this.creator.chosenDate.getDay();
-        //isc.logWarn('colDisabled:' + [colNum, dayNum]);
+        isc.logWarn('colDisabled:' + [colNum, dayNum]);
         if (this.creator.disableWeekends 
             && Date.getWeekendDays().contains(dayNum)) {
+            // return true;        
             return true;        
         } else {
             return false;   
@@ -4002,12 +4003,22 @@ isc.DaySchedule.addProperties({
 
         this.creator._showEventDialog(sRow, this._selectionTracker.colNum, diff);
     },
+    
+    
+    colIsWeekend: function (colNum) {
+        if (Date.getWeekendDays().contains(this.getDayFromCol(colNum))) {
+            return true;        
+        } else {
+            return false;   
+        }
+    },
 
     getCellStyle : function (record, rowNum, colNum) {
         var bStyle = this.getBaseStyle(record, rowNum, colNum);
         
         if (this.isLabelCol(colNum)) return bStyle;
         if (this.colDisabled(colNum)) return this.baseStyle + "Disabled";
+        if (this.colIsWeekend(colNum)) return this.baseStyle + "Disabled";
         if (this._selectionTracker && this._selectionTracker.colNum == colNum) {
             var sRow = this._selectionTracker.startRowNum,
                 eRow = this._selectionTracker.endRowNum;
@@ -4453,6 +4464,7 @@ isc.MonthSchedule.addProperties({
         if (this.creator.disableWeekends 
             && Date.getWeekendDays().contains(this.getDayFromCol(colNum))) {
             return true;        
+            // return true;        
         } else {
             return false;   
         }

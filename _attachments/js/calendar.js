@@ -4,30 +4,72 @@
 
 define
 ({inject: ['pouchDS', 'roster'],
-  factory: function(pouchDS) 
+  factory: function(pouchDS, roster) 
   { "use strict";
     var observer;
+    var settings = {
+        eventSnapGap: 30,
+        workdayStart: '6:00',
+        workdayEnd: '22:00',
+        currentViewName: 'week', //day, week or month
+        chosenDate: new Date()
+        
+    };
+    // setChosenDate
+    // setCurrentViewName
+    isc.Validator.addValidator(
+     'isAfter',
+        function(item, validator, value, record) {
+            console.log('in validator', eventForm.getValue('startTime'), value );
+            // console.log( value > eventForm.getValue('startTime'));
+            //TODO turn string into date if necessary
+            var startDate = new Date(eventForm.getValue('startTime'));
+            var endDate = value;
+            startDate.setYear(0); 
+            startDate.setMonth(0); 
+            startDate.setDate(0); 
+            endDate.setYear(0); 
+            endDate.setMonth(0); 
+            endDate.setDate(0); 
+            console.log(startDate<endDate);
+            // return (value >  eventForm.getValue('startTime'));
+            return false;
+        }
+        
+    );
     
     function addEvent() {
-        console.log(eventForm.getValues());
+        console.log('addEvent',eventForm.getValues());
+        eventForm.clearErrors();
+        
         if (eventForm.validate()) {
-            console.log('event', eventForm.getValues());
-            console.log('notes', eventForm.getValues().notes);
             var event = eventForm.getValues();
-            var startDate = new Date();
+                var startDate = new Date();
             startDate.setHours(event.startTime.getHours());
             startDate.setMinutes(event.startTime.getMinutes());
+            startDate.setSeconds(0);
             startDate.setYear(event.date.getYear() + 1900);
             startDate.setMonth(event.date.getMonth());
             startDate.setDate(event.date.getDate());
             var endDate = new Date();
             endDate.setHours(event.endTime.getHours());
             endDate.setMinutes(event.endTime.getMinutes());
+            endDate.setSeconds(0);
             endDate.setYear(event.date.getYear() + 1900);
             endDate.setMonth(event.date.getMonth());
             endDate.setDate(event.date.getDate());
+            // if (endDate <= startDate) {
+            //     console.log('ERROR');
+            //     //TODO
+            //     return;
+            // }
+            // eventForm.getField('endTime').validators = [
+            //     {type:"dateRange", min: Date(0,0,0),
+            //      max: new Date(30000,0, 0) ,
+            //      errorMessage: 'Finish time has to be after start time'}];
+        
             if (!event.notes) event.notes = '';
-            console.log(startDate, endDate);
+                console.log(startDate, endDate);
 	    // calendar.addEvent(startDate, endDate,
             var otherFields = { group: 'shift',
                                 claim: event.claim,
@@ -35,7 +77,7 @@ define
                                 sleepOver: event.sleepOver,
                                 location: event.location,
                                 ad: false,
-                              displayPerson: []};
+                                displayPerson: []};
             // console.log('changed:', eventForm.valuesHaveChanged(), eventForm.getChangedValues());
             
             var personList = eventForm.getField('person').pickList.getSelectedRecords();
@@ -103,6 +145,8 @@ define
                               //TODO: make drag drop shift worker editor
                           }]
                          };
+    
+    
     var eventForm = 
     isc.DynamicForm.create({
         ID: "eventForm",
@@ -111,6 +155,7 @@ define
         colWidths: ['60', '60', '20'],
         cellPadding: 4,
         numCols: 3,
+        timeFormatter: 'toShort24HourTime',
         itemKeyPress: function(item,keyName) {
             if (keyName === 'Enter') addEvent();
                 
@@ -144,13 +189,18 @@ define
             {name: "date", required: true, showTitle: false, type: "date", startRow: true},
             {name: "sleepOver", align: 'left', showTitle: false, type: "boolean",
              startRow: false , colSpan:2},
-            {name: "startTime", type: "time", required: true, title:'From',showTitle: true,
-             titleOrientation: 'top', startRow: true},
-            {name: "endTime", showTitle: true, required: true, title:'To', type: "time",
-             titleOrientation: 'top', colSpan:2},
+            {name: "startTime", type: "time", editorType: 'comboBox', required: true,
+             title:'From',showTitle: true,
+             titleOrientation: 'top', startRow: true, valueMap:roster.getTimeList(30) },
+            {name: "endTime", type: "time", editorType: 'comboBox', required: true,
+             title:'To',showTitle: true, colSpan: 2,
+             validators: [{ type:'isAfter', errorMessage: 'Finish time is before start time' }],
+             titleOrientation: 'top', startRow: false, valueMap:roster.getTimeList(30) },
+            
             {name: "repeats", type: "Select", showTitle: false, startRow: true,
              valueMap: ['Does not repeat', 'Daily', 'Every weekday (Mon-Fri)', 'Weekly',
-                        'Monthly', 'Yearly'], required: true, defaultValue: 'Does not repeat'
+                        'Monthly', 'Yearly'], required: true, defaultValue: 'Does not repeat',
+             disabled: true
             },
             //TODO implement repeats UI, similar to Extensible calenda
             
@@ -166,7 +216,8 @@ define
         ]
     });
     
-    var personField = module.temp = eventForm.getField('person');
+    
+    // var personField = module.temp = eventForm.getField('person');
     
     var eventEditor = isc.Window.create({
         title: "TODO: Set to event date, start and end",
@@ -198,8 +249,19 @@ define
 	    ,nameField: 'person'
             ,eventOverlapIdenticalStartTimes: true
             ,eventOverlap:false
-            ,eventSnapGap: 15
-	    ,initialCriteria: { group:'shift'  } 
+            ,firstDayOfWeek: 6
+            ,disableWeekends: false
+            ,showWorkday: true
+            // ,showTimelineView:true
+            ,workdays: [0,1,2,3,4,5,6]
+            ,workdayStart: settings.workdayStart
+            ,workdayEnd: settings.workdayEnd
+	    // ,initialCriteria: { group:'shift'  } 
+            ,eventSnapGap: settings.eventSnapGap
+            ,dateChanged: function() {
+                //TODOchange of current date
+                console.log('change of current date');
+            }
             ,getEventHoverHTML : function (event, eventWindow) {
                 console.log(event, eventWindow);
                 var cal = this;
@@ -215,10 +277,18 @@ define
                     event[cal.descriptionField];       
 
             }
+            // ,getDayBodyHTML: function() {
+             //TODO   
+            // }
+            // ,selectTab:function(tabNum) {
+             //TODO   
+            // }
 	    ,eventClick: function(event, viewName) {
 	        console.log("Update event", event, viewName);
-                event.startTime = event.startDate;    
+                // event.startTime = isc.Time.toShortTime(event.startDate, 'toShort24HourTime'),
+                // event.endTime = isc.Time.toShortTime(event.endDate, 'toShort24HourTime'),
                 event.endTime = event.endDate;    
+                event.startTime = event.startDate;    
                 event.date = event.startDate;
                 eventForm.setValues(event);
                 
@@ -230,13 +300,19 @@ define
 	    }
 	    ,backgroundClick: function(startDate, endDate) {
 	        console.log('New event',startDate, endDate);
+                
+                 var date =  new Date(startDate);
                 // updating = false;
 	        eventForm.setValues({
+                    date: date,
                     // person: [],
                     // location: '',
-                    date: startDate,
-                    startTime: startDate.getHours() + ':' + startDate.getMinutes(),
-                    endTime: endDate.getHours() + ':' + endDate.getMinutes()
+                    // startTime : isc.Time.toShortTime(startDate, 'toShort24HourTime'),
+                    // endTime : isc.Time.toShortTime(endDate, 'toShort24HourTime')
+                    // startTime: startDate.getHours() + ':' + startDate.getMinutes(),
+                    // endTime: endDate.getHours() + ':' + endDate.getMinutes()
+                    startTime: startDate,
+                    endTime: endDate
                 });
                 eventEditor.setTitle(
                     getShiftDescription({ startDate: startDate, endDate: endDate }));
@@ -254,6 +330,14 @@ define
             }
             ,name: 'Calendar'
         }); 
+    
+    calendar.addEventButton.click = function () {
+        console.log('TODO');
+        //this needs to also open the shift edit window..
+    };
+    // var endDate = new Date();
+    // endDate.setDate( endDate.getDate() + 10);
+    // calendar.setTimeLineRange(new Date(), endDate);
       
     return calendar; 
       

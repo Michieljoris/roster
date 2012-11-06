@@ -1,6 +1,6 @@
 /*global isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
-/*jshint maxparams:4 maxcomplexity:7 maxlen:190 devel:true*/
+/*jshint maxparams:5 maxcomplexity:8 maxlen:190 devel:true*/
 
 define
 ({
@@ -19,6 +19,7 @@ define
 	
         //   }
         // // };
+        
     
         var guestUser = {
             _id:'guest',
@@ -32,7 +33,7 @@ define
         //shift, location, person, role
         var groupField =
             {title: 'Group', name:"group", required: true,
-              type: 'text' };
+             type: 'text' };
     
         var tagArray = [
             {name:"_id", primaryKey:true}
@@ -93,7 +94,7 @@ define
         var tags = {};
         var tagGroups = {};
         function addTagToGroup(tag, group) {
-                if (!tagGroups[group]) tagGroups[group] = [];
+            if (!tagGroups[group]) tagGroups[group] = [];
             if (tagGroups[group].containsProperty('name', tag.name))
                 console.log('ERROR: double tag', tag.name);
             else tagGroups[group].push(tag);
@@ -158,6 +159,58 @@ define
         })();
         
         groupField.valueMap = groups;   
+        
+        
+        //roster times
+        
+        var timeLists = {};
+        function formatTime(hour, minute) {
+            // var hourPrefix = hour<10 ? '0' : '';
+            var hourPrefix = hour<10 ? '' : '';
+            var minutePrefix = minute<10 ? '0' : '';
+            return hourPrefix + hour + ':' + minutePrefix + minute;
+        } 
+         
+        function getTimeList(step, startTime, endTime, endHour, endMinute) {
+            step = step || 30;
+            startTime = startTime || 0;
+            endTime = endTime || 0;
+            endMinute = endMinute || 0;
+             
+            var hour, minute;
+            if (typeof startTime === 'object') {
+                if (startTime) {
+                    hour = startTime.getHours();
+                    minute = startTime.getMinutes();
+                } else { hour = 0; minute = 0; }
+                if (endTime) {
+                    endHour = endTime.getHours();
+                    endMinute = endTime.getMinutes();
+                } else { endHour = 24; endMinute = 0; }
+            }
+            else {
+              hour = startTime, minute = endTime;  
+                
+            } 
+            endHour = endHour || 24;
+            console.log(hour, minute, endHour, endMinute);
+            if (endHour > 24) endHour = 24;
+            var uniqueList = formatTime(hour,minute) + '-' + 
+                formatTime(endHour, endMinute) + step;
+            if (timeLists[uniqueList]) return timeLists[uniqueList] ;
+            var list = [];
+            while (hour < endHour || (hour === endHour && minute <= endMinute)) {
+                list.push(formatTime(hour,minute));
+                minute+=step; 
+                console.log(minute,hour);
+                if ((minute/60) >= 1) hour++;
+                minute %= 60;
+            }
+            if (list.last() === '24:00') list[list.length-1] = '0.00';
+            timeLists[uniqueList] = list;
+
+            return list;
+        }
     
         roster = {
             user:guestUser, 
@@ -170,7 +223,8 @@ define
             tags: tags,
             guestUser: guestUser,
             // dbname: 'http://127.0.0.1:2020/roster'
-            dbname: window.dbname
+            dbname: window.dbname,
+            getTimeList: getTimeList
         };
         return roster; 
     }});
