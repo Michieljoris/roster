@@ -200,7 +200,8 @@ define
             if (timeLists[uniqueList]) return timeLists[uniqueList] ;
             var list = [];
             while (hour < endHour || (hour === endHour && minute <= endMinute)) {
-                list.push(formatTime(hour,minute));
+                // list.push(formatTime(hour,minute));
+                list.push(isc.Time.createLogicalTime(hour, minute, 0));
                 minute+=step; 
                 console.log(minute,hour);
                 if ((minute/60) >= 1) hour++;

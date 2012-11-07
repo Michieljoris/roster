@@ -176,7 +176,7 @@ define
 	      canReorderRecords:true,
 	      // autoFetchData: true,
 	      //editing
-	      recordClick:"this.updateDetails()",
+	      recordClick: recordClick, //"this.updateDetails()",
 	      canEdit:true,
 	      modalEditing:true,
 	      cellChanged:"this.updateDetails()",
@@ -221,6 +221,11 @@ define
                   editForm.clearErrors(true);
 	      }
           });
+      
+      function recordClick(viewer, record, recordNum, field, fieldNum, value, rawValue) {
+         dataTable.updateDetails(recordNum); 
+          
+      }
       
       //---------------@EDITFORM----------------------------
       var editForm = isc.DynamicForm.create(
@@ -676,10 +681,10 @@ define
 	      ,height:'30%'
 	      ,selectedTab: 1,
 	      tabs: [
-		  {title: "Details",
+		  {title: "Edit",
 		   pane:editForm
 		  }
-		  ,{ title: "Filter",
+		  ,{ title: "Filter table",
 		     pane: filterStack 
 		   } 
 	      ]
