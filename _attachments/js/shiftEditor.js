@@ -7,6 +7,17 @@ define
   factory: function(pouchDS, roster) 
   { "use strict";
 
+    var API = {};
+    var settings = {}; 
+
+    API.show = function(event, someSettings) {
+        settings = someSettings;
+        eventForm.setValues(event);
+        eventEditor.setTitle(getShiftDescription(event));
+        eventForm.clearErrors();
+        eventEditor.show();
+    };
+    
     isc.Validator.addValidator(
      'isAfter',
         function(item, validator, endTime, record) {
@@ -85,21 +96,32 @@ define
                 otherFields.displayPerson.push(p.name);
             });
             
-            console.log('***********', event.person)    ;
+           //************ 
+            event.startDate = startDate;
+            event.endDate = endDate;
+            isc.addProperties(event, otherFields);
+            
             if (event._rev) {
                 if (eventForm.valuesHaveChanged())
-                    pouchDS.updateEvent(event,
-                                         startDate, endDate,
-                                         // isc.JSON.encode(event.person),
-                                         event.person,
-                                         event.notes,
-                                         otherFields);
+                    pouchDS.updateData(event);
             }
-            else pouchDS.addEvent(startDate, endDate,
-                                   // isc.JSON.encode(event.person),
-                                   event.person,
-                                   event.notes,
-                                   otherFields);
+            else pouchDS.addData(event);
+            
+            // console.log('***********', event.person)    ;
+            // if (event._rev) {
+            //     if (eventForm.valuesHaveChanged())
+            //         pouchDS.updateEvent(event,
+            //                              startDate, endDate,
+            //                              // isc.JSON.encode(event.person),
+            //                              event.person,
+            //                              event.notes,
+            //                              otherFields);
+            // }
+            // else pouchDS.addEvent(startDate, endDate,
+            //                        // isc.JSON.encode(event.person),
+            //                        event.person,
+            //                        event.notes,
+            //                        otherFields);
             eventEditor.hide(); 
         }
     }
@@ -240,9 +262,9 @@ define
       
     function getShiftDescription(event) {
         console.log('in shiftdesc', event);
-        var sDate = event.startDate.toShortDate(calendar.dateFormatter);
-        var sTime = isc.Time.toTime(event.startDate, calendar.timeFormatter, true);
-        var eTime = isc.Time.toTime(event.endDate, calendar.timeFormatter, true);
+        var sDate = event.startDate.toShortDate();
+        var sTime = isc.Time.toTime(event.startDate, 'toShortPaddedTime', true);
+        var eTime = isc.Time.toTime(event.endDate, 'toShortPaddedTime', true);
 
         return sDate + "&nbsp;" + sTime + "&nbsp;-&nbsp;" + eTime;
     }
