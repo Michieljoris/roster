@@ -1,17 +1,20 @@
-/*global  emit:false isc:false define:false */
+/*global module:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
-/*jshint maxparams:4 maxcomplexity:7 maxlen:90 devel:true*/
+/*jshint maxparams:4 maxcomplexity:7 maxlen:130 devel:true*/
 
 define
-({inject: ['roster'],
-  factory: function(roster) {
+({inject: ['globals', 'typesAndFields'],
+  factory: function(globals, typesAndFields) {
       "use strict";
+      
+      var views = typesAndFields.views;
+      
       // var db =  'idb://' + roster.dbname;
       function typefyProps(obj) {
           Object.keys(obj).forEach(
 	      function(k) {
-	          if (roster.tags[k]) {
-	              var type = roster.tags[k].type;
+	          if (typesAndFields.tags[k]) {
+	              var type = typesAndFields.tags[k].type;
 	              switch (type) {
                         case 'list':
                           // obj[k] = isc.JSON.decode(obj[k]);
@@ -71,27 +74,26 @@ define
 			        pouchDS.processResponse(requestId, dsResponse);}});});}
       function add(data, dsResponse, requestId) {
           doPouch(function(db) {
-      	      delete data._id;
-      	      db.put(data,
-      		     function (err,response){
-      			 if (err) console.log("Error from pouch put in add:", err,
-      					      "resp:", response);
-      			 else {
-      			     data._id = response.id; 
-      			     data._rev = response.rev; 
-      			     dsResponse.data = data;
+              delete data._id;
+              db.put(data,
+                     function (err,response){
+                         if (err) console.log("Error from pouch put in add:", err,
+                                              "resp:", response);
+                         else {
+                             data._id = response.id; 
+                             data._rev = response.rev; 
+                             dsResponse.data = data;
                              console.log("hello",  data.endDate);
                              module.temp= data;
-                             
-      			     pouchDS.processResponse(requestId, dsResponse);}});
+                             pouchDS.processResponse(requestId, dsResponse);}});
 	  });
       }
 
       function update(data, dsResponse, requestId) {
           // console.log('data', data);
           doPouch(function(db) {
-    	      db.put(data,
-    		     function (err,response){
+              db.put(data,
+                     function (err,response){
 			 if (err) console.log("Error from pouch put in update:", err,
 					      "resp:", response);
 			 else {
@@ -102,45 +104,41 @@ define
       function doPouch(f) {
           // Pouch(db, function(err, db) {
 	  // if (err) console.log("Error opening database", db, "err:", err, "db:", db);
-	      // else f(db);});
-          f(roster.db);
+	  // else f(db);});
+          f(globals.db);
       }			 
 
-      var view = {
-          all: {   map : function(doc) { emit(doc,null); }
-	           ,reduce: false}
-          ,shifts: { map : function(doc) {
-	      if (doc.group === 'shift') emit(doc,null);}
-		     ,reduce: false}
-      };
 
       var pouchDS = isc.DataSource.create(
           {
-	      // ID : "pouchDS",
-	      fields: roster.tagArray,
+	      ID : "pouchDS",
+	      fields: typesAndFields.tagArray,
 	      autoDeriveTitles:true,
 	      dataProtocol: "clientCustom",
 	
+              // titleField: 'title',
 	      // recordName:"employee",
 	      // titleField:"Name",
 	      transformRequest: function (dsRequest) {
-                  
 	          // DS = this;
 	          console.log('transform dsRequest:',dsRequest);
                   console.log(dsRequest.data);
 	          var dsResponse;
 	          switch (dsRequest.operationType) {
 	            case "fetch":
-	              var fetchView = view.all;
+	              var fetchView = views.all;
                       // console.log('about to switch......', dsRequest);
-	              switch (dsRequest.componentId) {
+                      switch (dsRequest.componentId) {
 	                case 'isc_ShiftCalendar' :
-                          fetchView = view.shifts;  
+                          fetchView = views.shift;  
 	                  console.log('in shiftCalendar', fetchView); 
 	                  break;
 	              default:
-                       //console.log('getting all objects for: ', dsRequest.componentId); 
+                          //console.log('getting all objects for: ', dsRequest.componentId); 
 	              }
+                      if (dsRequest.view) {
+                          fetchView = views[dsRequest.view];   
+                      }
 	              console.log('fetch', fetchView); 
 	              dsResponse = {
 	                  clientContext: dsRequest.clientContext,
@@ -175,23 +173,8 @@ define
 	              remove(dsRequest.data._id, dsResponse, dsRequest.requestId); 
 	              break; 
 	          default: console.log("This is unknown operation on pouchdb: ", dsRequest.operationType );
-	          };
+	          }
 	      }
           });    
-      //this filter out the proper objects when the objects are in cache, and not retrieved from
-      //the server. Using views for that. (See fetch)
-      // pouchds.applyFilter = function(data, criteria, requestProps) {
-      //   console.log('applyFilter',data, criteria, requestProps);
-      //   var filteredData = {};
-      //   var group;
-      //   switch (requestProps.componentId){
-      //   case 'shiftCalender': group = 'shift'; break;
-      //   }
-      //   return data.filter(
-      //   	function(d) { return group ? (d.group === group ? true : false) : true; } 
-      //   );
-      // };
-      // return pouchds;
-      // }());
       return pouchDS;
   }});

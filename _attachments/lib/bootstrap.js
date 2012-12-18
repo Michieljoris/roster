@@ -475,7 +475,7 @@
 	 dependency.exeOrder = exeOrder;
 	 dependency.requirers.forEach(
 	   function(dep) {
-	     if (exeOrder > 100) { log(E, 'looping in  setExeOrder'); return; }
+	     if (exeOrder > 200) { log(E, 'looping in  setExeOrder'); return; }
 	     if (dep === dependency) return;
 	     if (dep.id === origin) {
 	       log(E, 'Cyclic dependency. ');
@@ -531,50 +531,67 @@
      
      //------------------------------------------------------------ 
      function executeNow(dependency) {
-       if (!executeASAP) return;
-       //function that, if all dependencies are met, executes the callback;
-       function exe(dep) {
-	 if (dep.definer.factory && typeof dep.definer.factory === 'function')  
-	 { 
-	   if (dep.dependencies.every(function(e) { return e.met;}))
-	   { log(I,'All dependencies have been met for ' + dep.definer.id +
-		 ' ,executing the callback');
-	     executeCallback(dep);
-	     return true; }
-	   else { log(I,"There are still dependencies missing for " + dep.definer.id);
-		  return false; } }     
-	 else return true; } 	 
+         if (!executeASAP) return;
+         //function that, if all dependencies are met, executes the callback;
+         function testDeps(dep) {
+	     // if (dep.definer.factory && typeof dep.definer.factory === 'function')  
+	     // { 
+	     if (dep.dependencies.every(function(e) { return e.met;}))
+	     { log(I,'All dependencies have been met for ' + dep.definer.id );
+	       // ' ,executing the callback');
+	       // executeCallback(dep);
+	       return true; }
+	     else { log(I,"There are still dependencies missing for " + dep.definer.id);
+		    return false; } }     
+         // else return true; }
        
-       dependency.met = true;
-       if (dependency.resource.loader === 'bootstrap')  {
-	 log(I, 'Trying to execute callback of ' + dependency.id);
-	 var depdef = dependency.definer; 
-	 if (depdef) {
-	   if (depdef.factory) {
-       	     if (typeof depdef.factory !== 'function')  
-	       // dependency.value = getObject(namespace, dependency.namespace, depdef.factory);
-	       dependency.value = depdef.factory;
-	     else dependency.met = exe(dependency); } } 
-	 else  {
-	   log(E,(definer ? "Definer " + definer.id  : main) + 
-		  ' has asked for the dependency ' +  dependency.id + ' in the resource ' +
-		  dependency.resource.url + ', which has no matching definers.' );
-	   dependency.met = false; } }
-       var failsafe = 0;
-       function backtrace(dep) {
-       	 dep.requirers.forEach(
-	   function(req) {
-	     if (req !== dep && exe(req)) { req.met = true;
-       					    if (failsafe++ < 50)  backtrace(req); 
-					    else throw('Error: We were in long loop!!!!'); 
-					  } }); }
-       //if we have a leaf, backtrace as far as you can!!!
-       if (dependency.met) {
-	 log(I, 'Backtracking..');
-	 backtrace(dependency); 
-	 log(I, 'Backtracking done');
-       }
-} 
+         dependency.met = true;
+         if (dependency.resource.loader === 'bootstrap')  {
+	     log(I, 'Trying to execute callback of ' + dependency.id);
+	     var depdef = dependency.definer; 
+	     if (depdef) {
+	         dependency.met = testDeps(dependency); 
+                 if (dependency.met) {
+                     if (depdef.factory) {
+                         if (typeof depdef.factory !== 'function')   {
+	                     dependency.value = depdef.factory;
+                         }
+	                 else executeCallback(dependency);
+                         // dependency.met = exe(dependency); }
+                     }
+                 }
+             } 
+	     else  {
+	         // log(E,(definer ? "Definer " + definer.id  : main) + 
+	         log(E,'One of ', dependency.requirers, 
+		     ' has asked for the dependency ' +  dependency.id + ' in the resource ' +
+		     dependency.resource.url + ', which has no matching definers.');
+	         dependency.met = false; }
+
+         }
+         var failsafe = 0;
+         function backtrace(dep) {
+             dep.requirers.forEach(
+	         function(req) {
+	             if (req !== dep && testDeps(req)) {
+                         // log(I, 'Executing callback');
+                         if (!req.met && req.definer.factory) {
+                             if (typeof req.definer.factory !== 'function')   {
+	                         req.value = req.definer.factory;
+                             }
+	                     else executeCallback(req);
+                         }
+                         req.met = true;
+                         if (failsafe++ < 50)  backtrace(req); 
+			 else throw('Error: We were in long loop!!!!'); 
+		     } }); }
+         //if we have a leaf, backtrace as far as you can!!!
+         if (dependency.met) {
+	     log(I, 'Backtracking..');
+	     backtrace(dependency); 
+	     log(I, 'Backtracking done');
+         }
+     } 
      
      //------------------------------------------------------------ 
      //make the apropriate connections, check for circular dependencies and execute the callbacks

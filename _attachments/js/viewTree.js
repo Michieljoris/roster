@@ -4,8 +4,8 @@
 
 // -----@ TOP ----- */
 define
-({inject: ['roster', 'table', 'calendar'],
-  factory: function(roster, table, calendar) {
+({inject: ['globals', 'table', 'calendar'],
+  factory: function(globals, table, calendar) {
       "use strict";
       //dummy empty view for initialization purposes. Also a template
       //for more views.
@@ -33,6 +33,7 @@ define
               v.setObserver(viewStateChanged);
               var aview = Object.create(proto);
               aview.name = v.name;
+              aview.icon = v.icon || aview.icon;
               if (aview.name !== 'Empty')
                   newViewMenu.push(aview);
               result[v.name] = v;
@@ -183,7 +184,7 @@ define
       
       function saveTreeToDb(callback) {
           leafShowing.viewState = views[leafShowing.view].getState();
-          roster.user.viewTreeState = isc.JSON.encode(getTreeState());
+          globals.user.viewTreeState = isc.JSON.encode(getTreeState());
           
           console.log('save',leafShowing);
           console.log('saving tree');
@@ -192,14 +193,14 @@ define
           //doc...  at the moment there is an update error when you try to
           //save after modifying the current user in a table for
           //instance
-          roster.db.put(roster.user, function(err, response) {
+          globals.db.put(globals.user, function(err, response) {
               if (err) {
 	          console.log('ERRROR: Could not save changed state of the view tree.' +
                               err.error + ' ' + err.reason);
                   isc.warn('ERROR: Could not save the state of the ui..');
               }
               else {
-	          roster.user._rev = response.rev;
+	          globals.user._rev = response.rev;
               }
               setModified(false);
               // window.onbeforeunload = function() { };
@@ -352,9 +353,9 @@ define
 
       
       // ];
-
       
-      var rightClickMenu = isc.Menu.create(
+      //TODO different menu for when you click not on a leaf or node?
+      var rightClickMenu2 = isc.Menu.create(
           {// ID:"rightClickMenu",
               width:150
               ,data:[
@@ -372,19 +373,54 @@ define
 		   ,icon: isc.Page.getSkinDir() +"images/FileBrowser/createNewFolder.png"
 		   ,click: function() { newFolder(); } 
 	          } 
-	          ,{title:"Rename"
+	          // ,{title:"Rename"
+		  //   ,icon: isc.Page.getSkinDir() +"images/actions/edit.png"
+		  //   ,click: function() { rename(); } 
+	          //  },
+	          // {title:"Remove"
+		  //   ,icon: isc.Page.getSkinDir() +"images/actions/remove.png"
+		  //   ,click: function() { remove(); } 
+	          //  }
+	          // , {isSeparator:true}
+	          // ,{title:"Save tree"
+		  //   ,icon: isc.Page.getSkinDir() +"images/actions/save.png"
+		  //   ,click: function() { saveTreeToDb(); }
+	          //  }
+              ]
+          });
+      
+      var rightClickMenu = isc.Menu.create(
+          {// ID:"rightClickMenu",
+              width:150
+              ,data:[
+                  // {title:"Select"
+	          //  // ,icon: isc.Page.getSkinDir() +"images/RichTextEditor/copy.png"
+	          //  ,click: function() { select(); } 
+	          // } 
+	          // ,{isSeparator:true}
+	          // {title:"Clone"
+		  //   ,icon: isc.Page.getSkinDir() +"images/RichTextEditor/copy.png"
+		  //   ,click: function() { clone(); } 
+	          //  } 
+                  // ,{isSeparator:true}
+	          // {title:"New folder"
+		  //  ,icon: isc.Page.getSkinDir() +"images/FileBrowser/createNewFolder.png"
+		  //  ,click: function() { newFolder(); } 
+	          // } ,
+	          {title:"Rename"
 		    ,icon: isc.Page.getSkinDir() +"images/actions/edit.png"
 		    ,click: function() { rename(); } 
 	           }
 	          ,{title:"Remove"
 		    ,icon: isc.Page.getSkinDir() +"images/actions/remove.png"
 		    ,click: function() { remove(); } 
-	           },
-	          {isSeparator:true}
-	          ,{title:"Save tree"
-		    ,icon: isc.Page.getSkinDir() +"images/actions/save.png"
-		    ,click: function() { saveTreeToDb(); }
-	           }]
+	           }
+	          // , {isSeparator:true}
+	          // ,{title:"Save tree"
+		  //   ,icon: isc.Page.getSkinDir() +"images/actions/save.png"
+		  //   ,click: function() { saveTreeToDb(); }
+	          //  }
+              ]
           });
       
       var loginButton = isc.ToolStripButton.create(
@@ -422,16 +458,16 @@ define
 	          prompt: "Create a new folder"
 	          ,click: function() { newFolder(); }
               })
-              ,isc.ToolStripButton.create({
-	          icon: "[SKIN]/actions/edit.png",
-	          prompt: "Rename selected item"
-	          ,click: function() { rename(); }
-              })
-              ,isc.ToolStripButton.create({
-	          icon: "[SKIN]/actions/remove.png", 
-	          prompt: "Remove selected item"
-	          ,click: function() { remove(); }
-              })
+              // ,isc.ToolStripButton.create({
+	      //     icon: "[SKIN]/actions/edit.png",
+	      //     prompt: "Rename selected item"
+	      //     ,click: function() { rename(); }
+              // })
+              // ,isc.ToolStripButton.create({
+	      //     icon: "[SKIN]/actions/remove.png", 
+	      //     prompt: "Remove selected item"
+	      //     ,click: function() { remove(); }
+              // })
           ]
           });
       
@@ -448,8 +484,9 @@ define
 
       var viewTree = isc.TreeGrid.
           create({
-              ID: 'treegrid',
-	      contextMenu:rightClickMenu
+              ID: 'treegrid'
+	      ,contextMenu:rightClickMenu2
+              ,showCellContextMenus: true
 	      ,canDragRecordsOut:true,
 	      canAcceptDroppedRecords:true
 	      ,canReorderRecords: true
@@ -460,6 +497,8 @@ define
 	      ,escapeKeyEditAction: 'cancel'
 	      // ,editorExit: function() { this.canEdit = false;}
               ,canEdit: true
+              ,leafContextClick: function() { rightClickMenu.showContextMenu(); }
+              ,cellContextClick: "console.log('hello')"
 	      ,viewStateChanged: function() {
                   // console.log('vsw');
 	          // treeStateChanged('treeStateChanged');

@@ -1,25 +1,86 @@
 /*global module:true isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
-/*jshint maxparams:4 maxcomplexity:7 maxlen:190 devel:true*/
+/*jshint maxparams:6 maxcomplexity:7 maxlen:190 devel:true*/
 
+
+
+//This kind of module does not produce an injectable, but registers itself with the editorManager
+//to use this editor, both load the editorLoader module and inject the editorManager
 define
-({inject: ['pouchDS', 'roster'],
-  factory: function(pouchDS, roster) 
+({inject: ['pouchDS', 'editorManager'],
+  factory: function(datasource, editorManager) 
   { "use strict";
 
-    var API = {};
+    var editor = {};
     var settings = {}; 
-
-    API.show = function(event, someSettings) {
-        settings = someSettings;
-        eventForm.setValues(event);
-        eventEditor.setTitle(getShiftDescription(event));
-        eventForm.clearErrors();
-        eventEditor.show();
+    var event;   
+    
+    var defaultSettings = {
+        minimumShiftLength: 10,
+        maximumShiftLength: 600,
+        eventSnapGap: 60, //only works with a refresh
+        workdayStart: '6:00',
+        workdayEnd: '22:00',
+        currentViewName: 'week', //day, week or month
+        chosenDate: new Date()
+        
     };
     
+    
+    var timeLists = {};
+    function formatTime(hour, minute) {
+        // var hourPrefix = hour<10 ? '0' : '';
+        var hourPrefix = hour<10 ? '' : '';
+        var minutePrefix = minute<10 ? '0' : '';
+        return hourPrefix + hour + ':' + minutePrefix + minute;
+    }
+         
+    function getTimeList(step, startTime, endTime, endHour, endMinute) {
+        step = step || 30;
+        startTime = startTime || 0;
+        endTime = endTime || 0;
+        endMinute = endMinute || 0;
+             
+        var hour, minute;
+        if (typeof startTime === 'object') {
+            if (startTime) {
+                hour = startTime.getHours();
+                minute = startTime.getMinutes();
+            } else { hour = 0; minute = 0; }
+            if (endTime) {
+                endHour = endTime.getHours();
+                endMinute = endTime.getMinutes();
+            } else { endHour = 24; endMinute = 0; }
+        }
+        else {
+            hour = startTime, minute = endTime;  
+                
+        } 
+        endHour = endHour || 24;
+        // console.log(hour, minute, endHour, endMinute);
+        if (endHour > 24) endHour = 24;
+        var uniqueList = formatTime(hour,minute) + '-' + 
+            formatTime(endHour, endMinute) + step;
+        if (timeLists[uniqueList]) return timeLists[uniqueList] ;
+        var list = [];
+        while (hour < endHour || (hour === endHour && minute <= endMinute)) {
+            // list.push(formatTime(hour,minute));
+            list.push(isc.Time.createLogicalTime(hour, minute, 0));
+            minute+=step; 
+            // console.log(minute,hour);
+            if ((minute/60) >= 1) hour++;
+            minute %= 60;
+        }
+        if (list.last() === '24:00') list[list.length-1] = '0.00';
+        timeLists[uniqueList] = list;
+
+        return list;
+    }
+    
+    
+    
     isc.Validator.addValidator(
-     'isAfter',
+        'isAfter',
         function(item, validator, endTime, record) {
             console.log('validator',validator);
             var startTime = eventForm.getValue('startTime');
@@ -53,7 +114,7 @@ define
         
         if (eventForm.validate()) {
             var event = eventForm.getValues();
-                var startDate = new Date();
+            var startDate = new Date();
             startDate.setHours(event.startTime.getHours());
             startDate.setMinutes(event.startTime.getMinutes());
             startDate.setSeconds(0);
@@ -70,6 +131,7 @@ define
             if (event.endTime.getHours() === 0 &&
                 event.endTime.getMinutes() === 0) endDate.setDate(endDate.getDate() + 1);
             // if (endDate <= startDate) {
+
             //     console.log('ERROR');
             //     //TODO
             //     return;
@@ -80,7 +142,7 @@ define
             //      errorMessage: 'Finish time has to be after start time'}];
         
             if (!event.notes) event.notes = '';
-                console.log(startDate, endDate);
+            console.log(startDate, endDate);
 	    // calendar.addEvent(startDate, endDate,
             var otherFields = { group: 'shift',
                                 claim: event.claim,
@@ -96,16 +158,16 @@ define
                 otherFields.displayPerson.push(p.name);
             });
             
-           //************ 
+            //************ 
             event.startDate = startDate;
             event.endDate = endDate;
             isc.addProperties(event, otherFields);
             
             if (event._rev) {
                 if (eventForm.valuesHaveChanged())
-                    pouchDS.updateData(event);
+                    datasource.updateData(event);
             }
-            else pouchDS.addData(event);
+            else datasource.addData(event);
             
             // console.log('***********', event.person)    ;
             // if (event._rev) {
@@ -122,7 +184,7 @@ define
             //                        event.person,
             //                        event.notes,
             //                        otherFields);
-            eventEditor.hide(); 
+            presentContainer.hide(); 
         }
     }
     
@@ -149,7 +211,7 @@ define
                           startRow: true,
                           multiple: true,
                           multipleAppearance: 'picklist',
-                          optionDataSource: pouchDS,
+                          optionDataSource: datasource,
                           filterLocally: true, 
                           pickListCriteria: { group: 'person'},
                           displayField: 'name',
@@ -167,11 +229,10 @@ define
                           }]
                          };
     
-    
-    var eventForm = 
-    isc.DynamicForm.create({
-        ID: "eventForm",
+    var eventFormTemplate = {
+        // ID: "eventForm",
         autoDraw: false,
+        width:300,
         // height: 48,
         colWidths: ['60', '60', '20'],
         cellPadding: 4,
@@ -199,10 +260,11 @@ define
              // multiple: true,
              // multipleAppearance: 'picklist',
              align: 'right',
-             optionDataSource: pouchDS,
+             optionDataSource: datasource,
              filterLocally: true, 
              pickListCriteria: { group: 'location'},
-             displayField: 'name', colSpan:1,
+             displayField: 'location',
+             colSpan:1,
              valueField: '_id' }, 
             
             personPickList,
@@ -215,14 +277,14 @@ define
              
              // valueMap: [new Date()],
              titleOrientation: 'top', startRow: true
-             ,valueMap:roster.getTimeList(settings.eventSnapGap)
+             ,valueMap: getTimeList(settings.eventSnapGap)
             },
             {name: "endTime", type: "time", editorType: 'comboBox', required: true,
              title:'To',showTitle: true, colSpan: 2,
              validators: [{ type:'isAfter'}],
              // valueMap: [new Date()],
              titleOrientation: 'top', startRow: false
-             ,valueMap:roster.getTimeList(settings.eventSnapGap)
+             ,valueMap: getTimeList(settings.eventSnapGap)
             },
             
             {name: "repeats", type: "Select", showTitle: false, startRow: true,
@@ -234,40 +296,91 @@ define
             
             {name:"notes", title:'Notes', type: "textarea", height: '100', titleOrientation: 'top',
              showTitle: true, width: '340', colSpan: 3, startRow: true},
-            {type: "button", title : 'Save', colSpan:1,
+            {name: 'saveButton', type: "button", title : 'Save', colSpan:1,
              click: function() { addEvent(); } , endRow: false},
              
             // {type: "button", title : 'Delete', colSpan:1, startRow: false,
             //  click: function() { addEvent(); } , endRow: false},
             {type: "button", title: "Cancel", align: 'right', startRow: false,
-             click: function() { eventEditor.hide(); } , endRow: false}
+             click: function() { presentContainer.hide(); } , endRow: false}
         ]
-    });
+    };
+    
     
     
     // var personField = module.temp = eventForm.getField('person');
+    var eventForm = isc.DynamicForm.create(eventFormTemplate);
     
-    var eventEditor = isc.Window.create({
-        title: "TODO: Set to event date, start and end",
-        autoSize: true,
-        canDragReposition: true,
-        canDragResize: false,
-        showMinimizeButton: false, 
-        autoCenter: true,
-        isModal: true,
-        showModalMask: true,
-        autoDraw: false,
-        items: [ eventForm ]
-    });
+    // var eventEditorWindow = isc.Window.create({
+    //     title: "TODO: Set to event date, start and end",
+    //     autoSize: true,
+    //     canDragReposition: true,
+    //     canDragResize: false,
+    //     showMinimizeButton:false, 
+    //     autoCenter: true,
+    //     isModal: true,
+    //     showModalMask: true,
+    //     autoDraw: false,
+    //     items: [eventForm]
+    // });
       
-    function getShiftDescription(event) {
-        console.log('in shiftdesc', event);
-        var sDate = event.startDate.toShortDate();
-        var sTime = isc.Time.toTime(event.startDate, 'toShortPaddedTime', true);
-        var eTime = isc.Time.toTime(event.endDate, 'toShortPaddedTime', true);
+    // function getShiftDescription(event) {
+    //     console.log('in shiftdesc', event);
+    //     var sDate = event.startDate.toShortDate();
+    //     var sTime = isc.Time.toTime(event.startDate, 'toShortPaddedTime', true);
+    //     var eTime = isc.Time.toTime(event.endDate, 'toShortPaddedTime', true);
 
-        return sDate + "&nbsp;" + sTime + "&nbsp;-&nbsp;" + eTime;
-    }
+    //     return sDate + "&nbsp;" + sTime + "&nbsp;-&nbsp;" + eTime;
+    // }
     
+    // function setSettings(someSettings) {
+    //     // someSettings = someSettings || {};
+    //     settings = isc.addDefaults(someSettings, defaultSettings);
+    //     // event = someEvent;
+        
+    //     // eventForm.setSaveOperationType(saveOperationType);
+    //     // eventForm.setValues(event);
+    //     // eventForm.clearErrors();
+    // }
+    // API.setSettings = setSettings;
+    
+    // API.getForm = function() {
+    //     // set(someEvent, someSettings);
+    //     return isc.DynamicForm.create(eventFormTemplate);
+    // };
+    
+    // API.init = function(someEvent, someSettings) {
+    //     event = someEvent;
+    //     setSettings(someSettings);
+    //     eventForm.setValues(someEvent);
+    //     eventForm.clearErrors();
+    //     // eventEditorWindow.setTitle(getShiftDescription(event));
+    //     // eventEditorWindow.show();
+    // };
+    // API.show = function(someEvent, someSettings) {
+    //     event = someEvent;
+    //     setSettings(someSettings);
+    //     eventForm.setValues(someEvent);
+    //     eventForm.clearErrors();
+    //     eventEditorWindow.show();
+    // };
+    var presentContainer;
+    
+    editor.type = 'shift';
+    editor.canvas = eventForm;
+    editor.set = function(someEvent, someSettings) {
+        event = someEvent;
+        console.log('setting values', someEvent);
+        settings = isc.addDefaults(someSettings, defaultSettings);
+        // setSettings(someSettings);
+        eventForm.setValues(someEvent);
+        eventForm.clearErrors();
+        
+        // if (presentContainer && presentContainer !== aContainer) { presentContainer.removeCanvas();   }
+        // presentContainer = aContainer;
+        // presentContainer.setCanvas(eventForm);
+    };
+    editorManager.register(editor);   
+    // return editor;   
 
   }});
