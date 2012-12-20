@@ -5,8 +5,8 @@
 //This kind of module does not produce an injectable, but registers itself with the editorManager
 //to use this editor, both load the editorLoader module and inject the editorManager
 define
-({inject: ['typesAndFields', 'pouchDS', 'editorManager',  'parentListEditor'],
-  factory: function(typesAndFields, database, editorManager, parentListEditor) {
+({inject: ['typesAndFields', 'editorManager',  'parentListEditor'],
+  factory: function(typesAndFields, editorManager, parentListEditor) {
       "use strict";
 
       var editor = {};
@@ -15,6 +15,7 @@ define
       var settings = {}; 
       
       var mainFormConfig = {
+          ID: 'mainForm',
           autoDraw: false,
           // width:300,
           // height: 48,
@@ -135,7 +136,7 @@ define
           // cellBorder: 1,
           fields: [
               {name:"notes", title:'Notes', type: "textarea", length: 5000,
-               titleOrientation: 'top', width: "*",
+               titleOrientation: 'top',// width: "*",
                showTitle: true,  colSpan: 2, startRow: true}
               
           ]
@@ -181,12 +182,12 @@ define
               // location.startDate = startDate;
               // location.endDate = endDate;
               // isc.addProperties(location, otherFields);
-            
-              if (location._rev) {
-                  if (vm.valuesHaveChanged())
-                      database.updateData(location);
-              }
-              else database.addData(location);
+              editorManager.save(location, vm.valuesHaveChanged());           
+              // if (location._rev) {
+              //     if (vm.valuesHaveChanged())
+              //         database.updateData(location);
+              // }
+              // else database.addData(location);
             
               // console.log('***********', location.person)    ;
               // if (location._rev) {
@@ -207,11 +208,6 @@ define
           }
       }
                                        
-      function removeLocation() {
-          console.log('implement remove item') ;
-          //TODO 
-      }
-      
       var parentLabel = isc.Label.create({
           height: 30,
           padding: 10,
@@ -226,7 +222,7 @@ define
           
       });
       
-      
+      var allButtons = {};
       function buttonBar(orientation, entries, buttonProps, action) {
           var members = [];
           
@@ -241,7 +237,9 @@ define
                   action(e);
               };
               button = isc.Button.create(buttonProps);
+              allButtons[e] = button;
               members.push(button);
+              
           });
           
           // members.push(isc.LayoutSpacer.create()); // Note the use of the LayoutSpacer
@@ -255,7 +253,7 @@ define
               // align: "center",
               // overflow: "hidden",
               // border: "1px solid blue",
-              width: '100%',
+              // width: '100%',
               members: members
               //,showResizeBar: true,
               // border: "1px solid blue"
@@ -272,18 +270,24 @@ define
                    ]
       });
       
+     var actionBarDeleteCancelSave = buttonBar('horizontal',
+                         ['Delete', '|', 'Cancel', 'Save'],
+                         {  width: 50,
+                            autoDraw: false
+                         }, action);
+      
       var editLayout = isc.VLayout.create({
-          autoSize:true,
+          // autoSize:true,
           // width: "100%",
           // height: "100%",
           members: [
               isc.HLayout.create({
-                  width: "70%",
+                  // width: "70%",
                   members: [
                       buttonBar('vertical',
                                 ['Main', 'Address', 'Contact', 'Notes'],
                                 { // baseStyle: "cssButton",
-                                    left: 200,
+                                    // left: 200,
                                     showRollOver: true,
                                     showDisabled: true,
                                     showDown: true
@@ -293,13 +297,10 @@ define
                       ,formLayout
                   ]
               })
-              ,buttonBar('horizontal',
-                         ['Delete', '|', 'Cancel', 'Save'],
-                         {  width: 50,
-                            autoDraw: false
-                         }, action)
+              ,actionBarDeleteCancelSave
           ]
       });
+      
        
       
       function action(e) {
@@ -309,8 +310,8 @@ define
             case 'Contact': formLayout.setVisibleMember(contactForm); break;
             case 'Notes': formLayout.setVisibleMember(notesForm); break; 
             case 'Save': addLocation(); break; 
-            case 'Cancel': presentContainer.hide(); break; 
-            case 'Delete': removeLocation(); break;
+            case 'Cancel': editorManager.cancel(); break; 
+            case 'Delete': editorManager.remove(location); break;
           default: alert('unknown action in function action!!');
           }
           console.log(e);
@@ -319,10 +320,10 @@ define
       var itemViewer = isc.DetailViewer.create({
           // ID:"itemViewer",
           // dataSource:"supplyItem",
-          width:"100%",
-          margin:"25",
+          // width:"100%",
+          // margin:"25",
           emptyMessage:"Select an item to view its details",
-          fields: typesAndFields.getTagsCloner('location')()
+          fields: typesAndFields.getFieldsCloner('location')()
       });
       
       var editorMessage = isc.Label.create({
@@ -338,8 +339,8 @@ define
       var tabSet = isc.TabSet.
           create({
               // autoSize: true,
-              height: 400,
-              width: 400,
+              // height: '100%',
+              // width: '100%',
 	      // ID: "tabSet"
               // tabSelected: updateDetails, //"itemList.updateDetails()",
               tabSelected: function() {
@@ -364,31 +365,31 @@ define
       
       
       var layout = isc.VLayout.create({
+          
+          // autoSize: true,
+          height: '100%',
+          width: '100%',
           members: [
+
               tabSet
               // ,buttons
           ]  
       });
       
-      var setValues = function(someLocation) {
-          console.log('someLocation', someLocation);
-          location = someLocation;
-          vm.setValues(someLocation);
-          itemViewer.setData(someLocation);
-          vm.clearErrors();
-      };
       
-      var presentContainer;
       editor.type = 'location';
       editor.canvas = layout;
       editor.set = function(someLocation, someSettings) {
           console.log('setting values', someLocation, someSettings);
           settings = isc.addDefaults(someSettings, defaultSettings);
-          setValues(someLocation);
-          
-          // if (presentContainer && presentContainer !== aContainer) { presentContainer.removeCanvas();   }
-          // presentContainer = aContainer;
-          // presentContainer.setCanvas(layout);
+          console.log('someLocation', someLocation);
+          location = someLocation;
+          vm.setValues(location);
+          itemViewer.setData(location);
+          vm.clearErrors();
+          allButtons.Cancel.setVisibility(settings.cancelButton);
+          allButtons.Delete.setVisibility(settings.removeButton);
+          allButtons.Save.setVisibility(settings.saveButton);
       };
       editorManager.register(editor);
     

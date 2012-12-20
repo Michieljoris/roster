@@ -11,7 +11,7 @@ define
        // var rootUser = {
        //   _id:'root',
        //   // name: 'super-admin',
-       //   group: 'people',
+       //   type: 'person',
        //   login: 'root',
        //   autoLogin: false,
        //   password:'1511e358bea6f50b2ddb2ca19c6422e871a0086f',
@@ -23,7 +23,7 @@ define
        var guestUser = {
            _id:'guest',
            // name: 'super-admin',
-           group: 'person',
+           type: 'person',
            login: 'guest',
            autoLogin: true,
            password:'guest',
@@ -45,7 +45,6 @@ define
            setDb: setDb,
            setUser: setUser,
            dbname: window.dbname
-           // tagGroups: tagGroups,
        };
        return roster; 
    }});

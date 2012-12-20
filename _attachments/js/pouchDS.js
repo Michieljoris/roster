@@ -13,8 +13,9 @@ define
       function typefyProps(obj) {
           Object.keys(obj).forEach(
 	      function(k) {
-	          if (typesAndFields.tags[k]) {
-	              var type = typesAndFields.tags[k].type;
+                  var field = typesAndFields.getField(k);
+	          if (field) {
+	              var type = field.type;
 	              switch (type) {
                         case 'list':
                           // obj[k] = isc.JSON.decode(obj[k]);
@@ -36,6 +37,7 @@ define
 	      }
           );
       }
+      
       function remove (id, dsResponse, requestId) {
           doPouch(function(db) {
 	      // console.log(id);
@@ -112,7 +114,7 @@ define
       var pouchDS = isc.DataSource.create(
           {
 	      ID : "pouchDS",
-	      fields: typesAndFields.tagArray,
+	      fields: typesAndFields.allFields,
 	      autoDeriveTitles:true,
 	      dataProtocol: "clientCustom",
 	

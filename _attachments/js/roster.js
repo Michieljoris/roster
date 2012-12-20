@@ -68,7 +68,7 @@ define
        
        //shift, location, person, role
        var groupField =
-               {title: 'Group', name:"group", required: true,
+               {title: 'Type', name:"type", required: true,
                 type: 'text' };
        
                // ,{name:"inheritable", group: ['location', 'person', 'shift', 'role']}//,,, change to notes
@@ -172,7 +172,7 @@ define
            var result = []; 
            // console.log(groups);
            if (groups.length > 1) {
-               result.push({name:'group', type:'text', title:'Group'});
+               result.push({name:'type', type:'text', title:'Type'});
            }
            tagArray.forEach(function(t){
                if (t.group) {
@@ -205,8 +205,8 @@ define
     
        roster = {
            views: views,
-           groups:groups,
-           getTagsCloner: getTagsCloner,
+           types:groups,
+           getFieldsCloner: getTagsCloner,
            tagArray: isc.shallowClone(tagArray),
            tags: tags,
            dbname: window.dbname

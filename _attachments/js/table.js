@@ -8,31 +8,13 @@ define
    factory: function(typesAndFields, database, editors, tableFilter) {
        "use strict";
        var currentHeight= 300;
-       var groupFilter;
+       var typeFilter;
        var state; 
        var defaultState = { height: 300, isExpanded: true, tab: 1, hidden: false};
-       // var recordMenuData;     
-      
-       // setting up the various editForms used for different groups of records     
-       // var editor; //points to editCanvas currently shown in the lower section
-       // v
-       //     shift: shiftEditor,
-       //     location: locationEditor
-       //     // ,person: null
-       //     // ,role: null
-       // };
-       //add all these forms to the lower section and hide them by
-       //default they are shown and hidden depending on what the group
-       //of the record is that is selected
-       // var forms = [];
-       // Object.keys(editForms).forEach(function(f) { forms.push(editForms[f]);
-       //                                              // editForms[f].hide();
-       //                                            });
-      
-       // forms.push(tableFilter.filterStack);     
+       
        // tableFilter.filterStack.hide();
       
-       //groupmenu items get added dynamically in setGroupState
+       //type menu items get added dynamically in setTypeState
        var addRecordMenu = {
            width: 150
        };
@@ -42,41 +24,6 @@ define
        //only one observer...
        var observer;
       
-      
-       // var editorWindow = isc.Window.create({
-       //     title: "Mamre , Southside, Respite",
-       //     autoSize: true,
-       //     canDragReposition: true,
-       //     canDragResize: true,
-       //     showMinimizeButton:false, 
-       //     autoCenter: true,
-       //     isModal: true,
-       //     showModalMask: true,
-       //     autoDraw: false,
-       //     setCanvas: function(canvas) {
-       //         this.removeCanvas();
-       //         this.canvas = canvas;
-       //         this.addItem(canvas);
-       //     }, 
-       //     removeCanvas: function() {
-       //         if (this.canvas) this.removeItem(this.canvas);
-       //     }
-       //     // height: 300,
-       //     // width:300,
-       //     // items: [ dialogLayout ]
-       // });
-      
-       // var setupEditor = function(editor, container, record) {
-       //     editor.removeFromItsContainer();
-       //     editor.setValues(record);
-       //     editor.putInContainer(container);
-       //     // container.show();
-       // };
-      
-      
-      
-      
-          
        //--------------------@handling state----------------------------- 
        function getTableState() {
            state =  isc.addProperties(state, {
@@ -95,24 +42,28 @@ define
            });
           
            console.log('getTableState', isc.clone(state));
-           return isc.clone(state);
+           currentState = isc.clone(state);
+           return currentState;
        } 
       
        API.getState = getTableState;
 
-       function setTableState(newstate) {
-           console.log('setTableState:', newstate);
-           state = isc.addProperties(defaultState, isc.clone(newstate));
+       var currentState;
+       function setTableState(newState) {
+           // console.log('currentState, newState, ===?', currentState, newState, newState === currentState);
+           if (newState === currentState) return;
+           // currentState = newState;
+           console.log('setTableState:', newState);
+           state = isc.addProperties(defaultState, isc.clone(newState));
           
-           //groups
-           if (!state.groups || state.groups.length === 0) state.groups = typesAndFields.groups;
+           //types
+           if (!state.types || state.types.length === 0) state.types = typesAndFields.allTypes;
           
-           var fieldsCloner = typesAndFields.getTagsCloner(state.groups);
-           setGroupingState(fieldsCloner);
+           var fieldsCloner = typesAndFields.getFieldsCloner(state.types);
+           setTypingState(fieldsCloner);
           
            tableFilter.setState(state);
            // tableFilter.objectGroupList.setSelection();
-              
            //layout
            // tabSet.selectTab(state.tab);
            dataTable.setHeight(state.height);
@@ -151,11 +102,11 @@ define
            //     group : 'shift'
            // };
            var appliedCriteria = isc.DataSource.combineCriteria(
-               groupFilter,state.savedAdvCriteria);
+               typeFilter,state.savedAdvCriteria);
            // appliedCriteria = advancedCriteria;
            // appliedCriteria = criteria;
            console.log('Applied Criteria', appliedCriteria);
-           module.temp = appliedCriteria;
+           // module.temp = appliedCriteria;
            console.log('will fetch data', dataTable.willFetchData(appliedCriteria));
            if (dataTable.willFetchData(appliedCriteria)) 
                dataTable.fetchData(undefined, 
@@ -180,21 +131,24 @@ define
        }
       
       
-       function setGroupingState(fieldsCloner) {
+       function setTypingState(fieldsCloner) {
+           
            // set the label
            // pp('setGroupingState', state);
-           // objectGroupLabel.setLabel(state.groups);
+           // objectGroupLabel.setLabel(state.types);
               
            //apply group selection by ..
            //get the fields relevant to the group(s)
-           // var fieldsCloner = roster.getTagsCloner(state.groups);
-           //select out the non-relevant tags for the table
+           // var fieldsCloner = roster.getTagsCloner(state.types);
+           //select out the non-relevant tags for the table 
            dataTable.setFields(fieldsCloner());
+           
+           
            //we need to set the relevant editor fields
            // editForm.setGroupFields(fieldsCloner());
            //set the right groups in the right top add record button
            addRecordMenu.data = []; 
-           state.groups.forEach(function(g) {
+           state.types.forEach(function(g) {
                addRecordMenu.data.push({
                    name: g,
                    icon: isc.Page.getSkinDir() +"images/actions/add.png",
@@ -206,9 +160,9 @@ define
          
            // console.log('RECORDMENUDATA', recordMenuData);
            //we need to filter the group...
-           groupFilter = { group : state.groups };
+           typeFilter = { type : state.types };
            //this will be combined with the normal filters
-           console.log('GROUPFILTER', groupFilter);
+           console.log('TYPEFILTER', typeFilter);
           
            // dataTable.filterData(groupFilter);
          
@@ -236,9 +190,9 @@ define
        //----------------------components---------------------    
        //----------------@TABLE----------------------------
       
-       var newRecord = function(aGroup) {
+       var newRecord = function(aType) {
            // addUpdateData('addData', { group: 'group'});
-           database.addData({ group: aGroup },
+           database.addData({ type: aType },
                             function(resp, data, req) 
 		            {   dataTable.selectRecord(data);
                                 rowClicked(data);
@@ -276,7 +230,7 @@ define
            //     showingFilter = false;
            // }
            // console.log(index);
-           tableFilter.filterStack.hide();
+           // tableFilter.filterStack.hide();
            // var record;
            // if (index) record = dataTable.getRecord(index); 
            // else record = dataTable.getSelectedRecord();
@@ -294,7 +248,9 @@ define
            // editForm.getField('editNew').setDisabled(false);
            // editForm.clearErrors(true);
            // editForm.show();
-           editors.fill(editorContainer, record, {});
+           editors.fill(editorContainer, record, {
+               cancelButton: false, saveButton: true, removeButton: true
+           });
            // editor.init(editorWindow, record, {});
            // editorWindow.show();
        }
@@ -348,7 +304,9 @@ define
                      // icon: "remove.png", 
                      click: function() {
                          // rowClicked(dataTable.getSelectedRecord());
-                         editors.show(dataTable.getSelectedRecord(), {});
+                         editors.show(dataTable.getSelectedRecord(), {
+                             cancelButton: true, saveButton: true, removeButton: true
+                         });
                          // editor.init(editorWindow, dataTable.getSelectedRecord(), {});
                          // editorWindow.show();
                      }
@@ -420,6 +378,7 @@ define
            {   
 	       ID: "dataTable",
 	       dataSource: database,
+                   
                gridComponents:[toolStrip,"filterEditor", "header",  "body"],
                // titleField: 'title',
 	       // useAllDataSourceFields:true,
@@ -472,7 +431,7 @@ define
                    tableViewStateChanged('filterEditorSubmit');
 	           // storeTableViewState();
 	       },
-               setGroupingState: setGroupingState,
+               setTypingState: setTypingState,
                setLabel: function(label) {
                    tableLabel.setContents(label);
                },
@@ -502,8 +461,8 @@ define
        //           {name:"editnew", type:"button", width:130,
        //            title:"Clear form", click: function()
        //            { var newValues = {};
-       //              if (state.groups.length === 1)
-       //                  newValues.group = state.groups[0];
+       //              if (state.types.length === 1)
+       //                  newValues.group = state.types[0];
        //              // dataTable.startEditingNew(newValues);
        //              dataTable.deselectAllRecords();
        //              editForm.setValues(newValues);

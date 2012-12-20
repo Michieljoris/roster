@@ -9,7 +9,7 @@ define
       "use strict";
       var state, dataTable;
       var defaultState = { usingSimpleFilter: true, editableAdvFilter : true
-                           ,groups: ["shift"]};
+                           ,types: ["shift"]};
       
       //--------------------@EDIT FILTER SETUP------------------ 
       var editButton = isc.Button.create({
@@ -75,9 +75,9 @@ define
           showHeaderContextMenu:false,
           showHeaderMenuButton:false,
           selectionAppearance:"checkbox"
-          ,fields: [{name: 'group', title: 'type'}]
+          ,fields: [{name: 'type', title: 'Type'}]
           ,data: (function() {
-              return typesAndFields.groups.map(function(g) {
+              return typesAndFields.allTypes.map(function(g) {
                   return { group : g };
               });})()
           ,selectionChanged: function() {
@@ -96,9 +96,9 @@ define
           ,setSelection: function() {
               // console.log('----------setting group selection----------');
               objectGroupList.deselectAllRecords();  
-              if (state.groups)
+              if (state.types)
                   objectGroupList.getData().forEach(function(e) {
-                      if (state.groups.contains(e.group)) objectGroupList.selectRecord(e);
+                      if (state.types.contains(e.type)) objectGroupList.selectRecord(e);
                   });
           }
       }); 
@@ -112,9 +112,9 @@ define
                       // console.log('setting groups label', groups);
                       var contents, str1 = '';
                       // var maxGroups = roster.groups.length;
-                      if (state.groups.length === 0) {
+                      if (state.types.length === 0) {
                           contents = 'ERROR: No type selected, this should not happen!!!';}
-                      else if (state.groups.length === typesAndFields.groups.length) {
+                      else if (state.types.length === typesAndFields.allTypes.length) {
                           contents = 'Showing all items in database.';
                       }
                       else {
@@ -122,7 +122,7 @@ define
                           // console.error("hello");
                           // pp('lable', state);
                           contents = "";
-                          contents += state.groups.join(', ') + '.';
+                          contents += state.types.join(', ') + '.';
                           var comma = contents.lastIndexOf(',');
                           if (comma >= 0)
                               contents = contents.slice(0,comma) +
@@ -141,24 +141,24 @@ define
 	  click : function () {
               var sel = objectGroupList.getSelection();
               if (sel.length === 0) {
-                  alert('Select at least one group.');
+                  alert('Select at least one t.');
                   return;   
               }
               // make a proper groups array out of the selection
-              state.groups = sel.map(function(g) {
-                  return g.group;
+              state.types = sel.map(function(t) {
+                  return t.type;
               });
-              var fieldsCloner = typesAndFields.getTagsCloner(state.groups);
+              var fieldsCloner = typesAndFields.getFieldsCloner(state.types);
               filterFields.setCacheData(fieldsCloner());
               dataTable.setGroupingState(fieldsCloner);
-              objectGroupLabel.setLabel(state.groups);
+              objectGroupLabel.setLabel(state.types);
               dataTable.viewStateChanged();
               
               groupSelectWarnLabel.hide(true);
               applyGroupSelectionButton.setDisabled(true);
               //update criteria   
               
-              var groupFilter = { group : state.groups };
+              var groupFilter = { type : state.types };
               var appliedCriteria = isc.DataSource.combineCriteria(
                   groupFilter,state.savedAdvCriteria);
               // appliedCriteria = advancedCriteria;
@@ -387,9 +387,9 @@ define
           state = aState;
           objectGroupList.setSelection();
           //get the fields relevant to the group(s)
-          var fieldsCloner = typesAndFields.getTagsCloner(state.groups);
+          var fieldsCloner = typesAndFields.getFieldsCloner(state.types);
           filterFields.setCacheData(fieldsCloner());
-          objectGroupLabel.setLabel(state.groups);
+          objectGroupLabel.setLabel(state.types);
           
           advancedFilter.setCriteria(state.savedAdvCriteria);
           

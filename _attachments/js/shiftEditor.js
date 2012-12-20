@@ -1,6 +1,6 @@
-/*global module:true isc:false define:false */
+/*global  isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
-/*jshint maxparams:6 maxcomplexity:7 maxlen:190 devel:true*/
+/*jshint maxparams:6 maxcomplexity:10 maxlen:190 devel:true*/
 
 
 
@@ -143,48 +143,44 @@ define
         
             if (!event.notes) event.notes = '';
             console.log(startDate, endDate);
-	    // calendar.addEvent(startDate, endDate,
-            var otherFields = { group: 'shift',
-                                claim: event.claim,
-                                repeats: event.repeats,
-                                sleepOver: event.sleepOver,
-                                location: event.location,
-                                ad: false,
-                                displayPerson: []};
+            // var otherFields = { type: 'shift',
+            //                     claim: event.claim,
+            //                     repeats: event.repeats,
+            //                     sleepOver: event.sleepOver,
+            //                     location: event.location,
+            //                     ad: false,
+            //                     displayPerson: [],
+            //                     person: [] };
             // console.log('changed:', eventForm.valuesHaveChanged(), eventForm.getChangedValues());
             
-            var personList = eventForm.getField('person').pickList.getSelectedRecords();
-            personList.forEach(function(p) {
-                otherFields.displayPerson.push(p.name);
-            });
-            
+            // var personList = eventForm.getField('person').pickList.getSelectedRecords();
+            // // var personList = personPickList.getSelectedRecords();
+            // console.log('PICKLIST', personList);
+            // event.displayPerson = [];
+            // // var person = []; 
+            // personList.forEach(function(p) {
+            //     event.displayPerson.push(p.name);
+            //     // person.push(p._id);
+            // });
+            // console.log('PICKLIST', event.displayPerson);
+            // if (event.displayPerson.length === 0) event.displayPerson = ['Peter', 'Rosie'];
             //************ 
+            event.type = 'shift';
             event.startDate = startDate;
             event.endDate = endDate;
-            isc.addProperties(event, otherFields);
+            event.name = '-' + isc.Time.toTime(event.endDate, 'toShortPaddedTime', true);
+            event.description = displayPerson.toString() + '<p>' + event.notes;
+            event.displayPerson = displayPerson;
+            // event.notes = event.moreText;
+            // event.description = event.notes;
+            console.log('XXXXnotes',event.notes);
+            console.log('XXXXperson', event.person);
+            console.log('XXXXlocation', event.location);
+            console.log('XXXXname', event.name);
+            // isc.addProperties(event, otherFields);
             
-            if (event._rev) {
-                if (eventForm.valuesHaveChanged())
-                    datasource.updateData(event);
-            }
-            else datasource.addData(event);
-            
-            // console.log('***********', event.person)    ;
-            // if (event._rev) {
-            //     if (eventForm.valuesHaveChanged())
-            //         pouchDS.updateEvent(event,
-            //                              startDate, endDate,
-            //                              // isc.JSON.encode(event.person),
-            //                              event.person,
-            //                              event.notes,
-            //                              otherFields);
-            // }
-            // else pouchDS.addEvent(startDate, endDate,
-            //                        // isc.JSON.encode(event.person),
-            //                        event.person,
-            //                        event.notes,
-            //                        otherFields);
-            presentContainer.hide(); 
+            editorManager.save(event, eventForm.valuesHaveChanged());
+            editorManager.hide('shift');
         }
     }
     
@@ -203,8 +199,24 @@ define
         
     // }
     
+    var displayPerson = [];
     var personPickList = {name: "person",// type: "select",
                           // editorType: 'comboBox',
+                          
+                          change: function (form, item, value) {
+                              var personList = eventForm.getField('person').pickList.getSelectedRecords();
+                              // var personList = personPickList.getSelectedRecords();
+                              console.log('PICKLIST', personList);
+                              displayPerson = [];
+                              // var person = []; 
+                              personList.forEach(function(p) {
+                                  displayPerson.push(p.name);
+                                  // person.push(p._id);
+                              });
+                              console.log('PICKLIST', displayPerson);
+                              if (displayPerson.length === 0) displayPerson = ['Nobody'];
+                              console.log(form, item, value);
+                          },
                           type: 'enum',
                           showTitle: false,
                           // required: true, 
@@ -213,7 +225,7 @@ define
                           multipleAppearance: 'picklist',
                           optionDataSource: datasource,
                           filterLocally: true, 
-                          pickListCriteria: { group: 'person'},
+                          pickListCriteria: { type: 'person'},
                           displayField: 'name',
                           valueField: '_id',
                           width:340,
@@ -229,12 +241,12 @@ define
                           }]
                          };
     
-    var eventFormTemplate = {
-        // ID: "eventForm",
+    var eventFormData = {
+        ID: "eventForm",
         autoDraw: false,
         width:300,
         // height: 48,
-        colWidths: ['60', '60', '20'],
+        // colWidths: ['60', '60', '*'],
         cellPadding: 4,
         numCols: 3,
         timeFormatter: 'toShort24HourTime',
@@ -253,40 +265,67 @@ define
              //TODO: implement 'event'. Change form when this is selected to somethin
              //appropriate for an event 
             },
-            {name: "location", type: "select",
+            {name: "location",
+             type: "enum",
+             change: function (form, item, value) {
+                 
+                 // var locationList = eventForm.getField('person').pickList.getSelectedRecords();
+                 // var personList = personPickList.getSelectedRecords();
+                 // console.log('PICKLIST', personList);
+                 // event.displayPerson = [];
+                 // var person = []; 
+                 // personList.forEach(function(p) {
+                 //     event.displayPerson.push(p.name);
+                 //     // person.push(p._id);
+                 // });
+                 console.log('PICKLIST', event.displayPerson);
+                 // if (event.displayPerson.length === 0) event.displayPerson = ['Nobody'];
+                 console.log(form, item, value, this.getDisplayValue());
+                  
+             },
              showTitle: false, 
              startRow: false,
              // required: true, 
              // multiple: true,
-             // multipleAppearance: 'picklist',
-             align: 'right',
+             // multipleAppearance: 'locationPicklist',
+             align: 'left',
              optionDataSource: datasource,
              filterLocally: true, 
-             pickListCriteria: { group: 'location'},
-             displayField: 'location',
+             pickListCriteria: { type: 'location'},
+             displayField: 'name',
              colSpan:1,
              valueField: '_id' }, 
             
+            {name: 'removeButton', type: "button", title : 'Delete',
+             startRow: false, width: 50, endRow: true,
+             colSpan: 1,
+             click: function() { editorManager.remove(event); } },
+           //---------------------------- 
             personPickList,
             
             {name: "date", required: true, showTitle: false, type: "date", startRow: true},
             {name: "sleepOver", align: 'left', showTitle: false, type: "boolean",
              startRow: false , colSpan:2},
+            //---------------------------------
             {name: "startTime", type: "time", editorType: 'comboBox', required: true,
              title:'From',showTitle: true,
+             change: function (form, item, value) {
+                 console.log(form, item, value);
+             },
              
              // valueMap: [new Date()],
              titleOrientation: 'top', startRow: true
              ,valueMap: getTimeList(settings.eventSnapGap)
             },
             {name: "endTime", type: "time", editorType: 'comboBox', required: true,
-             title:'To',showTitle: true, colSpan: 2,
+             title:'To',showTitle: true, colSpan: 1,
              validators: [{ type:'isAfter'}],
              // valueMap: [new Date()],
              titleOrientation: 'top', startRow: false
              ,valueMap: getTimeList(settings.eventSnapGap)
             },
             
+            //----------------------------------------
             {name: "repeats", type: "Select", showTitle: false, startRow: true,
              valueMap: ['Does not repeat', 'Daily', 'Every weekday (Mon-Fri)', 'Weekly',
                         'Monthly', 'Yearly'], required: true, defaultValue: 'Does not repeat',
@@ -294,93 +333,41 @@ define
             },
             //TODO implement repeats UI, similar to Extensible calenda
             
+           //---------------------------------------- 
             {name:"notes", title:'Notes', type: "textarea", height: '100', titleOrientation: 'top',
              showTitle: true, width: '340', colSpan: 3, startRow: true},
-            {name: 'saveButton', type: "button", title : 'Save', colSpan:1,
-             click: function() { addEvent(); } , endRow: false},
-             
-            // {type: "button", title : 'Delete', colSpan:1, startRow: false,
-            //  click: function() { addEvent(); } , endRow: false},
-            {type: "button", title: "Cancel", align: 'right', startRow: false,
-             click: function() { presentContainer.hide(); } , endRow: false}
+           //-------------------------------------- 
+            
+            {name: 'cancelButton', type: "button", title: "Cancel",  
+              endRow: false, width: 50,
+             colSpan: 1, align: 'left',
+             click: function() { editorManager.cancel('shift'); } },
+            {name: 'saveButton', type: "button", title : 'Save',
+             startRow: false, endRow: true, width: 50,
+             colSpan: 2,
+             align: 'right',
+             click: function() { addEvent(); } }
         ]
     };
     
+    var eventForm = isc.DynamicForm.create(eventFormData);
     
-    
-    // var personField = module.temp = eventForm.getField('person');
-    var eventForm = isc.DynamicForm.create(eventFormTemplate);
-    
-    // var eventEditorWindow = isc.Window.create({
-    //     title: "TODO: Set to event date, start and end",
-    //     autoSize: true,
-    //     canDragReposition: true,
-    //     canDragResize: false,
-    //     showMinimizeButton:false, 
-    //     autoCenter: true,
-    //     isModal: true,
-    //     showModalMask: true,
-    //     autoDraw: false,
-    //     items: [eventForm]
-    // });
-      
-    // function getShiftDescription(event) {
-    //     console.log('in shiftdesc', event);
-    //     var sDate = event.startDate.toShortDate();
-    //     var sTime = isc.Time.toTime(event.startDate, 'toShortPaddedTime', true);
-    //     var eTime = isc.Time.toTime(event.endDate, 'toShortPaddedTime', true);
-
-    //     return sDate + "&nbsp;" + sTime + "&nbsp;-&nbsp;" + eTime;
-    // }
-    
-    // function setSettings(someSettings) {
-    //     // someSettings = someSettings || {};
-    //     settings = isc.addDefaults(someSettings, defaultSettings);
-    //     // event = someEvent;
-        
-    //     // eventForm.setSaveOperationType(saveOperationType);
-    //     // eventForm.setValues(event);
-    //     // eventForm.clearErrors();
-    // }
-    // API.setSettings = setSettings;
-    
-    // API.getForm = function() {
-    //     // set(someEvent, someSettings);
-    //     return isc.DynamicForm.create(eventFormTemplate);
-    // };
-    
-    // API.init = function(someEvent, someSettings) {
-    //     event = someEvent;
-    //     setSettings(someSettings);
-    //     eventForm.setValues(someEvent);
-    //     eventForm.clearErrors();
-    //     // eventEditorWindow.setTitle(getShiftDescription(event));
-    //     // eventEditorWindow.show();
-    // };
-    // API.show = function(someEvent, someSettings) {
-    //     event = someEvent;
-    //     setSettings(someSettings);
-    //     eventForm.setValues(someEvent);
-    //     eventForm.clearErrors();
-    //     eventEditorWindow.show();
-    // };
-    var presentContainer;
-    
+    var cancelButton = eventForm.getField('cancelButton');
+    var removeButton = eventForm.getField('removeButton');
+    var saveButton = eventForm.getField('saveButton');
     editor.type = 'shift';
     editor.canvas = eventForm;
     editor.set = function(someEvent, someSettings) {
         event = someEvent;
+        displayPerson = [];
         console.log('setting values', someEvent);
         settings = isc.addDefaults(someSettings, defaultSettings);
-        // setSettings(someSettings);
         eventForm.setValues(someEvent);
         eventForm.clearErrors();
-        
-        // if (presentContainer && presentContainer !== aContainer) { presentContainer.removeCanvas();   }
-        // presentContainer = aContainer;
-        // presentContainer.setCanvas(eventForm);
+        if (settings.cancelButton) cancelButton.show(); else cancelButton.hide();
+        if (settings.removeButton) removeButton.show(); else removeButton.hide();
+        if (settings.saveButton) saveButton.show(); else saveButton.hide();
     };
     editorManager.register(editor);   
-    // return editor;   
 
   }});

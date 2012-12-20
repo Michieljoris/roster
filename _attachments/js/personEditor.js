@@ -10,7 +10,7 @@ define
       "use strict";
 
       var editor = {};
-      var location;   
+      var person;   
       var defaultSettings = {};
       var settings = {}; 
       
@@ -22,7 +22,7 @@ define
           cellPadding: 4,
           numCols: 2,
           itemKeyPress: function(item,keyName) {
-              if (keyName === 'Enter') addLocation();
+              if (keyName === 'Enter') addPerson();
           },
           // cellBorder: 1,
           fields: [
@@ -60,7 +60,7 @@ define
           cellPadding: 4,
           numCols: 2,
           itemKeyPress: function(item,keyName) {
-              if (keyName === 'Enter') addLocation();
+              if (keyName === 'Enter') addPerson();
           },
           // cellBorder: 1,
           fields: [
@@ -105,7 +105,7 @@ define
           cellPadding: 4,
           numCols: 2,
           itemKeyPress: function(item,keyName) {
-              if (keyName === 'Enter') addLocation();
+              if (keyName === 'Enter') addPerson();
           },
           // cellBorder: 1,
           fields: [
@@ -130,7 +130,7 @@ define
           cellPadding: 4,
           numCols: 2,
           itemKeyPress: function(item,keyName) {
-              if (keyName === 'Enter') addLocation();
+              if (keyName === 'Enter') addPerson();
           },
           // cellBorder: 1,
           fields: [
@@ -154,60 +154,60 @@ define
       });
     
     
-      function addLocation() {
-          console.log('addLocation',vm.getValues());
+      function addPerson() {
+          console.log('addPerson',vm.getValues());
           if (vm.validate()) {
-              var location = vm.getValues();
+              var person = vm.getValues();
         
-              if (!location.notes) location.notes = '';
+              if (!person.notes) person.notes = '';
               //TODO? set all booleans to default off value?
               //     console.log(startDate, endDate);
-	      // // calendar.addLocation(startDate, endDate,
+	      // // calendar.addPerson(startDate, endDate,
               // var otherFields = { group: 'shift',
-              //                     claim: location.claim,
-              //                     repeats: location.repeats,
-              //                     sleepOver: location.sleepOver,
-              //                     location: location.location,
+              //                     claim: person.claim,
+              //                     repeats: person.repeats,
+              //                     sleepOver: person.sleepOver,
+              //                     person: person.person,
               //                     ad: false,
               //                     displayPerson: []};
-              // console.log('changed:', locationForm.valuesHaveChanged(), locationForm.getChangedValues());
+              // console.log('changed:', personForm.valuesHaveChanged(), personForm.getChangedValues());
             
-              // var personList = locationForm.getField('person').pickList.getSelectedRecords();
+              // var personList = personForm.getField('person').pickList.getSelectedRecords();
               // personList.forEach(function(p) {
               // otherFields.displayPerson.push(p.name);
               // });
             
               //************ 
-              // location.startDate = startDate;
-              // location.endDate = endDate;
-              // isc.addProperties(location, otherFields);
+              // person.startDate = startDate;
+              // person.endDate = endDate;
+              // isc.addProperties(person, otherFields);
             
-              if (location._rev) {
+              if (person._rev) {
                   if (vm.valuesHaveChanged())
-                      database.updateData(location);
+                      database.updateData(person);
               }
-              else database.addData(location);
+              else database.addData(person);
             
-              // console.log('***********', location.person)    ;
-              // if (location._rev) {
-              //     if (locationForm.valuesHaveChanged())
-              //         pouchDS.updateLocation(location,
+              // console.log('***********', person.person)    ;
+              // if (person._rev) {
+              //     if (personForm.valuesHaveChanged())
+              //         pouchDS.updatePerson(person,
               //                              startDate, endDate,
-              //                              // isc.JSON.encode(location.person),
-              //                              location.person,
-              //                              location.notes,
+              //                              // isc.JSON.encode(person.person),
+              //                              person.person,
+              //                              person.notes,
               //                              otherFields);
               // }
-              // else pouchDS.addLocation(startDate, endDate,
-              //                        // isc.JSON.encode(location.person),
-              //                        location.person,
-              //                        location.notes,
+              // else pouchDS.addPerson(startDate, endDate,
+              //                        // isc.JSON.encode(person.person),
+              //                        person.person,
+              //                        person.notes,
               //                        otherFields);
-              // locationEditorWindow.hide(); 
+              // personEditorWindow.hide(); 
           }
       }
                                        
-      function removeLocation() {
+      function removePerson() {
           console.log('implement remove item') ;
           //TODO 
       }
@@ -227,6 +227,7 @@ define
       });
       
       
+      var allButtons = {};
       function buttonBar(orientation, entries, buttonProps, action) {
           var members = [];
           
@@ -241,7 +242,9 @@ define
                   action(e);
               };
               button = isc.Button.create(buttonProps);
+              allButtons[e] = button;
               members.push(button);
+              
           });
           
           // members.push(isc.LayoutSpacer.create()); // Note the use of the LayoutSpacer
@@ -255,13 +258,14 @@ define
               // align: "center",
               // overflow: "hidden",
               // border: "1px solid blue",
-              width: '100%',
+              // width: '100%',
               members: members
               //,showResizeBar: true,
               // border: "1px solid blue"
           });
           
       }
+      
       
       
       var formLayout = isc.HLayout.create({
@@ -308,9 +312,10 @@ define
             case 'Address': formLayout.setVisibleMember(addressForm); break;
             case 'Contact': formLayout.setVisibleMember(contactForm); break;
             case 'Notes': formLayout.setVisibleMember(notesForm); break; 
-            case 'Save': addLocation(); break; 
-            case 'Cancel': presentContainer.hide(); break; 
-            case 'Delete': removeLocation(); break;
+              
+            case 'Save': addPerson(); break; 
+            case 'Cancel': editorManager.cancel(); break; 
+            case 'Delete': editorManager.remove(person); break;
           default: alert('unknown action in function action!!');
           }
           console.log(e);
@@ -322,7 +327,7 @@ define
           width:"100%",
           margin:"25",
           emptyMessage:"Select an item to view its details",
-          fields: typesAndFields.getTagsCloner('location')()
+          fields: typesAndFields.getFieldsCloner('person')()
       });
       
       var editorMessage = isc.Label.create({
@@ -370,25 +375,22 @@ define
           ]  
       });
       
-      var setValues = function(someLocation) {
-          console.log('someLocation', someLocation);
-          location = someLocation;
-          vm.setValues(someLocation);
-          itemViewer.setData(someLocation);
-          vm.clearErrors();
-      };
-      
-      var presentContainer;
       editor.type = 'person';
       editor.canvas = layout;
-      editor.set = function(someLocation, someSettings) {
-          console.log('setting values', someLocation, someSettings);
+      editor.set = function(somePerson, someSettings) {
+          console.log('setting values', somePerson, someSettings);
           settings = isc.addDefaults(someSettings, defaultSettings);
-          setValues(someLocation);
           
-          // if (presentContainer && presentContainer !== aContainer) { presentContainer.removeCanvas();   }
-          // presentContainer = aContainer;
-          // presentContainer.setCanvas(layout);
+          console.log('somePerson', somePerson);
+          person = somePerson;
+          vm.setValues(person);
+          itemViewer.setData(somePerson);
+          vm.clearErrors();
+          
+          allButtons.Cancel.setVisibility(settings.cancelButton);
+          allButtons.Delete.setVisibility(settings.removeButton);
+          allButtons.Save.setVisibility(settings.saveButton);
+          
       };
       editorManager.register(editor);
     

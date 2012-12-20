@@ -475,7 +475,7 @@
 	 dependency.exeOrder = exeOrder;
 	 dependency.requirers.forEach(
 	   function(dep) {
-	     if (exeOrder > 200) { log(E, 'looping in  setExeOrder'); return; }
+	     if (exeOrder > 300) { log(E, 'looping in  setExeOrder'); return; }
 	     if (dep === dependency) return;
 	     if (dep.id === origin) {
 	       log(E, 'Cyclic dependency. ');
