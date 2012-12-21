@@ -192,10 +192,12 @@ define
       
        var newRecord = function(aType) {
            // addUpdateData('addData', { group: 'group'});
-           database.addData({ type: aType },
+           var record = typesAndFields.newRecord(aType);
+           database.addData( record,
                             function(resp, data, req) 
-		            {   dataTable.selectRecord(data);
-                                rowClicked(data);
+		            {   dataTable.deselectAllRecords();
+                                dataTable.selectRecord(data);
+                                editRecord(data);
                                 // editForm.setValues(data);
                                 console.log(resp,data,req);});
        };
@@ -217,12 +219,12 @@ define
                // console.log('selecting row: ' + index);
                dataTable.selectRecord(index);
               
-               rowClicked(dataTable.getSelectedRecord());
+               editRecord(dataTable.getSelectedRecord());
            }
        }
       
       
-       function rowClicked(record) {
+       function editRecord(record) {
            // locationEditor.showDialog(record, {});
            // if (showingFilter) {
            //     stack.removeItem(1, tableFilter.filterStack, 0);
@@ -392,11 +394,11 @@ define
 	       // autoFetchData: true,
 	       //editing
 	       recordClick: function (viewer, record) {
-                   rowClicked(record); 
+                   editRecord(record); 
                },
               
 	       cellChanged: function (record) {
-                   rowClicked(record); 
+                   editRecord(record); 
                },
                // recordClick: updateEditForm,
 	       canEdit:true,
@@ -535,7 +537,18 @@ define
            removeCanvas: function() {
                // if (this.canvas) this.removeChild(this.canvas);
                this.removeChild(this.getCanvas());
-           }
+           },
+           done: function(record, action) {
+               switch (action) {
+                 case 'save' : console.log('selecting record after save', record);
+                   dataTable.selectRecord(record); break;
+                 case 'remove' : editorContainer.removeCanvas(); break;
+                  
+               }
+           },
+           removeRecord: removeRecord
+           
+           
        });
       
       

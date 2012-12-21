@@ -22,7 +22,7 @@ define
     
        var guestUser = {
            _id:'guest',
-           // name: 'super-admin',
+           name: 'guest',
            type: 'person',
            login: 'guest',
            autoLogin: true,

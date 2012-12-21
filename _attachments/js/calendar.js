@@ -116,12 +116,12 @@ define
              // }
 	     ,eventClick: function(event, viewName) {
 	         console.log("Update event", event, viewName);
-                 event.endTime = isc.Time.createLogicalTime(event.endDate.getHours(),
-                                                            event.endDate.getMinutes(),0);
-                 event.startTime = isc.Time.createLogicalTime(event.startDate.getHours(),
-                                                              event.startDate.getMinutes(),0);
-                 // event.moreText = event.notes;
-                 event.date = event.startDate;
+                 // event.endTime = isc.Time.createLogicalTime(event.endDate.getHours(),
+                 //                                            event.endDate.getMinutes(),0);
+                 // event.startTime = isc.Time.createLogicalTime(event.startDate.getHours(),
+                 //                                              event.startDate.getMinutes(),0);
+                 // // event.moreText = event.notes;
+                 // event.date = event.startDate;
                  // console.log('about to call shiftEditor');
                  // shiftEditor.init(eventEditorWindow , event, settings);
                  

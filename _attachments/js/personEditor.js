@@ -182,11 +182,12 @@ define
               // person.endDate = endDate;
               // isc.addProperties(person, otherFields);
             
-              if (person._rev) {
-                  if (vm.valuesHaveChanged())
-                      database.updateData(person);
-              }
-              else database.addData(person);
+              editorManager.save(person, vm.valuesHaveChanged());           
+              // if (person._rev) {
+              //     if (vm.valuesHaveChanged())
+              //         database.updateData(person);
+              // }
+              // else database.addData(person);
             
               // console.log('***********', person.person)    ;
               // if (person._rev) {
@@ -207,10 +208,6 @@ define
           }
       }
                                        
-      function removePerson() {
-          console.log('implement remove item') ;
-          //TODO 
-      }
       
       var parentLabel = isc.Label.create({
           height: 30,
@@ -314,7 +311,7 @@ define
             case 'Notes': formLayout.setVisibleMember(notesForm); break; 
               
             case 'Save': addPerson(); break; 
-            case 'Cancel': editorManager.cancel(); break; 
+            case 'Cancel': editorManager.cancel(person); break; 
             case 'Delete': editorManager.remove(person); break;
           default: alert('unknown action in function action!!');
           }

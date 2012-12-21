@@ -7,36 +7,39 @@ define
    factory: function(database) {
        "use strict";
        var API = {};
-           var editors = {};
+       var editors = {};
       
-           var editorWindow = isc.Window.create({
-               title: "TODO: Set to event date, start and end",
-               autoSize: true,
-               width:300, height:300,
-               canDragReposition: true,
-               canDragResize: false,
-               showMinimizeButton:false, 
-               autoCenter: true,
-               isModal: true,
-               showModalMask: true,
-               autoDraw: false,
-               getCanvas: function() {
-                   if (this.items) return this.items[0];
-                   else return null;
-               },
-               setCanvas: function(canvas) {
-                   // if (this.canvas === canvas) return;
-                   // this.removeCanvas();
-                   // this.canvas = canvas;
-                   this.addItem(canvas);
-               }, 
-               removeCanvas: function() {
-                   // if (this.canvas) this.removeItem(this.canvas);
-                   var canvas = this.getCanvas();
-                   console.log('canvas is:', canvas);
-                   if (canvas) this.removeItem(canvas);
-               }
-           });
+       var editorWindow = isc.Window.create({
+           title: "TODO: Set to event date, start and end",
+           autoSize: true,
+           width:300, height:300,
+           canDragReposition: true,
+           canDragResize: false,
+           showMinimizeButton:false, 
+           autoCenter: true,
+           isModal: true,
+           showModalMask: true,
+           autoDraw: false,
+           getCanvas: function() {
+               if (this.items) return this.items[0];
+               else return null;
+           },
+           setCanvas: function(canvas) {
+               // if (this.canvas === canvas) return;
+               // this.removeCanvas();
+               // this.canvas = canvas;
+               this.addItem(canvas);
+           }, 
+           removeCanvas: function() {
+               // if (this.canvas) this.removeItem(this.canvas);
+               var canvas = this.getCanvas();
+               console.log('canvas is:', canvas);
+               if (canvas) this.removeItem(canvas);
+           },
+           done: function() {
+               editorWindow.hide();
+           }
+       });
     
        // setting up the various editForms used for different types of records     
        // var editor; //points to editCanvas currently shown in the lower section
@@ -81,30 +84,37 @@ define
         
            return true;  
        };
+       
       
        API.fill = fill;
        API.save = function(record, changed) {
+           var callback = function(response, record) {
+               console.log('CALLBACK', response, record);
+               API.done(record, 'save');
+           };
+           
            if (record._rev) {
                if (changed)
-                   database.updateData(record);
+                   database.updateData(record, callback);
            }
-           else database.addData(record);
+           else database.addData(record, callback);
+           // console.log('saved record, now going to done');
        };
        
-       API.hide = function(canvas) {
+       API.done = function(record, action) {
            console.log('hiding editor');
-           containers[canvas].hide();
+           containers[record.type].done(record, action);
        };
        
-       API.cancel = function(canvas) {
-           API.hide(canvas);
+       API.cancel = function(record) {
+           API.done(record, 'cancel');
            // console.log('cancelling editor');
        };
        
        API.remove = function(record) {
            console.log('removing record');
-           API.hide(record.type);
            database.removeData(record);
+           API.done(record, 'remove');
        };
 
        

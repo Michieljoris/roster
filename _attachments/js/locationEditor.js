@@ -310,7 +310,7 @@ define
             case 'Contact': formLayout.setVisibleMember(contactForm); break;
             case 'Notes': formLayout.setVisibleMember(notesForm); break; 
             case 'Save': addLocation(); break; 
-            case 'Cancel': editorManager.cancel(); break; 
+            case 'Cancel': editorManager.cancel(location); break; 
             case 'Delete': editorManager.remove(location); break;
           default: alert('unknown action in function action!!');
           }

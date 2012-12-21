@@ -109,6 +109,7 @@ define
         
     );
     
+    
     function addEvent() {
         console.log('addEvent',eventForm.getValues());
         
@@ -130,41 +131,10 @@ define
             endDate.setDate(event.date.getDate());
             if (event.endTime.getHours() === 0 &&
                 event.endTime.getMinutes() === 0) endDate.setDate(endDate.getDate() + 1);
-            // if (endDate <= startDate) {
-
-            //     console.log('ERROR');
-            //     //TODO
-            //     return;
-            // }
-            // eventForm.getField('endTime').validators = [
-            //     {type:"dateRange", min: Date(0,0,0),
-            //      max: new Date(30000,0, 0) ,
-            //      errorMessage: 'Finish time has to be after start time'}];
         
             if (!event.notes) event.notes = '';
             console.log(startDate, endDate);
-            // var otherFields = { type: 'shift',
-            //                     claim: event.claim,
-            //                     repeats: event.repeats,
-            //                     sleepOver: event.sleepOver,
-            //                     location: event.location,
-            //                     ad: false,
-            //                     displayPerson: [],
-            //                     person: [] };
-            // console.log('changed:', eventForm.valuesHaveChanged(), eventForm.getChangedValues());
             
-            // var personList = eventForm.getField('person').pickList.getSelectedRecords();
-            // // var personList = personPickList.getSelectedRecords();
-            // console.log('PICKLIST', personList);
-            // event.displayPerson = [];
-            // // var person = []; 
-            // personList.forEach(function(p) {
-            //     event.displayPerson.push(p.name);
-            //     // person.push(p._id);
-            // });
-            // console.log('PICKLIST', event.displayPerson);
-            // if (event.displayPerson.length === 0) event.displayPerson = ['Peter', 'Rosie'];
-            //************ 
             event.type = 'shift';
             event.startDate = startDate;
             event.endDate = endDate;
@@ -173,14 +143,14 @@ define
             event.displayPerson = displayPerson;
             // event.notes = event.moreText;
             // event.description = event.notes;
-            console.log('XXXXnotes',event.notes);
-            console.log('XXXXperson', event.person);
-            console.log('XXXXlocation', event.location);
-            console.log('XXXXname', event.name);
+            // console.log('XXXXnotes',event.notes);
+            // console.log('XXXXperson', event.person);
+            // console.log('XXXXlocation', event.location);
+            // console.log('XXXXname', event.name);
             // isc.addProperties(event, otherFields);
             
             editorManager.save(event, eventForm.valuesHaveChanged());
-            editorManager.hide('shift');
+            // editorManager.hide('shift');
         }
     }
     
@@ -250,10 +220,10 @@ define
         cellPadding: 4,
         numCols: 3,
         timeFormatter: 'toShort24HourTime',
-        itemKeyPress: function(item,keyName) {
-            if (keyName === 'Enter') addEvent();
+        // itemKeyPress: function(item,keyName) {
+        //     if (keyName === 'Enter') addEvent();
                 
-        },
+        // },
         // cellBorder: 1,
         fields: [
             {name: "claim", showTitle: false, type: "select", startRow: true,
@@ -341,7 +311,7 @@ define
             {name: 'cancelButton', type: "button", title: "Cancel",  
               endRow: false, width: 50,
              colSpan: 1, align: 'left',
-             click: function() { editorManager.cancel('shift'); } },
+             click: function() { editorManager.cancel(event); } },
             {name: 'saveButton', type: "button", title : 'Save',
              startRow: false, endRow: true, width: 50,
              colSpan: 2,
@@ -358,10 +328,19 @@ define
     editor.type = 'shift';
     editor.canvas = eventForm;
     editor.set = function(someEvent, someSettings) {
+        
         event = someEvent;
         displayPerson = [];
         console.log('setting values', someEvent);
         settings = isc.addDefaults(someSettings, defaultSettings);
+        
+        event.endTime = isc.Time.createLogicalTime(event.endDate.getHours(),
+                                                   event.endDate.getMinutes(),0);
+        event.startTime = isc.Time.createLogicalTime(event.startDate.getHours(),
+                                                     event.startDate.getMinutes(),0);
+        event.date = event.startDate;
+        
+        
         eventForm.setValues(someEvent);
         eventForm.clearErrors();
         if (settings.cancelButton) cancelButton.show(); else cancelButton.hide();
