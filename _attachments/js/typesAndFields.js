@@ -91,7 +91,6 @@ define
         ,notes: { type: "text", length: 500}
         ,ad: { title: 'All day', type: 'boolean'} //allday
         // ,claim: { type: 'text'} 
-        
         ,claim:  {type: "select", defaultValue: 'Normal shift',
                   valueMap: ['Normal shift', 'Sick leave', 'Annual leave',
                              'Long service leave', 'Other leave', 'Away from base',

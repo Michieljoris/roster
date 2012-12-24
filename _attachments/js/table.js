@@ -150,7 +150,6 @@ define
            log.d('Applied Criteria', appliedCriteria);
            // module.temp = appliedCriteria;
            console.log('will fetch data', dataTable.willFetchData(appliedCriteria));
-           // return;
            if (dataTable.willFetchData(appliedCriteria)) 
                dataTable.fetchData(undefined, 
                                    function() {
