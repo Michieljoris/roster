@@ -326,14 +326,6 @@ define
           fields: typesAndFields.getFieldsCloner('location')()
       });
       
-      var editorMessage = isc.Label.create({
-          // ID:"editorMessage",
-          autoDraw: false,
-          width:"100%",
-          height:"100%",
-          align:"center",
-          contents:"Select a record to edit, or a category to insert a new record into"
-      });
 
     
       var tabSet = isc.TabSet.

@@ -112,9 +112,13 @@ define
        };
        
        API.remove = function(record) {
-           console.log('removing record');
-           database.removeData(record);
-           API.done(record, 'remove');
+           var container = containers[record.type];
+           if (container.removeRecord) container.removeRecord(record);
+           else {
+               console.log('removing record');
+               database.removeData(record);
+               API.done(record, 'remove');
+           }
        };
 
        

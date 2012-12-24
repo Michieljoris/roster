@@ -66,7 +66,7 @@ define
 	visibilityMode:"multiple",
 	animateSections:true,
 	showResizeBar:true,
-	width:0,
+	width:200,
 	sections:[
 	    {showHeader:false, items:[viewTree]},
 	    {title:"Admin", hidden: true, expanded:false, items:[adminTree]},

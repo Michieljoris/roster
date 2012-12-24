@@ -30,6 +30,7 @@
       window.isc_useSimpleNames = false;
     </script> 
     
+ <!-- TODO: you should use chrome source maps to ease debugging..    -->
     <!-- concatenated all these files into the ISC.js below-->
     <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Core.js></SCRIPT>   
     <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Foundation.js></SCRIPT>   
@@ -67,9 +68,12 @@
     <!-- database adapter -->
     <script src=lib/pouch.alphal.js></script>   
     
+    <!-- basic console logger -->
+    <script src=lib/logger.js></script>    
+    <!-- <script> logger.set('debug');</script>     -->
+    
     <!--/temp for testing purposes, can be removed  -->
     <script src=js/quickpouch.js></script>    
-    <!-- <script src=js/datasources.js></script>     -->
     
     <!-- load and start -->
     <script src=lib/bootstrap.js></script>

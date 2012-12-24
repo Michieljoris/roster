@@ -184,9 +184,11 @@ define
       
       function saveTreeToDb(callback) {
           leafShowing.viewState = views[leafShowing.view].getState();
+          console.log(leafShowing.viewState); 
           globals.user.viewTreeState = isc.JSON.encode(getTreeState());
           
           console.log('save',leafShowing);
+          console.log('save',globals.user.viewTreeState);
           console.log('saving tree');
           //TODO get the roster.user from the database and then use
           //that object to save the ui, or put the ui in a separate
@@ -201,6 +203,7 @@ define
               }
               else {
 	          globals.user._rev = response.rev;
+                  console.log('save',globals.user.viewTreeState);
               }
               setModified(false);
               // window.onbeforeunload = function() { };

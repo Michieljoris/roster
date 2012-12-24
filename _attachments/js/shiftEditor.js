@@ -7,9 +7,11 @@
 //This kind of module does not produce an injectable, but registers itself with the editorManager
 //to use this editor, both load the editorLoader module and inject the editorManager
 define
-({inject: ['pouchDS', 'editorManager'],
-  factory: function(datasource, editorManager) 
+({inject: ['pouchDS', 'editorManager', 'typesAndFields'],
+  factory: function(datasource, editorManager, typesAndFields) 
   { "use strict";
+    var log = logger.get('shiftEditor');
+    // var log = Logger('shiftEditor');
 
     var editor = {};
     var settings = {}; 
@@ -25,7 +27,10 @@ define
         chosenDate: new Date()
         
     };
-    
+
+    var fieldsCloner = typesAndFields.getFieldsCloner('shift', 'asObject');
+    var fields = fieldsCloner();
+    // log.d('fields:', fields);
     
     var timeLists = {};
     function formatTime(hour, minute) {
@@ -174,18 +179,18 @@ define
                           // editorType: 'comboBox',
                           
                           change: function (form, item, value) {
-                              var personList = eventForm.getField('person').pickList.getSelectedRecords();
-                              // var personList = personPickList.getSelectedRecords();
-                              console.log('PICKLIST', personList);
-                              displayPerson = [];
-                              // var person = []; 
-                              personList.forEach(function(p) {
-                                  displayPerson.push(p.name);
-                                  // person.push(p._id);
-                              });
-                              console.log('PICKLIST', displayPerson);
-                              if (displayPerson.length === 0) displayPerson = ['Nobody'];
-                              console.log(form, item, value);
+                              // var personList = eventForm.getField('person').pickList.getSelectedRecords();
+                              // // var personList = personPickList.getSelectedRecords();
+                              // console.log('PICKLIST', personList);
+                              // displayPerson = [];
+                              // // var person = []; 
+                              // personList.forEach(function(p) {
+                              //     displayPerson.push(p.name);
+                              //     // person.push(p._id);
+                              // });
+                              // console.log('PICKLIST', displayPerson);
+                              // if (displayPerson.length === 0) displayPerson = ['Nobody'];
+                              // console.log(form, item, value);
                           },
                           type: 'enum',
                           showTitle: false,
@@ -226,33 +231,19 @@ define
         // },
         // cellBorder: 1,
         fields: [
-            {name: "claim", showTitle: false, type: "select", startRow: true,
-             showIf: function() { return true; //return eventForm.getValue("Claim") === true;
-                                }, required: true, defaultValue: 'Normal shift',
-             valueMap: ['Normal shift', 'Sick leave', 'Annual leave',
-                        'Long service leave', 'Other leave', 'Away from base',
-                        'Admin', 'Disturbed sleep', 'Event'], colSpan:1
-             //TODO: implement 'event'. Change form when this is selected to somethin
-             //appropriate for an event 
-            },
+            isc.addDefaults({
+                showTitle: false,
+                startRow: true,
+                showIf: function() { return true; //return eventForm.getValue("Claim") === true;
+                                   },
+                required: true,
+                defaultValue: 'Normal shift',
+                colSpan:1
+                //TODO: implement 'event'. Change form when this is selected to somethin
+                //appropriate for an event 
+            }, fields.claim),
             {name: "location",
              type: "enum",
-             change: function (form, item, value) {
-                 
-                 // var locationList = eventForm.getField('person').pickList.getSelectedRecords();
-                 // var personList = personPickList.getSelectedRecords();
-                 // console.log('PICKLIST', personList);
-                 // event.displayPerson = [];
-                 // var person = []; 
-                 // personList.forEach(function(p) {
-                 //     event.displayPerson.push(p.name);
-                 //     // person.push(p._id);
-                 // });
-                 console.log('PICKLIST', event.displayPerson);
-                 // if (event.displayPerson.length === 0) event.displayPerson = ['Nobody'];
-                 console.log(form, item, value, this.getDisplayValue());
-                  
-             },
              showTitle: false, 
              startRow: false,
              // required: true, 
