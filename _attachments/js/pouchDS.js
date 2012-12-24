@@ -1,15 +1,15 @@
-/*global module:false isc:false define:false */
+/*global logger:false module:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:4 maxcomplexity:7 maxlen:130 devel:true*/
 
 define
-({inject: ['globals', 'typesAndFields'],
-  factory: function(globals, typesAndFields) {
+({inject: ['typesAndFields', 'globals'],
+  factory: function(typesAndFields, globals) {
       "use strict";
+      var log = logger.get('pouchDS', 'debug');
       
       var views = typesAndFields.views;
       
-      // var db =  'idb://' + roster.dbname;
       function typefyProps(obj) {
           Object.keys(obj).forEach(
 	      function(k) {
@@ -110,7 +110,7 @@ define
           f(globals.db);
       }			 
 
-
+      
       var pouchDS = isc.DataSource.create(
           {
 	      ID : "pouchDS",
@@ -121,10 +121,11 @@ define
               // titleField: 'title',
 	      // recordName:"employee",
 	      // titleField:"Name",
+              
 	      transformRequest: function (dsRequest) {
 	          // DS = this;
-	          console.log('transform dsRequest:',dsRequest);
-                  console.log(dsRequest.data);
+	          log.d(dsRequest);
+                  log.d(dsRequest.data);
 	          var dsResponse;
 	          switch (dsRequest.operationType) {
 	            case "fetch":
@@ -178,5 +179,7 @@ define
 	          }
 	      }
           });    
+      
+      typesAndFields.setDataSource(pouchDS);
       return pouchDS;
   }});

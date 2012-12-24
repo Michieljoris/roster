@@ -1,23 +1,40 @@
-/*global module:true pp:false isc:false define:false */
+/*global logger:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:7 maxcomplexity:7 maxlen:150 devel:true*/
 
 define
-({ load: ['editorLoader'],
-   inject: ['typesAndFields', 'pouchDS', 'editorManager', 'tableFilter'],
-   factory: function(typesAndFields, database, editors, tableFilter) {
+({ load: ['editorLoader'], 
+   inject: [ 'typesAndFields', 'pouchDS', 'editorManager', 'tableFilter'],
+   factory: function (typesAndFields, database, editors, tableFilter) {
        "use strict";
-       var currentHeight= 300;
+       
+       var log = logger.get('table', 'debug');
+
+       var editorHeightExpanded= 300;
        var typeFilter;
        var state; 
        var defaultState = { height: 300, isExpanded: true, tab: 1, hidden: false};
        
        // tableFilter.filterStack.hide();
       
-       //type menu items get added dynamically in setTypeState
+       //type menu items get added dynamically in setTypingState
        var addRecordMenu = {
-           width: 150
+           // ID:'typeMenu',
+           width: 150,
+           data: [ { title: 'hello' }]
        };
+       //all possible types for the right top add record button
+       // addRecordMenu.data = []; 
+       var typeMenuItems = [];
+       typesAndFields.allTypes.forEach(function(g) {
+           typeMenuItems[g] = {
+               name: g,
+               icon: isc.Page.getSkinDir() +"images/actions/add.png",
+               click: function() {
+                   newRecord(g);
+               }
+           }; 
+       });
       
        var API = {};
       
@@ -31,50 +48,74 @@ define
 	       criteria : dataTable.getFilterEditorCriteria(),
               
                //editor
-               hidden: false,
-               // tab: tabSet.getSelectedTabNumber(),
                height: (function() {
                    if (stack.sectionIsExpanded('Editor')) 
                        return dataTable.getHeight();
-                   return currentHeight;
+                   else return editorHeightExpanded;
                })(),
                isExpanded: stack.sectionIsExpanded('Editor')
            });
-          
+           isc.addProperties(state, tableFilter.getState());
            console.log('getTableState', isc.clone(state));
            currentState = isc.clone(state);
            return currentState;
        } 
       
        API.getState = getTableState;
+       
+       function setTypingState(types) {
+           //types
+           if (!types || types.length === 0) state.types = typesAndFields.allTypes;
+           types = state.types;
+           //set title of table to types displayed
+           tableTypeLabel.setContents('[' + types.toString() + ']');  
+           
+           //producer of fields used with these types
+           var fieldsCloner = typesAndFields.getFieldsCloner(types);
+           
+           //select out the non-relevant tags for the table 
+           dataTable.setFields(fieldsCloner());
+           
+           //set addRecord menu
+           var items = [];
+           types.forEach(function(t) {
+               items.push(typeMenuItems[t]);
+           });
+           if (addRecordButton.menu.setItems) addRecordButton.menu.setItems(items);
+           else addRecordButton.menu.data = items;
+           
+           //this is for the type selection window
+           typeList.setSelection(types);
+           
+           //we need to filter the by type
+           //this will be combined with the normal filters
+           typeFilter = { type : types };
+           //TODO         
+           // dataTable.filterData(typeFilter);
+         
+       } 
 
        var currentState;
        function setTableState(newState) {
-           // console.log('currentState, newState, ===?', currentState, newState, newState === currentState);
-           if (newState === currentState) return;
-           // currentState = newState;
-           console.log('setTableState:', newState);
+           log.d(newState, currentState);
+           //no need to set the state if we're returning to the same one
+           if (currentState !== undefined && newState === currentState) return;
+           log.d(newState);
            state = isc.addProperties(defaultState, isc.clone(newState));
           
-           //types
-           if (!state.types || state.types.length === 0) state.types = typesAndFields.allTypes;
-          
-           var fieldsCloner = typesAndFields.getFieldsCloner(state.types);
-           setTypingState(fieldsCloner);
+           setTypingState(state.types);
           
            tableFilter.setState(state);
-           // tableFilter.objectGroupList.setSelection();
+           
            //layout
-           // tabSet.selectTab(state.tab);
-           dataTable.setHeight(state.height);
            if (state.isExpanded) {
                stack.expandSection('Editor');   
-               dataTable.setHeight(currentHeight);
+               dataTable.setHeight(state.height);
            }
-           else stack.collapseSection('Editor');
-           if (state.hidden) stack.hideSection('Editor');
-           else stack.showSection('Editor');
-          
+           else {
+               stack.collapseSection('Editor');   
+               editorHeightExpanded = state.height;
+           }
            //dataTable state
            dataTable.setViewState(state.grid);
               
@@ -101,6 +142,7 @@ define
            // var criteria = {
            //     group : 'shift'
            // };
+           // return;
            var appliedCriteria = isc.DataSource.combineCriteria(
                typeFilter,state.savedAdvCriteria);
            // appliedCriteria = advancedCriteria;
@@ -108,6 +150,7 @@ define
            console.log('Applied Criteria', appliedCriteria);
            // module.temp = appliedCriteria;
            console.log('will fetch data', dataTable.willFetchData(appliedCriteria));
+           return;
            if (dataTable.willFetchData(appliedCriteria)) 
                dataTable.fetchData(undefined, 
                                    function() {
@@ -131,42 +174,6 @@ define
        }
       
       
-       function setTypingState(fieldsCloner) {
-           
-           // set the label
-           // pp('setGroupingState', state);
-           // objectGroupLabel.setLabel(state.types);
-              
-           //apply group selection by ..
-           //get the fields relevant to the group(s)
-           // var fieldsCloner = roster.getTagsCloner(state.types);
-           //select out the non-relevant tags for the table 
-           dataTable.setFields(fieldsCloner());
-           
-           
-           //we need to set the relevant editor fields
-           // editForm.setGroupFields(fieldsCloner());
-           //set the right groups in the right top add record button
-           addRecordMenu.data = []; 
-           state.types.forEach(function(g) {
-               addRecordMenu.data.push({
-                   name: g,
-                   icon: isc.Page.getSkinDir() +"images/actions/add.png",
-                   click: function() {
-                       newRecord(g);
-                   }
-               }); 
-           });
-         
-           // console.log('RECORDMENUDATA', recordMenuData);
-           //we need to filter the group...
-           typeFilter = { type : state.types };
-           //this will be combined with the normal filters
-           console.log('TYPEFILTER', typeFilter);
-          
-           // dataTable.filterData(groupFilter);
-         
-       } 
       
        //called when table's view is modified
        function tableViewStateChanged(){
@@ -180,26 +187,112 @@ define
        };
       
        //called from viewTree when a leaf is double clicked
-       API.notify = function (newState) {
-           pp('**************setting table to new state');
-           setTableState(newState);
+       API.notify = function (newstate) {
+           log.d('setting table to newstate!!!');
+           setTableState(newstate);
        };
       
       
       
        //----------------------components---------------------    
        //----------------@TABLE----------------------------
+       var typeList = isc.ListGrid.create({
+           width:100, 
+           alternateRecordStyles:true,
+           autoFitData: 'both',
+           autoFetchData: true,
+           showHeader:false,
+           showHeaderContextMenu:false,
+           showHeaderMenuButton:false,
+           selectionAppearance:"checkbox"
+           ,fields: [{name: 'type', title: 'Type'}]
+           ,data: (function() {
+               return typesAndFields.allTypes.map(function(g) {
+                   return { type : g };
+               });})()
+           ,selectionChanged: function() {
+              
+               // log.d('----------selection changed----------');
+               // var sel = typeList.getSelection();
+               // //make sure at least one type is selected, by not
+               // //letting the user deselect the last one.
+               // if (sel.length === 0) {
+               //     typeList.selectRecord(rec); 
+               //     sel = typeList.getSelection();
+               // }
+           }
+           ,setSelection: function(types) {
+               // console.log('----------setting group selection----------');
+               typeList.deselectAllRecords();  
+               // if (state.types)
+               typeList.getData().forEach(function(e) {
+                   if (types.contains(e.type)) typeList.selectRecord(e);
+               }
+                                         );
+           }
+       }); 
+       
+       var okButton = isc.Button.create({
+           left: 200,
+           showRollOver: true,
+           showDisabled: true,
+           showDown: true,
+           title: "Ok",
+           click: function() {
+               var sel = typeList.getSelection();
+               if (sel.length < 1) return;
+               // make a proper groups array out of the selection
+               state.types = sel.map(function(t) {
+                   return t.type;
+               });
+               typeWindow.hide(); 
+               setTableState(state);
+               tableViewStateChanged();
+           }
+       });
+       
+       var cancelButton = isc.Button.create({
+           left: 200,
+           showRollOver: true,
+           showDisabled: true,
+           showDown: true,
+           title: "Cancel",
+           click: function() { typeWindow.hide(); }
+       });
+       // typeWindow.addItem(typeList);
       
+      
+       var typeWindow = isc.Window.create({
+           title: "Types",
+           autoSize: true,
+           // width:300, height:300,
+           canDragReposition: true,
+           canDragResize: false,
+           showMinimizeButton:false, 
+           autoCenter: true,
+           isModal: true,
+           showModalMask: true,
+           autoDraw: false
+           ,items: [
+               typeList    
+               ,okButton
+               ,cancelButton
+           ]
+       });
+       
+       
+       
+       
        var newRecord = function(aType) {
            // addUpdateData('addData', { group: 'group'});
            var record = typesAndFields.newRecord(aType);
            database.addData( record,
-                            function(resp, data, req) 
-		            {   dataTable.deselectAllRecords();
-                                dataTable.selectRecord(data);
-                                editRecord(data);
-                                // editForm.setValues(data);
-                                console.log(resp,data,req);});
+                             function(resp, data, req) 
+		             {   dataTable.deselectAllRecords();
+                                 dataTable.selectRecord(data);
+                                 editRecord(data);
+                                 // editForm.setValues(data);
+                                 console.log(resp,data,req);});
        };
       
       
@@ -253,6 +346,9 @@ define
            editors.fill(editorContainer, record, {
                cancelButton: false, saveButton: true, removeButton: true
            });
+           
+           // dataTable.setHeight(editorHeightExpanded);   
+           stack.expandSection('Editor');   
            // editor.init(editorWindow, record, {});
            // editorWindow.show();
        }
@@ -317,51 +413,58 @@ define
                ]
            });
       
-       var tableLabel = isc.Label.create({
-           width: "100%", 
+       var tableTypeLabel = isc.Label.create({
+           width: "*", 
            padding:5,
-           ID:"tableLabel", 
-           prompt:'hello',
-           contents: 'Table bla blabla bla bla'
+           prompt:'Types shown in this table.<p>Click to edit',
+           click: function() { typeWindow.show();}
        });
+       
+       var tableFilterLabel = isc.Label.create({
+           width: "100%", 
+               padding:5,
+           prompt:'Current filter for this table.<p> Click to edit',
+           click: showFilter
+       });
+       
+       function showFilter() {
+           stack.expandSection('Editor');   
+           // dataTable.setHeight(editorHeightExpanded);   
+           
+           editorContainer.removeCanvas();
+           editorContainer.setCanvas(tableFilter.filterStack);
+       }
       
-      
+       var addRecordButton = isc.IconMenuButton.create({
+           title:''
+	   ,ID:'iconButton'
+	   ,iconClick: "this.showMenu()"
+	   ,showMenuIcon:false
+	   ,width :20
+	   ,icon: "[SKIN]/actions/add.png", 
+	   prompt: "Create a new record"
+	   ,menu: addRecordMenu //{ID: 'mymenu', width:150  }
+       });
+       
        var toolStrip = isc.ToolStrip.create({
            // ID: "gridEditControls",
            width: "100%", height:24, 
            members: [
-               isc.ToolStripButton.create({
-                   icon: "[SKIN]/actions/filter.png", 
-                   prompt: "Set filters",
-                   click: function() {
-                       // if (!tableFilter.filterStack.isVisible()) {
-                       // tableFilter.filterStack.show(); 
-                      
-                       // if (editor) editor.hide();
-                       // editor = undefined;
-                       // stack.addItem(1, tableFilter.filterStack, 0);
-                       // stack.removeItem(1, editForm);
-                       // showingFilter = true;
-                       // }
-                   }
-               }),
-               tableLabel,
+               tableTypeLabel,
+               // isc.ToolStripButton.create({
+               //     icon: "[SKIN]/actions/filter.png", 
+               //     prompt: "Set filters",
+               //     click: showFilter
+               // }),
+               tableFilterLabel,
+               
                isc.LayoutSpacer.create({ width:"*" })
                // ,isc.ToolStripButton.create({
                //     icon: "[SKIN]/actions/add.png", 
                //     prompt: "Add record",
                //     click: "console.log('add');"
                // })
-               ,isc.IconMenuButton.create({
-                   title:''
-		   // ,ID:'addButton'
-		   ,iconClick: "this.showMenu()"
-		   ,showMenuIcon:false
-		   ,width :20
-		   ,icon: "[SKIN]/actions/add.png", 
-		   prompt: "Create a new record"
-		   ,menu: addRecordMenu //{ID: 'mymenu', width:150  }
-	       })
+               ,addRecordButton
                // ,isc.ToolStripButton.create({
                //     icon: "[SKIN]/actions/remove.png", 
                //     prompt: "Remove selected record",
@@ -391,7 +494,7 @@ define
 	       // headerAutoFitEvent:"doubleClick",
 	       canHover:true,
 	       canReorderRecords:true,
-	       // autoFetchData: true,
+	       autoFetchData: true,
 	       //editing
 	       recordClick: function (viewer, record) {
                    editRecord(record); 
@@ -422,7 +525,7 @@ define
                    showDownIcon: true
                },
                // headerContextMenu: true,
-               // clearFilterText: 'Clear inline filter',
+               // cle fsda fasdfarFilterText: 'Clear inline filter',
 	       viewStateChanged: function() { tableViewStateChanged('viewStateChanged'); },
 	       // 	  showEmptyMessage: true,
 	       // emptyMessage: "<br>Click the <b>Set data</b> button to populate this grid.",
@@ -434,8 +537,11 @@ define
 	           // storeTableViewState();
 	       },
                setTypingState: setTypingState,
-               setLabel: function(label) {
-                   tableLabel.setContents(label);
+               setFilterLabel: function(label) {
+                   tableFilterLabel.setContents(label);
+               },
+               setTypeLabel: function(label) {
+                   tableTypeLabel.setContents(label);
                },
                contextMenu: tableContextMenu
                // bodyKeyPress : function() { 
@@ -445,87 +551,19 @@ define
            });
       
        tableFilter.link(dataTable, defaultState);
+       
+       var editorMessage = isc.Label.create({
+           // ID:"editorMessage",
+           autoDraw: false,
+               width:"100%",
+           height:"100%",
+           align:"center",
+           contents:"Select a record to view and edit"
+       });
       
-      
-      
-       //---------------@EDITFORM----------------------------
-      
-       // var defaultEditForm = isc.DynamicForm.create(
-       //     { ID:"editForm",
-       //       dataSource:pouchDS
-       //       // ,useAllDataSourceFields:true
-       //       // ,overflow:'auto'	
-       //       ,titleOrientation: 'top'
-       //       ,setGroupFields: function(fields) {
-       //           this.setFields(this.fields.concat(fields));   
-       //       }
-       //       ,fields:[
-       //           {name:"editnew", type:"button", width:130,
-       //            title:"Clear form", click: function()
-       //            { var newValues = {};
-       //              if (state.types.length === 1)
-       //                  newValues.group = state.types[0];
-       //              // dataTable.startEditingNew(newValues);
-       //              dataTable.deselectAllRecords();
-       //              editForm.setValues(newValues);
-       //              editForm.getField('saveButton').setTitle('Save form');
-       //              editForm.getField('saveButton').method = 'addData';
-       //              // editForm.getField('editnew').setDisabled(true);
-       //              editForm.clearErrors(true);
-                   
-       //              console.log(dataTable.getSelectedRecord());
-       //            }
-       //           },
-       //           {name:"saveButton", type:"button", width: 130, method: 'addData',
-       //            title:"Save form", click: function() {
-       //                if (!editForm.valuesHaveChanged() || !editForm.validate()) return; 
-       //                console.log(editForm.getValues());
-       //                var newValues = editForm.getValues();
-       //                addUpdateData(this.method, newValues); }}
-       //           // , {name:"delete", type:"button",
-       //           //  width:130, title:"Delete Selected Item", 
-       //           //  click:function() { remove(); }}
-       //       ],
-       //       width:650,
-       //       numCols:3,
-       //       // colWidths:[30,150,30,150],
-       //       margin:3,
-       //       cellPadding:5,
-       //       autoFocus:false
-       //     });
-      
-      
-       // editForm = defaultEditForm;
-      
-      
-      
-      
-       //------------------@TABSET------------------- (not using it now)
-      
-       // var tabSet = isc.TabSet.
-       //     create({
-       //         ID: "tabSet"
-       //         ,tabSelected: function() {
-       //             tableViewStateChanged('tabSelected');
-       //         }
-       //         ,resized: function() {
-       //             tableViewStateChanged('tabSetResized');
-       //         }
-       //         ,tabBarPosition: "top"
-       //         ,height:'30%'
-       //         ,selectedTab: 1,
-       //         tabs: [
-       // 	   {title: "Edit",
-       // 	    pane: editor
-       // 	   }
-       // 	   // ,{ title: "Filter table",
-       //	   //    pane: tableFilter.filterStack 
-       // 	   //  } 
-       //         ]
-       //     });
        var editorContainer = isc.Canvas.create({
            getCanvas: function() {
-               if (this.children) return this.children[0];
+                   if (this.children) return this.children[0];
                else return null;
            },
            setCanvas: function(canvas) {
@@ -551,34 +589,33 @@ define
            
        });
       
+       editorContainer.setCanvas(editorMessage);
       
        //---------------------- @the whole component-------------
       
        var stack = isc.SectionStack.
            create({ 
                ID: 'stack',
-	       visibilityMode:"multiple",
+	           visibilityMode:"multiple",
 	       animateSections:true
                ,onSectionHeaderClick :function() {
                    if (stack.sectionIsExpanded('Editor')) {
                        //save height
-                       currentHeight = dataTable.getHeight();
+                       editorHeightExpanded = dataTable.getHeight();
                        stack.collapseSection('Editor');
                    }
                    else {
+                       dataTable.setHeight(editorHeightExpanded);   
                        stack.expandSection('Editor');   
-                       dataTable.setHeight(currentHeight);   
                    }
                    tableViewStateChanged('sectionHeaderClick');
                    return false; }
 	       ,sections:[
 		   {name:'Table', showHeader:false, title:'Data', items:[dataTable]}
-		   ,{name: 'Editor', title:"Details", expanded:true,  hidden: false, items:[editorContainer]}
+		   ,{name: 'Editor', title:"Details", expanded:false,  hidden: false, items:[editorContainer]}
 	       ]
                
 	   });
-       //need to do this, the sectionstack seems to show the first section regardless of its hidden prop.
-       // rightSideLayout.hideSection('Table');
       
        //------------------@API----------------------------- 
        //for use in layout to show these components
