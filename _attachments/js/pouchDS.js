@@ -6,7 +6,7 @@ define
 ({inject: ['typesAndFields', 'globals'],
   factory: function(typesAndFields, globals) {
       "use strict";
-      var log = logger.get('pouchDS', 'debug');
+      var log = logger('pouchDS', 'debug');
       
       var views = typesAndFields.views;
       
@@ -22,7 +22,7 @@ define
                           break; 
 	                case 'datetime': 
 	                  var d = Date.parseDate(obj[k].slice(0, obj[k].length-5));
-                          // console.log('in typefy',d);
+                          // log.d('in typefy',d);
 	                  var timezoneOffset = d.getTimezoneOffset();
                           // timezoneOffset = 0;
 	                  obj[k] = new Date(d.getTime() - (timezoneOffset * 60000));
@@ -33,70 +33,70 @@ define
 	          else {
 	              //leave it as is
 	          }
-	          // console.log(k, obj[k]);
+	          // log.d(k, obj[k]);
 	      }
           );
       }
       
       function remove (id, dsResponse, requestId) {
           doPouch(function(db) {
-	      // console.log(id);
+	      // log.d(id);
 	      db.get( id,
 		      function (err,doc){
-			  if (err) { console.log('ERRROR: can\'t find doc ', 
+			  if (err) { log.d('ERRROR: can\'t find doc ', 
 						 err.error, err.reason); 
 				     return; }
                           db.remove(doc, function(err,response) {
-			      if (err) { console.log('ERRROR: can\'t find doc ', 
+			      if (err) { log.d('ERRROR: can\'t find doc ', 
 						     err.error, err.reason); 
 					 return; }
 			      dsResponse.data = doc;
-			      if (err) console.log("could not remove doc");	
+			      if (err) log.d("could not remove doc");	
 			      else  pouchDS.processResponse(requestId, dsResponse);} );});});}
       function fetch(view, dsResponse, requestId ) {
           doPouch(function(db) {
               db.query( {map:view.map},{reduce: view.reduce},
                         // db.query( 'pouch/alldocs',
                         function (err,response){
-			    if (err) console.log("Error from pouch query in fetch:", err,
+			    if (err) log.d("Error from pouch query in fetch:", err,
 						 "resp:", response);
 			    else {
 			      
-			        console.log('Response in fetch is: ', response);
+			        log.d('Response in fetch is: ', response);
 			        dsResponse.data=[];
 			        for (var i = 0; i< response.rows.size();i++) {
 				    var key=response.rows[i].key;
-                                    // console.log('calling typefy');
+                                    // log.d('calling typefy');
 				    typefyProps(key); 
 				    // dsResponse.data.push({ _id:key._id, _rev:key._rev, text:key.text});
 				
 				    dsResponse.data.push(key);
                                 }
-			        console.log('data: ', dsResponse.data);
+			        log.d('data: ', dsResponse.data);
 			        pouchDS.processResponse(requestId, dsResponse);}});});}
       function add(data, dsResponse, requestId) {
           doPouch(function(db) {
               delete data._id;
               db.put(data,
                      function (err,response){
-                         if (err) console.log("Error from pouch put in add:", err,
+                         if (err) log.d("Error from pouch put in add:", err,
                                               "resp:", response);
                          else {
                              data._id = response.id; 
                              data._rev = response.rev; 
                              dsResponse.data = data;
-                             console.log("hello",  data.endDate);
+                             log.d("hello",  data.endDate);
                              module.temp= data;
                              pouchDS.processResponse(requestId, dsResponse);}});
 	  });
       }
 
       function update(data, dsResponse, requestId) {
-          // console.log('data', data);
+          // log.d('data', data);
           doPouch(function(db) {
               db.put(data,
                      function (err,response){
-			 if (err) console.log("Error from pouch put in update:", err,
+			 if (err) log.d("Error from pouch put in update:", err,
 					      "resp:", response);
 			 else {
 			     data._rev = response.rev; 
@@ -105,7 +105,7 @@ define
 
       function doPouch(f) {
           // Pouch(db, function(err, db) {
-	  // if (err) console.log("Error opening database", db, "err:", err, "db:", db);
+	  // if (err) log.d("Error opening database", db, "err:", err, "db:", db);
 	  // else f(db);});
           f(globals.db);
       }			 
@@ -130,28 +130,28 @@ define
 	          switch (dsRequest.operationType) {
 	            case "fetch":
 	              var fetchView = views.all;
-                      // console.log('about to switch......', dsRequest);
+                      // log.d('about to switch......', dsRequest);
                       switch (dsRequest.componentId) {
 	                case 'isc_ShiftCalendar' :
                           fetchView = views.shift;  
-	                  console.log('in shiftCalendar', fetchView); 
+	                  log.d('in shiftCalendar', fetchView); 
 	                  break;
 	              default:
-                          //console.log('getting all objects for: ', dsRequest.componentId); 
+                          //log.d('getting all objects for: ', dsRequest.componentId); 
 	              }
                       if (dsRequest.view) {
                           fetchView = views[dsRequest.view];   
                       }
-	              console.log('fetch', fetchView); 
+	              log.d('fetch', fetchView); 
 	              dsResponse = {
 	                  clientContext: dsRequest.clientContext,
 	                  status: 1};
 	              fetch(fetchView, dsResponse, dsRequest.requestId);
-                      console.log('dsResponse', dsResponse);
+                      log.d('dsResponse', dsResponse);
 	              break;
 	            case "update" : 
-	              console.log("update", dsRequest); 
-	              console.log("old values", dsRequest.oldValues); 
+	              log.d("update", dsRequest); 
+	              log.d("old values", dsRequest.oldValues); 
 	              dsResponse = {
 	                  clientContext: dsRequest.clientContext,
 	                  errors: {},
@@ -161,21 +161,21 @@ define
 		             dsResponse, dsRequest.requestId);
 	              break; 
 	            case "add" : 
-	              console.log("add"); 
-	              console.log('data', dsRequest.data);
+	              log.d("add"); 
+	              log.d('data', dsRequest.data);
 	              dsResponse = {
 	                  clientContext: dsRequest.clientContext,
 	                  status: 1};
 	              add(dsRequest.data, dsResponse, dsRequest.requestId);
 	              break;
 	            case "remove" :
-	              console.log("remove"); 
+	              log.d("remove"); 
 	              dsResponse = {
 	                  clientContext: dsRequest.clientContext,
 	                  status: 1};
 	              remove(dsRequest.data._id, dsResponse, dsRequest.requestId); 
 	              break; 
-	          default: console.log("This is unknown operation on pouchdb: ", dsRequest.operationType );
+	          default: log.d("This is unknown operation on pouchdb: ", dsRequest.operationType );
 	          }
 	      }
           });    

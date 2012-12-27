@@ -1,4 +1,4 @@
-/*global pp:false isc:false define:false */
+/*global logger:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:4 maxcomplexity:7 maxlen:90 devel:true*/
 
@@ -7,6 +7,7 @@ define
 ({inject: ['globals', 'table', 'calendar'],
   factory: function(globals, table, calendar) {
       "use strict";
+      var log = logger('viewTree');
       //dummy empty view for initialization purposes. Also a template
       //for more views.
       var emptyView =
@@ -59,7 +60,7 @@ define
 	      tree.removeList(tree.getChildren(tree.getRoot()));
               //set the tree to the saved state
 	      tree.linkNodes(viewTreeState.state);
-              console.log('path:::::',viewTreeState.pathOfLeafShowing);
+              log.d('path:::::',viewTreeState.pathOfLeafShowing);
 	      viewTree.setSelectedPaths(viewTreeState.pathOfLeafShowing);
 	      var selRecord = viewTree.getSelectedRecord();
 	      if (selRecord && !selRecord.isFolder) { 
@@ -76,7 +77,7 @@ define
               //user saves the tree to the db and when the user
               //navigates away and he gets a chance to mend his ways
               //and to save before leaving.
-	      pp('finished changing tree state');
+	      log.d('finished changing tree state');
               //do an autosave every minute..
               // window.setInterval(autoSave, autoSaveInterval * 60000);
           }
@@ -84,7 +85,7 @@ define
       } 
       
       function checkState() {
-          console.log("Checking state");
+          log.d("Checking state");
           // setModified(!isEqual(table.getState(), leafShowing.viewState));
           setModified(!isEqual(views[leafShowing.view].getState(),leafShowing.viewState));
       }
@@ -112,7 +113,7 @@ define
       }
       
       function setModified(bool) {
-          // console.log('modified =' + bool);
+          // log.d('modified =' + bool);
           modified = bool;
           if (modified) saveButton.show(true);
           else {saveButton.hide(true);}                
@@ -121,19 +122,19 @@ define
       //gets called by currently showing views when their state changes
       //should be set to the observer of any view implemented
       function viewStateChanged() {
-          // console.log('************viewstateschanged');
+          // log.d('************viewstateschanged');
           setModified(true);
       }
       
       //this function gets called everytime a change in the viewtree occurs
       function treeStateChanged(origin) {
-          console.log('******************tree changed: ' +  origin);
+          log.d('******************tree changed: ' +  origin);
           setModified(true);
           // if (saveOnChange) saveTreeToDb();
       }
       
       function openLeaf(leaf) {
-          pp('**************************---------------openLeaf');
+          log.d('**************************---------------openLeaf');
           //opening same leaf, do nothing
           if (leaf === leafShowing) return;
           
@@ -157,7 +158,7 @@ define
           //we're changing views, so set modified flag
           setModified(true);
           
-          pp('finished opening leaf');
+         log.d('finished opening leaf');
           
       }
       
@@ -170,12 +171,12 @@ define
       //     autoSaveState.time = isc.timeStamp();
       //     roster.db.put(autoSaveState, function(err, response) {
       //         if (err) {
-      //             console.log('ERRROR: Could not save changed state of the view tree.' 
+      //             log.d('ERRROR: Could not save changed state of the view tree.' 
       //             + err.error + ' ' + err.reason);
       //             isc.warn('ERROR: Could not save the state of the ui..');
       //         }
       //         else {
-      //             console.log('autosaved state');
+      //             log.d('autosaved state');
       //             autoSaveState._rev = response.rev;
       //         }
       //         if (callback) callback();
@@ -184,12 +185,12 @@ define
       
       function saveTreeToDb(callback) {
           leafShowing.viewState = views[leafShowing.view].getState();
-          console.log(leafShowing.viewState); 
+          log.d(leafShowing.viewState); 
           globals.user.viewTreeState = isc.JSON.encode(getTreeState());
           
-          console.log('save',leafShowing);
-          console.log('save',globals.user.viewTreeState);
-          console.log('saving tree');
+          log.d('save',leafShowing);
+          log.d('save',globals.user.viewTreeState);
+          log.d('saving tree');
           //TODO get the roster.user from the database and then use
           //that object to save the ui, or put the ui in a separate
           //doc...  at the moment there is an update error when you try to
@@ -197,13 +198,13 @@ define
           //instance
           globals.db.put(globals.user, function(err, response) {
               if (err) {
-	          console.log('ERRROR: Could not save changed state of the view tree.' +
+	          log.d('ERRROR: Could not save changed state of the view tree.' +
                               err.error + ' ' + err.reason);
                   isc.warn('ERROR: Could not save the state of the ui..');
               }
               else {
 	          globals.user._rev = response.rev;
-                  console.log('save',globals.user.viewTreeState);
+                  log.d('save',globals.user.viewTreeState);
               }
               setModified(false);
               // window.onbeforeunload = function() { };
@@ -214,7 +215,7 @@ define
       // function setSaveOnChange(bool) { saveOnChange = bool; //
       //   switch (method) { //case 'auto' : saveOnUnload(); break;
       //   //case 'onchange' : autoSave = false; break; //default:
-      //   console.log('ERROR: setSaveMethod was called with an
+      //   log.d('ERROR: setSaveMethod was called with an
       //   invalid parameter'); // } }
       
       //if called it sets up saving at intervals and when navigating away
@@ -233,7 +234,7 @@ define
       //     var view = selRecord.view;
       //     var state = selRecord.viewState;
       //     var name = selRecord.name;
-      //     console.log(state);
+      //     log.d(state);
       //     if (!selRecord)  selRecord = '/';
       //     else {
       //         viewTree.selectRecord(selRecord, false);
@@ -269,7 +270,7 @@ define
       } 
       
       function newView(view) {
-          console.log('newView')   ;
+          log.d('newView')   ;
           var selRecord = viewTree.getSelectedRecord();
           // var state = selRecord.viewState;
           var parent; 
@@ -325,7 +326,7 @@ define
               var index = viewTree.getRecordIndex(selRecord);
               viewTree.removeSelectedData();
               if (viewTree.getTotalRows() === index) index--;
-              console.log(viewTree.getTotalRows(), index);
+              log.d(viewTree.getTotalRows(), index);
               viewTree.selectRecord(index);
               treeStateChanged('remove');
           }
@@ -501,16 +502,16 @@ define
 	      // ,editorExit: function() { this.canEdit = false;}
               ,canEdit: true
               ,leafContextClick: function() { rightClickMenu.showContextMenu(); }
-              ,cellContextClick: "console.log('hello')"
+              ,cellContextClick: "log.d('hello')"
 	      ,viewStateChanged: function() {
-                  // console.log('vsw');
+                  // log.d('vsw');
 	          // treeStateChanged('treeStateChanged');
                   var leaf = viewTree.getSelectedRecord();
                   if (!leaf.isFolder)
                       openLeaf(viewTree.getSelectedRecord());
 	      }
 	      ,cellChanged: function() {
-                  console.log('cell');
+                  log.d('cell');
 	          treeStateChanged('cellChanged');
 	      }
 	      ,onFolderDrop: function() {
@@ -538,8 +539,8 @@ define
               }
               
               if (!same){
-                  // console.log(p);
-                  // console.log(a, b);
+                  // log.d(p);
+                  // log.d(a, b);
                   return false;  
               } 
           }
@@ -575,7 +576,7 @@ define
       //to set viewTree to a new state
       viewTree.notify = notify;
       viewTree.ls = function() {
-          console.log(leafShowing);
+          log.d(leafShowing);
       };
       //exposes the loginButton, not really part of this component.
       viewTree.loginButton = loginButton;
@@ -585,6 +586,6 @@ define
 
 // function inf() {
 //     var temp = module.viewTree.getData().root.children;
-//     console.log(temp[0].name, temp[0].viewState.grid);
-//     console.log(temp[1].name, temp[1].viewState.grid);
+//     log.d(temp[0].name, temp[0].viewState.grid);
+//     log.d(temp[1].name, temp[1].viewState.grid);
 // }

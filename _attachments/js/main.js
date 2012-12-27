@@ -7,21 +7,22 @@ define(
         inject: ['viewTree', 'globals', 'layout'], 
         factory: function(viewTree, globals, layout) 
         { "use strict";
+          var log = logger('main');
           var user;
           function checkCredentials(credentials, reportToLoginDialog) {
-	      // console.log(credentials);
+	      // log.d(credentials);
 	      window.temp = credentials.username;
 	      function map(doc) {
 	          //this function needs a global to compare doc.login with,
 	          // nothing else closes over this function apparently.. 
-	          if (doc.login === window.temp) { console.log(doc.login); emit(doc, null); }
+	          if (doc.login === window.temp) { log.d(doc.login); emit(doc, null); }
 	      }
 	      globals.db.query({map:map}, {reduce: false},
 		               function(err,response) {
-		                   if (err) { console.log('ERROR: Could not query database to find user ' +
+		                   if (err) { log.d('ERROR: Could not query database to find user ' +
 					                  credentials.login, err); }
 		                   else {
-		                       console.log(response);
+		                       log.d(response);
 		                       if (credentials.username === 'guest'  || 
 			                   (response.rows.length > 0 &&
 			                    credentials.password === response.rows[0].key.password)) {
@@ -55,12 +56,12 @@ define(
           }
       
           //***********************@init*******************8
-          console.log('Starting up app...');
+          log.d('Starting up app...');
       
           //@startup logic 
           Pouch(
 	      globals.dbname, function(err, db) {
-	          if (err) { console.log("Error opening database", globals.dbname, 
+	          if (err) { log.d("Error opening database", globals.dbname, 
 				         "err:", err.error, err.reason, " db:", db);
 		             return; }
 	  
@@ -71,7 +72,7 @@ define(
 	              'Last user', 
 	              function(err, lastUser) {
 	                  var currentUserId;
-	                  if (err) {console.log('No init doc found. Setting user to guest');
+	                  if (err) {log.d('No init doc found. Setting user to guest');
 			            currentUserId = 'guest';}			
 	                  else currentUserId = lastUser.id;
 	                  //get the current user's record from the database
@@ -80,26 +81,26 @@ define(
 		              function(notfound, response) {
 		                  if (notfound) { //currentUser is not in the database..
 		                      if (currentUserId === 'guest')  {
-		                          console.log('Must be first run. Entering guest user into the database'); }
+		                          log.d('Must be first run. Entering guest user into the database'); }
 		                      else {
-			                  console.log('Strange.. Could not find last user ' +
+			                  log.d('Strange.. Could not find last user ' +
 				                      'in the database. \nBut he was in the last user doc!!!!');
-			                  console.log('Starting as guest user.');
+			                  log.d('Starting as guest user.');
 			                  //shouldn't happen, but in this case default to guest again
 		                      }
 		                      user = globals.user;
-                                      console.log('User =',user);
+                                      log.d('User =',user);
 		                      db.put( //put guest in the database
 			                  user, 
 			                  function(err,resp) { 
-			                      if (err) console.log('ERROR: Could not save the guest user\' details to the database!!!', err);
+			                      if (err) log.d('ERROR: Could not save the guest user\' details to the database!!!', err);
 			                      else {
 			                          user._rev = resp.rev;
 			                          startApp();
                                               }});}  
 		                  else { //start with the user found in the database
 		                      user = response;
-                                      console.log('finished startup logic');
+                                      log.d('finished startup logic');
 		                      startApp();
                                   }   });});});
       

@@ -1,18 +1,28 @@
-/*global  isc:false define:false */
+/*global  logger:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
-/*jshint maxparams:4 maxcomplexity:7 maxlen:190 devel:true*/
+/*jshint maxparams:6 maxcomplexity:10 maxlen:190 devel:true*/
 
 //This kind of module does not produce an injectable, but registers itself with the editorManager
 //to use this editor, both load the editorLoader module and inject the editorManager
 define
-({inject: ['typesAndFields', 'pouchDS', 'editorManager' ],
-  factory: function(typesAndFields, database, editorManager) {
+({inject: ['typesAndFields', 'pouchDS', 'editorUtils', 'editorManager' ],
+  factory: function(typesAndFields, database, editorUtils, editorManager) {
       "use strict";
-
-      var editor = {};
+     var log = logger('typesAndFields') ;
+      var editor = { type: 'person'};
+      var fields = editorManager.register(editor);
+      var buttonBar = editorUtils.buttonBar;
       var person;   
       var defaultSettings = {};
       var settings = {}; 
+      
+      function formChanged() {
+          log.d('ITEMCHANGED', vm.valuesHaveChanged());
+          var changed = vm.valuesHaveChanged();
+          allButtons.Save.setDisabled(!changed);
+          // allButtons.Discard.setDisabled(!changed);
+          editorManager.changed(editor, changed);
+      }
       
       var mainFormConfig = {
           autoDraw: false,
@@ -24,31 +34,30 @@ define
           itemKeyPress: function(item,keyName) {
               if (keyName === 'Enter') addPerson();
           },
+          itemChanged: formChanged,
+          // itemChange: function() {
+          //     log.d('ITEMCHANGE', vm.valuesHaveChanged());
+          // },
           // cellBorder: 1,
           fields: [
-              {name: "name", 
-               // title: 'Full Name',
-               align: 'left',
-               // titleOrientation: 'top',
-               colSpan:2,
-               required: false
-              }, 
-              {name: "shortName", 
-               // title: 'Short Name',
-               align: 'left',
-               // titleOrientation: 'top',
-               // colSpan:2,
-               required: false 
-              },
-              {name: "region", title: 'Region', type: "text", required: false
-               // titleOrientation: 'top'
-              },
-              {name: "inheritable", title: 'Inheritable', type: "boolean", required: false
-               // titleOrientation: 'top'
-              },
-              {name: "parents", title: 'Inheriting values from:', type: "list", required: false
-               // titleOrientation: 'top'
-              }
+              isc.addDefaults({
+                  align: 'left',
+                  title: 'Nick Name',
+                  colSpan:2,
+                  required: false
+              }, fields.name),
+              isc.addDefaults({
+                  
+              }, fields.firstName),
+              isc.addDefaults({
+                  
+              }, fields.lastName),
+              isc.addDefaults({
+                  
+              }, fields.inheritable),
+              isc.addDefaults({
+                  
+              }, fields.inheritingFrom)
           ]
       };
       
@@ -62,40 +71,31 @@ define
           itemKeyPress: function(item,keyName) {
               if (keyName === 'Enter') addPerson();
           },
+          itemChanged: formChanged,
           // cellBorder: 1,
           fields: [
-              {name: "address", 
-               title: 'Address',
-               // titleOrientation: 'top', 
-               // click: "this.setCanEdit(true); console.log('hello')",
-               // hint: 'myhint',
-               itemHoverHTML: function(item, form) {
-                   return "Inherited value. <br>Click to edit.<b>hello</b>";
-               },
-               colSpan: 2,
-               type: "Text", startRow: true},
-              {name: "suburb",
-               title: 'Suburb', align: 'left', showTitle: true, type: "text",
-               titleOrientation: 'top',  required: false,
-               startRow: true },
-              {name: 'postalCode', title: "Postal Code", type: "text", required: false,
-               startRow: false
-              },
-              {name: "state", title: 'State', type: "comboBox", required: false,
-               showTitle: true, 
-               valueMap: {
-                   "QLD" : "QLD",
-                   "NSW" : "NSW",
-                   "SA" : "SA",
-                   "NT" : "NT",
-                   "WA" : "WA"
-               }
-               // ,titleOrientation: 'top', startRow: true
-              }
+              isc.addDefaults({
+                  // click: "this.setCanEdit(true); log.d('hello')",
+                  // hint: 'myhint',
+                  itemHoverHTML: function(item, form) {
+                      return "Inherited value. <br>Click to edit.<b>hello</b>";
+                  },
+                  colSpan: 2,
+                  startRow: true
+              }, fields.address),
               
-              
-          ]
+              isc.addDefaults({
+                  align: 'left'
+              }, fields.suburb),
+              isc.addDefaults({
+                  align: 'left'
+              }, fields.postalCode),
+              isc.addDefaults({
+                  align: 'left'
+              }, fields.state)
+          ] 
       };
+              
       
       var contactFormConfig = {
           autoDraw: false,
@@ -107,40 +107,48 @@ define
           itemKeyPress: function(item,keyName) {
               if (keyName === 'Enter') addPerson();
           },
+          itemChanged: formChanged,
           // cellBorder: 1,
           fields: [
-              {name: "phone", title: 'Phone', type: "text", required: false
-               // titleOrientation: 'top'
-              },
-              {name: "mobPhone", title: 'Mobile', type: "text", required: false
-               // titleOrientation: 'top'
-              },
-              {name: "email", title: 'Email', type: "text", required: false
-               // titleOrientation: 'top'
-              }
+              isc.addDefaults({
+                  align: 'left'
+              }, fields.phone),
+              isc.addDefaults({
+                  align: 'left'
+              }, fields.mob),
+              isc.addDefaults({
+                  align: 'left'
+              }, fields.email)
               
           ]
       };
       
       var notesFormConfig = {
+          itemChanged: formChanged,
           autoDraw: false,
           // width:300,
           // height: 48,
-          colWidths: [90, "*"],
+          // colWidths: [90, "*"],
           cellPadding: 4,
-          numCols: 2,
-          itemKeyPress: function(item,keyName) {
-              if (keyName === 'Enter') addPerson();
-          },
+          // numCols: 2,
+          // itemKeyPress: function(item,keyName) {
+          //     if (keyName === 'Enter') addPerson();
+          // },
           // cellBorder: 1,
           fields: [
-              {name:"notes", title:'Notes', type: "textarea", length: 5000,
-               titleOrientation: 'top', width: "*",
-               showTitle: true,  colSpan: 2, startRow: true}
+              isc.addDefaults({
+                  align: 'left',
+                  showTitle: true,
+                  titleOrientation: 'top',
+                  width: 250,
+                  height: 150,
+                  // colSpan: 2,
+                  startRow: true
+              }, fields.notes)
               
           ]
       };
-              
+      
       var mainForm = isc.DynamicForm.create(mainFormConfig);
       var addressForm = isc.DynamicForm.create(addressFormConfig);
       var contactForm = isc.DynamicForm.create(contactFormConfig);
@@ -182,7 +190,7 @@ define
               // person.endDate = endDate;
               // isc.addProperties(person, otherFields);
             
-              editorManager.save(person, vm.valuesHaveChanged());           
+              editorManager.save(person, updateVm);           
               // if (person._rev) {
               //     if (vm.valuesHaveChanged())
               //         database.updateData(person);
@@ -207,6 +215,10 @@ define
               // personEditorWindow.hide(); 
           }
       }
+      
+      function updateVm(record) {
+          vm.setValues(record);
+      }
                                        
       
       var parentLabel = isc.Label.create({
@@ -225,43 +237,44 @@ define
       
       
       var allButtons = {};
-      function buttonBar(orientation, entries, buttonProps, action) {
-          var members = [];
+      // function buttonBar(orientation, height, width,  entries, buttonProps, action) {
+      //     var members = [];
           
-          entries.forEach(function(e) {
-              if (e === '|') {
-                  members.push(isc.LayoutSpacer.create());
-                  return;
-              }
-              var button;
-              buttonProps.title = e;
-              buttonProps.click = function() {
-                  action(e);
-              };
-              button = isc.Button.create(buttonProps);
-              allButtons[e] = button;
-              members.push(button);
+      //     entries.forEach(function(e) {
+      //         if (e === '|') {
+      //             members.push(isc.LayoutSpacer.create());
+      //             return;
+      //         }
+      //         var button;
+      //         buttonProps.title = e;
+      //         buttonProps.click = function() {
+      //             action(e);
+      //         };
+      //         button = isc.Button.create(buttonProps);
+      //         allButtons[e] = button;
+      //         members.push(button);
               
-          });
+      //     });
           
-          // members.push(isc.LayoutSpacer.create()); // Note the use of the LayoutSpacer
-          // buttonProps.title = 'bla';
-          // var button = isc.Button.create(buttonProps);
+      //     // members.push(isc.LayoutSpacer.create()); // Note the use of the LayoutSpacer
+      //     // buttonProps.title = 'bla';
+      //     // var button = isc.Button.create(buttonProps);
           
-          // members.push(button);
-          var layout = orientation === 'vertical' ? isc.VLayout : isc.HLayout;
-          return layout.create({
-              // contents: "Navigation",
-              // align: "center",
-              // overflow: "hidden",
-              // border: "1px solid blue",
-              // width: '100%',
-              members: members
-              //,showResizeBar: true,
-              // border: "1px solid blue"
-          });
+      //     // members.push(button);
+      //     var layout = orientation === 'vertical' ? isc.VLayout : isc.HLayout;
+      //     return layout.create({
+      //         // contents: "Navigation",
+      //         // align: "center",
+      //         // overflow: "hidden",
+      //         // border: "1px solid blue",
+      //         height: height,
+      //         width: width,
+      //         members: members
+      //         //,showResizeBar: true,
+      //         // ,border: "1px solid blue"
+      //     });
           
-      }
+      // }
       
       
       
@@ -274,14 +287,14 @@ define
       });
       
       var editLayout = isc.VLayout.create({
-          autoSize:true,
-          // width: "100%",
+          // autoSize:true,
+          width: "30%",
           // height: "100%",
           members: [
               isc.HLayout.create({
                   width: "70%",
                   members: [
-                      buttonBar('vertical',
+                      buttonBar(allButtons, 'vertical', 180, 50,
                                 ['Main', 'Address', 'Contact', 'Notes'],
                                 { // baseStyle: "cssButton",
                                     left: 200,
@@ -294,8 +307,8 @@ define
                       ,formLayout
                   ]
               })
-              ,buttonBar('horizontal',
-                         ['Delete', '|', 'Cancel', 'Save'],
+              ,buttonBar(allButtons, 'horizontal', 25, 350,
+                         ['Delete', '|', 'Discard', 'Save'],
                          {  width: 50,
                             autoDraw: false
                          }, action)
@@ -311,7 +324,7 @@ define
             case 'Notes': formLayout.setVisibleMember(notesForm); break; 
               
             case 'Save': addPerson(); break; 
-            case 'Cancel': editorManager.cancel(person); break; 
+            case 'Discard': editorManager.cancel(person); break; 
             case 'Delete': editorManager.remove(person); break;
           default: alert('unknown action in function action!!');
           }
@@ -321,27 +334,29 @@ define
       var itemViewer = isc.DetailViewer.create({
           // ID:"itemViewer",
           // dataSource:"supplyItem",
-          width:"100%",
-          margin:"25",
+          // width:"100%",
+          // margin:"25",
           emptyMessage:"Select an item to view its details",
           fields: typesAndFields.getFieldsCloner('person')()
       });
       
-      var editorMessage = isc.Label.create({
-          // ID:"editorMessage",
-          autoDraw: false,
-          width:"100%",
-          height:"100%",
-          align:"center",
-          contents:"Select a record to edit, or a category to insert a new record into"
-      });
+      // var editorMessage = isc.Label.create({
+      //     // ID:"editorMessage",
+      //     autoDraw: false,
+      //     width:"100%",
+      //     height:"100%",
+      //     align:"center",
+      //     contents:"Select a record to edit, or a category to insert a new record into"
+      // });
 
     
       var tabSet = isc.TabSet.
           create({
               // autoSize: true,
-              height: 400,
-              width: 400,
+              height: '100%',
+              width: '100%',
+              // height: 270,
+              // width: 380,
 	      // ID: "tabSet"
               // tabSelected: updateDetails, //"itemList.updateDetails()",
               tabSelected: function() {
@@ -366,31 +381,45 @@ define
       
       
       var layout = isc.VLayout.create({
+          
+          height: '100%',
+          width: '100%',
           members: [
               tabSet
               // ,buttons
           ]  
       });
       
-      editor.type = 'person';
-      editor.canvas = layout;
+      // editor.canvas = layout;
+      editor.canvas = tabSet;
+      // editor.canvas.valuesHaveChanged = function() {
+      //     return vm.valuesHaveChanged();   
+      // };
+      editor.canvas.rememberValues = function() {
+          vm.rememberValues();
+      };
+      editor.canvas.getValues = function() {
+          return vm.getValues();
+      };
+      
       editor.set = function(somePerson, someSettings) {
           console.log('setting values', somePerson, someSettings);
           settings = isc.addDefaults(someSettings, defaultSettings);
           
-          console.log('somePerson', somePerson);
+          // console.log('somePerson', somePerson);
           person = somePerson;
           vm.setValues(person);
           itemViewer.setData(somePerson);
+          
           vm.clearErrors();
           
-          allButtons.Cancel.setVisibility(settings.cancelButton);
+          allButtons.Discard.setVisibility(settings.cancelButton);
           allButtons.Delete.setVisibility(settings.removeButton);
           allButtons.Save.setVisibility(settings.saveButton);
+          allButtons.Save.setDisabled(true);
+          // allButtons.Discard.setDisabled(true);
+          formLayout.setVisibleMember(mainForm);
           
       };
-      editorManager.register(editor);
-    
-      // return API;   
 
   }});

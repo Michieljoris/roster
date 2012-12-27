@@ -35,66 +35,88 @@ define
         ,_id: { primaryKey: true }
         ,_rev: { type: 'text'}
         ,inheritable: { type: 'boolean' }
-        ,inheritingFrom: { type: 'list'}
+        ,inheritingFrom: { type: 'text', title: 'Inheriting values from:' }
     };
+    
+    for (var f in genericFields) if (!genericFields[f].title)
+        genericFields[f].title = isc.DataSource.getAutoTitle(f); 
         
-    var personPickList = {name: "person",// type: "select",
-                          // editorType: 'comboBox',
-                              // title: 'person',
-                          // change: function (form, item, value) {
-                          //     var personList = eventForm.getField('person').pickList.getSelectedRecords();
-                          //     // var personList = personPickList.getSelectedRecords();
-                          //     console.log('PICKLIST', personList);
-                          //     displayPerson = [];
-                          //     // var person = []; 
-                          //     personList.forEach(function(p) {
-                          //         displayPerson.push(p.name);
-                          //         // person.push(p._id);
-                          //     });
-                          //     console.log('PICKLIST', displayPerson);
-                          //     if (displayPerson.length === 0) displayPerson = ['Nobody'];
-                          //     console.log(form, item, value);
-                          // },
-                          type: 'enum',
-                          showTitle: true,
-                          // required: true, 
-                          // startRow: true,
-                          multiple: true,
-                          multipleAppearance: 'picklist',
-                          // optionDataSource: dataSource,
-                          // filterLocally: true, 
-                          pickListCriteria: { type: 'person'},
-                          // filterEditorProperties: { displayField: 'name' },
-                          // displayField: 'name',
-                          valueField: '_id',
-                          canEdit: false
-                          // width:340,
-                          // colSpan:2,
-                          // click: function() {
-                          //     setPickList(personField,
-                          //                 this.form.getValues().person);
-                          //     return true;},
-                          // icons: [{
-                          //     src: isc.Page.getSkinDir() +"images/actions/edit.png",
-                          //     click: "isc.say(item.helpText)"
-                          //     //TODO: make drag drop shift worker editor
-                          // }]
-                         };
+    // var personPickList = {name: "person",// type: "select",
+    //                       editorType: 'comboBox',
+    //                       // title: 'person',
+    //                       // change: function (form, item, value) {
+    //                       //     var personList = eventForm.getField('person').pickList.getSelectedRecords();
+    //                       //     // var personList = personPickList.getSelectedRecords();
+    //                       //     console.log('PICKLIST', personList);
+    //                       //     displayPerson = [];
+    //                       //     // var person = []; 
+    //                       //     personList.forEach(function(p) {
+    //                       //         displayPerson.push(p.name);
+    //                       //         // person.push(p._id);
+    //                       //     });
+    //                       //     console.log('PICKLIST', displayPerson);
+    //                       //     if (displayPerson.length === 0) displayPerson = ['Nobody'];
+    //                       //     console.log(form, item, value);
+    //                       // },
+    //                       // type: 'enum',
+    //                       showTitle: true,
+    //                       // required: true, 
+    //                       // startRow: true,
+    //                       multiple: true,
+    //                       multipleAppearance: 'picklist',
+    //                       showOptionsFromDataSource: true,
+    //                       // optionDataSource: dataSource,
+    //                       // filterLocally: true, 
+    //                       pickListCriteria: { type: 'person'},
+    //                       // filterEditorProperties: { displayField: 'name' 
+    //                       //                           // ,pickListCriteria: { type: 'person'},
+    //                       //  // optionDataSource: dataSource
+                                                    
+    //                       // // multiple: true,
+    //                       // // multipleAppearance: 'picklist',
+
+    //                       // // valueField: '_id'
+    //                       //                         },
+    //                       displayField: 'name',
+    //                       valueField: '_id',
+    //                       canEdit: true
+    //                       // width:340,
+    //                       // colSpan:2,
+    //                       // click: function() {
+    //                       //     setPickList(personField,
+    //                       //                 this.form.getValues().person);
+    //                       //     return true;},
+    //                       // icons: [{
+    //                       //     src: isc.Page.getSkinDir() +"images/actions/edit.png",
+    //                       //     click: "isc.say(item.helpText)"
+    //                       //     //TODO: make drag drop shift worker editor
+    //                       // }]
+    //                       // ,formatCellValue: function (value) {
+    //                       //     console.log('valUEUEUEUE', value);
+    //                       //     if (value) {
+    //                       //         return value.name;
+    //                       //     }
+    //                       // }
+    //                      };
         
     var typeFields = {
         startDate: {  type: "datetime"}
         ,endDate: {  type: "datetime"}
-        // ,person: { type: 'list'}
-        ,person: personPickList
-        ,location: { type: "text"} 
+        ,person: { type: 'enum', canEdit: false }
+        ,personNames: { type: 'text', canEdit: false, title: 'Employee(s)', validOperators: ['iContains', 'iNotContains']}
+        // ,person: personPickList
+        ,location: { type: "enum", canEdit: false} 
+        ,locationNames: { type: 'text', title: 'Location', validOperators: ['iContains', 'iNotContains']}
         ,description: { type: "text", length: 500}
-        ,notes: { type: "text", length: 500}
+        ,notes: { type: "textarea", length: 5000}
         ,ad: { title: 'All day', type: 'boolean'} //allday
         // ,claim: { type: 'text'} 
-        ,claim:  {type: "select", defaultValue: 'Normal shift',
+        ,claim:  {type: "select",
                   valueMap: ['Normal shift', 'Sick leave', 'Annual leave',
                              'Long service leave', 'Other leave', 'Away from base',
-                             'Admin', 'Disturbed sleep', 'Event'] 
+                             'Admin', 'Disturbed sleep', 'Event'],
+                  defaultValue: 'Normal shift',
+                  required: true
                   //TODO: implement 'event'. Change form when this is selected to somethin
                   //appropriate for an event 
                  }
@@ -102,7 +124,14 @@ define
         ,name: { type: 'text', title: 'Name'} //should be unique within its type..
         ,address: { type: 'text'}
         ,suburb: { type: 'text'}
-        ,state: {detail: true, type: 'text'}
+        ,state: { type: "comboBox",
+                  valueMap: {
+                      "QLD" : "QLD",
+                      "NSW" : "NSW",
+                      "SA" : "SA",
+                      "NT" : "NT",
+                      "WA" : "WA"  }
+                }
         ,phone: { type: 'text'}
         ,mob: { type: 'text'}
         ,email: { type: 'text'}
@@ -121,10 +150,10 @@ define
     };
         
     var types = {
-        shift: ['name', 'startDate', 'endDate', 'person', 'location', 'description', 'notes', 'ad', 'claim', 'sleepOver'],
-        location: ['name', 'address', 'suburb','postalCode', 'state', 'phone', 'mob', 'email', 'region'],
+        shift: ['name', 'startDate', 'endDate', 'personNames', 'locationNames', 'description', 'notes', 'ad', 'claim', 'sleepOver'],
+        location: ['name', 'address', 'suburb','postalCode', 'state', 'phone', 'mob', 'email', 'region', 'notes'],
         person: ['name', 'firstName', 'lastName',
-                 'address', 'suburb','postalCode', 'state', 'phone', 'mob', 'email', 'region'],
+                 'address', 'suburb','postalCode', 'state', 'phone', 'mob', 'email', 'notes'],
         role: ['permissions']
     };
         

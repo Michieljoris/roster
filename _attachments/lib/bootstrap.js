@@ -94,10 +94,17 @@
 //Bootstrap
 (function(global)
  { "use strict";
-   var 
    //VERSION = '0.4',
-   //DATE = '24/12/12',
-   default_config = {
+   //DATE = '26/12/12',
+   
+   //debug variables that watch out for infinite loops shouldn't
+   //happen, but till I have full faith in the algorythm I rather have
+   //an error than a hanging browser. Increase them if you get an error
+   var exeOrderMax = 400;
+   var backtrackMax = 50;
+   var biggestExeOrder = 0;
+   
+   var default_config = {
        //-----hook
        //Name of the global function that modularizes a file by defining other files to load and taking a an optional 
        // callback or other object that defines the functionality of the module. 
@@ -481,7 +488,10 @@
 	   dependency.exeOrder = exeOrder;
 	   dependency.requirers.forEach(
 	       function(dep) {
-	           if (exeOrder > 300) { log(E, 'looping in  setExeOrder'); return; }
+	           if (exeOrder > exeOrderMax) { log(E, 'looping in  setExeOrder'); return; }
+                   else {
+                       if (exeOrder >biggestExeOrder) biggestExeOrder = exeOrder;
+                   }
 	           if (dep === dependency) return;
 	           if (dep.id === origin) {
 	               log(E, 'Cyclic dependency. ');
@@ -588,7 +598,7 @@
 	                   else executeCallback(req);
                        }
                        req.met = true;
-                       if (failsafe++ < 50)  backtrace(req); 
+                       if (failsafe++ < backtrackMax)  backtrace(req); 
 		       else throw('Error: We were in long loop!!!!'); 
 		   } }); }
        //if we have a leaf, backtrace as far as you can!!!
@@ -602,6 +612,7 @@
    //------------------------------------------------------------ 
    //make the apropriate connections, check for circular dependencies and execute the callbacks
    function finalize() {
+       log(W,'Biggest Exe Order', biggestExeOrder);
        log(I,"Finished loading, finalizing:");
        Object.keys(dependencies).forEach(
 	   function (dep) {

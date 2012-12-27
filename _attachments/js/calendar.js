@@ -83,7 +83,7 @@ define
                          var template  = "<a href='javascript:" + this.ID + ".monthViewEventClick(" + 
                              rowNum + "," + colNum + "," + i + ");' class='" +
                              this.calMonthEventLinkStyle + "'>";
-                         persons = evtArr[i].displayPerson.toString(); //TODO format persons
+                         persons = evtArr[i].personNames; //TODO format persons
                          retVal += template + eTime + evtArr[i][this.nameField] + ' ' + persons + "</a><br/>";
                      } else {
                          retVal += eTime + evtArr[i][this.nameField] + "<br/>";      

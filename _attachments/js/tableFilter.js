@@ -1,4 +1,4 @@
-/*global isc:false define:false */
+/*global logger:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:4 maxcomplexity:7 maxlen:120 devel:true*/
 
@@ -10,11 +10,13 @@ define
       var state, dataTable;
       var defaultState = { usingSimpleFilter: true };
       
+      var log = logger('typesAndFields');
       var setState = function(aState) {
           state = isc.addDefaults(aState, defaultState);
           // objectGroupList.setSelection();
           //get the fields relevant to the group(s)
           var fieldsCloner = typesAndFields.getFieldsCloner(state.types);
+          log.d('filterFields', fieldsCloner());
           filterFields.setCacheData(fieldsCloner());
           // objectGroupLabel.setLabel(state.types);
           advancedFilter.setCriteria(state.savedAdvCriteria);
@@ -45,7 +47,7 @@ define
       // });
       
       // function layoutFilters(bool) { //
-      //     // console.log('editfilterSetup');
+      //     // log.d('editfilterSetup');
       //     if (bool) { //more mode
       //         //reset it in case user has been meddling with it and has not clicked apply
       //         objectGroupList.setSelection();
@@ -95,7 +97,7 @@ define
               
       //         groupSelectWarnLabel.show(true);
       //         applyGroupSelectionButton.setDisabled(false);
-      //         // console.log('----------selection changed----------');
+      //         // log.d('----------selection changed----------');
       //         // var sel = objectGroupList.getSelection();
       //         //make sure at least one group is selected, by not
       //         //letting the user deselect the last one.
@@ -105,7 +107,7 @@ define
       //         // }
       //     }
       //     ,setSelection: function() {
-      //         // console.log('----------setting group selection----------');
+      //         // log.d('----------setting group selection----------');
       //         objectGroupList.deselectAllRecords();  
       //         if (state.types)
       //             objectGroupList.getData().forEach(function(e) {
@@ -120,7 +122,7 @@ define
       //         ID: 'mylabel',
       //         width:'100%',
       //         setLabel: function() {
-      //             // console.log('setting groups label', groups);
+      //             // log.d('setting groups label', groups);
       //             var contents, str1 = '';
       //                 // var maxGroups = roster.groups.length;
       //             if (state.types.length === 0) {
@@ -174,14 +176,14 @@ define
       //                 groupFilter,state.savedAdvCriteria);
       //             // appliedCriteria = advancedCriteria;
       //             // appliedCriteria = criteria;
-      //             // console.log('Applied Criteria', appliedCriteria);
+      //             // log.d('Applied Criteria', appliedCriteria);
       //             // module.temp = appliedCriteria;
-      //             // console.log('will fetch data', dataTable.willFetchData(criteria));
+      //             // log.d('will fetch data', dataTable.willFetchData(criteria));
       //             if (dataTable.willFetchData(appliedCriteria)) 
       //                 dataTable.fetchData(undefined, 
       //                                     function() {
       //                                         dataTable.setCriteria(appliedCriteria);
-      //                                         console.log('fetch completed');});
+      //                                         log.d('fetch completed');});
       //             else dataTable.setCriteria(appliedCriteria);
       //         }
       // });
@@ -253,7 +255,7 @@ define
 	  click : function () {
               
 	      state.savedAdvCriteria = advancedFilter.getCriteria(); 
-              console.log(isc.FilterBuilder.getFilterDescription(state.savedAdvCriteria,
+              log.d(isc.FilterBuilder.getFilterDescription(state.savedAdvCriteria,
                                                                  pouchDS));
 	      dataTable.filterData(state.savedAdvCriteria);
               setFilterDescription();
@@ -264,18 +266,18 @@ define
       
       function setFilterDescription() {
           var filterDescription;
-          console.log('setFilterDescription');
+          log.d('setFilterDescription');
           if (state.savedAdvCriteria) {
-              console.log('setFilterDescription',state.savedAdvCriteria);
+              log.d('setFilterDescription',state.savedAdvCriteria);
               filterDescription =
                   isc.FilterBuilder.getFilterDescription(state.savedAdvCriteria, pouchDS);
-              console.log('setFilterDescription', filterDescription, state.savedAdvCriteria);
+              log.d('setFilterDescription', filterDescription, state.savedAdvCriteria);
           }
           if (!filterDescription) filterDescription = 'No filter set';
           filterLabel.setContents(filterDescription);
           dataTable.setFilterLabel(filterDescription);
           
-          console.log('filterDescription: '+ filterDescription);
+          log.d('filterDescription: '+ filterDescription);
       }
       
       var advancedFilterButtons = isc.HLayout.
@@ -287,7 +289,7 @@ define
 
 
       // function setAdvFilterVisible(bool) {
-      //     console.log('setAdvFiltervisible');
+      //     log.d('setAdvFiltervisible');
       //     if (bool) {
       //         advFilterToggle.setIcon('toggleOn.png');
       //         advancedFilter.show(true);
@@ -338,7 +340,7 @@ define
       function useSimpleFilter(bool, criteria) {
           if (bool) {
 	      dataTable.setShowFilterEditor(true);
-              console.log('setting simple criteria:', criteria);
+              log.d('setting simple criteria:', criteria);
 	      dataTable.setFilterEditorCriteria(criteria);
 	      simpleFilterToggle.setIcon('toggleOn.png');
           }

@@ -8,12 +8,13 @@ define
    factory: function (typesAndFields, database, editors, tableFilter) {
        "use strict";
        
-       var log = logger.get('table', 'debug');
+       var log = logger('table');
 
        var editorHeightExpanded= 300;
        var typeFilter;
        var state; 
        var defaultState = { height: 300, isExpanded: true, tab: 1, hidden: false};
+       var editorHasChanged = false;
        
        // tableFilter.filterStack.hide();
       
@@ -56,7 +57,7 @@ define
                isExpanded: stack.sectionIsExpanded('Editor')
            });
            isc.addProperties(state, tableFilter.getState());
-           console.log('getTableState', isc.clone(state));
+           log.d('getTableState', isc.clone(state));
            currentState = isc.clone(state);
            return currentState;
        } 
@@ -114,8 +115,8 @@ define
            }
            else {
                stack.collapseSection('Editor');   
-               editorHeightExpanded = state.height;
            }
+           editorHeightExpanded = state.height;
            //dataTable state
            dataTable.setViewState(state.grid);
               
@@ -149,12 +150,12 @@ define
            // appliedCriteria = criteria;
            log.d('Applied Criteria', appliedCriteria);
            // module.temp = appliedCriteria;
-           console.log('will fetch data', dataTable.willFetchData(appliedCriteria));
+           log.d('will fetch data', dataTable.willFetchData(appliedCriteria));
            if (dataTable.willFetchData(appliedCriteria)) 
                dataTable.fetchData(undefined, 
                                    function() {
                                        dataTable.setCriteria(appliedCriteria);
-                                       console.log('fetch completed');});
+                                       log.d('fetch completed');});
            else dataTable.setCriteria(appliedCriteria);
           
            // dataTable.setCriteria(criteria);
@@ -176,12 +177,12 @@ define
       
        //called when table's view is modified
        function tableViewStateChanged(){
-           // console.log('**************table changed: ' + origin);
+           // log.d('**************table changed: ' + origin);
            if (observer) observer();
        }
       
        API.setObserver = function (f) {
-           // console.log('setobserver', f);
+           // log.d('setobserver', f);
            observer = f;
        };
       
@@ -221,7 +222,7 @@ define
                // }
            }
            ,setSelection: function(types) {
-               // console.log('----------setting group selection----------');
+               // log.d('----------setting group selection----------');
                typeList.deselectAllRecords();  
                // if (state.types)
                typeList.getData().forEach(function(e) {
@@ -244,6 +245,7 @@ define
                state.types = sel.map(function(t) {
                    return t.type;
                });
+               log.d(state.types);
                typeWindow.hide(); 
                setTableState(state);
                tableViewStateChanged();
@@ -279,10 +281,58 @@ define
            ]
        });
        
+       // var editorHasChanged = function() {
+       //     var presentEditor = editorContainer.getCanvas();
+       //     if (presentEditor && presentEditor.valuesHaveChanged && presentEditor.valuesHaveChanged()) {
+       //         dataTable.setSelectionType('none');
+       //         return true;
+       //     }
+       //     return false;
+       // };
+           
        
+       function setEditor(action) {
+           var confirmDiscardDialog = isc.Dialog.create({
+               message : "Values have changed. Save?",
+               icon:"[SKIN]ask.png",
+               buttons : [
+                   isc.Button.create({ title:"Discard" }), //0
+                   isc.Button.create({ title:"Save" })  //1
+               ],
+               buttonClick : function (button, index) {
+                   log.d(index);
+                   if (index === 1) {
+                       var record = editorContainer.getCanvas().getValues();
+                       log.d('saving record', record);
+                       
+                       var callback = function(response, record) {
+                           log.d('CALLBACK', response, record);
+                           editorHasChanged = false;
+                           action();
+                       };
+           
+                       if (record._rev) {
+                           database.updateData(record, callback);
+                       }
+                       else database.addData(record, callback);
+                   }
+                   else {
+                       editorHasChanged = false;
+                       action();   
+                   }
+                   this.hide();
+               }
+           });
+           
+           if (!editorHasChanged) action();
+           else {
+               confirmDiscardDialog.show();
+           }
+       }
        
        
        var newRecord = function(aType) {
+           if (dataTable.selectionType === 'none') return;
            // addUpdateData('addData', { group: 'group'});
            var record = typesAndFields.newRecord(aType);
            database.addData( record,
@@ -291,7 +341,7 @@ define
                                  dataTable.selectRecord(data);
                                  editRecord(data);
                                  // editForm.setValues(data);
-                                 console.log(resp,data,req);});
+                                 log.d(resp,data,req);});
        };
       
       
@@ -300,15 +350,15 @@ define
            var selRecord = dataTable.getSelectedRecord();
            if (selRecord) {
                var index = dataTable.getRecordIndex(selRecord);
-               // console.log('index of selected item before removing
+               // log.d('index of selected item before removing
                //it is: ', index); an async call, so the new selindex
                //has to be one more or less
                dataTable.removeSelectedData();
               
                if (dataTable.getTotalRows() === index + 1) index--;
                else index++;
-               // console.log('total rows now is ' + dataTable.getTotalRows());
-               // console.log('selecting row: ' + index);
+               // log.d('total rows now is ' + dataTable.getTotalRows());
+               // log.d('selecting row: ' + index);
                dataTable.selectRecord(index);
               
                editRecord(dataTable.getSelectedRecord());
@@ -317,66 +367,29 @@ define
       
       
        function editRecord(record) {
-           // locationEditor.showDialog(record, {});
-           // if (showingFilter) {
-           //     stack.removeItem(1, tableFilter.filterStack, 0);
-           //     stack.addItem(1, editForm);
-           //     showingFilter = false;
-           // }
-           // console.log(index);
-           // tableFilter.filterStack.hide();
-           // var record;
-           // if (index) record = dataTable.getRecord(index); 
-           // else record = dataTable.getSelectedRecord();
-	   console.log(record, "Selected Record");
-           // if (editor !== editors[record.group]) {
-           // if (editForm) editForm.hide();
-           //point editForm to the appropriate editor
-           // editor = editors[record.group];
-           // }
-                      
-           // editForm.setSettings();
-	   // editForm.editRecord(record); //also sets saveoperationtype to 'update'
-           // editForm.getField('saveButton').setTitle('Update record');
-           // editForm.getField('saveButton').method = 'updateData';
-           // editForm.getField('editNew').setDisabled(false);
-           // editForm.clearErrors(true);
-           // editForm.show();
+           if (editorHasChanged) return;
+           if (dataTable.selectionType === 'none') return;
+	   log.d(record, "Selected Record");
+           
            editors.fill(editorContainer, record, {
                cancelButton: false, saveButton: true, removeButton: true
            });
+           stack.getSection('Editor').setTitle('Details: ' + record.type);
            
-           // dataTable.setHeight(editorHeightExpanded);   
-           stack.expandSection('Editor');   
-           // editor.init(editorWindow, record, {});
-           // editorWindow.show();
+           log.d('editorHeightExpanded', editorHeightExpanded);
+           if (stack.sectionIsExpanded('Editor')) {
+               //save height
+               editorHeightExpanded = dataTable.getHeight();
+               log.d('editorHeightExpanded', editorHeightExpanded);
+               // stack.collapseSection('Editor');
+           }
+           else {
+               dataTable.setHeight(editorHeightExpanded);   
+               log.d('editorHeightExpanded', editorHeightExpanded);
+               stack.expandSection('Editor');   
+           }
        }
-                  
-       // tabSet.setTabPane(0, shiftEditor.getForm(record));
-                      
-       // tabSet.setTabPane(0, editForm);
-                      
-       // }
-      
-       // function addUpdateData(method, newValues) {
-       //     // if (!form.valuesHaveChanged() || !form.validate()) return; 
-       //     // console.log(form.getValues());
-       //     // var newValues = form.getValues();
-          
-       //     // newValues.group = 'shift';
-       //     // var method = 'addData';
-       //     var f = pouchDS[method];
-       //     var args = [newValues, function(resp, data, req) 
-       //     {   dataTable.selectRecord(data);
-       //                     editForm.setValues(data); console.log(resp,data,req);}];
-          
-       //     // editForm.getField('editnew').setDisabled(false);
-       //     editForm.getField('saveButton').setTitle('Update record');
-       //     editForm.getField('saveButton').method = 'updateData';
-       //     f.apply(pouchDS, args );
-       //     //pouchDS.addData(newValues, function(resp, data, req) 
-       //     //{ editForm.setValues(data); console.log(resp,data,req);});
-       // }
+
       
        var tableContextMenu = isc.Menu.create(
            {// ID:"rightClickMenu",
@@ -384,12 +397,12 @@ define
                ,data:[
 	           // {title:"click"
 		   //  ,icon: isc.Page.getSkinDir() +"images/FileBrowser/createNewFolder.png"
-		   //  ,click: function() { console.log('hello'); }
+		   //  ,click: function() { log.d('hello'); }
 	           // } ,
                    // { title: 'edit',
 		   //   icon: isc.Page.getSkinDir() +"images/actions/edit.png",
                    //   // icon: "edit.png", 
-                   //   click: function() { console.log('edit'); }
+                   //   click: function() { log.d('edit'); }
                    // },
                    { title:  'remove',
 		     icon: isc.Page.getSkinDir() +"images/actions/remove.png",
@@ -404,6 +417,9 @@ define
                          editors.show(dataTable.getSelectedRecord(), {
                              cancelButton: true, saveButton: true, removeButton: true
                          });
+                         editorHeightExpanded = dataTable.getHeight();
+                         stack.collapseSection('Editor');
+                         stack.getSection('Editor').setTitle('');
                          // editor.init(editorWindow, dataTable.getSelectedRecord(), {});
                          // editorWindow.show();
                      }
@@ -414,16 +430,17 @@ define
       
        var tableTypeLabel = isc.Label.create({
            width: "*", 
-           padding:5,
+               padding:5,
            prompt:'Types shown in this table.<p>Click to edit',
            click: function() { typeWindow.show();}
        });
        
        var tableFilterLabel = isc.Label.create({
            width: "100%", 
-               padding:5,
-           prompt:'Current filter for this table.<p> Click to edit',
-           click: showFilter
+           padding:5,
+           prompt:'Current filter for this table.'
+           // prompt:'Current filter for this table.<p> Click to edit',
+           // click: showFilter
        });
        
        function showFilter() {
@@ -436,7 +453,7 @@ define
       
        var addRecordButton = isc.IconMenuButton.create({
            title:''
-	   ,ID:'iconButton'
+	       ,ID:'iconButton'
 	   ,iconClick: "this.showMenu()"
 	   ,showMenuIcon:false
 	   ,width :20
@@ -449,31 +466,31 @@ define
            // ID: "gridEditControls",
            width: "100%", height:24, 
            members: [
-               tableTypeLabel,
-               // isc.ToolStripButton.create({
-               //     icon: "[SKIN]/actions/filter.png", 
-               //     prompt: "Set filters",
-               //     click: showFilter
-               // }),
-               tableFilterLabel,
+               isc.ToolStripButton.create({
+                   icon: "[SKIN]/actions/filter.png", 
+                   prompt: "Set filters",
+                   click: showFilter
+               }),
                
+               tableFilterLabel,
                isc.LayoutSpacer.create({ width:"*" })
                // ,isc.ToolStripButton.create({
                //     icon: "[SKIN]/actions/add.png", 
                //     prompt: "Add record",
-               //     click: "console.log('add');"
+               //     click: "log.d('add');"
                // })
+               ,tableTypeLabel
                ,addRecordButton
                // ,isc.ToolStripButton.create({
                //     icon: "[SKIN]/actions/remove.png", 
                //     prompt: "Remove selected record",
-               //     // click: "console.log('remove');"
+               //     // click: "log.d('remove');"
                //     click: function() { remove(); }
                // }),
                // isc.ToolStripButton.create({
                //     icon: "[SKIN]/actions/edit.png", 
                //     prompt: "Edit record",
-               //     click: "console.log('edit');"
+               //     click: "log.d('edit');"
                // })
            ]
        });
@@ -482,7 +499,8 @@ define
            {   
 	       ID: "dataTable",
 	       dataSource: database,
-                   
+               showEmptyMessage: true,
+               emptyMessage: "<br>Click the <b>Green plus butoon</b> to populate this grid.",    
                gridComponents:[toolStrip,"filterEditor", "header",  "body"],
                // titleField: 'title',
 	       // useAllDataSourceFields:true,
@@ -496,11 +514,17 @@ define
 	       autoFetchData: true,
 	       //editing
 	       recordClick: function (viewer, record) {
-                   editRecord(record); 
+                   var action = function() {
+                       editRecord(record); 
+                   };
+                   setEditor(action);
                },
               
 	       cellChanged: function (record) {
-                   editRecord(record); 
+                   var action = function() {
+                       editRecord(record); 
+                   };
+                   setEditor(action);
                },
                // recordClick: updateEditForm,
 	       canEdit:true,
@@ -531,7 +555,7 @@ define
 	       // cellContextClick:"return itemListMenu.showContextMenu()",
 	       // Function to update details based on selection
 	       filterEditorSubmit: function() {
-	           console.log('modified filter');
+	           log.d('modified filter');
                    tableViewStateChanged('filterEditorSubmit');
 	           // storeTableViewState();
 	       },
@@ -544,25 +568,29 @@ define
                },
                contextMenu: tableContextMenu
                // bodyKeyPress : function() { 
-               //    console.log('keypress');
+               //    log.d('keypress');
                //    return true; 
                // }
            });
       
        tableFilter.link(dataTable, defaultState);
        
-       var editorMessage = isc.Label.create({
+       var emptyMessage = isc.Label.create({
            // ID:"editorMessage",
            autoDraw: false,
-               width:"100%",
+           width:"100%",
            height:"100%",
            align:"center",
            contents:"Select a record to view and edit"
        });
       
        var editorContainer = isc.Canvas.create({
+           
+           width: '100%',
+           height:'100%',
            getCanvas: function() {
-                   if (this.children) return this.children[0];
+               log.d('getting canvas');
+               if (this.children) return this.children[0];
                else return null;
            },
            setCanvas: function(canvas) {
@@ -577,34 +605,48 @@ define
            },
            done: function(record, action) {
                switch (action) {
-                 case 'save' : console.log('selecting record after save', record);
+                 case 'save' : log.d('selecting record after save', record);
                    dataTable.selectRecord(record); break;
                  case 'remove' : editorContainer.removeCanvas(); break;
                   
                }
            },
-           removeRecord: removeRecord
+           removeRecord: removeRecord,
+           changed: function(changed) {
+               log.d('changed');
+               if (changed) {
+                   editorHasChanged = true;
+                   // dataTable.setSelectionType('none');
+               }
+               else {
+                   editorHasChanged = false;
+                   // dataTable.setSelectionType('single');
+               }
+               
+           }
            
            
        });
       
-       editorContainer.setCanvas(editorMessage);
+       editorContainer.setCanvas(emptyMessage);
       
        //---------------------- @the whole component-------------
       
        var stack = isc.SectionStack.
            create({ 
                ID: 'stack',
-	           visibilityMode:"multiple",
+	       visibilityMode:"multiple",
 	       animateSections:true
                ,onSectionHeaderClick :function() {
                    if (stack.sectionIsExpanded('Editor')) {
                        //save height
                        editorHeightExpanded = dataTable.getHeight();
+                       log.d('editorHeightExpanded', editorHeightExpanded);
                        stack.collapseSection('Editor');
                    }
                    else {
                        dataTable.setHeight(editorHeightExpanded);   
+                       log.d('editorHeightExpanded', editorHeightExpanded);
                        stack.expandSection('Editor');   
                    }
                    tableViewStateChanged('sectionHeaderClick');
