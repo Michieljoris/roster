@@ -4,8 +4,8 @@
 
 // -----@ TOP ----- */
 define
-({inject: ['globals', 'table', 'calendar'],
-  factory: function(globals, table, calendar) {
+({inject: ['globals', 'table', 'calendar', 'timesheet'],
+  factory: function(globals, table, calendar, timesheet) {
       "use strict";
       var log = logger('viewTree');
       //dummy empty view for initialization purposes. Also a template
@@ -21,7 +21,8 @@ define
       var views = [
           emptyView
           ,table
-          ,calendar];
+          ,calendar
+          ,timesheet];
       var newViewMenu = [];
       
       views = (function() {
@@ -555,20 +556,22 @@ define
               if (isEqual(views[leafShowing.view].getState(), leafShowing.viewState)) {
                   // if (isEqual(table.getState(), leafShowing.viewState)) {
                   if (!modified) return null;
-                  else return 'Leaving will discard changes made to the organising tree.'+
-                      '\\n Select "Stay on this page" and then click the icon next to '+
-                      'the login name to save the changes.';
+                  return null;
+                  // else return 'Leaving will discard changes made to the organising tree.'+
+                  //     '\\n Select "Stay on this page" and then click the icon next to '+
+                  //     'the login name to save the changes.';
               }
               leafShowing.viewState = views[leafShowing.view].getState();
               setModified(true);
               // saveTreeToDb();
-              return 'Leaving will discard changes made to a view.\n\nSelect "Stay on '+
-                  'this page" and then click the icon next to the login name to ' +
-                  'save the changes.';
-              
+              // return 'Leaving will discard changes made to a view.\n\nSelect "Stay on '+
+              //     'this page" and then click the icon next to the login name to ' +
+              //     'save the changes.';
+              return null;
 	      // return 'Leaving will discard changes made to a
 	      // view.\nStay to save the changes.';
           };
+      
       //-----------------------@API-----------------------
       //sets the show function so that viewTree has a means to show/hide 
       //components

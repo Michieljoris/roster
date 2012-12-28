@@ -394,10 +394,12 @@ define
       editor.canvas = tabSet;
       // editor.canvas.valuesHaveChanged = function() {
       //     return vm.valuesHaveChanged();   
+      
       // };
       editor.canvas.rememberValues = function() {
           vm.rememberValues();
       };
+      
       editor.canvas.getValues = function() {
           return vm.getValues();
       };

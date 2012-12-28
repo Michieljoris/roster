@@ -3,8 +3,8 @@
 /*jshint maxparams:4 maxcomplexity:7 maxlen:90 devel:true*/
 
 define
-({inject: [ 'viewTree', 'table', 'calendar'],
-  factory: function(viewTree, table, calendar) 
+({inject: [ 'viewTree', 'table', 'calendar', 'timesheet'],
+  factory: function(viewTree, table, calendar, timesheet) 
   { "use strict";
 
     //**********@Left hand side************************ 
@@ -86,6 +86,7 @@ define
 	,sections:[
 	    {name: 'Table', showHeader:false, hidden: true, items:[table.grid]}
 	    ,{name: 'Calendar', showHeader: false, hidden: true,items:[calendar]}
+	    ,{name: 'Timesheet', showHeader: false, hidden: true,items:[timesheet]}
 	]
     });
     //need to do this, the sectionstack seems to show

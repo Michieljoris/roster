@@ -10,11 +10,11 @@ define
       var state, dataTable;
       var defaultState = { usingSimpleFilter: true };
       
-      var log = logger('typesAndFields');
+      var log = logger('tableFilter');
       var setState = function(aState) {
           state = isc.addDefaults(aState, defaultState);
           // objectGroupList.setSelection();
-          //get the fields relevant to the group(s)
+          //get the fields relevant to the group(s) 
           var fieldsCloner = typesAndFields.getFieldsCloner(state.types);
           log.d('filterFields', fieldsCloner());
           filterFields.setCacheData(fieldsCloner());
@@ -25,15 +25,17 @@ define
           // setAdvFilterVisible(state.editableAdvFilter);
           // setAdvFilterVisible(true);
           useSimpleFilter(state.usingSimpleFilter);
-          
           setFilterDescription();
-      };
+      };     
       
       var getState = function() {
-          return state;
+          return state; 
       };
-      
+           
       //--------------------@EDIT FILTER SETUP------------------ 
+     //asdfa asdfa sdf
+      
+      
       // var editButton = isc.Button.create({
       //     title:"Edit",
       //     width:50,
@@ -43,7 +45,7 @@ define
       //         //isObjectGroupListVisible ? false : true;
       //         //TODO filter out the right groups...
       //         // layoutFilters(!objectGroupList.isVisible());
-      //     }
+      //     }  k
       // });
       
       // function layoutFilters(bool) { //
@@ -222,7 +224,8 @@ define
       });
       
       var advancedFilter = isc.FilterBuilder.
-          create({ // ID:"filter"
+          
+          create({  ID:"advfilter",
 	           // ,topOperatorAppearance: "inline"
 	           // ,dataSource:"pouchDS"
                    // ,dataSource: 'filterFieldsDS'
@@ -248,16 +251,21 @@ define
 	      }
       });
 
+      
       var filterButton = isc.IButton.create({
 	  // ID:"filterButton",
 	  title:"Filter",
+          
 	  width:50,
 	  click : function () {
               
 	      state.savedAdvCriteria = advancedFilter.getCriteria(); 
               log.d(isc.FilterBuilder.getFilterDescription(state.savedAdvCriteria,
-                                                                 pouchDS));
-	      dataTable.filterData(state.savedAdvCriteria);
+                                                           pouchDS));
+              var appliedCriteria = isc.DataSource.combineCriteria(
+                  dataTable.typeFilter,state.savedAdvCriteria);
+	      dataTable.filterData(appliedCriteria);
+	      // dataTable.filterData(state.savedAdvCriteria);
               setFilterDescription();
               dataTable.viewStateChanged('applyAdvFilter');
 	  }
@@ -266,18 +274,18 @@ define
       
       function setFilterDescription() {
           var filterDescription;
-          log.d('setFilterDescription');
+          // log.d('setFilterDescription');
           if (state.savedAdvCriteria) {
-              log.d('setFilterDescription',state.savedAdvCriteria);
+              // log.d('setFilterDescription',state.savedAdvCriteria);
               filterDescription =
                   isc.FilterBuilder.getFilterDescription(state.savedAdvCriteria, pouchDS);
-              log.d('setFilterDescription', filterDescription, state.savedAdvCriteria);
+              // log.d('setFilterDescription', filterDescription, state.savedAdvCriteria);
           }
           if (!filterDescription) filterDescription = 'No filter set';
           filterLabel.setContents(filterDescription);
           dataTable.setFilterLabel(filterDescription);
           
-          log.d('filterDescription: '+ filterDescription);
+          // log.d('filterDescription: '+ filterDescription);
       }
       
       var advancedFilterButtons = isc.HLayout.

@@ -11,7 +11,7 @@ define
        var log = logger('table');
 
        var editorHeightExpanded= 300;
-       var typeFilter;
+       // var typeFilter;
        var state; 
        var defaultState = { height: 300, isExpanded: true, tab: 1, hidden: false};
        var editorHasChanged = false;
@@ -90,24 +90,45 @@ define
            
            //we need to filter the by type
            //this will be combined with the normal filters
-           typeFilter = { type : types };
+           // typeFilter = { type : types };
            //TODO         
            // dataTable.filterData(typeFilter);
-         
+           
+           
+           var criteria = [];
+           types.forEach(function(t) {
+             criteria.push({
+                 fieldName: 'type',
+                 operator:'equals',
+                 value:t
+             });  
+           });
+           dataTable.typeFilter = {
+               _constructor:"AdvancedCriteria",
+               operator:"or",
+               criteria: criteria  
+           };
+           // log.d('aaaaaaaaaaaaaaaaaaaaaaaaa',dataTable.typeFilter);
        } 
-
+ 
        var currentState;
        function setTableState(newState) {
-           log.d(newState, currentState);
+           log.showTimeStamp();
+           // log.d(newState, currentState);
            //no need to set the state if we're returning to the same one
            if (currentState !== undefined && newState === currentState) return;
-           log.d(newState);
+           // log.d(newState);
+           log.d('1aaaaaaaaaaaaa');
            state = isc.addProperties(defaultState, isc.clone(newState));
+           
+           log.d('2aaaaaaaaaaaaa');
           
            setTypingState(state.types);
           
+           log.d('3aaaaaaaaaaaaa');
            tableFilter.setState(state);
            
+           log.d('4aaaaaaaaaaaaa');
            //layout
            if (state.isExpanded) {
                stack.expandSection('Editor');   
@@ -116,10 +137,13 @@ define
            else {
                stack.collapseSection('Editor');   
            }
+           log.d('5aaaaaaaaaaaaa');
            editorHeightExpanded = state.height;
+           log.d('555aaaaaaaaaaaaa');
            //dataTable state
            dataTable.setViewState(state.grid);
               
+           log.d('6aaaaaaaaaaaaa');
            //filters
            // advancedFilter.setCriteria(state.savedAdvCriteria);
            // var advancedCriteria = {
@@ -144,19 +168,22 @@ define
            //     group : 'shift'
            // };
            // return;
+           // log.d('bbbbbbbbbaaaaaaaaaaaaaaaaaaaaaaaaa',dataTable.typeFilter);
            var appliedCriteria = isc.DataSource.combineCriteria(
-               typeFilter,state.savedAdvCriteria);
+               dataTable.typeFilter,state.savedAdvCriteria);
+           log.d('7aaaaaaaaaaaaa');
            // appliedCriteria = advancedCriteria;
            // appliedCriteria = criteria;
-           log.d('Applied Criteria', appliedCriteria);
+           // log.d('Applied Criteria', appliedCriteria);
            // module.temp = appliedCriteria;
-           log.d('will fetch data', dataTable.willFetchData(appliedCriteria));
+           // log.d('will fetch data', dataTable.willFetchData(appliedCriteria));
            if (dataTable.willFetchData(appliedCriteria)) 
                dataTable.fetchData(undefined, 
                                    function() {
                                        dataTable.setCriteria(appliedCriteria);
                                        log.d('fetch completed');});
            else dataTable.setCriteria(appliedCriteria);
+           log.d('8aaaaaaaaaaaaa');
           
            // dataTable.setCriteria(criteria);
            //                     { myprop: 'blablabla'});
@@ -252,6 +279,7 @@ define
            }
        });
        
+       
        var cancelButton = isc.Button.create({
            left: 200,
            showRollOver: true,
@@ -261,7 +289,6 @@ define
            click: function() { typeWindow.hide(); }
        });
        // typeWindow.addItem(typeList);
-      
       
        var typeWindow = isc.Window.create({
            title: "Types",
@@ -447,6 +474,7 @@ define
            stack.expandSection('Editor');   
            // dataTable.setHeight(editorHeightExpanded);   
            
+           stack.getSection('Editor').setTitle('Filter');
            editorContainer.removeCanvas();
            editorContainer.setCanvas(tableFilter.filterStack);
        }
@@ -540,15 +568,18 @@ define
                filterButtonProperties: {
 	           click : function () {
 	               dataTable.clearCriteria();
-	               dataTable.filterData(state.savedAdvCriteria);
+                       var appliedCriteria = isc.DataSource.combineCriteria(
+                           dataTable.typeFilter,state.savedAdvCriteria);
+	               dataTable.filterData(appliedCriteria);
                        tableViewStateChanged('clearSimpleFilter');
 	           },
                    icon:'clear.png',
                    showRollOverIcon: false,
                    showDownIcon: true
                },
+               
                // headerContextMenu: true,
-               // cle fsda fasdfarFilterText: 'Clear inline filter',
+               // FilterText: 'Clear inline filter',
 	       viewStateChanged: function() { tableViewStateChanged('viewStateChanged'); },
 	       // 	  showEmptyMessage: true,
 	       // emptyMessage: "<br>Click the <b>Set data</b> button to populate this grid.",
@@ -665,5 +696,4 @@ define
        API.icon = "table.png";
        return API;
    }});
-
 //TODO get rid of all ID:

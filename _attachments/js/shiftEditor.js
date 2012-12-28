@@ -153,10 +153,10 @@ define
             event.type = 'shift';
             event.startDate = startDate;
             event.endDate = endDate;
-            event.name = '-' + isc.Time.toTime(event.endDate, 'toShortPaddedTime', true);
+            event.endTijd = '- ' + isc.Time.toTime(event.endDate, 'toShortPaddedTime', true);
             event.description = personNames.toString() + '<p>' + event.notes;
-            event.personNames = personNames.toString();
-            event.locationNames = locationNames.toString();
+            // event.personNames = personNames.toString();
+            // event.locationNames = locationNames.toString();
             // event.notes = event.moreText;
             // event.description = event.notes;
             // log.d('XXXXnotes',event.notes);
@@ -165,8 +165,29 @@ define
             // log.d('XXXXname', event.name);
             // isc.addProperties(event, otherFields);
             
+            // var personList = eventForm.getField('person').pickList.getSelectedRecords();
+            // log.d(eventForm.getField('person'));
+            // personNames = [];
+            // personList.forEach(function(p) {
+            //     personNames.push(p.name);
+            // });
+            // if (personNames.length === 0) personNames = ['Nobody'];
+            // event.personNames = personNames.toString();
+            // log.d('PICKLIST', personNames);
+            
+            // var locationList = eventForm.getField('location').pickList.getSelectedRecords();
+            // log.d(eventForm.getField('location'));
+            // locationNames = [];
+            // locationList.forEach(function(p) {
+            //     locationNames.push(p.name);
+            // });
+            // if (locationNames.length === 0) locationNames = ['Nobody'];
+            // log.d('PICKLIST', locationNames);
+            // event.locationNames = locationNames.toString();
             editorManager.save(event, updateForm);
             // editorManager.hide('shift');
+            console.log('AAAAAAAAAAAA', eventForm.getValue('person'));
+            console.log(eventForm.getValue('location'));
         }
     }
     
@@ -204,9 +225,10 @@ define
                                    personNames.push(p.name);
                                });
                                if (personNames.length === 0) personNames = ['Nobody'];
+                               event.personNames = personNames.toString();
                                log.d('PICKLIST', personNames);
-                           },
-                          
+                            },
+                         // ID: 'personPickList' ,
                            showTitle: false,
                            startRow: true,
                            multiple: true,
@@ -240,8 +262,10 @@ define
                                  });
                                  if (locationNames.length === 0) locationNames = ['Nobody'];
                                  log.d('PICKLIST', locationNames);
+                                 event.locationNames = locationNames.toString();
                              },
                           
+                         // ID: 'locationPickList' ,
                              showTitle: false,
                              startRow: false,
                              // multiple: true,

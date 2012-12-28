@@ -168,9 +168,17 @@
        onLoaded: onLoaded_native,
        
        //-------testing
-       testing: true
+       testing: true,
+       
+       //--whether to load as the last script live.js, values:
+       // css to monitor css changes only.
+       // js to monitor js changes only.
+       // html to monitor html changes only.
+       // Mix and match to monitor a preferred combination such as css,js
+       // falsy to disable, so comment out for example.
+       livejs: "css,js,html"
    },
-     
+   
    //----initHook [string]
    //the init function is added to the hook under this name
    //falsy will result in not anything being added, and will start
@@ -225,7 +233,7 @@
        insertionLocation = document.getElementsByTagName(scriptInsertionLocation)[0];
        timeOut = config.timeOut || default_config.timeOut;
        
-       verbosity = config.verbosity == undefined ? default_config.verbosity : config.verbosity;
+       verbosity = config.verbosity === undefined ? default_config.verbosity : config.verbosity;
        verbosity = levels.indexOf(verbosity);
        
        paths = config.paths || default_config.paths;
@@ -636,6 +644,7 @@
    //all the callbacks gathered during the loading phase get executed now in the right order,
    //so that their dependencies are all met
    function executeLater() {
+       
        log(I,'Executing callbacks:');
        var sortedDeps = [];
        //sort all definers according to execution order

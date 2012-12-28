@@ -50,7 +50,7 @@ define
 	     dataSource: database, 
 	     autoFetchData: true
 	     // ,descriptionField: 'notes'
-	     // ,nameField: 'person'
+	     ,nameField: 'endTijd'
              ,eventOverlapIdenticalStartTimes: true
              ,eventOverlap:false
              ,firstDayOfWeek: 6
@@ -77,6 +77,7 @@ define
                  var retVal = "";
                  for (var i = 0; i < evtArr.length; i++) {
                      var eTime = isc.Time.toTime(evtArr[i][this.startDateField], this.timeFormatter, true) + " ";
+                     var eeTime = isc.Time.toTime(evtArr[i][this.endDateField], this.timeFormatter, true) + " ";
                      if (this.canEditEvent(evtArr[i])) {
                          // when clicked, call the the editEvent method of this calendar, passing the
                          // row, column, and position of the event in this cell's event array
@@ -84,9 +85,11 @@ define
                              rowNum + "," + colNum + "," + i + ");' class='" +
                              this.calMonthEventLinkStyle + "'>";
                          persons = evtArr[i].personNames; //TODO format persons
-                         retVal += template + eTime + evtArr[i][this.nameField] + ' ' + persons + "</a><br/>";
+                         // retVal += template + eTime + evtArr[i][this.nameField] + ' ' + persons + "</a><br/>";
+                         retVal += template + eTime + eeTime + ' ' + persons + "</a><br/>";
                      } else {
-                         retVal += eTime + evtArr[i][this.nameField] + "<br/>";      
+                         // retVal += eTime + evtArr[i][this.nameField] + "<br/>";      
+                         retVal += eTime + eeTime + "<br/>";      
                      }
                      if ((i + 3) * lineHeight > rHeight) break; 
                  }

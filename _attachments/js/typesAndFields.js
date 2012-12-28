@@ -150,7 +150,7 @@ define
     };
         
     var types = {
-        shift: ['name', 'startDate', 'endDate', 'personNames', 'locationNames', 'description', 'notes', 'ad', 'claim', 'sleepOver'],
+        shift: ['name', 'startDate', 'endDate', 'personNames', 'locationNames', 'notes', 'ad', 'claim', 'sleepOver'],
         location: ['name', 'address', 'suburb','postalCode', 'state', 'phone', 'mob', 'email', 'region', 'notes'],
         person: ['name', 'firstName', 'lastName',
                  'address', 'suburb','postalCode', 'state', 'phone', 'mob', 'email', 'notes'],
