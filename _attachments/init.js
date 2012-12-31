@@ -1,2 +1,0 @@
-pouch.setdb(roster.dbname);
-
