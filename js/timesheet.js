@@ -4,49 +4,73 @@
 
 define
 ({ //load: ['editorLoader'],
-   inject: ['globals', 'pouchDS', 'editorManager'],
-   factory: function(globals, pouchDS, editorManager) 
+   inject: ['globals', 'pouchDS'],
+   factory: function(globals, pouchDS) 
     { "use strict";
-      var person, location, shifts;
+      var person, location;
       var log = logger('timesheet');
       var observer;
-      var settings = {
-          // minimumShiftLength: 10,
-          // maximumShiftLength: 600,
-          // eventSnapGap: 15, //only works with a refresh
-          // workdayStart: '6:00',
-          // workdayEnd: '22:00',
-          // currentViewName: 'week', //day, week or month
-          chosenDate: new Date()
-      };
+      
+      var currentState;
+      var defaultState = { person:'guest', location:'0FD661FF-8605-4271-8CA4-61A52D3561A0', fortnight:'2013-01-01T11:00:00.000Z'};
+      // var settings = {
+      //     // minimumShiftLength: 10,
+      //     // maximumShiftLength: 600,
+      //     // eventSnapGap: 15, //only works with a refresh
+      //     // workdayStart: '6:00',
+      //     // workdayEnd: '22:00',
+      //     // currentViewName: 'week', //day, week or month
+      //     chosenDate: new Date()
+      // };
+      
       var shiftCriterion = {
           fieldName: 'type',
           operator:'equals',
           value:'shift'
       };  
+      
+       function getState() {
+           var state =  isc.addProperties(currentState, {
+               // grid: dataTable.getViewState(),
+               // criteria : dataTable.getFilterEditorCriteria(),
+              
+               // //editor
+               // height: (function() {
+               //     if (stack.sectionIsExpanded('Editor')) 
+               //         return dataTable.getHeight();
+               //     else return editorHeightExpanded;
+               // })(),
+               // isExpanded: stack.sectionIsExpanded('Editor')
+           });
+           // isc.addProperties(state, tableFilter.getState());
+           // log.d('getTableState', isc.clone(state));
+           currentState = isc.clone(state);
+           return currentState;
+       } 
           
       
       function getShifts(fortnight) {
           var vow = VOW.make();
-          //TODO make criteria out of the args 
-          var startDate = fortnight;
+          var startDate = Date.create(fortnight);
+          startDate.setHours(0);
           var endDate = Date.create(startDate);
+          endDate.addWeeks(2);
           
           var fortnightCriterion = {
               _constructor:"AdvancedCriteria",
               operator:"and",
               criteria: [
                   {
-                   fieldName: 'date' , operator: 'bigger', value: startDate   
+                   fieldName: 'date' , operator: 'greaterOrEqual', value: startDate   
                   },
                   {
-                   fieldName: 'date' , operator: 'smaller', value: endDate   
+                   fieldName: 'date' , operator: 'lessThan', value: endDate   
                   }
               ]
           };
 
           var personCriterion = {
-              fieldName: 'person',
+              fieldName: 'personstring',
               operator:'contains',
               value: person._id
           };
@@ -60,7 +84,7 @@ define
           var timesheetCriteria = {
               _constructor:"AdvancedCriteria",
               operator:"and",
-              criteria: [shiftCriterion, locationCriterion, personCriterion, fortnightCriterion]
+              criteria: [shiftCriterion,  locationCriterion, personCriterion, fortnightCriterion]
                
           };
         
@@ -68,56 +92,74 @@ define
                             function (dsResponse, data) {
                                 if (dsResponse.status < 0) vow['break'](dsResponse.status);
                                 else {
+                                    log.d('GOT a response from pouchDS', data);
                                     var resultSet = isc.ResultSet.create({
                                         dataSource:"pouchDS",
                                         criteria: timesheetCriteria,
                                         allRows:data
                                     });
+                                    log.d('and the result set is:', resultSet);
+                                    log.d('and the visible rows are:', resultSet.getAllVisibleRows());
                                     vow.keep(resultSet.getAllVisibleRows());
                                 }
                             }
                            );
-          
+          return vow.promise;
       }
       
-      function getDoc(doc) {
-          if (doc._id) return VOW.kept(doc);
+      function getDoc(record) {
+          if (record._id) return VOW.kept(record);
           var vow = VOW.make();
-          globals.db.get(doc, function(err, doc) {
-              if (!err) vow.keep(doc);
-              else vow['break'](err);
+          globals.db.get(record, function(err, doc) {
+              log.d('getting doc',doc, err);
+              if (!err) {
+               vow.keep(doc);   
+                  log.d('keeping vow');
+              }
+              else {
+                  err.record = record; 
+                  vow['break'](err);   
+                  log.d('breaking vow');
+              }
               
           });
+          vow.promise.test =record;
           return vow.promise;
       }
      
-      var currentState;
+      
+      
       function setState(state) {
-          if (state === currentState) return;
-          currentState = state;
+          if (currentState !== undefined && state === currentState) return;
           
-          var data = VOW.every(
+          state = isc.addProperties(defaultState, isc.clone(state));
+          log.d(state);
+          
+          var data = VOW.every([
               getDoc(state.person),
               getDoc(state.location)
-          );
+          ]);
 
           data.when(
               function(arr) {
                   person = arr[0];
                   location = arr[1];
+                  log.d('got loc and person:', arr[0], arr[1]);
                   return getShifts(state.fortnight);
-              })
-              .when(
-                  processData,
-                  function (msg) {
-                      log.d('ERROR: could not get some of the data needed to build this timesheet', msg);
-                  }
-              );
+              }
+          ).when(
+              processData,
+              function (msg) {
+                  log.d('ERROR: could not get some of the data needed to build this timesheet', msg);
+              }
+          );
       }
       
       function processData(shifts) {
           //person, location and shifts should be set now
-          log.d(shifts);
+          log.d('-----------------');
+          log.d(person, location, shifts);
+          log.d('-----------------');
       }
       
       
@@ -210,13 +252,11 @@ define
               // // }
              
               notify: function(newState) {
-                  log.d('calendar is notified');
+                  log.d('timesheet is notified');
                   setState(newState);
                 
               }
-              ,getState: function() {
-                  return settings;
-              }
+              ,getState: getState
               ,setObserver: function(f) {
                   observer = f;
               }

@@ -1,4 +1,4 @@
-/*global isc:false define:false emit:false*/
+/*global logger:false isc:false define:false emit:false*/
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:5 maxcomplexity:10 maxlen:190 devel:true*/
 
@@ -124,9 +124,10 @@ define
                         valueMap: getTimeList(globals.eventSnapGap)
                       }
             ,person: { type: 'enum', canEdit: false }
+            ,personstring: { type: 'text', canEdit: false }
             ,personNames: { type: 'text', canEdit: false, title: 'Employee(s)', validOperators: ['iContains', 'iNotContains']}
             // ,person: personPickList
-            ,location: { type: "enum", canEdit: false} 
+            ,location: { type: "text", canEdit: false} 
             ,locationNames: { type: 'text', title: 'Location', validOperators: ['iContains', 'iNotContains']}
             ,description: { type: "text", length: 500}
             ,notes: { type: "textarea", length: 5000}
@@ -171,7 +172,7 @@ define
         };
         
         var types = {
-            shift: ['name', 'startDate', 'endDate', 'date', 'startTime', 'endTime', 'personNames', 'locationNames', 'notes', 'ad', 'claim', 'sleepOver'],
+            shift: ['personstring', 'location', 'person', 'startDate', 'endDate', 'date', 'startTime', 'endTime', 'personNames', 'locationNames', 'notes', 'ad', 'claim', 'sleepOver'],
             location: ['name', 'address', 'suburb','postalCode', 'state', 'phone', 'mob', 'email', 'region', 'notes'],
             person: ['name', 'firstName', 'lastName',
                      'address', 'suburb','postalCode', 'state', 'phone', 'mob', 'email', 'notes'],

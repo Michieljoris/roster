@@ -157,11 +157,12 @@ define
             var endTijd = '- ' + isc.Time.toTime(eventValues.endDate, 'toShortPaddedTime', true);
             var description = personNames.toString() + '<p>' + notes;
             
-            var event = {
+            event = {
                 type: 'shift',
                 _id: eventValues._id,
                 _rev: eventValues._rev,
                 person: eventValues.person,
+                personstring: eventValues.person.toString(),
                 location: eventValues.location,
                 startDate: startDate,
                 endDate: endDate,
@@ -172,7 +173,9 @@ define
                 repeats: eventValues.repeats,
                 notes: notes,
                 endTijd: endTijd,
-                description: description
+                description: description,
+                personNames : personNames.toString(),
+                locationNames : locationNames.toString()
             };
             // event.personNames = personNames.toString();
             // event.locationNames = locationNames.toString();
@@ -246,7 +249,7 @@ define
                                    personNames.push(p.name);
                                });
                                if (personNames.length === 0) personNames = ['Nobody'];
-                               event.personNames = personNames.toString();
+                               // personNames = personNames.toString();
                                log.d('PICKLIST', personNames);
                            },
                            // ID: 'personPickList' ,
@@ -283,7 +286,7 @@ define
                                  });
                                  if (locationNames.length === 0) locationNames = ['Nobody'];
                                  log.d('PICKLIST', locationNames);
-                                 event.locationNames = locationNames.toString();
+                                 // event.locationNames = locationNames.toString();
                              },
                           
                              // ID: 'locationPickList' ,
@@ -475,9 +478,12 @@ define
         return eventForm.getValues();
     };
     editor.set = function(someEvent, someSettings) {
-        
+        log.d('AAAAAA', someEvent.person);
         event = someEvent;
         personNames = [];
+        // log.d(event.person);
+        // if (event.person && typeof event.person === 'string') event.person = event.person.split(',');
+        // else event.person = [];
         log.d('setting values', someEvent);
         settings = isc.addDefaults(someSettings, defaultSettings);
         

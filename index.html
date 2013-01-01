@@ -1,4 +1,6 @@
-<HTML>
+<!doctype HTML>
+<!-- <html manifest="/roster.appcache"> -->
+<html>
   <HEAD>
   </HEAD>
   <BODY>
@@ -14,7 +16,7 @@
        'lib': '../lib'
       },
       scriptInsertionLocation : 'body',
-      timeOut: 2,
+      timeOut: 15,
       testing: false
       };
       
@@ -86,7 +88,10 @@
     <!-- basic console logger -->
     <script src=lib/logger.js></script>    
     <script> logger.setLevel('debug');</script>
-    
+    <!-- execute in console manifestR.makeManifest to create a manifest for -->
+    <!-- the app. Put it in roster.appcache Also set the topline of the index.html file to : -->
+    <!-- html manifest="/roster.appcache"> -\-> -->
+    <script src=manifestR.js></script>
     
     <!--/temp for testing purposes, can be removed  -->
     <script src=js/quickpouch.js></script>    
@@ -95,6 +100,7 @@
     <script src=lib/bootstrap.js></script>
     <!-- <script src=js/liveorig.js#js></script>     -->
     <!-- <script src=lib/livepage.js></script>     -->
+    
   </BODY> 
 </HTML>
 

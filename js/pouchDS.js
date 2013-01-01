@@ -30,7 +30,7 @@ define
 	                  // var timezoneOffset = d.getTimezoneOffset();
                           // // timezoneOffset = 0;
 	                  // obj[k] = new Date(d.getTime() - (timezoneOffset * 60000));
-                          obj[k]=new Date(Date.parse(obj[k]));
+                          obj[k]=Date.parseSchemaDate(obj[k]);
                           // log.d(obj[k])
 	                  break;
 	              default: 
