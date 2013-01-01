@@ -26,11 +26,39 @@ define
       };  
           
       
-      function getShifts(fortnight, person, location) {
+      function getShifts(fortnight) {
           var vow = VOW.make();
+          //TODO make criteria out of the args 
+          var startDate = fortnight;
+          var endDate = Date.create(startDate);
+          
+          var fortnightCriterion = {
+              _constructor:"AdvancedCriteria",
+              operator:"and",
+              criteria: [
+                  {
+                   fieldName: 'date' , operator: 'bigger', value: startDate   
+                  },
+                  {
+                   fieldName: 'date' , operator: 'smaller', value: endDate   
+                  }
+              ]
+          };
+
+          var personCriterion = {
+              fieldName: 'person',
+              operator:'contains',
+              value: person._id
+          };
+          
+          var locationCriterion = {
+              fieldName: 'location',
+              operator:'equals',
+              value: location._id
+          };
           
           var timesheetCriteria = {
-                  _constructor:"AdvancedCriteria",
+              _constructor:"AdvancedCriteria",
               operator:"and",
               criteria: [shiftCriterion, locationCriterion, personCriterion, fortnightCriterion]
                
@@ -38,14 +66,14 @@ define
         
           pouchDS.fetchData(null,
                             function (dsResponse, data) {
-                               if (dsResponse.status < 0) vow['break'](dsResponse.status);
+                                if (dsResponse.status < 0) vow['break'](dsResponse.status);
                                 else {
-                                    vow.keep(isc.ResultSet.create({
+                                    var resultSet = isc.ResultSet.create({
                                         dataSource:"pouchDS",
                                         criteria: timesheetCriteria,
                                         allRows:data
-                                    }));
-                                    
+                                    });
+                                    vow.keep(resultSet.getAllVisibleRows());
                                 }
                             }
                            );
@@ -64,42 +92,34 @@ define
       }
      
       var currentState;
-          function setState(state) {
-              if (state === currentState) return;
-              currentState = state;
+      function setState(state) {
+          if (state === currentState) return;
+          currentState = state;
           
-              // settings = state || settings;
-          
-              var data = VOW.every(
-                  getDoc(state.location),
-                  getDoc(state.person),
-              );
+          var data = VOW.every(
+              getDoc(state.person),
+              getDoc(state.location)
+          );
 
-              data.when(
-                  getShifts
-                  function(arr) {
-                      location = arr[0];
-                      person = arr[1];
-                  },
+          data.when(
+              function(arr) {
+                  person = arr[0];
+                  location = arr[1];
+                  return getShifts(state.fortnight);
+              })
+              .when(
+                  processData,
                   function (msg) {
                       log.d('ERROR: could not get some of the data needed to build this timesheet', msg);
                   }
               );
-          
-          
-              settings.chosenDate = settings.chosenDate || new Date();
-          }
-      
-      
-      
-      
-      function processData() {
-          
       }
       
-      function error() {
-          
+      function processData(shifts) {
+          //person, location and shifts should be set now
+          log.d(shifts);
       }
+      
       
       var timesheet = isc.ListGrid.create(
           {   

@@ -4,7 +4,8 @@
 
 // -----@ TOP ----- */
 define
-({inject: ['globals', 'table', 'calendar', 'timesheet'],
+({inject: ['globals', 'table', 'calendar' ],
+// ({inject: ['globals', 'table', 'calendar', 'timesheet'],
   factory: function(globals, table, calendar, timesheet) {
       "use strict";
       var log = logger('viewTree');
@@ -22,7 +23,8 @@ define
           emptyView
           ,table
           ,calendar
-          ,timesheet];
+          // ,timesheet
+      ];
       var newViewMenu = [];
       
       views = (function() {
