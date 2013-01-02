@@ -48,6 +48,11 @@ define
                   required: false
               }, fields.name),
               isc.addDefaults({
+                  align: 'left',
+                  colSpan:2,
+                  required: false
+              }, fields.costCentre),
+              isc.addDefaults({
                   
               }, fields.region),
               isc.addDefaults({

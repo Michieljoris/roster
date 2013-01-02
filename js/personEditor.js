@@ -54,6 +54,15 @@ define
               }, fields.lastName),
               isc.addDefaults({
                   
+              }, fields.dswCALevel),
+              isc.addDefaults({
+                  
+              }, fields.payrollNumber),
+              isc.addDefaults({
+                  
+              }, fields.status),
+              isc.addDefaults({
+                  
               }, fields.inheritable),
               isc.addDefaults({
                   

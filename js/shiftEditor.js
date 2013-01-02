@@ -7,8 +7,8 @@
 //This kind of module does not produce an injectable, but registers itself with the editorManager
 //to use this editor, both load the editorLoader module and inject the editorManager
 define
-({inject: ['editorUtils', 'pouchDS', 'editorManager', 'typesAndFields'],
-  factory: function(editorUtils, datasource, editorManager) 
+({inject: ['shift', 'editorUtils', 'pouchDS', 'editorManager', 'typesAndFields'],
+  factory: function(shift, editorUtils, datasource, editorManager) 
   { "use strict";
     var log = logger('shiftEditor');
 
@@ -130,87 +130,11 @@ define
         
         if (eventForm.valuesHaveChanged() && eventForm.validate()) {
             var eventValues = eventForm.getValues();
-            var startDate = new Date();
-            startDate.setHours(eventValues.startTime.getHours());
-            startDate.setMinutes(eventValues.startTime.getMinutes());
-            startDate.setSeconds(0);
-            startDate.setYear(eventValues.date.getYear() + 1900);
-            startDate.setMonth(eventValues.date.getMonth());
-            startDate.setDate(eventValues.date.getDate());
-            var endDate = new Date();
-            endDate.setHours(eventValues.endTime.getHours());
-            endDate.setMinutes(eventValues.endTime.getMinutes());
-            endDate.setSeconds(0);
-            endDate.setYear(eventValues.date.getYear() + 1900);
-            endDate.setMonth(eventValues.date.getMonth());
-            endDate.setDate(eventValues.date.getDate());
-            if (eventValues.endTime.getHours() === 0 &&
-                eventValues.endTime.getMinutes() === 0) endDate.setDate(endDate.getDate() + 1);
-            var notes = eventValues.notes;
-            if (!notes) notes = '';
-            log.d(startDate, endDate);
+            eventValues.personNames = personNames;
+            eventValues.locationNames = locationNames;
             
-            eventValues.type = 'shift';
-            // eventValues.startDate = startDate;
-            // eventValues.endDate = endDate;
-            
-            var endTijd = '- ' + isc.Time.toTime(eventValues.endDate, 'toShortPaddedTime', true);
-            var description = personNames.toString() + '<p>' + notes;
-            
-            event = {
-                type: 'shift',
-                _id: eventValues._id,
-                _rev: eventValues._rev,
-                person: eventValues.person,
-                personstring: eventValues.person.toString(),
-                location: eventValues.location,
-                startDate: startDate,
-                endDate: endDate,
-                date: eventValues.date,
-                startTime: eventValues.startTime,
-                endTime: eventValues.endTime,
-                claim: eventValues.claim,
-                repeats: eventValues.repeats,
-                notes: notes,
-                endTijd: endTijd,
-                description: description,
-                personNames : personNames.toString(),
-                locationNames : locationNames.toString()
-            };
-            // event.personNames = personNames.toString();
-            // event.locationNames = locationNames.toString();
-            // event.notes = event.moreText;
-            // event.description = event.notes;
-            // log.d('XXXXnotes',event.notes);
-            // log.d('XXXXperson', event.person);
-            // log.d('XXXXlocation', event.location);
-            // log.d('XXXXname', event.name);
-            // isc.addProperties(event, otherFields);
-            
-            // var personList = eventForm.getField('person').pickList.getSelectedRecords();
-            // log.d(eventForm.getField('person'));
-            // personNames = [];
-            // personList.forEach(function(p) {
-            //     personNames.push(p.name);
-            // });
-            // if (personNames.length === 0) personNames = ['Nobody'];
-            // event.personNames = personNames.toString();
-            // log.d('PICKLIST', personNames);
-            
-            // var locationList = eventForm.getField('location').pickList.getSelectedRecords();
-            // log.d(eventForm.getField('location'));
-            // locationNames = [];
-            // locationList.forEach(function(p) {
-            //     locationNames.push(p.name);
-            // });
-            // if (locationNames.length === 0) locationNames = ['Nobody'];
-            // log.d('PICKLIST', locationNames);
-            // event.locationNames = locationNames.toString();
+            event =shift.create(eventValues);
             editorManager.save(event, updateForm);
-            
-            // editorManager.hide('shift');
-            // console.log('AAAAAAAAAAAA', eventForm.getValue('person'));
-            // console.log(eventForm.getValue('location'));
         }
     }
     

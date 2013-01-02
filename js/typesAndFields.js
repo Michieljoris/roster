@@ -8,7 +8,7 @@ define
         "use strict";
         var log = logger('typesAndFields');
         var typesAndFields = {};
-        var dataSource;
+        // var dataSource;
         var timeLists = {};
        
         var views = {
@@ -102,6 +102,30 @@ define
         //                       // }
         //                      };
         
+        //add fields here and they will appear in dropdown boxes and when claimed will create
+        //a field in the shift record with the value of the shift's length
+        var claimFields =  {
+            sickLeave: { type: 'float' , canEdit: false, showIf: 'false'}
+            ,annualLeave: { type: 'float' , canEdit: false, showIf: 'false'}
+            ,longServiceLeave: { type: 'float' , canEdit: false, showIf: 'false'}
+            ,otherLeave: { type: 'float' , canEdit: false, showIf: 'false'}
+            ,adminHoursUsed: { type: 'float' , canEdit: false, showIf: 'false'}
+            ,disturbedSleepHours: { type: 'float' , canEdit: false, showIf: 'false'}
+        };           
+        
+        // var claimTypes = ['Normal shift', 'Sick leave', 'Annual leave',
+        //                   'Long service leave', 'Other leave', 'Away from base',
+        //                   'Admin', 'Disturbed sleep', 'Event'];
+        var claimValueMap = [];
+        claimValueMap.push('Normal shift');
+        Object.keys(claimFields).forEach(function(f) {
+            claimValueMap.push( isc.DataSource.getAutoTitle(f) ); 
+        });
+        claimValueMap.push('Away from base');
+        claimValueMap.push('Event');
+        
+        
+        
         var typeFields = {
             startDate: {  type: "datetime"}
             ,endDate: {  type: "datetime"}
@@ -129,14 +153,12 @@ define
             // ,person: personPickList
             ,location: { type: "text", canEdit: false} 
             ,locationNames: { type: 'text', title: 'Location', validOperators: ['iContains', 'iNotContains']}
-            ,description: { type: "text", length: 500}
+            ,description: { hide:true, type: "text", length: 500}
             ,notes: { type: "textarea", length: 5000}
             ,ad: { title: 'All day', type: 'boolean'} //allday
             // ,claim: { type: 'text'} 
             ,claim:  {type: "select",
-                      valueMap: ['Normal shift', 'Sick leave', 'Annual leave',
-                                 'Long service leave', 'Other leave', 'Away from base',
-                                 'Admin', 'Disturbed sleep', 'Event'],
+                      valueMap: claimValueMap,
                       defaultValue: 'Normal shift',
                       required: true
                       //TODO: implement 'event'. Change form when this is selected to somethin
@@ -168,16 +190,52 @@ define
             ,autoLogin: { type: 'text'}
             ,password: { type: 'text'}
             ,role: { type: 'text'}
-            ,permissions: { type: 'text', group: 'role'}
+            ,permissions: { type: 'text'}
+            ,dswCALevel:  { type: 'text' }
+            ,payrollNumber: { type: 'text'}
+            ,status: { type: 'text ',
+                       valueMap: ['permanent', 'part time', 'casual']
+                     }
+            ,costCentre: { type: 'text'}
+            
+            //calculated fields for a shift:
+            ,length: { type: 'float' , canEdit: false, showIf: 'false'}
+            
+            ,early: { type: 'float' , canEdit: false, showIf: 'false'}
+            ,ord: { type: 'float' , canEdit: false, showIf: 'false'}
+            ,late: { type: 'float' , canEdit: false, showIf: 'false'}
+            ,weekend: { type: 'float' , canEdit: false, showIf: 'false'}
+            
+            ,publicHolidayOrdinary: { type: 'float' , canEdit: false, showIf: 'false'}
+            ,'publicHolWorkPerm1.5': { type: 'float' , canEdit: false, showIf: 'false'}
+            ,'publicHolWork2.5': { type: 'float' , canEdit: false, showIf: 'false'}
+            
+            
+            ,awayFromBase: { type: 'boolean' , canEdit: false, showIf: 'false'}
+            
+            ,'overtimeT1.5': { type: 'float' , canEdit: false, showIf: 'false'}
+            ,overtimeT2: { type: 'float' , canEdit: false, showIf: 'false'}
+            
+            ,toilAccrued: { type: 'float' , canEdit: false, showIf: 'false'}
+            ,toilTaken: { type: 'float' , canEdit: false, showIf: 'false'}
+            
+            ,dayName: { type: 'text' , showIf: 'false'}
+            
         };
         
         var types = {
-            shift: ['personstring', 'location', 'person', 'startDate', 'endDate', 'date', 'startTime', 'endTime', 'personNames', 'locationNames', 'notes', 'ad', 'claim', 'sleepOver'],
-            location: ['name', 'address', 'suburb','postalCode', 'state', 'phone', 'mob', 'email', 'region', 'notes'],
-            person: ['name', 'firstName', 'lastName',
+            shift: ['personstring', 'location', 'person',
+                    'sickLeave', 'annualLeave',
+                    'startDate', 'endDate', 'date', 'startTime', 'endTime', 'length',
+                    'personNames', 'locationNames', 'notes', 'ad', 'claim', 'sleepOver'],
+            location: ['costCentre', 'name', 'address', 'suburb','postalCode', 'state',
+                       'phone', 'mob', 'email', 'region', 'notes'],
+            person: ['name', 'firstName', 'lastName', 'dswCALevel', 'payrollNumber', 'status',
                      'address', 'suburb','postalCode', 'state', 'phone', 'mob', 'email', 'notes'],
             role: ['permissions']
         };
+        
+        typeFields = isc.addProperties(typeFields, claimFields);
         
         var fields = isc.addProperties({}, genericFields, typeFields);
         
@@ -198,10 +256,21 @@ define
             for (var f in fields) {
                 var field = fields[f];
                 field.name = f;
+                if (!field.title)
+                    field.title = isc.DataSource.getAutoTitle(field.name); 
                 array.push(field);
             }
             return array;
         })();
+        
+        
+        function getFieldNameByTitle(autoTitle) {
+            for (var f in fields) {
+                var field = fields[f];
+                if (field.title === autoTitle) return field.name;
+            }   
+            return undefined;
+        }
         
         var allTypes = (function () {
             var array = [];
@@ -221,8 +290,6 @@ define
                         var field = typeFields[fieldName];
                         if (field && !result.containsProperty('name', fieldName)) {
                             field.name = fieldName;
-                            if (!field.title)
-                                field.title = isc.DataSource.getAutoTitle(field.name); 
                             result.push(field);
                             obj[fieldName] = field;
                         }  
@@ -245,6 +312,7 @@ define
         
         var initializer = {
             shift: function(record) {
+                //TODO use shift.js to create new shift!!!!
                 var date =  new Date();
                 date.setMinutes(0);
                 date.setSeconds(0);
@@ -297,12 +365,12 @@ define
         
         // );
     
-            function formatTime(hour, minute) {
-                    // var hourPrefix = hour<10 ? '0' : '';
-                var hourPrefix = hour<10 ? '' : '';
-                var minutePrefix = minute<10 ? '0' : '';
-                return hourPrefix + hour + ':' + minutePrefix + minute;
-            }
+        function formatTime(hour, minute) {
+            // var hourPrefix = hour<10 ? '0' : '';
+            var hourPrefix = hour<10 ? '' : '';
+            var minutePrefix = minute<10 ? '0' : '';
+            return hourPrefix + hour + ':' + minutePrefix + minute;
+        }
     
         function getTimeList(step, startTime, endTime, endHour, endMinute) {
             step = step || 30;
@@ -341,7 +409,7 @@ define
                 minute %= 60;
             }
             if (list.last() === '24:00') list[list.length-1] = '0.00';
-                timeLists[uniqueList] = list;
+            timeLists[uniqueList] = list;
 
             return list;
         }
@@ -367,9 +435,10 @@ define
             },
             getFieldsCloner: fieldsCloner,
             newRecord: newRecord,
-            setDataSource: function(ds) {
-                dataSource = ds;
-            }
+            getFieldNameByTitle: getFieldNameByTitle
+            // setDataSource: function(ds) {
+            //     dataSource = ds;
+            // }
         };
         
         return typesAndFields; 

@@ -186,6 +186,6 @@ define
 	      }
           });    
       
-      typesAndFields.setDataSource(pouchDS);
+      // typesAndFields.setDataSource(pouchDS);
       return pouchDS;
   }});
