@@ -1,0 +1,18 @@
+{
+    "author": "Michiel van Oosten <michieljoris@gmail.com>", 
+    "dependencies": {}, 
+    "description": "blablat", 
+    "devDependencies": {
+    "swank-js": ">=0.0.1"
+    }, 
+    "engines": {
+        "node": "*"
+    }, 
+    "name": "oo", 
+    "optionalDependencies": {}, 
+    "scripts": {
+        "swank": "node node_modules/swank-js"
+    }, 
+    "version": "0.0.0"
+}
+

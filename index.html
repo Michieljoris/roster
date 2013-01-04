@@ -7,7 +7,11 @@
     <!-- setup bootstrap -->
     <script>
       window.bootstrap = { 
+      <!-- livepage loads main. Livepage reloads the page on save of any resource -->
+      <!-- replace with main for production use -->
       main: 'lib/livepage',
+      <!-- main: 'main', -->
+      
       pathPrefix: './js',   
       <!-- verbosity: 'info',  -->
       <!-- verbosity: 'debug', -->
@@ -88,18 +92,23 @@
     <!-- basic console logger -->
     <script src=lib/logger.js></script>    
     <script> logger.setLevel('debug');</script>
+    
+    <!-- development libs ************************************************-->
     <!-- execute in console manifestR.makeManifest to create a manifest for -->
     <!-- the app. Put it in roster.appcache Also set the topline of the index.html file to : -->
     <!-- html manifest="/roster.appcache"> -\-> -->
     <script src=manifestR.js></script>
     
+    <!-- connect with the page via slime --> --
+    <script> window.swank_server ='http://localhost:8009/' </script> --
+    <script type="text/javascript" --
+    src="http://localhost:8009/swank-js/swank-js-inject.js"></script> --
+    
     <!--/temp for testing purposes, can be removed  -->
     <script src=js/quickpouch.js></script>    
     
-    <!-- load and start -->
+    <!-- load and start ************************************-->
     <script src=lib/bootstrap.js></script>
-    <!-- <script src=js/liveorig.js#js></script>     -->
-    <!-- <script src=lib/livepage.js></script>     -->
     
   </BODY> 
 </HTML>

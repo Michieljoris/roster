@@ -109,6 +109,7 @@ define
 
       function applyTimeQualifiers(shift, qualifiers) {
           
+          
       }
       
       function create(values) {
@@ -159,7 +160,6 @@ define
           else if (shift.claim === 'Away from base') shift.awayFromBase = true;
           else if (shift.claim === 'Normal shift') applyTimeQualifiers(shift, timeQualifiers);
           else shift[typesAndFields.getFieldNameByTitle(shift.claim)] = shift.length;
-          
           if (shift.adminHoursUsed) shift.ord = shift.adminHoursUsed;
           
           //set public holiday fields:
