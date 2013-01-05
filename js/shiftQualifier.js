@@ -13,55 +13,44 @@ define
     factory: function()
     { "use strict";
       
-      // function shift(date, sHour, sMinute, eHour, eMinute) {
-      //     date = Date.parse(date); 
+      function makeShift(date, sHour, sMinute, eHour, eMinute) {
+          date = Date.parse(date); 
     
-      //         var startDate = Date.today().set({
-      //             hour: sHour,
-      //             minute: sMinute,
-      //             second: 0,
-      //             year: date.getYear() + 1900,
-      //             month: date.getMonth(),
-      //             day: date.getDate()
-      //         });
-      //     var endDate = Date.today().set({
-      //         hour: eHour,
-      //         minute: eMinute,
-      //         second: 0,
-      //         year: date.getYear() + 1900,
-      //         month: date.getMonth(),
-      //         day: date.getDate()
-      //     });
-      //     if (eHour === 0 && eMinute === 0) endDate.setDate(endDate.getDate() + 1);
+          var startDate = Date.today().set({
+              hour: sHour,
+              minute: sMinute,
+              second: 0,
+              year: date.getYear() + 1900,
+              month: date.getMonth(),
+              day: date.getDate()
+          });
+          var endDate = Date.today().set({
+              hour: eHour,
+              minute: eMinute,
+              second: 0,
+              year: date.getYear() + 1900,
+              month: date.getMonth(),
+              day: date.getDate()
+          });
+          if (eHour === 0 && eMinute === 0) endDate.setDate(endDate.getDate() + 1);
     
     
-      //     return {
-      //         // person: values.person, //array of _id's of people doing the shift
-      //         // location: values.location,
-      //         startDate: startDate,
-      //         endDate: endDate,
-      //         date: date,
-      //         toString: function() {
-      //             return this.date.toDateString().slice(0,10) + ' ' +
-      //                 this.startDate.toTimeString().slice(0,5) + '- ' + this.endDate.toTimeString().slice(0,5);
-      //         }
-      //         // ,startTime: values.startTime,
-      //         // endTime: values.endTime,
-      //         // repeats: values.repeats, //TODO not implemented yet 
-      //     };
-      // }
+          return {
+              // person: values.person, //array of _id's of people doing the shift
+              // location: values.location,
+              startDate: startDate,
+              endDate: endDate,
+              date: date,
+              toString: function() {
+                  return this.date.toDateString().slice(0,10) + ' ' +
+                      this.startDate.toTimeString().slice(0,5) + '- ' + this.endDate.toTimeString().slice(0,5);
+              }
+              // ,startTime: values.startTime,
+              // endTime: values.endTime,
+              // repeats: values.repeats, //TODO not implemented yet 
+          };
+      }
       
-      // var shifts = [
-      // ];
-
-      // var s;
-      // for (var i = 0; i< 365; i++) {
-      //     s = shift('1 Jan', 15,0,22,0);
-      //     s.date = s.date.addDays(i);
-      //     s.startDate = s.startDate.addDays(i);
-      //     s.endDate = s.endDate.addDays(i);
-      //     shifts.push(s);
-      // }
 
       //Describe a repeat pattern by setting date to an arbitrary
       //(long ago) date, and to a day of the week of your choosing,
@@ -69,20 +58,21 @@ define
       //the length of the period in hours The pattern is an array of
       //lengths of units, describing when the period will
       //reoccur. Higher ranks take prevalence over lower ranks. 
+      //Pattern with no rank property will always be applied
       var defaultPatternsObject = { 
           night1: { type: 'night', 
                     date: Date.parse('2000 10pm').monday(),
                     length: 2, //in hours
                     pattern: [1], //repeate daily 
-                    unit: 'day',
-                    rank: 100
+                    unit: 'day'
+                    // rank: 100
                   },
           night2: { type: 'night',
                     date: Date.parse('2000 0am').monday(),
                     length: 6,
                     pattern: [1],
-                    unit: 'day',
-                    rank: 100
+                    unit: 'day'
+                    // rank: 100
                   },
           early: { type: 'early',
                    date: Date.parse('2000 6am').monday(),
@@ -114,6 +104,20 @@ define
                      unit: 'day',
                      rank: 200
                    },
+          // night3: { type: 'night', 
+          //           date: Date.parse('2000 10pm').monday(),
+          //           length: 2, //in hours
+          //           pattern: [1], //repeate daily 
+          //           unit: 'day',
+          //           rank: 200
+          //         },
+          // night4: { type: 'night',
+          //           date: Date.parse('2000 0am').monday(),
+          //           length: 6,
+          //           pattern: [1],
+          //           unit: 'day',
+          //           rank: 200
+          //         },
           //and:
           // weekend2: { type: 'weekend',
           //   date: Date.parse('2000 0:00am').saturday(),
@@ -170,6 +174,8 @@ define
 
       function sortBy(arr, prop) {
           return arr.sort(function(a,b) {
+              if (!a[prop]) return -1;
+              if (!b[prop]) return 1;
               return a[prop]>b[prop] ? -1 : 1;
           });
       }
@@ -234,9 +240,11 @@ define
                 case 'weeks':
                   patternLength = weekLength * pattern.repeat; 
                 case 'days':
+                  // log.d('days', shift.startDate);
                   diff = shift.startDate.getTime() - pattern.logicalDate.getTime();
                   dateToCheck = pattern.date.getTime() + Math.floor(diff/patternLength) * patternLength;
                   dateToCheck = new Date(dateToCheck);
+                  // log.d(dateToCheck);
                   break;
                 case 'months':
                   diff = shift.startDate.getMonth() - pattern.date.getMonth() +
@@ -255,11 +263,13 @@ define
                   break;
               default: log.e('unknown pattern unit:', pattern.unit);
               }
-              for (l in pattern.pattern) {
+              var max = pattern.pattern.length;
+              var counter;
+              for (counter=0; counter < max; counter++) {
                   if (sameDay(shift.startDate, dateToCheck)) {
                       return checkTime(shift,pattern);
                   }
-                  dateToCheck.add(l)[pattern.unit]();
+                  dateToCheck.add(pattern.pattern[counter])[pattern.unit]();
               }
           }
           return false;
@@ -271,13 +281,16 @@ define
           var l = patternsArray.length;
           for (var i = 0; i < l; i++) {
               var pattern = patternsArray[i];
-              var result = applyPattern(s, patternsArray[i]);
+              var result = applyPattern(s, pattern);
               if (result) {
-                  if (pattern.rank >= rank) {
-                      qualifiers.push(result);                   
-                      rank = pattern.rank;
-                  } 
-                  else return qualifiers;
+                  if (pattern.rank) {
+                      if (pattern.rank >= rank) {
+                          qualifiers.push(result);                   
+                          rank = pattern.rank;
+                      } 
+                      else return qualifiers;
+                  }
+                  else qualifiers.push(result);                   
               }
           }
           return qualifiers;
@@ -289,29 +302,39 @@ define
               var h = Math.floor(p.length/60) + (p.length%60)/60;
               shift[p.pattern.type] = h;
           });
+          return result;
       }
     
-      // shifts.forEach(function(s) {
-      //     var str = '';
-      //     setQualifiers(s).forEach(function(p) {
-      //         var h = Math.floor(p.length/60) + (p.length%60)/60;
-      //         str += p.pattern.type + ' ' + h + ' ';
-      //         s[p.pattern.type] = h;
-      //     });
-      //     log.i(s.toString() + ':' + str);
-      // });
-      // var str = '';
-      // var s = shift('Feb 5', 1,1,1,1);
-      // getQualifiers(s).forEach(function(q) {
-      //     str += q.name + ' ';
-      // });
-      // log.i(s.toString() + ':' + str);
-      console.log('done');
-      
       processPatternsObject(defaultPatternsObject);
+      
+      function test(n) {
+          var shifts = [];
+
+          var s;
+          for (var i = 0; i< n; i++) {
+              s = makeShift('1 Jan', 15,0,23,0);
+              s.date = s.date.addDays(i);
+              s.startDate = s.startDate.addDays(i);
+              s.endDate = s.endDate.addDays(i);
+              shifts.push(s);
+          }
+          
+          shifts.forEach(function(s) {
+              var str = '';
+              setTags(s).forEach(function(p) {
+                  var h = Math.floor(p.length/60) + (p.length%60)/60;
+                  str += p.pattern.type + ' ' + h + ' ';
+                  s[p.pattern.type] = h;
+              });
+              log.i(s.toString() + ':' + str);
+          });
+          console.log('done');
+      }
       
       return {
           setPatterns: processPatternsObject,
-          setTags: setTags
+          setTags: setTags,
+          makeShift: makeShift,
+          test: test
       };
     }});

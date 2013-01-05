@@ -91,8 +91,8 @@ define
                              data._id = response.id; 
                              data._rev = response.rev; 
                              dsResponse.data = data;
-                             log.d("hello",  data.endDate);
-                             module.temp= data;
+                             // log.d("hello",  data.endDate);
+                             // module.temp= data;
                              pouchDS.processResponse(requestId, dsResponse);}});
 	  });
       }

@@ -207,8 +207,8 @@ define
             ,weekend: { type: 'float' , canEdit: false, showIf: 'false'}
             
             ,publicHolidayOrdinary: { type: 'float' , canEdit: false, showIf: 'false'}
-            ,'publicHolWorkPerm1.5': { type: 'float' , canEdit: false, showIf: 'false'}
-            ,'publicHolWork2.5': { type: 'float' , canEdit: false, showIf: 'false'}
+            ,publicHolWorkPerm1p5: { type: 'float' , canEdit: false, showIf: 'false'}
+            ,publicHolWork2p5: { type: 'float' , canEdit: false, showIf: 'false'}
             
             
             ,awayFromBase: { type: 'boolean' , canEdit: false, showIf: 'false'}
