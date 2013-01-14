@@ -2,10 +2,7 @@
 /*jshint strict:false unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:5 maxcomplexity:100 maxlen:190 devel:true*/
 
-var log = logger('timeQualifier');
 
-// logger.showStamp();
-// logger.setLevel('info');
 
 define
 ({ 
@@ -13,45 +10,11 @@ define
     factory: function()
     { "use strict";
       
-      function makeShift(date, sHour, sMinute, eHour, eMinute) {
-          date = Date.parse(date); 
-    
-          var startDate = Date.today().set({
-              hour: sHour,
-              minute: sMinute,
-              second: 0,
-              year: date.getYear() + 1900,
-              month: date.getMonth(),
-              day: date.getDate()
-          });
-          var endDate = Date.today().set({
-              hour: eHour,
-              minute: eMinute,
-              second: 0,
-              year: date.getYear() + 1900,
-              month: date.getMonth(),
-              day: date.getDate()
-          });
-          if (eHour === 0 && eMinute === 0) endDate.setDate(endDate.getDate() + 1);
-    
-    
-          return {
-              // person: values.person, //array of _id's of people doing the shift
-              // location: values.location,
-              startDate: startDate,
-              endDate: endDate,
-              date: date,
-              toString: function() {
-                  return this.date.toDateString().slice(0,10) + ' ' +
-                      this.startDate.toTimeString().slice(0,5) + '- ' + this.endDate.toTimeString().slice(0,5);
-              }
-              // ,startTime: values.startTime,
-              // endTime: values.endTime,
-              // repeats: values.repeats, //TODO not implemented yet 
-          };
-      }
+      var log = logger('timeQualifier');
+      // logger.showStamp();
+      // logger.setLevel('info');
       
-
+      var patternsArray = [];
       //Describe a repeat pattern by setting date to an arbitrary
       //(long ago) date, and to a day of the week of your choosing,
       //and to the start time of the period that repeats. Length is
@@ -60,8 +23,17 @@ define
       //reoccur. Higher ranks take prevalence over lower ranks. 
       //Pattern with no rank property will always be applied
       var defaultPatternsObject = { 
+          // night1: { type: 'night', 
+          //           from: Date.parse('2000 10pm').monday(),'2000', '10pm', 'monday'
+          //           to: Date.parse('2000 10pm').monday(), //undefined is indefinitely
+          //           length: 2, //in hours
+          //           pattern: [1], //repeate daily 
+          //           unit: 'day'
+          //           // rank: 100
+          //         },
           night1: { type: 'night', 
                     date: Date.parse('2000 10pm').monday(),
+                    to: Date.parse('2014 10pm').monday(), //undefined is indefinitely TODO, not implemented
                     length: 2, //in hours
                     pattern: [1], //repeate daily 
                     unit: 'day'
@@ -171,17 +143,8 @@ define
                      rank:100 
                    }
       };
-
-      function sortBy(arr, prop) {
-          return arr.sort(function(a,b) {
-              if (!a[prop]) return -1;
-              if (!b[prop]) return 1;
-              return a[prop]>b[prop] ? -1 : 1;
-          });
-      }
-
-      var patternsArray = [];
-      function processPatternsObject(patternsObject) {
+      
+      function setPatternsObject(patternsObject) {
           Object.keys(patternsObject).forEach(function(p){
               patternsObject[p].name = p;
               patternsArray.push(patternsObject[p]);
@@ -200,9 +163,58 @@ define
                   year: p.date.getYear() + 1900,
                   month: p.date.getMonth(),
                   day: p.date.getDate() });
-    
           });
       }
+      
+      
+      function makeShift(date, sHour, sMinute, eHour, eMinute) {
+          date = Date.parse(date); 
+    
+          var startDate = Date.today().set({
+              hour: sHour,
+              minute: sMinute,
+              second: 0,
+              year: date.getYear() + 1900,
+              month: date.getMonth(),
+              day: date.getDate()
+          });
+          var endDate = Date.today().set({
+              hour: eHour,
+              minute: eMinute,
+              second: 0,
+              year: date.getYear() + 1900,
+              month: date.getMonth(),
+              day: date.getDate()
+          });
+          if (eHour === 0 && eMinute === 0) endDate.setDate(endDate.getDate() + 1);
+    
+    
+          return {
+              // person: values.person, //array of _id's of people doing the shift
+              // location: values.location,
+              startDate: startDate,
+              endDate: endDate,
+              date: date,
+              toString: function() {
+                  return this.date.toDateString().slice(0,10) + ' ' +
+                      this.startDate.toTimeString().slice(0,5) + '- ' + this.endDate.toTimeString().slice(0,5);
+              }
+              // ,startTime: values.startTime,
+              // endTime: values.endTime,
+              // repeats: values.repeats, //TODO not implemented yet 
+          };
+      }
+      
+
+
+      function sortBy(arr, prop) {
+          return arr.sort(function(a,b) {
+              if (!a[prop]) return -1;
+              if (!b[prop]) return 1;
+              return a[prop]>b[prop] ? -1 : 1;
+          });
+      }
+
 
       function sameDay(d1, d2) {
           return d1.getYear() === d2.getYear() &&
@@ -210,8 +222,6 @@ define
               d1.getDate() === d2.getDate();
       }
 
-      var dayLength = 24*60*60*1000;
-      var weekLength = 7*dayLength;
       function checkTime(shift, pattern) {
           var start1 = pattern.date.getHours() * 60 + pattern.date.getMinutes();
           var end1 = start1 + pattern.length * 60;
@@ -227,9 +237,10 @@ define
       }
 
       function applyPattern(shift, pattern) {
+          var dayLength = 24*60*60*1000;
+          var weekLength = 7*dayLength;
           var patternLength;
           var dateToCheck;
-          var l;
           var diff;
           if (!pattern.pattern || pattern.pattern.length === 0) {
               if (sameDay(shift.startDate, pattern.date)) return checkTime(shift, pattern);
@@ -275,37 +286,59 @@ define
           return false;
       }
  
-      function getQualifiers(s) {
+      // function getQualifiers(s) {
+      //     var qualifiers = [];
+      //     var rank = 0;
+      //     var l = patternsArray.length;
+      //     for (var i = 0; i < l; i++) {
+      //         var pattern = patternsArray[i];
+      //         var result = applyPattern(s, pattern);
+      //         if (result) {
+      //             if (pattern.rank) {
+      //                 if (pattern.rank >= rank) {
+      //                     qualifiers.push(result);                   
+      //                     rank = pattern.rank;
+      //                 } 
+      //                 else return qualifiers;
+      //             }
+      //             else qualifiers.push(result);                   
+      //         }
+      //     }
+      //     return qualifiers;
+      // }
+
+      function getWorkHourFields(shift) {
+          if (shift.location && shift.location.workHoursPattern)
+              setPatternsObject(shift.location.workHoursPattern);
+          
           var qualifiers = [];
           var rank = 0;
           var l = patternsArray.length;
           for (var i = 0; i < l; i++) {
               var pattern = patternsArray[i];
-              var result = applyPattern(s, pattern);
+              var result = applyPattern(shift, pattern);
               if (result) {
                   if (pattern.rank) {
                       if (pattern.rank >= rank) {
                           qualifiers.push(result);                   
                           rank = pattern.rank;
                       } 
-                      else return qualifiers;
+                      else break;
                   }
                   else qualifiers.push(result);                   
               }
           }
-          return qualifiers;
-      }
-
-      function setTags(shift) {
-          var result = getQualifiers(shift);
-          result.forEach(function(p) {
+          
+          var fields = {};
+          qualifiers.forEach(function(p) {
               var h = Math.floor(p.length/60) + (p.length%60)/60;
-              shift[p.pattern.type] = h;
+              h = Math.floor(h*100)/100;
+              fields[p.pattern.type] = h;
           });
-          return result;
+          return fields;
       }
     
-      processPatternsObject(defaultPatternsObject);
+      setPatternsObject(defaultPatternsObject);
       
       function test(n) {
           var shifts = [];
@@ -318,13 +351,12 @@ define
               s.endDate = s.endDate.addDays(i);
               shifts.push(s);
           }
-          
+          var fields;
           shifts.forEach(function(s) {
               var str = '';
-              setTags(s).forEach(function(p) {
-                  var h = Math.floor(p.length/60) + (p.length%60)/60;
-                  str += p.pattern.type + ' ' + h + ' ';
-                  s[p.pattern.type] = h;
+              fields = getWorkHourFields(s);
+              Object.keys(fields).forEach(function(f) {
+                  str += f + ' ' + fields[f] + ' ';
               });
               log.i(s.toString() + ':' + str);
           });
@@ -332,8 +364,8 @@ define
       }
       
       return {
-          setPatterns: processPatternsObject,
-          setTags: setTags,
+          setPatterns: setPatternsObject,
+          getWorkHourFields: getWorkHourFields,
           makeShift: makeShift,
           test: test
       };

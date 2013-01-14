@@ -213,7 +213,7 @@ define
             
             ,awayFromBase: { type: 'boolean' , canEdit: false, showIf: 'false'}
             
-            ,'overtimeT1.5': { type: 'float' , canEdit: false, showIf: 'false'}
+            ,overtimeT1p5: { type: 'float' , canEdit: false, showIf: 'false'}
             ,overtimeT2: { type: 'float' , canEdit: false, showIf: 'false'}
             
             ,toilAccrued: { type: 'float' , canEdit: false, showIf: 'false'}

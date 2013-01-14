@@ -12,7 +12,7 @@ define
     inject: ['shiftQualifier', 'shift'],
     factory: function(shiftQualifier, shift)
     { "use strict";
-      var newShift = shiftQualifier.makeShift('11 Dec', 15,0,22,0);
+      var newShift = shiftQualifier.makeShift('25 Dec', 15,0,22,0);
       var values = {
           date: Date.today().set({
              year:2013, month:11, day:20 
@@ -27,10 +27,11 @@ define
               hour:22, minute:0
           })
       };     
-      var myShift = shift.create(values);
+      // var myShift = shift.create(values);
       shiftQualifier.test(365);
-      // shiftQualifier.setTags(newShift);
+      // var fields = shiftQualifier.getWorkHourFields(newShift);
       // console.dirxml('newShift',newShift);
+      // console.dirxml(fields);
       // console.dirxml('myShift',myShift);
       // shiftQualifier.setTags(myShift);
     }});

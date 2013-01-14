@@ -63,14 +63,14 @@ define
       }
 
       function create(values) {
-              var startDate = Date.today().set({
-                  hour: values.startTime.getHours(),
-                  minute: values.startTime.getMinutes(),
-                  second: 0,
-                  year: values.date.getYear() + 1900,
-                  month: values.date.getMonth(),
-                  day: values.date.getDate()
-              });
+          var startDate = Date.today().set({
+              hour: values.startTime.getHours(),
+              minute: values.startTime.getMinutes(),
+              second: 0,
+              year: values.date.getYear() + 1900,
+              month: values.date.getMonth(),
+              day: values.date.getDate()
+          });
           var endDate = Date.today().set({
               hour: values.endTime.getHours(),
               minute: values.endTime.getMinutes(),
@@ -111,26 +111,27 @@ define
           //set claim fields TODO replace with switch
           if (shift.claim === 'Event') ;
           else if (shift.claim === 'Away from base') shift.awayFromBase = true;
-          else if (shift.claim === 'Normal shift') shiftQualifier.setTags(shift);
+          else if (shift.claim === 'Normal shift') {
+              isc.addProperties(shift, shiftQualifier.getWorkHourFields(shift));    
+              if (shift.publicHoliday) {
+                  if (shift.isPublicHolidayWorked) shift.publicHolidayWorked = shift.publicHoliday;
+                  else shift.publicHolidayNotWorked = shift.publicHoliday;
+              }
+          }
+          
           else shift[typesAndFields.getFieldNameByTitle(shift.claim)] = shift.length;
           
-          if (shift.adminHoursUsed) shift.ord = shift.adminHoursUsed;
+          if (shift.adminHoursUsed) shift.ord = shift.adminHoursUsed; //TODO proper implementation
+          //at the moment a shift is a complete admin shift. Otherwise
+          //make a separate field for the adminhours used in the UI
+          //editor and make sure it is less than length of the shift
           
-          //set public holiday fields:
-          // var ph = shift.publicHoliday;
-          // if (ph) {
-          //     var over76 = ph - 7.6;
-          //     ph = over76 > 0 ? 7.6 : ph;
-          //     shift.publicHolidayOrdinary = ph;
-          //     shift.publicHolWorkPerm1p5 = ph;
-          //     if (over76 > 0) shift.publicHolWork2p5 = over76;
-          // }
-          
-          //set overtime fields
-          //TODO
 
-          //check for limits and rules and policies..
-          //min length of shift, max length of shift, max overtime, working during sleepover time
+          //check for limits and rules and policies..  min length of
+          //shift, max length of shift, max overtime, working during
+          //sleepover time, but it's not disturbed sleep etc
+           //if it's an error return it as such so that the editor has
+           //a chance to cancel the save
           return shift;
           
       }
