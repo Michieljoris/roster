@@ -1,0 +1,149 @@
+<!DOCTYPE html><html><head><title>timesheet.js</title><meta http-equiv="Content-Type" content="text/html" charset="UTF-8"><link rel="stylesheet" media="all" href="../docco.css"></head><body><div id="container"><div id="background"></div><div id="jump_to">Jump To &hellip;<div id="jump_wrapper"><div id="jump_page"><a href="../index.html" class="source"><span class="file_name">README</span></a><a href="../js/layout.js.html" class="source "><span class="base_path">js / </span><span class="file_name">layout.js</span></a><a href="../js/calculateTimesheet.js.html" class="source "><span class="base_path">js / </span><span class="file_name">calculateTimesheet.js</span></a><a href="../js/main.js.html" class="source "><span class="base_path">js / </span><span class="file_name">main.js</span></a><a href="../js/globals.js.html" class="source "><span class="base_path">js / </span><span class="file_name">globals.js</span></a><a href="../js/old/liveorig.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">liveorig.js</span></a><a href="../js/old/dataclasses.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">dataclasses.js</span></a><a href="../js/old/data-structures.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">data-structures.js</span></a><a href="../js/old/viewtree.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">viewtree.js</span></a><a href="../js/old/testsc.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">testsc.js</span></a><a href="../js/old/nodejuice.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">nodejuice.js</span></a><a href="../js/old/utils.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">utils.js</span></a><a href="../js/old/smartclientui.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">smartclientui.js</span></a><a href="../js/old/data-structures.coffee.html" class="source "><span class="base_path">js / old / </span><span class="file_name">data-structures.coffee</span></a><a href="../js/old/testpouch.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">testpouch.js</span></a><a href="../js/old/roster.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">roster.js</span></a><a href="../js/old/datasources.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">datasources.js</span></a><a href="../js/table.js.html" class="source "><span class="base_path">js / </span><span class="file_name">table.js</span></a><a href="../js/typesAndFields.js.html" class="source "><span class="base_path">js / </span><span class="file_name">typesAndFields.js</span></a><a href="../js/shiftEditor.js.html" class="source "><span class="base_path">js / </span><span class="file_name">shiftEditor.js</span></a><a href="../js/fetchTimesheetShifts.js.html" class="source "><span class="base_path">js / </span><span class="file_name">fetchTimesheetShifts.js</span></a><a href="../js/timesheet_canvas.js.html" class="source "><span class="base_path">js / </span><span class="file_name">timesheet_canvas.js</span></a><a href="../js/shift.js.html" class="source "><span class="base_path">js / </span><span class="file_name">shift.js</span></a><a href="../js/personEditor.js.html" class="source "><span class="base_path">js / </span><span class="file_name">personEditor.js</span></a><a href="../js/editorManager.js.html" class="source "><span class="base_path">js / </span><span class="file_name">editorManager.js</span></a><a href="../js/editorUtils.js.html" class="source "><span class="base_path">js / </span><span class="file_name">editorUtils.js</span></a><a href="../js/parentListEditor.js.html" class="source "><span class="base_path">js / </span><span class="file_name">parentListEditor.js</span></a><a href="../js/testdata.js.html" class="source "><span class="base_path">js / </span><span class="file_name">testdata.js</span></a><a href="../js/pouchDS.js.html" class="source "><span class="base_path">js / </span><span class="file_name">pouchDS.js</span></a><a href="../js/viewTree.js.html" class="source "><span class="base_path">js / </span><span class="file_name">viewTree.js</span></a><a href="../js/quickpouch.js.html" class="source "><span class="base_path">js / </span><span class="file_name">quickpouch.js</span></a><a href="../js/editorLoader.js.html" class="source "><span class="base_path">js / </span><span class="file_name">editorLoader.js</span></a><a href="../js/timesheet.js.html" class="source selected"><span class="base_path">js / </span><span class="file_name">timesheet.js</span></a><a href="../js/calendar.js.html" class="source "><span class="base_path">js / </span><span class="file_name">calendar.js</span></a><a href="../js/locationEditor.js.html" class="source "><span class="base_path">js / </span><span class="file_name">locationEditor.js</span></a><a href="../js/shiftQualifier.js.html" class="source "><span class="base_path">js / </span><span class="file_name">shiftQualifier.js</span></a><a href="../js/test.js.html" class="source "><span class="base_path">js / </span><span class="file_name">test.js</span></a><a href="../js/calculateTimesheetColumn.js.html" class="source "><span class="base_path">js / </span><span class="file_name">calculateTimesheetColumn.js</span></a><a href="../js/tableFilter.js.html" class="source "><span class="base_path">js / </span><span class="file_name">tableFilter.js</span></a></div></div></div><table cellpadding="0" cellspacing="0"><thead><tr><th class="docs"><h1>timesheet.js</h1><div class="filepath">js/</div></th><th class="code"></th></tr></thead><tbody><tr id="section-1"><td class="docs"><div class="pilwrap"><a href="#section-1" class="pilcrow">&#182;</a></div><div class="dox"><div class="summary"><p>lobal logger:false isc:false define:false</p></div><div class="body"></div></div><div class="dox"><div class="summary"><p>shint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true</p></div><div class="body"></div></div><div class="dox"><div class="summary"><p>shint maxparams:5 maxcomplexity:7 maxlen:190 devel:true</p></div><div class="body"></div></div>
+</td><td class="code"><div class="highlight"><pre><span class="nx">define</span>
+<span class="p">({</span> <span class="c1">//load: [&#39;editorLoader&#39;],</span>
+   <span class="nx">inject</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;calculateTimesheet&#39;</span><span class="p">],</span>
+   <span class="nx">factory</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">calculateTimesheet</span><span class="p">)</span> 
+    <span class="p">{</span> <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+      <span class="kd">var</span> <span class="nx">log</span> <span class="o">=</span> <span class="nx">logger</span><span class="p">(</span><span class="s1">&#39;timesheet&#39;</span><span class="p">);</span>
+      <span class="kd">var</span> <span class="nx">observer</span><span class="p">;</span>
+      
+      <span class="kd">var</span> <span class="nx">currentState</span><span class="p">;</span>
+      <span class="kd">var</span> <span class="nx">defaultState</span> <span class="o">=</span> <span class="p">{</span> <span class="nx">person</span><span class="o">:</span><span class="s1">&#39;guest&#39;</span><span class="p">,</span> <span class="nx">location</span><span class="o">:</span><span class="s1">&#39;E745F82E-1CC9-46B5-A320-38F9595C6847&#39;</span><span class="p">,</span> <span class="nx">fortnight</span><span class="o">:</span><span class="s1">&#39;2013-01-01T11:00:00.000Z&#39;</span><span class="p">};</span></pre></div></td></tr><tr id="section-2"><td class="docs"><div class="pilwrap"><a href="#section-2" class="pilcrow">&#182;</a></div><p>var settings = {
+    // minimumShiftLength: 10,
+    // maximumShiftLength: 600,
+    // eventSnapGap: 15, //only works with a refresh
+    // workdayStart: '6:00',
+    // workdayEnd: '22:00',
+    // currentViewName: 'week', //day, week or month
+    chosenDate: new Date()
+};</p>
+</td><td class="code"><div class="highlight"><pre>      
+      <span class="kd">function</span> <span class="nx">getState</span><span class="p">()</span> <span class="p">{</span>
+          <span class="kd">var</span> <span class="nx">state</span> <span class="o">=</span>  <span class="nx">isc</span><span class="p">.</span><span class="nx">addProperties</span><span class="p">(</span><span class="nx">currentState</span><span class="p">,</span> <span class="p">{</span></pre></div></td></tr><tr id="section-3"><td class="docs"><div class="pilwrap"><a href="#section-3" class="pilcrow">&#182;</a></div><p>grid: dataTable.getViewState(),
+criteria : dataTable.getFilterEditorCriteria(),</p>
+</td><td class="code"><div class="highlight"><pre>              </pre></div></td></tr><tr id="section-4"><td class="docs"><div class="pilwrap"><a href="#section-4" class="pilcrow">&#182;</a></div><p>//editor
+height: (function() {
+    if (stack.sectionIsExpanded('Editor')) 
+        return dataTable.getHeight();
+    else return editorHeightExpanded;
+})(),
+isExpanded: stack.sectionIsExpanded('Editor')</p>
+</td><td class="code"><div class="highlight"><pre>          <span class="p">});</span></pre></div></td></tr><tr id="section-5"><td class="docs"><div class="pilwrap"><a href="#section-5" class="pilcrow">&#182;</a></div><p>isc.addProperties(state, tableFilter.getState());
+log.d('getTableState', isc.clone(state));</p>
+</td><td class="code"><div class="highlight"><pre>          <span class="nx">currentState</span> <span class="o">=</span> <span class="nx">isc</span><span class="p">.</span><span class="nx">clone</span><span class="p">(</span><span class="nx">state</span><span class="p">);</span>
+          <span class="k">return</span> <span class="nx">currentState</span><span class="p">;</span>
+      <span class="p">}</span> 
+      
+      <span class="kd">function</span> <span class="nx">setState</span><span class="p">(</span><span class="nx">state</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s2">&quot;hello from timesheet&quot;</span><span class="p">);</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">currentState</span> <span class="o">!==</span> <span class="kc">undefined</span> <span class="o">&amp;&amp;</span> <span class="nx">state</span> <span class="o">===</span> <span class="nx">currentState</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+          
+          <span class="nx">state</span> <span class="o">=</span> <span class="nx">isc</span><span class="p">.</span><span class="nx">addProperties</span><span class="p">(</span><span class="nx">defaultState</span><span class="p">,</span> <span class="nx">isc</span><span class="p">.</span><span class="nx">clone</span><span class="p">(</span><span class="nx">state</span><span class="p">));</span>
+          <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="nx">state</span><span class="p">);</span>
+          <span class="nx">calculateTimesheet</span><span class="p">.</span><span class="nx">go</span><span class="p">(</span><span class="nx">state</span><span class="p">.</span><span class="nx">person</span><span class="p">,</span> <span class="nx">state</span><span class="p">.</span><span class="nx">location</span><span class="p">,</span> <span class="nx">state</span><span class="p">.</span><span class="nx">fortnight</span><span class="p">);</span>    
+      <span class="p">}</span>
+      
+      <span class="kd">var</span> <span class="nx">timesheet</span> <span class="o">=</span> <span class="nx">isc</span><span class="p">.</span><span class="nx">ListGrid</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span>
+          <span class="p">{</span>   
+        <span class="nx">ID</span><span class="o">:</span> <span class="s2">&quot;timesheet&quot;</span><span class="p">,</span>
+               
+              <span class="nx">width</span><span class="o">:</span><span class="mi">500</span><span class="p">,</span> <span class="nx">height</span><span class="o">:</span><span class="mi">224</span><span class="p">,</span> <span class="nx">alternateRecordStyles</span><span class="o">:</span><span class="kc">true</span><span class="p">,</span>
+              <span class="nx">fields</span><span class="o">:</span><span class="p">[</span>
+                  <span class="p">{</span><span class="nx">name</span><span class="o">:</span><span class="s2">&quot;countryCode&quot;</span><span class="p">,</span> <span class="nx">title</span><span class="o">:</span><span class="s2">&quot;Code&quot;</span><span class="p">},</span>
+                  <span class="p">{</span><span class="nx">name</span><span class="o">:</span><span class="s2">&quot;countryName&quot;</span><span class="p">,</span> <span class="nx">title</span><span class="o">:</span><span class="s2">&quot;Country&quot;</span><span class="p">},</span>
+                  <span class="p">{</span><span class="nx">name</span><span class="o">:</span><span class="s2">&quot;capital&quot;</span><span class="p">,</span> <span class="nx">title</span><span class="o">:</span><span class="s2">&quot;Capital&quot;</span><span class="p">}</span>
+              <span class="p">],</span></pre></div></td></tr><tr id="section-6"><td class="docs"><div class="pilwrap"><a href="#section-6" class="pilcrow">&#182;</a></div><p>data: countryData
+dataSource: pouchDS,
+showEmptyMessage: true,
+emptyMessage: "<br>Click the <b>Green plus butoon</b> to populate this grid.", <br />
+gridComponents:[toolStrip,"filterEditor", "header",  "body"],
+// titleField: 'title',
+// useAllDataSourceFields:true,
+//looks
+alternateRecordStyles:true, 
+//behaviour
+selectionType:"single",
+// headerAutoFitEvent:"doubleClick",
+canHover:true,
+canReorderRecords:true,
+autoFetchData: true,
+//editing
+recordClick: function (viewer, record) {
+    var action = function() {
+        editRecord(record); 
+    };
+    setEditor(action);
+},</p>
+</td><td class="code"><div class="highlight"><pre>              </pre></div></td></tr><tr id="section-7"><td class="docs"><div class="pilwrap"><a href="#section-7" class="pilcrow">&#182;</a></div><p>cellChanged: function (record) {
+    var action = function() {
+        editRecord(record); 
+    };
+    setEditor(action);
+},
+// recordClick: updateEditForm,
+canEdit:true,
+modalEditing:true,
+// cellChanged: updateEditForm,
+editByCell: true,
+//filteringg
+showFilterEditor:true,
+filterOnKeypress: true,
+allowFilterExpressions: true,
+showDetailFields: false, 
+filterButtonPrompt: 'Clear filter',
+filterButtonProperties: {
+    click : function () {
+        dataTable.clearCriteria();
+        var appliedCriteria = isc.DataSource.combineCriteria(
+            dataTable.typeFilter,state.savedAdvCriteria);
+        dataTable.filterData(appliedCriteria);
+        tableViewStateChanged('clearSimpleFilter');
+    },
+    icon:'clear.png',
+    showRollOverIcon: false,
+    showDownIcon: true
+},</p>
+</td><td class="code"><div class="highlight"><pre>               </pre></div></td></tr><tr id="section-8"><td class="docs"><div class="pilwrap"><a href="#section-8" class="pilcrow">&#182;</a></div><p>// headerContextMenu: true,
+// FilterText: 'Clear inline filter',
+viewStateChanged: function() { tableViewStateChanged('viewStateChanged'); },
+//       showEmptyMessage: true,
+// emptyMessage: "<br>Click the <b>Set data</b> button to populate this grid.",
+// cellContextClick:"return itemListMenu.showContextMenu()",
+// Function to update details based on selection
+filterEditorSubmit: function() {
+    log.d('modified filter');
+    tableViewStateChanged('filterEditorSubmit');
+    // storeTableViewState();
+},
+setTypingState: setTypingState,
+setFilterLabel: function(label) {
+    tableFilterLabel.setContents(label);
+},
+setTypeLabel: function(label) {
+    tableTypeLabel.setContents(label);
+},
+contextMenu: tableContextMenu
+// bodyKeyPress : function() { 
+//    log.d('keypress');
+//    return true; 
+// }</p>
+</td><td class="code"><div class="highlight"><pre>             
+              <span class="nx">notify</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">newState</span><span class="p">)</span> <span class="p">{</span>
+                  <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;timesheet is notified&#39;</span><span class="p">);</span>
+                  <span class="nx">setState</span><span class="p">(</span><span class="nx">newState</span><span class="p">);</span>
+                
+              <span class="p">}</span>
+              <span class="p">,</span><span class="nx">getState</span><span class="o">:</span> <span class="nx">getState</span>
+              <span class="p">,</span><span class="nx">setObserver</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">f</span><span class="p">)</span> <span class="p">{</span>
+                  <span class="nx">observer</span> <span class="o">=</span> <span class="nx">f</span><span class="p">;</span>
+              <span class="p">}</span>
+              <span class="p">,</span><span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;Timesheet&#39;</span></pre></div></td></tr><tr id="section-9"><td class="docs"><div class="pilwrap"><a href="#section-9" class="pilcrow">&#182;</a></div><p>,icon: "calendar.png"</p>
+</td><td class="code"><div class="highlight"><pre>          <span class="p">});</span>
+        
+    
+      <span class="k">return</span> <span class="nx">timesheet</span><span class="p">;</span>
+     
+     
+    <span class="p">}});</span>
+
+</pre></div></td></tr></tbody></table><div id="generated">generated Thu Jan 17 2013 03:12:18 GMT+1000 (EST)  </div></div></body></html>

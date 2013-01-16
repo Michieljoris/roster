@@ -1,0 +1,649 @@
+<!DOCTYPE html>  <html> <head>   <title>when.js</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="bootstrap.html">                 bootstrap.js               </a>                                           <a class="source" href="date.html">                 date.js               </a>                                           <a class="source" href="font.html">                 font.js               </a>                                           <a class="source" href="livepage.html">                 livepage.js               </a>                                           <a class="source" href="logger.html">                 logger.js               </a>                                           <a class="source" href="pouch.alpha.min.html">                 pouch.alpha.min.js               </a>                                           <a class="source" href="pouch.alphal.html">                 pouch.alphal.js               </a>                                           <a class="source" href="pouch.html">                 pouch.js               </a>                                           <a class="source" href="utils.html">                 utils.js               </a>                                           <a class="source" href="vow.html">                 vow.js               </a>                                           <a class="source" href="when.html">                 when.js               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               when.js             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="cm">/** @license MIT License (c) copyright B Cavalier &amp; J Hann */</span>
+
+<span class="cm">/**</span>
+<span class="cm"> * A lightweight CommonJS Promises/A and when() implementation</span>
+<span class="cm"> * when is part of the cujo.js family of libraries (http://cujojs.com/)</span>
+<span class="cm"> *</span>
+<span class="cm"> * Licensed under the MIT License at:</span>
+<span class="cm"> * http://www.opensource.org/licenses/mit-license.php</span>
+<span class="cm"> *</span>
+<span class="cm"> * @version 1.7.1</span>
+<span class="cm"> */</span>
+
+<span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">define</span><span class="p">)</span> <span class="p">{</span> <span class="s1">&#39;use strict&#39;</span><span class="p">;</span>
+<span class="nx">define</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">reduceArray</span><span class="p">,</span> <span class="nx">slice</span><span class="p">,</span> <span class="nx">undef</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>Public API</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">when</span><span class="p">.</span><span class="nx">defer</span>     <span class="o">=</span> <span class="nx">defer</span><span class="p">;</span>     <span class="c1">// Create a deferred</span>
+  <span class="nx">when</span><span class="p">.</span><span class="nx">resolve</span>   <span class="o">=</span> <span class="nx">resolve</span><span class="p">;</span>   <span class="c1">// Create a resolved promise</span>
+  <span class="nx">when</span><span class="p">.</span><span class="nx">reject</span>    <span class="o">=</span> <span class="nx">reject</span><span class="p">;</span>    <span class="c1">// Create a rejected promise</span>
+
+  <span class="nx">when</span><span class="p">.</span><span class="nx">join</span>      <span class="o">=</span> <span class="nx">join</span><span class="p">;</span>      <span class="c1">// Join 2 or more promises</span>
+
+  <span class="nx">when</span><span class="p">.</span><span class="nx">all</span>       <span class="o">=</span> <span class="nx">all</span><span class="p">;</span>       <span class="c1">// Resolve a list of promises</span>
+  <span class="nx">when</span><span class="p">.</span><span class="nx">map</span>       <span class="o">=</span> <span class="nx">map</span><span class="p">;</span>       <span class="c1">// Array.map() for promises</span>
+  <span class="nx">when</span><span class="p">.</span><span class="nx">reduce</span>    <span class="o">=</span> <span class="nx">reduce</span><span class="p">;</span>    <span class="c1">// Array.reduce() for promises</span>
+
+  <span class="nx">when</span><span class="p">.</span><span class="nx">any</span>       <span class="o">=</span> <span class="nx">any</span><span class="p">;</span>       <span class="c1">// One-winner race</span>
+  <span class="nx">when</span><span class="p">.</span><span class="nx">some</span>      <span class="o">=</span> <span class="nx">some</span><span class="p">;</span>      <span class="c1">// Multi-winner race</span>
+
+  <span class="nx">when</span><span class="p">.</span><span class="nx">chain</span>     <span class="o">=</span> <span class="nx">chain</span><span class="p">;</span>     <span class="c1">// Make a promise trigger another resolver</span>
+
+  <span class="nx">when</span><span class="p">.</span><span class="nx">isPromise</span> <span class="o">=</span> <span class="nx">isPromise</span><span class="p">;</span> <span class="c1">// Determine if a thing is a promise</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Register an observer for a promise or immediate value.</span>
+<span class="cm">   *</span>
+<span class="cm">   * @param {*} promiseOrValue</span>
+<span class="cm">   * @param {function?} [onFulfilled] callback to be called when promiseOrValue is</span>
+<span class="cm">   *   successfully fulfilled.  If promiseOrValue is an immediate value, callback</span>
+<span class="cm">   *   will be invoked immediately.</span>
+<span class="cm">   * @param {function?} [onRejected] callback to be called when promiseOrValue is</span>
+<span class="cm">   *   rejected.</span>
+<span class="cm">   * @param {function?} [onProgress] callback to be called when progress updates</span>
+<span class="cm">   *   are issued for promiseOrValue.</span>
+<span class="cm">   * @returns {Promise} a new {@link Promise} that will complete with the return</span>
+<span class="cm">   *   value of callback or errback or the completion value of promiseOrValue if</span>
+<span class="cm">   *   callback and/or errback is not supplied.</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">when</span><span class="p">(</span><span class="nx">promiseOrValue</span><span class="p">,</span> <span class="nx">onFulfilled</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">,</span> <span class="nx">onProgress</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-3">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-3">&#182;</a>               </div>               <p>Get a trusted promise for the input promiseOrValue, and then
+register promise handlers</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="k">return</span> <span class="nx">resolve</span><span class="p">(</span><span class="nx">promiseOrValue</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">onFulfilled</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">,</span> <span class="nx">onProgress</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Returns promiseOrValue if promiseOrValue is a {@link Promise}, a new Promise if</span>
+<span class="cm">   * promiseOrValue is a foreign promise, or a new, already-fulfilled {@link Promise}</span>
+<span class="cm">   * whose value is promiseOrValue if promiseOrValue is an immediate value.</span>
+<span class="cm">   *</span>
+<span class="cm">   * @param {*} promiseOrValue</span>
+<span class="cm">   * @returns Guaranteed to return a trusted Promise.  If promiseOrValue is a when.js {@link Promise}</span>
+<span class="cm">   *   returns promiseOrValue, otherwise, returns a new, already-resolved, when.js {@link Promise}</span>
+<span class="cm">   *   whose resolution value is:</span>
+<span class="cm">   *   * the resolution value of promiseOrValue if it&#39;s a foreign promise, or</span>
+<span class="cm">   *   * promiseOrValue if it&#39;s a value</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">resolve</span><span class="p">(</span><span class="nx">promiseOrValue</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">promise</span><span class="p">,</span> <span class="nx">deferred</span><span class="p">;</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="nx">promiseOrValue</span> <span class="k">instanceof</span> <span class="nx">Promise</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-4">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-4">&#182;</a>               </div>               <p>It's a when.js promise, so we trust it</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nx">promise</span> <span class="o">=</span> <span class="nx">promiseOrValue</span><span class="p">;</span>
+
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-5">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-5">&#182;</a>               </div>               <p>It's not a when.js promise. See if it's a foreign promise or a value.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="k">if</span><span class="p">(</span><span class="nx">isPromise</span><span class="p">(</span><span class="nx">promiseOrValue</span><span class="p">))</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-6">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-6">&#182;</a>               </div>               <p>It's a thenable, but we don't know where it came from, so don't trust
+its implementation entirely.  Introduce a trusted middleman when.js promise</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="nx">deferred</span> <span class="o">=</span> <span class="nx">defer</span><span class="p">();</span></pre></div>             </td>           </tr>                               <tr id="section-7">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-7">&#182;</a>               </div>               <p>IMPORTANT: This is the only place when.js should ever call .then() on an
+untrusted promise. Don't expose the return value to the untrusted promise</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="nx">promiseOrValue</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span>
+          <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span>  <span class="p">{</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span> <span class="p">},</span>
+          <span class="kd">function</span><span class="p">(</span><span class="nx">reason</span><span class="p">)</span> <span class="p">{</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">reason</span><span class="p">);</span> <span class="p">},</span>
+          <span class="kd">function</span><span class="p">(</span><span class="nx">update</span><span class="p">)</span> <span class="p">{</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">progress</span><span class="p">(</span><span class="nx">update</span><span class="p">);</span> <span class="p">}</span>
+        <span class="p">);</span>
+
+        <span class="nx">promise</span> <span class="o">=</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-8">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-8">&#182;</a>               </div>               <p>It's a value, not a promise.  Create a resolved promise for it.</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="nx">promise</span> <span class="o">=</span> <span class="nx">fulfilled</span><span class="p">(</span><span class="nx">promiseOrValue</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">promise</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Returns a rejected promise for the supplied promiseOrValue.  The returned</span>
+<span class="cm">   * promise will be rejected with:</span>
+<span class="cm">   * - promiseOrValue, if it is a value, or</span>
+<span class="cm">   * - if promiseOrValue is a promise</span>
+<span class="cm">   *   - promiseOrValue&#39;s value after it is fulfilled</span>
+<span class="cm">   *   - promiseOrValue&#39;s reason after it is rejected</span>
+<span class="cm">   * @param {*} promiseOrValue the rejected value of the returned {@link Promise}</span>
+<span class="cm">   * @return {Promise} rejected {@link Promise}</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">reject</span><span class="p">(</span><span class="nx">promiseOrValue</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">when</span><span class="p">(</span><span class="nx">promiseOrValue</span><span class="p">,</span> <span class="nx">rejected</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Trusted Promise constructor.  A Promise created from this constructor is</span>
+<span class="cm">   * a trusted when.js promise.  Any other duck-typed promise is considered</span>
+<span class="cm">   * untrusted.</span>
+<span class="cm">   * @constructor</span>
+<span class="cm">   * @name Promise</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">Promise</span><span class="p">(</span><span class="nx">then</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">then</span> <span class="o">=</span> <span class="nx">then</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="nx">Promise</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="cm">/**</span>
+<span class="cm">     * Register a callback that will be called when a promise is</span>
+<span class="cm">     * fulfilled or rejected.  Optionally also register a progress handler.</span>
+<span class="cm">     * Shortcut for .then(onFulfilledOrRejected, onFulfilledOrRejected, onProgress)</span>
+<span class="cm">     * @param {function?} [onFulfilledOrRejected]</span>
+<span class="cm">     * @param {function?} [onProgress]</span>
+<span class="cm">     * @return {Promise}</span>
+<span class="cm">     */</span>
+    <span class="nx">always</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">onFulfilledOrRejected</span><span class="p">,</span> <span class="nx">onProgress</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">onFulfilledOrRejected</span><span class="p">,</span> <span class="nx">onFulfilledOrRejected</span><span class="p">,</span> <span class="nx">onProgress</span><span class="p">);</span>
+    <span class="p">},</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Register a rejection handler.  Shortcut for .then(undefined, onRejected)</span>
+<span class="cm">     * @param {function?} onRejected</span>
+<span class="cm">     * @return {Promise}</span>
+<span class="cm">     */</span>
+    <span class="nx">otherwise</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">onRejected</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">undef</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">);</span>
+    <span class="p">},</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Shortcut for .then(function() { return value; })</span>
+<span class="cm">     * @param  {*} value</span>
+<span class="cm">     * @return {Promise} a promise that:</span>
+<span class="cm">     *  - is fulfilled if value is not a promise, or</span>
+<span class="cm">     *  - if value is a promise, will fulfill with its value, or reject</span>
+<span class="cm">     *    with its reason.</span>
+<span class="cm">     */</span>
+    <span class="nx">yield</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">value</span><span class="p">;</span>
+      <span class="p">});</span>
+    <span class="p">},</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Assumes that this promise will fulfill with an array, and arranges</span>
+<span class="cm">     * for the onFulfilled to be called with the array as its argument list</span>
+<span class="cm">     * i.e. onFulfilled.spread(undefined, array).</span>
+<span class="cm">     * @param {function} onFulfilled function to receive spread arguments</span>
+<span class="cm">     * @return {Promise}</span>
+<span class="cm">     */</span>
+    <span class="nx">spread</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">onFulfilled</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">array</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-9">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-9">&#182;</a>               </div>               <p>array may contain promises, so resolve its contents.</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="k">return</span> <span class="nx">all</span><span class="p">(</span><span class="nx">array</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">array</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="nx">onFulfilled</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">undef</span><span class="p">,</span> <span class="nx">array</span><span class="p">);</span>
+        <span class="p">});</span>
+      <span class="p">});</span>
+    <span class="p">}</span>
+  <span class="p">};</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Create an already-resolved promise for the supplied value</span>
+<span class="cm">   * @private</span>
+<span class="cm">   *</span>
+<span class="cm">   * @param {*} value</span>
+<span class="cm">   * @return {Promise} fulfilled promise</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">fulfilled</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">p</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Promise</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">onFulfilled</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-10">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-10">&#182;</a>               </div>               <p>TODO: Promises/A+ check typeof onFulfilled</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="k">try</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">resolve</span><span class="p">(</span><span class="nx">onFulfilled</span> <span class="o">?</span> <span class="nx">onFulfilled</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="o">:</span> <span class="nx">value</span><span class="p">);</span>
+      <span class="p">}</span> <span class="k">catch</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">rejected</span><span class="p">(</span><span class="nx">e</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">});</span>
+
+    <span class="k">return</span> <span class="nx">p</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Create an already-rejected {@link Promise} with the supplied</span>
+<span class="cm">   * rejection reason.</span>
+<span class="cm">   * @private</span>
+<span class="cm">   *</span>
+<span class="cm">   * @param {*} reason</span>
+<span class="cm">   * @return {Promise} rejected promise</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">rejected</span><span class="p">(</span><span class="nx">reason</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">p</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Promise</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">_</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-11">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-11">&#182;</a>               </div>               <p>TODO: Promises/A+ check typeof onRejected</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="k">try</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">onRejected</span> <span class="o">?</span> <span class="nx">resolve</span><span class="p">(</span><span class="nx">onRejected</span><span class="p">(</span><span class="nx">reason</span><span class="p">))</span> <span class="o">:</span> <span class="nx">rejected</span><span class="p">(</span><span class="nx">reason</span><span class="p">);</span>
+      <span class="p">}</span> <span class="k">catch</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">rejected</span><span class="p">(</span><span class="nx">e</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">});</span>
+
+    <span class="k">return</span> <span class="nx">p</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Creates a new, Deferred with fully isolated resolver and promise parts,</span>
+<span class="cm">   * either or both of which may be given out safely to consumers.</span>
+<span class="cm">   * The Deferred itself has the full API: resolve, reject, progress, and</span>
+<span class="cm">   * then. The resolver has resolve, reject, and progress.  The promise</span>
+<span class="cm">   * only has then.</span>
+<span class="cm">   *</span>
+<span class="cm">   * @return {Deferred}</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">defer</span><span class="p">()</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">deferred</span><span class="p">,</span> <span class="nx">promise</span><span class="p">,</span> <span class="nx">handlers</span><span class="p">,</span> <span class="nx">progressHandlers</span><span class="p">,</span>
+      <span class="nx">_then</span><span class="p">,</span> <span class="nx">_progress</span><span class="p">,</span> <span class="nx">_resolve</span><span class="p">;</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * The promise for the new deferred</span>
+<span class="cm">     * @type {Promise}</span>
+<span class="cm">     */</span>
+    <span class="nx">promise</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Promise</span><span class="p">(</span><span class="nx">then</span><span class="p">);</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * The full Deferred object, with {@link Promise} and {@link Resolver} parts</span>
+<span class="cm">     * @class Deferred</span>
+<span class="cm">     * @name Deferred</span>
+<span class="cm">     */</span>
+    <span class="nx">deferred</span> <span class="o">=</span> <span class="p">{</span>
+      <span class="nx">then</span><span class="o">:</span>     <span class="nx">then</span><span class="p">,</span> <span class="c1">// DEPRECATED: use deferred.promise.then</span>
+      <span class="nx">resolve</span><span class="o">:</span>  <span class="nx">promiseResolve</span><span class="p">,</span>
+      <span class="nx">reject</span><span class="o">:</span>   <span class="nx">promiseReject</span><span class="p">,</span></pre></div>             </td>           </tr>                               <tr id="section-12">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-12">&#182;</a>               </div>               <p>TODO: Consider renaming progress() to notify()</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nx">progress</span><span class="o">:</span> <span class="nx">promiseProgress</span><span class="p">,</span>
+
+      <span class="nx">promise</span><span class="o">:</span>  <span class="nx">promise</span><span class="p">,</span>
+
+      <span class="nx">resolver</span><span class="o">:</span> <span class="p">{</span>
+        <span class="nx">resolve</span><span class="o">:</span>  <span class="nx">promiseResolve</span><span class="p">,</span>
+        <span class="nx">reject</span><span class="o">:</span>   <span class="nx">promiseReject</span><span class="p">,</span>
+        <span class="nx">progress</span><span class="o">:</span> <span class="nx">promiseProgress</span>
+      <span class="p">}</span>
+    <span class="p">};</span>
+
+    <span class="nx">handlers</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="nx">progressHandlers</span> <span class="o">=</span> <span class="p">[];</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Pre-resolution then() that adds the supplied callback, errback, and progback</span>
+<span class="cm">     * functions to the registered listeners</span>
+<span class="cm">     * @private</span>
+<span class="cm">     *</span>
+<span class="cm">     * @param {function?} [onFulfilled] resolution handler</span>
+<span class="cm">     * @param {function?} [onRejected] rejection handler</span>
+<span class="cm">     * @param {function?} [onProgress] progress handler</span>
+<span class="cm">     */</span>
+    <span class="nx">_then</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">onFulfilled</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">,</span> <span class="nx">onProgress</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-13">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-13">&#182;</a>               </div>               <p>TODO: Promises/A+ check typeof onFulfilled, onRejected, onProgress</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="kd">var</span> <span class="nx">deferred</span><span class="p">,</span> <span class="nx">progressHandler</span><span class="p">;</span>
+
+      <span class="nx">deferred</span> <span class="o">=</span> <span class="nx">defer</span><span class="p">();</span>
+
+      <span class="nx">progressHandler</span> <span class="o">=</span> <span class="k">typeof</span> <span class="nx">onProgress</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span>
+        <span class="o">?</span> <span class="kd">function</span><span class="p">(</span><span class="nx">update</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">try</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-14">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-14">&#182;</a>               </div>               <p>Allow progress handler to transform progress event</p>             </td>             <td class="code">               <div class="highlight"><pre>            <span class="nx">deferred</span><span class="p">.</span><span class="nx">progress</span><span class="p">(</span><span class="nx">onProgress</span><span class="p">(</span><span class="nx">update</span><span class="p">));</span>
+          <span class="p">}</span> <span class="k">catch</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-15">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-15">&#182;</a>               </div>               <p>Use caught value as progress</p>             </td>             <td class="code">               <div class="highlight"><pre>            <span class="nx">deferred</span><span class="p">.</span><span class="nx">progress</span><span class="p">(</span><span class="nx">e</span><span class="p">);</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">update</span><span class="p">)</span> <span class="p">{</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">progress</span><span class="p">(</span><span class="nx">update</span><span class="p">);</span> <span class="p">};</span>
+
+      <span class="nx">handlers</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">promise</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">promise</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">onFulfilled</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">)</span>
+          <span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">deferred</span><span class="p">.</span><span class="nx">resolve</span><span class="p">,</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">reject</span><span class="p">,</span> <span class="nx">progressHandler</span><span class="p">);</span>
+      <span class="p">});</span>
+
+      <span class="nx">progressHandlers</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">progressHandler</span><span class="p">);</span>
+
+      <span class="k">return</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Issue a progress event, notifying all progress listeners</span>
+<span class="cm">     * @private</span>
+<span class="cm">     * @param {*} update progress event payload to pass to all listeners</span>
+<span class="cm">     */</span>
+    <span class="nx">_progress</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">update</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">processQueue</span><span class="p">(</span><span class="nx">progressHandlers</span><span class="p">,</span> <span class="nx">update</span><span class="p">);</span>
+      <span class="k">return</span> <span class="nx">update</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Transition from pre-resolution state to post-resolution state, notifying</span>
+<span class="cm">     * all listeners of the resolution or rejection</span>
+<span class="cm">     * @private</span>
+<span class="cm">     * @param {*} value the value of this deferred</span>
+<span class="cm">     */</span>
+    <span class="nx">_resolve</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">value</span> <span class="o">=</span> <span class="nx">resolve</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span></pre></div>             </td>           </tr>                               <tr id="section-16">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-16">&#182;</a>               </div>               <p>Replace _then with one that directly notifies with the result.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nx">_then</span> <span class="o">=</span> <span class="nx">value</span><span class="p">.</span><span class="nx">then</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-17">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-17">&#182;</a>               </div>               <p>Replace _resolve so that this Deferred can only be resolved once</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nx">_resolve</span> <span class="o">=</span> <span class="nx">resolve</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-18">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-18">&#182;</a>               </div>               <p>Make _progress a noop, to disallow progress for the resolved promise.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nx">_progress</span> <span class="o">=</span> <span class="nx">noop</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-19">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-19">&#182;</a>               </div>               <p>Notify handlers</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nx">processQueue</span><span class="p">(</span><span class="nx">handlers</span><span class="p">,</span> <span class="nx">value</span><span class="p">);</span></pre></div>             </td>           </tr>                               <tr id="section-20">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-20">&#182;</a>               </div>               <p>Free progressHandlers array since we'll never issue progress events</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nx">progressHandlers</span> <span class="o">=</span> <span class="nx">handlers</span> <span class="o">=</span> <span class="nx">undef</span><span class="p">;</span>
+
+      <span class="k">return</span> <span class="nx">value</span><span class="p">;</span>
+    <span class="p">};</span>
+
+    <span class="k">return</span> <span class="nx">deferred</span><span class="p">;</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Wrapper to allow _then to be replaced safely</span>
+<span class="cm">     * @param {function?} [onFulfilled] resolution handler</span>
+<span class="cm">     * @param {function?} [onRejected] rejection handler</span>
+<span class="cm">     * @param {function?} [onProgress] progress handler</span>
+<span class="cm">     * @return {Promise} new promise</span>
+<span class="cm">     */</span>
+    <span class="kd">function</span> <span class="nx">then</span><span class="p">(</span><span class="nx">onFulfilled</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">,</span> <span class="nx">onProgress</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-21">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-21">&#182;</a>               </div>               <p>TODO: Promises/A+ check typeof onFulfilled, onRejected, onProgress</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="k">return</span> <span class="nx">_then</span><span class="p">(</span><span class="nx">onFulfilled</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">,</span> <span class="nx">onProgress</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Wrapper to allow _resolve to be replaced</span>
+<span class="cm">     */</span>
+    <span class="kd">function</span> <span class="nx">promiseResolve</span><span class="p">(</span><span class="nx">val</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">_resolve</span><span class="p">(</span><span class="nx">val</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Wrapper to allow _reject to be replaced</span>
+<span class="cm">     */</span>
+    <span class="kd">function</span> <span class="nx">promiseReject</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">_resolve</span><span class="p">(</span><span class="nx">rejected</span><span class="p">(</span><span class="nx">err</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Wrapper to allow _progress to be replaced</span>
+<span class="cm">     */</span>
+    <span class="kd">function</span> <span class="nx">promiseProgress</span><span class="p">(</span><span class="nx">update</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">_progress</span><span class="p">(</span><span class="nx">update</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Determines if promiseOrValue is a promise or not.  Uses the feature</span>
+<span class="cm">   * test from http://wiki.commonjs.org/wiki/Promises/A to determine if</span>
+<span class="cm">   * promiseOrValue is a promise.</span>
+<span class="cm">   *</span>
+<span class="cm">   * @param {*} promiseOrValue anything</span>
+<span class="cm">   * @returns {boolean} true if promiseOrValue is a {@link Promise}</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">isPromise</span><span class="p">(</span><span class="nx">promiseOrValue</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">promiseOrValue</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">promiseOrValue</span><span class="p">.</span><span class="nx">then</span> <span class="o">===</span> <span class="s1">&#39;function&#39;</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Initiates a competitive race, returning a promise that will resolve when</span>
+<span class="cm">   * howMany of the supplied promisesOrValues have resolved, or will reject when</span>
+<span class="cm">   * it becomes impossible for howMany to resolve, for example, when</span>
+<span class="cm">   * (promisesOrValues.length - howMany) + 1 input promises reject.</span>
+<span class="cm">   *</span>
+<span class="cm">   * @param {Array} promisesOrValues array of anything, may contain a mix</span>
+<span class="cm">   *      of promises and values</span>
+<span class="cm">   * @param howMany {number} number of promisesOrValues to resolve</span>
+<span class="cm">   * @param {function?} [onFulfilled] resolution handler</span>
+<span class="cm">   * @param {function?} [onRejected] rejection handler</span>
+<span class="cm">   * @param {function?} [onProgress] progress handler</span>
+<span class="cm">   * @returns {Promise} promise that will resolve to an array of howMany values that</span>
+<span class="cm">   * resolved first, or will reject with an array of (promisesOrValues.length - howMany) + 1</span>
+<span class="cm">   * rejection reasons.</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">some</span><span class="p">(</span><span class="nx">promisesOrValues</span><span class="p">,</span> <span class="nx">howMany</span><span class="p">,</span> <span class="nx">onFulfilled</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">,</span> <span class="nx">onProgress</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="nx">checkCallbacks</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="nx">when</span><span class="p">(</span><span class="nx">promisesOrValues</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">promisesOrValues</span><span class="p">)</span> <span class="p">{</span>
+
+      <span class="kd">var</span> <span class="nx">toResolve</span><span class="p">,</span> <span class="nx">toReject</span><span class="p">,</span> <span class="nx">values</span><span class="p">,</span> <span class="nx">reasons</span><span class="p">,</span> <span class="nx">deferred</span><span class="p">,</span> <span class="nx">fulfillOne</span><span class="p">,</span> <span class="nx">rejectOne</span><span class="p">,</span> <span class="nx">progress</span><span class="p">,</span> <span class="nx">len</span><span class="p">,</span> <span class="nx">i</span><span class="p">;</span>
+
+      <span class="nx">len</span> <span class="o">=</span> <span class="nx">promisesOrValues</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">0</span><span class="p">;</span>
+
+      <span class="nx">toResolve</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">min</span><span class="p">(</span><span class="nx">howMany</span><span class="p">,</span> <span class="nx">len</span><span class="p">));</span>
+      <span class="nx">values</span> <span class="o">=</span> <span class="p">[];</span>
+
+      <span class="nx">toReject</span> <span class="o">=</span> <span class="p">(</span><span class="nx">len</span> <span class="o">-</span> <span class="nx">toResolve</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">;</span>
+      <span class="nx">reasons</span> <span class="o">=</span> <span class="p">[];</span>
+
+      <span class="nx">deferred</span> <span class="o">=</span> <span class="nx">defer</span><span class="p">();</span></pre></div>             </td>           </tr>                               <tr id="section-22">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-22">&#182;</a>               </div>               <p>No items in the input, resolve immediately</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">toResolve</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">deferred</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">values</span><span class="p">);</span>
+
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">progress</span> <span class="o">=</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">progress</span><span class="p">;</span>
+
+        <span class="nx">rejectOne</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">reason</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">reasons</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">reason</span><span class="p">);</span>
+          <span class="k">if</span><span class="p">(</span><span class="o">!--</span><span class="nx">toReject</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">fulfillOne</span> <span class="o">=</span> <span class="nx">rejectOne</span> <span class="o">=</span> <span class="nx">noop</span><span class="p">;</span>
+            <span class="nx">deferred</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">reasons</span><span class="p">);</span>
+          <span class="p">}</span>
+        <span class="p">};</span>
+
+        <span class="nx">fulfillOne</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">val</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-23">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-23">&#182;</a>               </div>               <p>This orders the values based on promise resolution order
+Another strategy would be to use the original position of
+the corresponding promise.</p>             </td>             <td class="code">               <div class="highlight"><pre>          <span class="nx">values</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">val</span><span class="p">);</span>
+
+          <span class="k">if</span> <span class="p">(</span><span class="o">!--</span><span class="nx">toResolve</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">fulfillOne</span> <span class="o">=</span> <span class="nx">rejectOne</span> <span class="o">=</span> <span class="nx">noop</span><span class="p">;</span>
+            <span class="nx">deferred</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">values</span><span class="p">);</span>
+          <span class="p">}</span>
+        <span class="p">};</span>
+
+        <span class="k">for</span><span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">len</span><span class="p">;</span> <span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">if</span><span class="p">(</span><span class="nx">i</span> <span class="k">in</span> <span class="nx">promisesOrValues</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">when</span><span class="p">(</span><span class="nx">promisesOrValues</span><span class="p">[</span><span class="nx">i</span><span class="p">],</span> <span class="nx">fulfiller</span><span class="p">,</span> <span class="nx">rejecter</span><span class="p">,</span> <span class="nx">progress</span><span class="p">);</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+
+      <span class="k">return</span> <span class="nx">deferred</span><span class="p">.</span><span class="nx">then</span><span class="p">(</span><span class="nx">onFulfilled</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">,</span> <span class="nx">onProgress</span><span class="p">);</span>
+
+      <span class="kd">function</span> <span class="nx">rejecter</span><span class="p">(</span><span class="nx">reason</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">rejectOne</span><span class="p">(</span><span class="nx">reason</span><span class="p">);</span>
+      <span class="p">}</span>
+
+      <span class="kd">function</span> <span class="nx">fulfiller</span><span class="p">(</span><span class="nx">val</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">fulfillOne</span><span class="p">(</span><span class="nx">val</span><span class="p">);</span>
+      <span class="p">}</span>
+
+    <span class="p">});</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Initiates a competitive race, returning a promise that will resolve when</span>
+<span class="cm">   * any one of the supplied promisesOrValues has resolved or will reject when</span>
+<span class="cm">   * *all* promisesOrValues have rejected.</span>
+<span class="cm">   *</span>
+<span class="cm">   * @param {Array|Promise} promisesOrValues array of anything, may contain a mix</span>
+<span class="cm">   *      of {@link Promise}s and values</span>
+<span class="cm">   * @param {function?} [onFulfilled] resolution handler</span>
+<span class="cm">   * @param {function?} [onRejected] rejection handler</span>
+<span class="cm">   * @param {function?} [onProgress] progress handler</span>
+<span class="cm">   * @returns {Promise} promise that will resolve to the value that resolved first, or</span>
+<span class="cm">   * will reject with an array of all rejected inputs.</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">any</span><span class="p">(</span><span class="nx">promisesOrValues</span><span class="p">,</span> <span class="nx">onFulfilled</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">,</span> <span class="nx">onProgress</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="kd">function</span> <span class="nx">unwrapSingleResult</span><span class="p">(</span><span class="nx">val</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nx">onFulfilled</span> <span class="o">?</span> <span class="nx">onFulfilled</span><span class="p">(</span><span class="nx">val</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">:</span> <span class="nx">val</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nx">some</span><span class="p">(</span><span class="nx">promisesOrValues</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">unwrapSingleResult</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">,</span> <span class="nx">onProgress</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Return a promise that will resolve only once all the supplied promisesOrValues</span>
+<span class="cm">   * have resolved. The resolution value of the returned promise will be an array</span>
+<span class="cm">   * containing the resolution values of each of the promisesOrValues.</span>
+<span class="cm">   * @memberOf when</span>
+<span class="cm">   *</span>
+<span class="cm">   * @param {Array|Promise} promisesOrValues array of anything, may contain a mix</span>
+<span class="cm">   *      of {@link Promise}s and values</span>
+<span class="cm">   * @param {function?} [onFulfilled] resolution handler</span>
+<span class="cm">   * @param {function?} [onRejected] rejection handler</span>
+<span class="cm">   * @param {function?} [onProgress] progress handler</span>
+<span class="cm">   * @returns {Promise}</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">all</span><span class="p">(</span><span class="nx">promisesOrValues</span><span class="p">,</span> <span class="nx">onFulfilled</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">,</span> <span class="nx">onProgress</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">checkCallbacks</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
+    <span class="k">return</span> <span class="nx">map</span><span class="p">(</span><span class="nx">promisesOrValues</span><span class="p">,</span> <span class="nx">identity</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="nx">onFulfilled</span><span class="p">,</span> <span class="nx">onRejected</span><span class="p">,</span> <span class="nx">onProgress</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Joins multiple promises into a single returned promise.</span>
+<span class="cm">   * @return {Promise} a promise that will fulfill when *all* the input promises</span>
+<span class="cm">   * have fulfilled, or will reject when *any one* of the input promises rejects.</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">join</span><span class="p">(</span><span class="cm">/* ...promises */</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">map</span><span class="p">(</span><span class="nx">arguments</span><span class="p">,</span> <span class="nx">identity</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Traditional map function, similar to `Array.prototype.map()`, but allows</span>
+<span class="cm">   * input to contain {@link Promise}s and/or values, and mapFunc may return</span>
+<span class="cm">   * either a value or a {@link Promise}</span>
+<span class="cm">   *</span>
+<span class="cm">   * @param {Array|Promise} promise array of anything, may contain a mix</span>
+<span class="cm">   *      of {@link Promise}s and values</span>
+<span class="cm">   * @param {function} mapFunc mapping function mapFunc(value) which may return</span>
+<span class="cm">   *      either a {@link Promise} or value</span>
+<span class="cm">   * @returns {Promise} a {@link Promise} that will resolve to an array containing</span>
+<span class="cm">   *      the mapped output values.</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">map</span><span class="p">(</span><span class="nx">promise</span><span class="p">,</span> <span class="nx">mapFunc</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">when</span><span class="p">(</span><span class="nx">promise</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">array</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">results</span><span class="p">,</span> <span class="nx">len</span><span class="p">,</span> <span class="nx">toResolve</span><span class="p">,</span> <span class="nx">resolve</span><span class="p">,</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">d</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-24">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-24">&#182;</a>               </div>               <p>Since we know the resulting length, we can preallocate the results
+array to avoid array expansions.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nx">toResolve</span> <span class="o">=</span> <span class="nx">len</span> <span class="o">=</span> <span class="nx">array</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">0</span><span class="p">;</span>
+      <span class="nx">results</span> <span class="o">=</span> <span class="p">[];</span>
+      <span class="nx">d</span> <span class="o">=</span> <span class="nx">defer</span><span class="p">();</span>
+
+      <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="nx">toResolve</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">d</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">results</span><span class="p">);</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+
+        <span class="nx">resolve</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">resolveOne</span><span class="p">(</span><span class="nx">item</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">when</span><span class="p">(</span><span class="nx">item</span><span class="p">,</span> <span class="nx">mapFunc</span><span class="p">).</span><span class="nx">then</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">mapped</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">results</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nx">mapped</span><span class="p">;</span>
+
+            <span class="k">if</span><span class="p">(</span><span class="o">!--</span><span class="nx">toResolve</span><span class="p">)</span> <span class="p">{</span>
+              <span class="nx">d</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">results</span><span class="p">);</span>
+            <span class="p">}</span>
+          <span class="p">},</span> <span class="nx">d</span><span class="p">.</span><span class="nx">reject</span><span class="p">);</span>
+        <span class="p">};</span></pre></div>             </td>           </tr>                               <tr id="section-25">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-25">&#182;</a>               </div>               <p>Since mapFunc may be async, get all invocations of it into flight</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="k">for</span><span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">len</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">if</span><span class="p">(</span><span class="nx">i</span> <span class="k">in</span> <span class="nx">array</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">resolve</span><span class="p">(</span><span class="nx">array</span><span class="p">[</span><span class="nx">i</span><span class="p">],</span> <span class="nx">i</span><span class="p">);</span>
+          <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="o">--</span><span class="nx">toResolve</span><span class="p">;</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+
+      <span class="p">}</span>
+
+      <span class="k">return</span> <span class="nx">d</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+
+    <span class="p">});</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Traditional reduce function, similar to `Array.prototype.reduce()`, but</span>
+<span class="cm">   * input may contain promises and/or values, and reduceFunc</span>
+<span class="cm">   * may return either a value or a promise, *and* initialValue may</span>
+<span class="cm">   * be a promise for the starting value.</span>
+<span class="cm">   *</span>
+<span class="cm">   * @param {Array|Promise} promise array or promise for an array of anything,</span>
+<span class="cm">   *      may contain a mix of promises and values.</span>
+<span class="cm">   * @param {function} reduceFunc reduce function reduce(currentValue, nextValue, index, total),</span>
+<span class="cm">   *      where total is the total number of items being reduced, and will be the same</span>
+<span class="cm">   *      in each call to reduceFunc.</span>
+<span class="cm">   * @returns {Promise} that will resolve to the final reduced value</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">reduce</span><span class="p">(</span><span class="nx">promise</span><span class="p">,</span> <span class="nx">reduceFunc</span> <span class="cm">/*, initialValue */</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">args</span> <span class="o">=</span> <span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="nx">when</span><span class="p">(</span><span class="nx">promise</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">array</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">total</span><span class="p">;</span>
+
+      <span class="nx">total</span> <span class="o">=</span> <span class="nx">array</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-26">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-26">&#182;</a>               </div>               <p>Wrap the supplied reduceFunc with one that handles promises and then
+delegates to the supplied.</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nx">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">current</span><span class="p">,</span> <span class="nx">val</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">when</span><span class="p">(</span><span class="nx">current</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">c</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="nx">when</span><span class="p">(</span><span class="nx">val</span><span class="p">,</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="nx">reduceFunc</span><span class="p">(</span><span class="nx">c</span><span class="p">,</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">total</span><span class="p">);</span>
+          <span class="p">});</span>
+        <span class="p">});</span>
+      <span class="p">};</span>
+
+      <span class="k">return</span> <span class="nx">reduceArray</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">array</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Ensure that resolution of promiseOrValue will trigger resolver with the</span>
+<span class="cm">   * value or reason of promiseOrValue, or instead with resolveValue if it is provided.</span>
+<span class="cm">   *</span>
+<span class="cm">   * @param promiseOrValue</span>
+<span class="cm">   * @param {Object} resolver</span>
+<span class="cm">   * @param {function} resolver.resolve</span>
+<span class="cm">   * @param {function} resolver.reject</span>
+<span class="cm">   * @param {*} [resolveValue]</span>
+<span class="cm">   * @returns {Promise}</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">chain</span><span class="p">(</span><span class="nx">promiseOrValue</span><span class="p">,</span> <span class="nx">resolver</span><span class="p">,</span> <span class="nx">resolveValue</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">useResolveValue</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="nx">when</span><span class="p">(</span><span class="nx">promiseOrValue</span><span class="p">,</span>
+      <span class="kd">function</span><span class="p">(</span><span class="nx">val</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">val</span> <span class="o">=</span> <span class="nx">useResolveValue</span> <span class="o">?</span> <span class="nx">resolveValue</span> <span class="o">:</span> <span class="nx">val</span><span class="p">;</span>
+        <span class="nx">resolver</span><span class="p">.</span><span class="nx">resolve</span><span class="p">(</span><span class="nx">val</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nx">val</span><span class="p">;</span>
+      <span class="p">},</span>
+      <span class="kd">function</span><span class="p">(</span><span class="nx">reason</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">resolver</span><span class="p">.</span><span class="nx">reject</span><span class="p">(</span><span class="nx">reason</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nx">rejected</span><span class="p">(</span><span class="nx">reason</span><span class="p">);</span>
+      <span class="p">},</span>
+      <span class="nx">resolver</span><span class="p">.</span><span class="nx">progress</span>
+    <span class="p">);</span>
+  <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-27">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-27">&#182;</a>               </div>               <p>Utility functions</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="cm">/**</span>
+<span class="cm">   * Apply all functions in queue to value</span>
+<span class="cm">   * @param {Array} queue array of functions to execute</span>
+<span class="cm">   * @param {*} value argument passed to each function</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">processQueue</span><span class="p">(</span><span class="nx">queue</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">handler</span><span class="p">,</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="nx">handler</span> <span class="o">=</span> <span class="nx">queue</span><span class="p">[</span><span class="nx">i</span><span class="o">++</span><span class="p">])</span> <span class="p">{</span>
+      <span class="nx">handler</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * Helper that checks arrayOfCallbacks to ensure that each element is either</span>
+<span class="cm">   * a function, or null or undefined.</span>
+<span class="cm">   * @private</span>
+<span class="cm">   * @param {number} start index at which to start checking items in arrayOfCallbacks</span>
+<span class="cm">   * @param {Array} arrayOfCallbacks array to check</span>
+<span class="cm">   * @throws {Error} if any element of arrayOfCallbacks is something other than</span>
+<span class="cm">   * a functions, null, or undefined.</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">checkCallbacks</span><span class="p">(</span><span class="nx">start</span><span class="p">,</span> <span class="nx">arrayOfCallbacks</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-28">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-28">&#182;</a>               </div>               <p>TODO: Promises/A+ update type checking and docs</p>             </td>             <td class="code">               <div class="highlight"><pre>    <span class="kd">var</span> <span class="nx">arg</span><span class="p">,</span> <span class="nx">i</span> <span class="o">=</span> <span class="nx">arrayOfCallbacks</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+
+    <span class="k">while</span><span class="p">(</span><span class="nx">i</span> <span class="o">&gt;</span> <span class="nx">start</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">arg</span> <span class="o">=</span> <span class="nx">arrayOfCallbacks</span><span class="p">[</span><span class="o">--</span><span class="nx">i</span><span class="p">];</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="nx">arg</span> <span class="o">!=</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">arg</span> <span class="o">!=</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">(</span><span class="s1">&#39;arg &#39;</span><span class="o">+</span><span class="nx">i</span><span class="o">+</span><span class="s1">&#39; must be a function&#39;</span><span class="p">);</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * No-Op function used in method replacement</span>
+<span class="cm">   * @private</span>
+<span class="cm">   */</span>
+  <span class="kd">function</span> <span class="nx">noop</span><span class="p">()</span> <span class="p">{}</span>
+
+  <span class="nx">slice</span> <span class="o">=</span> <span class="p">[].</span><span class="nx">slice</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-29">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-29">&#182;</a>               </div>               <p>ES5 reduce implementation if native not available
+See: http://es5.github.com/#x15.4.4.21 as there are many
+specifics and edge cases.</p>             </td>             <td class="code">               <div class="highlight"><pre>  <span class="nx">reduceArray</span> <span class="o">=</span> <span class="p">[].</span><span class="nx">reduce</span> <span class="o">||</span>
+    <span class="kd">function</span><span class="p">(</span><span class="nx">reduceFunc</span> <span class="cm">/*, initialValue */</span><span class="p">)</span> <span class="p">{</span>
+      <span class="cm">/*jshint maxcomplexity: 7*/</span></pre></div>             </td>           </tr>                               <tr id="section-30">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-30">&#182;</a>               </div>               <p>ES5 dictates that reduce.length === 1</p>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                               <tr id="section-31">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-31">&#182;</a>               </div>               <p>This implementation deviates from ES5 spec in the following ways:
+1. It does not check if reduceFunc is a Callable</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="kd">var</span> <span class="nx">arr</span><span class="p">,</span> <span class="nx">args</span><span class="p">,</span> <span class="nx">reduced</span><span class="p">,</span> <span class="nx">len</span><span class="p">,</span> <span class="nx">i</span><span class="p">;</span>
+
+      <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-32">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-32">&#182;</a>               </div>               <p>This generates a jshint warning, despite being valid
+"Missing 'new' prefix when invoking a constructor."
+See https://github.com/jshint/jshint/issues/392</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="nx">arr</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+      <span class="nx">len</span> <span class="o">=</span> <span class="nx">arr</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">0</span><span class="p">;</span>
+      <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">;</span></pre></div>             </td>           </tr>                               <tr id="section-33">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-33">&#182;</a>               </div>               <p>If no initialValue, use first item of array (we know length !== 0 here)
+and adjust i to start at second item</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="k">if</span><span class="p">(</span><span class="nx">args</span><span class="p">.</span><span class="nx">length</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-34">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-34">&#182;</a>               </div>               <p>Skip to the first real element in the array</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="k">for</span><span class="p">(;;)</span> <span class="p">{</span>
+          <span class="k">if</span><span class="p">(</span><span class="nx">i</span> <span class="k">in</span> <span class="nx">arr</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">reduced</span> <span class="o">=</span> <span class="nx">arr</span><span class="p">[</span><span class="nx">i</span><span class="o">++</span><span class="p">];</span>
+            <span class="k">break</span><span class="p">;</span>
+          <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-35">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-35">&#182;</a>               </div>               <p>If we reached the end of the array without finding any real
+elements, it's a TypeError</p>             </td>             <td class="code">               <div class="highlight"><pre>          <span class="k">if</span><span class="p">(</span><span class="o">++</span><span class="nx">i</span> <span class="o">&gt;=</span> <span class="nx">len</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nx">TypeError</span><span class="p">();</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-36">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-36">&#182;</a>               </div>               <p>If initialValue provided, use it</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="nx">reduced</span> <span class="o">=</span> <span class="nx">args</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+      <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-37">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-37">&#182;</a>               </div>               <p>Do the actual reduce</p>             </td>             <td class="code">               <div class="highlight"><pre>      <span class="k">for</span><span class="p">(;</span><span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">len</span><span class="p">;</span> <span class="o">++</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span></pre></div>             </td>           </tr>                               <tr id="section-38">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-38">&#182;</a>               </div>               <p>Skip holes</p>             </td>             <td class="code">               <div class="highlight"><pre>        <span class="k">if</span><span class="p">(</span><span class="nx">i</span> <span class="k">in</span> <span class="nx">arr</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">reduced</span> <span class="o">=</span> <span class="nx">reduceFunc</span><span class="p">(</span><span class="nx">reduced</span><span class="p">,</span> <span class="nx">arr</span><span class="p">[</span><span class="nx">i</span><span class="p">],</span> <span class="nx">i</span><span class="p">,</span> <span class="nx">arr</span><span class="p">);</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+
+      <span class="k">return</span> <span class="nx">reduced</span><span class="p">;</span>
+    <span class="p">};</span>
+
+  <span class="kd">function</span> <span class="nx">identity</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">x</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="k">return</span> <span class="nx">when</span><span class="p">;</span>
+<span class="p">});</span>
+<span class="p">})(</span><span class="k">typeof</span> <span class="nx">define</span> <span class="o">==</span> <span class="s1">&#39;function&#39;</span> <span class="o">&amp;&amp;</span> <span class="nx">define</span><span class="p">.</span><span class="nx">amd</span>
+  <span class="o">?</span> <span class="nx">define</span>
+  <span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">factory</span><span class="p">)</span> <span class="p">{</span> <span class="k">typeof</span> <span class="nx">exports</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span>
+    <span class="o">?</span> <span class="p">(</span><span class="nx">module</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">factory</span><span class="p">())</span>
+    <span class="o">:</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">when</span>      <span class="o">=</span> <span class="nx">factory</span><span class="p">());</span>
+  <span class="p">}</span></pre></div>             </td>           </tr>                               <tr id="section-39">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-39">&#182;</a>               </div>               <p>Boilerplate for AMD, Node, and browser global</p>             </td>             <td class="code">               <div class="highlight"><pre><span class="p">);</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

@@ -109,8 +109,8 @@ define
             ,annualLeave: { type: 'float' , canEdit: false, showIf: 'false'}
             ,longServiceLeave: { type: 'float' , canEdit: false, showIf: 'false'}
             ,otherLeave: { type: 'float' , canEdit: false, showIf: 'false'}
-            ,adminHoursUsed: { type: 'float' , canEdit: false, showIf: 'false'}
-            ,disturbedSleepHours: { type: 'float' , canEdit: false, showIf: 'false'}
+            // ,admin: { type: 'float' , canEdit: false, showIf: 'false'}
+            // ,disturbedSleep: { title: 'Disturbed Sleep',  type: 'float' , canEdit: false, showIf: 'false'}
         };           
         
         // var claimTypes = ['Normal shift', 'Sick leave', 'Annual leave',
@@ -118,10 +118,10 @@ define
         //                   'Admin', 'Disturbed sleep', 'Event'];
         var claimValueMap = [];
         claimValueMap.push('Normal shift');
-        Object.keys(claimFields).forEach(function(f) {
-            claimValueMap.push( isc.DataSource.getAutoTitle(f) ); 
-        });
         claimValueMap.push('Away from base');
+        Object.keys(claimFields).forEach(function(f) {
+            claimValueMap.push( claimFields[f].title ? claimFields[f].title : isc.DataSource.getAutoTitle(f) ); 
+        });
         claimValueMap.push('Event');
         
         
@@ -165,6 +165,7 @@ define
                       //appropriate for an event 
                      }
             ,sleepOver: { type: 'boolean'}
+            ,admin: { type: 'float' , canEdit: false, showIf: 'true'}
             ,name: { type: 'text', title: 'Name'} //should be unique within its type..
             ,address: { type: 'text'}
             ,suburb: { type: 'text'}
@@ -225,7 +226,7 @@ define
         
         var types = {
             shift: ['personstring', 'location', 'person',
-                    'sickLeave', 'annualLeave',
+                    'sickLeave', 'annualLeave', 'admin',
                     'startDate', 'endDate', 'date', 'startTime', 'endTime', 'length',
                     'personNames', 'locationNames', 'notes', 'ad', 'claim', 'sleepOver'],
             location: ['costCentre', 'name', 'address', 'suburb','postalCode', 'state',

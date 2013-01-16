@@ -1,0 +1,130 @@
+<!DOCTYPE html><html><head><title>fetchTimesheetShifts.js</title><meta http-equiv="Content-Type" content="text/html" charset="UTF-8"><link rel="stylesheet" media="all" href="../docco.css"></head><body><div id="container"><div id="background"></div><div id="jump_to">Jump To &hellip;<div id="jump_wrapper"><div id="jump_page"><a href="../index.html" class="source"><span class="file_name">README</span></a><a href="../js/layout.js.html" class="source "><span class="base_path">js / </span><span class="file_name">layout.js</span></a><a href="../js/calculateTimesheet.js.html" class="source "><span class="base_path">js / </span><span class="file_name">calculateTimesheet.js</span></a><a href="../js/main.js.html" class="source "><span class="base_path">js / </span><span class="file_name">main.js</span></a><a href="../js/globals.js.html" class="source "><span class="base_path">js / </span><span class="file_name">globals.js</span></a><a href="../js/old/liveorig.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">liveorig.js</span></a><a href="../js/old/dataclasses.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">dataclasses.js</span></a><a href="../js/old/data-structures.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">data-structures.js</span></a><a href="../js/old/viewtree.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">viewtree.js</span></a><a href="../js/old/testsc.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">testsc.js</span></a><a href="../js/old/nodejuice.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">nodejuice.js</span></a><a href="../js/old/utils.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">utils.js</span></a><a href="../js/old/smartclientui.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">smartclientui.js</span></a><a href="../js/old/data-structures.coffee.html" class="source "><span class="base_path">js / old / </span><span class="file_name">data-structures.coffee</span></a><a href="../js/old/testpouch.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">testpouch.js</span></a><a href="../js/old/roster.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">roster.js</span></a><a href="../js/old/datasources.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">datasources.js</span></a><a href="../js/table.js.html" class="source "><span class="base_path">js / </span><span class="file_name">table.js</span></a><a href="../js/typesAndFields.js.html" class="source "><span class="base_path">js / </span><span class="file_name">typesAndFields.js</span></a><a href="../js/shiftEditor.js.html" class="source "><span class="base_path">js / </span><span class="file_name">shiftEditor.js</span></a><a href="../js/fetchTimesheetShifts.js.html" class="source selected"><span class="base_path">js / </span><span class="file_name">fetchTimesheetShifts.js</span></a><a href="../js/timesheet_canvas.js.html" class="source "><span class="base_path">js / </span><span class="file_name">timesheet_canvas.js</span></a><a href="../js/shift.js.html" class="source "><span class="base_path">js / </span><span class="file_name">shift.js</span></a><a href="../js/personEditor.js.html" class="source "><span class="base_path">js / </span><span class="file_name">personEditor.js</span></a><a href="../js/editorManager.js.html" class="source "><span class="base_path">js / </span><span class="file_name">editorManager.js</span></a><a href="../js/editorUtils.js.html" class="source "><span class="base_path">js / </span><span class="file_name">editorUtils.js</span></a><a href="../js/parentListEditor.js.html" class="source "><span class="base_path">js / </span><span class="file_name">parentListEditor.js</span></a><a href="../js/testdata.js.html" class="source "><span class="base_path">js / </span><span class="file_name">testdata.js</span></a><a href="../js/pouchDS.js.html" class="source "><span class="base_path">js / </span><span class="file_name">pouchDS.js</span></a><a href="../js/viewTree.js.html" class="source "><span class="base_path">js / </span><span class="file_name">viewTree.js</span></a><a href="../js/quickpouch.js.html" class="source "><span class="base_path">js / </span><span class="file_name">quickpouch.js</span></a><a href="../js/editorLoader.js.html" class="source "><span class="base_path">js / </span><span class="file_name">editorLoader.js</span></a><a href="../js/timesheet.js.html" class="source "><span class="base_path">js / </span><span class="file_name">timesheet.js</span></a><a href="../js/calendar.js.html" class="source "><span class="base_path">js / </span><span class="file_name">calendar.js</span></a><a href="../js/locationEditor.js.html" class="source "><span class="base_path">js / </span><span class="file_name">locationEditor.js</span></a><a href="../js/shiftQualifier.js.html" class="source "><span class="base_path">js / </span><span class="file_name">shiftQualifier.js</span></a><a href="../js/test.js.html" class="source "><span class="base_path">js / </span><span class="file_name">test.js</span></a><a href="../js/calculateTimesheetColumn.js.html" class="source "><span class="base_path">js / </span><span class="file_name">calculateTimesheetColumn.js</span></a><a href="../js/tableFilter.js.html" class="source "><span class="base_path">js / </span><span class="file_name">tableFilter.js</span></a></div></div></div><table cellpadding="0" cellspacing="0"><thead><tr><th class="docs"><h1>fetchTimesheetShifts.js</h1><div class="filepath">js/</div></th><th class="code"></th></tr></thead><tbody><tr id="section-1"><td class="docs"><div class="pilwrap"><a href="#section-1" class="pilcrow">&#182;</a></div><div class="dox"><div class="summary"><p>lobal VOW:false logger:false isc:false define:false</p></div><div class="body"></div></div><div class="dox"><div class="summary"><p>shint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true</p></div><div class="body"></div></div><div class="dox"><div class="summary"><p>shint maxparams:5 maxcomplexity:7 maxlen:190 devel:true</p></div><div class="body"></div></div>
+</td><td class="code"><div class="highlight"><pre><span class="nx">define</span>
+<span class="p">({</span> 
+    <span class="nx">inject</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;globals&#39;</span><span class="p">,</span> <span class="s1">&#39;pouchDS&#39;</span><span class="p">],</span>
+    <span class="nx">factory</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">globals</span><span class="p">,</span> <span class="nx">pouchDS</span><span class="p">)</span> 
+    <span class="p">{</span> <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+      
+      <span class="kd">var</span> <span class="nx">log</span> <span class="o">=</span> <span class="nx">logger</span><span class="p">(</span><span class="s1">&#39;fetchTimesheetShifts&#39;</span><span class="p">);</span>
+      </pre></div></td></tr><tr id="section-2"><td class="docs"><div class="pilwrap"><a href="#section-2" class="pilcrow">&#182;</a></div><p>var person, location, fortnight;</p>
+</td><td class="code"><div class="highlight"><pre>      
+      <span class="kd">var</span> <span class="nx">shiftCriterion</span> <span class="o">=</span> <span class="p">{</span>
+          <span class="nx">fieldName</span><span class="o">:</span> <span class="s1">&#39;type&#39;</span><span class="p">,</span>
+          <span class="nx">operator</span><span class="o">:</span><span class="s1">&#39;equals&#39;</span><span class="p">,</span>
+          <span class="nx">value</span><span class="o">:</span><span class="s1">&#39;shift&#39;</span>
+      <span class="p">};</span>  
+      
+      <span class="kd">var</span> <span class="nx">personCriterion</span> <span class="o">=</span> <span class="p">{</span>
+          <span class="nx">fieldName</span><span class="o">:</span> <span class="s1">&#39;personstring&#39;</span><span class="p">,</span>
+          <span class="nx">operator</span><span class="o">:</span><span class="s1">&#39;contains&#39;</span></pre></div></td></tr><tr id="section-3"><td class="docs"><div class="pilwrap"><a href="#section-3" class="pilcrow">&#182;</a></div><p>value: person._id</p>
+</td><td class="code"><div class="highlight"><pre>      <span class="p">};</span>
+          
+      <span class="kd">var</span> <span class="nx">locationCriterion</span> <span class="o">=</span> <span class="p">{</span>
+          <span class="nx">fieldName</span><span class="o">:</span> <span class="s1">&#39;location&#39;</span><span class="p">,</span>
+          <span class="nx">operator</span><span class="o">:</span><span class="s1">&#39;equals&#39;</span></pre></div></td></tr><tr id="section-4"><td class="docs"><div class="pilwrap"><a href="#section-4" class="pilcrow">&#182;</a></div><p>value: location._id</p>
+</td><td class="code"><div class="highlight"><pre>      <span class="p">};</span>
+      
+      <span class="kd">var</span> <span class="nx">fortnightCriterion</span> <span class="o">=</span> <span class="p">{</span>
+          <span class="nx">_constructor</span><span class="o">:</span><span class="s2">&quot;AdvancedCriteria&quot;</span><span class="p">,</span>
+          <span class="nx">operator</span><span class="o">:</span><span class="s2">&quot;and&quot;</span><span class="p">,</span>
+          <span class="nx">criteria</span><span class="o">:</span> <span class="p">[</span>
+              <span class="p">{</span>
+                  <span class="nx">fieldName</span><span class="o">:</span> <span class="s1">&#39;date&#39;</span> <span class="p">,</span> <span class="nx">operator</span><span class="o">:</span> <span class="s1">&#39;greaterOrEqual&#39;</span><span class="c1">//, value: startDate   </span>
+              <span class="p">},</span>
+              <span class="p">{</span>
+                  <span class="nx">fieldName</span><span class="o">:</span> <span class="s1">&#39;date&#39;</span> <span class="p">,</span> <span class="nx">operator</span><span class="o">:</span> <span class="s1">&#39;lessThan&#39;</span><span class="c1">//, value: endDate   </span>
+              <span class="p">}</span>
+          <span class="p">]</span>
+      <span class="p">};</span>
+          
+      <span class="kd">var</span> <span class="nx">timesheetCriteria</span> <span class="o">=</span> <span class="p">{</span>
+          <span class="nx">_constructor</span><span class="o">:</span><span class="s2">&quot;AdvancedCriteria&quot;</span><span class="p">,</span>
+          <span class="nx">operator</span><span class="o">:</span><span class="s2">&quot;and&quot;</span><span class="p">,</span>
+          <span class="nx">criteria</span><span class="o">:</span> <span class="p">[</span><span class="nx">shiftCriterion</span><span class="p">,</span>  <span class="nx">locationCriterion</span><span class="p">,</span> <span class="nx">personCriterion</span><span class="p">,</span> <span class="nx">fortnightCriterion</span><span class="p">]</span>
+               
+      <span class="p">};</span>
+      
+      
+      <span class="kd">function</span> <span class="nx">getDoc</span><span class="p">(</span><span class="nx">record</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">record</span><span class="p">.</span><span class="nx">_id</span><span class="p">)</span> <span class="k">return</span> <span class="nx">VOW</span><span class="p">.</span><span class="nx">kept</span><span class="p">(</span><span class="nx">record</span><span class="p">);</span>
+          <span class="kd">var</span> <span class="nx">vow</span> <span class="o">=</span> <span class="nx">VOW</span><span class="p">.</span><span class="nx">make</span><span class="p">();</span>
+          <span class="nx">globals</span><span class="p">.</span><span class="nx">db</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">record</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">doc</span><span class="p">)</span> <span class="p">{</span>
+              <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;getting doc&#39;</span><span class="p">,</span><span class="nx">doc</span><span class="p">,</span> <span class="nx">err</span><span class="p">);</span>
+              <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+                  <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">(</span><span class="nx">doc</span><span class="p">);</span>   
+                  <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;keeping vow&#39;</span><span class="p">);</span>
+              <span class="p">}</span>
+              <span class="k">else</span> <span class="p">{</span>
+                  <span class="nx">err</span><span class="p">.</span><span class="nx">record</span> <span class="o">=</span> <span class="nx">record</span><span class="p">;</span> 
+                  <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">](</span><span class="nx">err</span><span class="p">);</span>   
+                  <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;breaking vow&#39;</span><span class="p">);</span>
+              <span class="p">}</span>
+          <span class="p">});</span>
+          <span class="nx">vow</span><span class="p">.</span><span class="nx">promise</span><span class="p">.</span><span class="nx">test</span> <span class="o">=</span><span class="nx">record</span><span class="p">;</span>
+          <span class="k">return</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+      <span class="p">}</span>
+      
+      <span class="kd">function</span> <span class="nx">getShifts</span><span class="p">(</span><span class="nx">person</span><span class="p">,</span> <span class="nx">location</span><span class="p">,</span> <span class="nx">fortnight</span><span class="p">)</span> <span class="p">{</span>
+          <span class="kd">var</span> <span class="nx">vow</span> <span class="o">=</span> <span class="nx">VOW</span><span class="p">.</span><span class="nx">make</span><span class="p">();</span>
+          <span class="kd">var</span> <span class="nx">startDate</span> <span class="o">=</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">fortnight</span><span class="p">);</span>
+          <span class="nx">startDate</span><span class="p">.</span><span class="nx">setHours</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+          <span class="kd">var</span> <span class="nx">endDate</span> <span class="o">=</span> <span class="nb">Date</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">startDate</span><span class="p">);</span>
+          <span class="nx">endDate</span><span class="p">.</span><span class="nx">addWeeks</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+          
+          <span class="nx">personCriterion</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="nx">person</span><span class="p">.</span><span class="nx">_id</span><span class="p">;</span>
+          <span class="nx">locationCriterion</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="nx">location</span><span class="p">.</span><span class="nx">_id</span><span class="p">;</span>
+          <span class="nx">fortnightCriterion</span><span class="p">.</span><span class="nx">criteria</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">value</span> <span class="o">=</span> <span class="nx">startDate</span><span class="p">;</span>
+          <span class="nx">fortnightCriterion</span><span class="p">.</span><span class="nx">criteria</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="nx">value</span> <span class="o">=</span> <span class="nx">endDate</span><span class="p">;</span>
+          
+          <span class="nx">pouchDS</span><span class="p">.</span><span class="nx">fetchData</span><span class="p">(</span><span class="kc">null</span><span class="p">,</span>
+                            <span class="kd">function</span> <span class="p">(</span><span class="nx">dsResponse</span><span class="p">,</span> <span class="nx">data</span><span class="p">)</span> <span class="p">{</span>
+                                <span class="k">if</span> <span class="p">(</span><span class="nx">dsResponse</span><span class="p">.</span><span class="nx">status</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">](</span><span class="nx">dsResponse</span><span class="p">.</span><span class="nx">status</span><span class="p">);</span>
+                                <span class="k">else</span> <span class="p">{</span>
+                                    <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;GOT a response from pouchDS&#39;</span><span class="p">,</span> <span class="nx">data</span><span class="p">);</span>
+                                    <span class="kd">var</span> <span class="nx">resultSet</span> <span class="o">=</span> <span class="nx">isc</span><span class="p">.</span><span class="nx">ResultSet</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span>
+                                        <span class="nx">dataSource</span><span class="o">:</span><span class="s2">&quot;pouchDS&quot;</span><span class="p">,</span>
+                                        <span class="nx">criteria</span><span class="o">:</span> <span class="nx">timesheetCriteria</span><span class="p">,</span>
+                                        <span class="nx">allRows</span><span class="o">:</span><span class="nx">data</span>
+                                    <span class="p">});</span>
+                                    <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;and the result set is:&#39;</span><span class="p">,</span> <span class="nx">resultSet</span><span class="p">);</span>
+                                    <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;and the visible rows are:&#39;</span><span class="p">,</span> <span class="nx">resultSet</span><span class="p">.</span><span class="nx">getAllVisibleRows</span><span class="p">());</span>
+                                    <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">({</span>
+                                        <span class="nx">person</span><span class="o">:</span> <span class="nx">person</span><span class="p">,</span>
+                                        <span class="nx">location</span><span class="o">:</span> <span class="nx">location</span><span class="p">,</span>
+                                        <span class="nx">shifts</span><span class="o">:</span> <span class="nx">resultSet</span><span class="p">.</span><span class="nx">getAllVisibleRows</span><span class="p">()</span>
+                                    <span class="p">});</span>
+                                <span class="p">}</span>
+                            <span class="p">}</span>
+                           <span class="p">);</span>
+          <span class="k">return</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+      <span class="p">}</span>
+      
+  
+      <span class="kd">function</span> <span class="nx">fetch</span><span class="p">(</span><span class="nx">person</span><span class="p">,</span> <span class="nx">location</span><span class="p">,</span> <span class="nx">fortnight</span><span class="p">,</span> <span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+
+          <span class="nx">VOW</span><span class="p">.</span><span class="nx">every</span><span class="p">([</span>
+              <span class="nx">getDoc</span><span class="p">(</span><span class="nx">person</span><span class="p">),</span>
+              <span class="nx">getDoc</span><span class="p">(</span><span class="nx">location</span><span class="p">)</span>
+          <span class="p">]).</span><span class="nx">when</span><span class="p">(</span>
+              <span class="kd">function</span><span class="p">(</span><span class="nx">arr</span><span class="p">)</span> <span class="p">{</span>
+                  <span class="nx">person</span> <span class="o">=</span> <span class="nx">arr</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+                  <span class="nx">location</span> <span class="o">=</span> <span class="nx">arr</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+                  <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;got loc and person:&#39;</span><span class="p">,</span> <span class="nx">arr</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nx">arr</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+                  <span class="k">return</span> <span class="nx">getShifts</span><span class="p">(</span><span class="nx">person</span><span class="p">,</span> <span class="nx">location</span><span class="p">,</span> <span class="nx">fortnight</span><span class="p">);</span>
+              <span class="p">}</span>
+          <span class="p">).</span><span class="nx">when</span><span class="p">(</span>
+              <span class="nx">callback</span><span class="p">,</span>
+              <span class="kd">function</span> <span class="p">(</span><span class="nx">msg</span><span class="p">)</span> <span class="p">{</span>
+                  <span class="nx">log</span><span class="p">.</span><span class="nx">e</span><span class="p">(</span><span class="s1">&#39;ERROR: could not get some of the data needed to build this timesheet&#39;</span><span class="p">,</span> <span class="nx">msg</span><span class="p">);</span>
+              <span class="p">}</span>
+          <span class="p">);</span>
+      <span class="p">}</span>
+      
+      
+      <span class="k">return</span> <span class="p">{</span>
+          <span class="nx">fetch</span><span class="o">:</span> <span class="nx">fetch</span>
+      <span class="p">};</span>
+   
+    <span class="p">}});</span>
+
+</pre></div></td></tr></tbody></table><div id="generated">generated Thu Jan 17 2013 03:12:16 GMT+1000 (EST)  </div></div></body></html>

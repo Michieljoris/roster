@@ -6,8 +6,8 @@
 
 define
 ({ 
-    // inject: [],
-    factory: function()
+    inject: ['lib/utils'],
+    factory: function(utils)
     { "use strict";
       
       var log = logger('timeQualifier');
@@ -31,11 +31,18 @@ define
           //           unit: 'day'
           //           // rank: 100
           //         },
+          day: { type: 'day', 
+                    date: Date.parse('2000 6am').monday(),
+                    length: 16, //in hours
+                    pattern: [1], //repeated daily 
+                    unit: 'day'
+                    // rank: 100
+                  },
           night1: { type: 'night', 
                     date: Date.parse('2000 10pm').monday(),
                     to: Date.parse('2014 10pm').monday(), //undefined is indefinitely TODO, not implemented
                     length: 2, //in hours
-                    pattern: [1], //repeate daily 
+                    pattern: [1], //repeated daily 
                     unit: 'day'
                     // rank: 100
                   },
@@ -150,7 +157,7 @@ define
               patternsArray.push(patternsObject[p]);
           });
 
-          patternsArray = sortBy(patternsArray, 'rank');
+          patternsArray = utils.sortBy(patternsArray, 'rank', 'desc');
           patternsArray.forEach(function(p) {
               if (p.pattern) {
                   p.repeat = p.pattern.reduce(function(sum, elem) {
@@ -166,56 +173,6 @@ define
           });
       }
       
-      
-      function makeShift(date, sHour, sMinute, eHour, eMinute) {
-          date = Date.parse(date); 
-    
-          var startDate = Date.today().set({
-              hour: sHour,
-              minute: sMinute,
-              second: 0,
-              year: date.getYear() + 1900,
-              month: date.getMonth(),
-              day: date.getDate()
-          });
-          var endDate = Date.today().set({
-              hour: eHour,
-              minute: eMinute,
-              second: 0,
-              year: date.getYear() + 1900,
-              month: date.getMonth(),
-              day: date.getDate()
-          });
-          if (eHour === 0 && eMinute === 0) endDate.setDate(endDate.getDate() + 1);
-    
-    
-          return {
-              // person: values.person, //array of _id's of people doing the shift
-              // location: values.location,
-              startDate: startDate,
-              endDate: endDate,
-              date: date,
-              toString: function() {
-                  return this.date.toDateString().slice(0,10) + ' ' +
-                      this.startDate.toTimeString().slice(0,5) + '- ' + this.endDate.toTimeString().slice(0,5);
-              }
-              // ,startTime: values.startTime,
-              // endTime: values.endTime,
-              // repeats: values.repeats, //TODO not implemented yet 
-          };
-      }
-      
-
-
-      function sortBy(arr, prop) {
-          return arr.sort(function(a,b) {
-              if (!a[prop]) return -1;
-              if (!b[prop]) return 1;
-              return a[prop]>b[prop] ? -1 : 1;
-          });
-      }
-
-
       function sameDay(d1, d2) {
           return d1.getYear() === d2.getYear() &&
               d1.getMonth() === d2.getMonth() &&
@@ -286,27 +243,6 @@ define
           return false;
       }
  
-      // function getQualifiers(s) {
-      //     var qualifiers = [];
-      //     var rank = 0;
-      //     var l = patternsArray.length;
-      //     for (var i = 0; i < l; i++) {
-      //         var pattern = patternsArray[i];
-      //         var result = applyPattern(s, pattern);
-      //         if (result) {
-      //             if (pattern.rank) {
-      //                 if (pattern.rank >= rank) {
-      //                     qualifiers.push(result);                   
-      //                     rank = pattern.rank;
-      //                 } 
-      //                 else return qualifiers;
-      //             }
-      //             else qualifiers.push(result);                   
-      //         }
-      //     }
-      //     return qualifiers;
-      // }
-
       function getWorkHourFields(shift) {
           if (shift.location && shift.location.workHoursPattern)
               setPatternsObject(shift.location.workHoursPattern);
@@ -335,38 +271,42 @@ define
               h = Math.floor(h*100)/100;
               fields[p.pattern.type] = h;
           });
+          if (fields.publicHoliday) {
+              if (shift.workedOnPublicHoliday) fields.publicHolidayWorked = fields.publicHoliday;
+              else fields.publicHolidayNotWorked = fields.publicHoliday;
+          } 
+          
           return fields;
       }
     
       setPatternsObject(defaultPatternsObject);
       
-      function test(n) {
-          var shifts = [];
+      // function test(n) {
+      //     var shifts = [];
 
-          var s;
-          for (var i = 0; i< n; i++) {
-              s = makeShift('1 Jan', 15,0,23,0);
-              s.date = s.date.addDays(i);
-              s.startDate = s.startDate.addDays(i);
-              s.endDate = s.endDate.addDays(i);
-              shifts.push(s);
-          }
-          var fields;
-          shifts.forEach(function(s) {
-              var str = '';
-              fields = getWorkHourFields(s);
-              Object.keys(fields).forEach(function(f) {
-                  str += f + ' ' + fields[f] + ' ';
-              });
-              log.i(s.toString() + ':' + str);
-          });
-          console.log('done');
-      }
+      //     var s;
+      //     for (var i = 0; i< n; i++) {
+      //         s = makeShift('1 Jan', 15,0,23,0);
+      //         s.date = s.date.addDays(i);
+      //         s.startDate = s.startDate.addDays(i);
+      //         s.endDate = s.endDate.addDays(i);
+      //         shifts.push(s);
+      //     }
+      //     var fields;
+      //     shifts.forEach(function(s) {
+      //         var str = '';
+      //         fields = getWorkHourFields(s);
+      //         Object.keys(fields).forEach(function(f) {
+      //             str += f + ' ' + fields[f] + ' ';
+      //         });
+      //         log.i(s.toString() + ':' + str);
+      //     });
+      //     console.log('done');
+      // }
       
       return {
           setPatterns: setPatternsObject,
-          getWorkHourFields: getWorkHourFields,
-          makeShift: makeShift,
-          test: test
-      };
-    }});
+          getWorkHourFields: getWorkHourFields
+          // ,makeShift: makeShift
+          // ,test: test
+      };}});

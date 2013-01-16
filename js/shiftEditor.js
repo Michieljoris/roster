@@ -310,6 +310,7 @@ define
             }, fields.date),
             isc.addDefaults({
                 showTitle: false,
+                itleOrientation: 'top',
                 // name: "sleepOver",
                 align: 'left',
                 startRow: false 
@@ -342,14 +343,23 @@ define
             //----------------------------------------
             {name: "repeats",
              type: "Select",
-             showTitle: false,
+             showTitle: true,
              startRow: true,
+             titleOrientation: 'top',
              valueMap: ['Does not repeat', 'Daily', 'Every weekday (Mon-Fri)', 'Weekly',
                         'Monthly', 'Yearly'],
              required: true,
              defaultValue: 'Does not repeat',
              disabled: true
             },
+            isc.addDefaults({
+                titleOrientation: 'top',
+                title: 'Admin (hours)',
+                startRow: false,
+                width: 50,
+                canEdit: true
+                // ,valueMap: getTimeList(settings.eventSnapGap)
+            }, fields.admin),
             //TODO implement repeats UI, similar to Extensible calenda
             
             //---------------------------------------- 

@@ -1,0 +1,133 @@
+<!DOCTYPE html><html><head><title>calculateTimesheetColumn.js</title><meta http-equiv="Content-Type" content="text/html" charset="UTF-8"><link rel="stylesheet" media="all" href="../docco.css"></head><body><div id="container"><div id="background"></div><div id="jump_to">Jump To &hellip;<div id="jump_wrapper"><div id="jump_page"><a href="../index.html" class="source"><span class="file_name">README</span></a><a href="../js/layout.js.html" class="source "><span class="base_path">js / </span><span class="file_name">layout.js</span></a><a href="../js/calculateTimesheet.js.html" class="source "><span class="base_path">js / </span><span class="file_name">calculateTimesheet.js</span></a><a href="../js/main.js.html" class="source "><span class="base_path">js / </span><span class="file_name">main.js</span></a><a href="../js/globals.js.html" class="source "><span class="base_path">js / </span><span class="file_name">globals.js</span></a><a href="../js/old/liveorig.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">liveorig.js</span></a><a href="../js/old/dataclasses.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">dataclasses.js</span></a><a href="../js/old/data-structures.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">data-structures.js</span></a><a href="../js/old/viewtree.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">viewtree.js</span></a><a href="../js/old/testsc.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">testsc.js</span></a><a href="../js/old/nodejuice.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">nodejuice.js</span></a><a href="../js/old/utils.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">utils.js</span></a><a href="../js/old/smartclientui.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">smartclientui.js</span></a><a href="../js/old/data-structures.coffee.html" class="source "><span class="base_path">js / old / </span><span class="file_name">data-structures.coffee</span></a><a href="../js/old/testpouch.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">testpouch.js</span></a><a href="../js/old/roster.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">roster.js</span></a><a href="../js/old/datasources.js.html" class="source "><span class="base_path">js / old / </span><span class="file_name">datasources.js</span></a><a href="../js/table.js.html" class="source "><span class="base_path">js / </span><span class="file_name">table.js</span></a><a href="../js/typesAndFields.js.html" class="source "><span class="base_path">js / </span><span class="file_name">typesAndFields.js</span></a><a href="../js/shiftEditor.js.html" class="source "><span class="base_path">js / </span><span class="file_name">shiftEditor.js</span></a><a href="../js/fetchTimesheetShifts.js.html" class="source "><span class="base_path">js / </span><span class="file_name">fetchTimesheetShifts.js</span></a><a href="../js/timesheet_canvas.js.html" class="source "><span class="base_path">js / </span><span class="file_name">timesheet_canvas.js</span></a><a href="../js/shift.js.html" class="source "><span class="base_path">js / </span><span class="file_name">shift.js</span></a><a href="../js/personEditor.js.html" class="source "><span class="base_path">js / </span><span class="file_name">personEditor.js</span></a><a href="../js/editorManager.js.html" class="source "><span class="base_path">js / </span><span class="file_name">editorManager.js</span></a><a href="../js/editorUtils.js.html" class="source "><span class="base_path">js / </span><span class="file_name">editorUtils.js</span></a><a href="../js/parentListEditor.js.html" class="source "><span class="base_path">js / </span><span class="file_name">parentListEditor.js</span></a><a href="../js/testdata.js.html" class="source "><span class="base_path">js / </span><span class="file_name">testdata.js</span></a><a href="../js/pouchDS.js.html" class="source "><span class="base_path">js / </span><span class="file_name">pouchDS.js</span></a><a href="../js/viewTree.js.html" class="source "><span class="base_path">js / </span><span class="file_name">viewTree.js</span></a><a href="../js/quickpouch.js.html" class="source "><span class="base_path">js / </span><span class="file_name">quickpouch.js</span></a><a href="../js/editorLoader.js.html" class="source "><span class="base_path">js / </span><span class="file_name">editorLoader.js</span></a><a href="../js/timesheet.js.html" class="source "><span class="base_path">js / </span><span class="file_name">timesheet.js</span></a><a href="../js/calendar.js.html" class="source "><span class="base_path">js / </span><span class="file_name">calendar.js</span></a><a href="../js/locationEditor.js.html" class="source "><span class="base_path">js / </span><span class="file_name">locationEditor.js</span></a><a href="../js/shiftQualifier.js.html" class="source "><span class="base_path">js / </span><span class="file_name">shiftQualifier.js</span></a><a href="../js/test.js.html" class="source "><span class="base_path">js / </span><span class="file_name">test.js</span></a><a href="../js/calculateTimesheetColumn.js.html" class="source selected"><span class="base_path">js / </span><span class="file_name">calculateTimesheetColumn.js</span></a><a href="../js/tableFilter.js.html" class="source "><span class="base_path">js / </span><span class="file_name">tableFilter.js</span></a></div></div></div><table cellpadding="0" cellspacing="0"><thead><tr><th class="docs"><h1>calculateTimesheetColumn.js</h1><div class="filepath">js/</div></th><th class="code"></th></tr></thead><tbody><tr id="section-1"><td class="docs"><div class="pilwrap"><a href="#section-1" class="pilcrow">&#182;</a></div><p><div class="dox"><div class="summary"><p>lobal VOW:false define:false logger:false</p></div><div class="body"></div></div><div class="dox"><div class="summary"><p>shint strict:false unused:true smarttabs:true eqeqeq:true immed: true undef:true</p></div><div class="body"></div></div><div class="dox"><div class="summary"><p>shint maxparams:5 maxcomplexity:100 maxlen:190 devel:true</p></div><div class="body"></div></div>(function() {
+function addFieldValues(shifts) {
+    return shifts.reduce(function(fields, shift) {
+        Object.keys(shift).forEach(function(f) {
+            if (fields[f]) fields[f] += shift[f];
+            else {
+                if (typeof shift[f] === 'number') fields[f] = shift[f];
+            }
+        }); <br />
+        return fields;
+    }, Object.create(null));
+}
+function adjustFields(object, fields, amount) {
+    for (var i = 0; i<fields.length; i++) {
+        var f = fields[i];
+        if (object[f]) {
+            amount =  - (object[f] -= amount);
+            if (amount >= 0) delete object[f]; 
+            else return object;
+        }
+    }
+    return object;
+}
+var obj = {a:3, b:2};
+console.log(adjustFields(obj, ['a', 'b'], 4));
+})();    </p>
+</td><td class="code"><div class="highlight"><pre><span class="nx">define</span>
+<span class="p">({</span> 
+    <span class="nx">inject</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;lib/utils&#39;</span><span class="p">],</span>
+    <span class="nx">factory</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">utils</span><span class="p">)</span>
+    <span class="p">{</span> <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+      <span class="kd">var</span> <span class="nx">log</span> <span class="o">=</span> <span class="nx">logger</span><span class="p">(</span><span class="s1">&#39;calculateTimesheetColumn&#39;</span><span class="p">);</span></pre></div></td></tr><tr id="section-2"><td class="docs"><div class="pilwrap"><a href="#section-2" class="pilcrow">&#182;</a></div><p>logger.showStamp();
+logger.setLevel('info');</p>
+</td><td class="code"><div class="highlight"><pre>      </pre></div></td></tr><tr id="section-3"><td class="docs"><div class="pilwrap"><a href="#section-3" class="pilcrow">&#182;</a></div><hr />
+
+<p>just checking here to be sure. Should actually check when
+entering shifts as well. Though you might not have the full
+set of data, eg from other houses. This just checks
+overlapping shifts from one location. There should be a check
+for all the shifts worked on this day, and then filter out the
+ones for this location?</p>
+</td><td class="code"><div class="highlight"><pre>      <span class="kd">function</span> <span class="nx">overlap</span><span class="p">(</span><span class="nx">shifts</span><span class="p">)</span> <span class="p">{</span>
+          <span class="nx">shifts</span> <span class="o">=</span> <span class="nx">utils</span><span class="p">.</span><span class="nx">sortBy</span><span class="p">(</span><span class="nx">shifts</span><span class="p">,</span> <span class="s1">&#39;startDate&#39;</span><span class="p">,</span> <span class="s1">&#39;asc&#39;</span><span class="p">);</span>
+          <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">shifts</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+              <span class="k">if</span> <span class="p">(</span><span class="nx">shifts</span><span class="p">[</span><span class="nx">i</span><span class="o">-</span><span class="mi">1</span><span class="p">].</span><span class="nx">endDate</span> <span class="o">&gt;</span> <span class="nx">shifts</span><span class="p">[</span><span class="nx">i</span><span class="p">].</span><span class="nx">startDate</span><span class="p">)</span> <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
+          <span class="p">}</span>
+          <span class="k">return</span> <span class="kc">false</span><span class="p">;</span>
+      <span class="p">}</span>
+      
+      <span class="kd">function</span> <span class="nx">addFieldValues</span><span class="p">(</span><span class="nx">shifts</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">return</span> <span class="nx">shifts</span><span class="p">.</span><span class="nx">reduce</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">fields</span><span class="p">,</span> <span class="nx">shift</span><span class="p">)</span> <span class="p">{</span>
+              <span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">shift</span><span class="p">).</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">f</span><span class="p">)</span> <span class="p">{</span>
+                  <span class="k">if</span> <span class="p">(</span><span class="nx">fields</span><span class="p">[</span><span class="nx">f</span><span class="p">])</span> <span class="nx">fields</span><span class="p">[</span><span class="nx">f</span><span class="p">]</span> <span class="o">+=</span> <span class="nx">shift</span><span class="p">[</span><span class="nx">f</span><span class="p">];</span>
+                  <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">shift</span><span class="p">[</span><span class="nx">f</span><span class="p">]</span> <span class="o">===</span> <span class="s1">&#39;number&#39;</span><span class="p">)</span> <span class="nx">fields</span><span class="p">[</span><span class="nx">f</span><span class="p">]</span> <span class="o">=</span> <span class="nx">shift</span><span class="p">[</span><span class="nx">f</span><span class="p">];</span>
+              <span class="p">});</span>   
+              <span class="k">return</span> <span class="nx">fields</span><span class="p">;</span>
+          <span class="p">},</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="kc">null</span><span class="p">));</span>
+      <span class="p">}</span>
+      
+      <span class="kd">function</span> <span class="nx">adjustFields</span><span class="p">(</span><span class="nx">object</span><span class="p">,</span> <span class="nx">fields</span><span class="p">,</span> <span class="nx">amount</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span><span class="o">&lt;</span><span class="nx">fields</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+              <span class="kd">var</span> <span class="nx">f</span> <span class="o">=</span> <span class="nx">fields</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+              <span class="k">if</span> <span class="p">(</span><span class="nx">object</span><span class="p">[</span><span class="nx">f</span><span class="p">])</span> <span class="p">{</span>
+                  <span class="nx">amount</span> <span class="o">=</span>  <span class="o">-</span> <span class="p">(</span><span class="nx">object</span><span class="p">[</span><span class="nx">f</span><span class="p">]</span> <span class="o">-=</span> <span class="nx">amount</span><span class="p">);</span>
+                  <span class="k">if</span> <span class="p">(</span><span class="nx">amount</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">delete</span> <span class="nx">object</span><span class="p">[</span><span class="nx">f</span><span class="p">];</span> 
+                  <span class="k">else</span> <span class="k">return</span> <span class="nx">object</span><span class="p">;</span>
+              <span class="p">}</span>
+          <span class="p">}</span>
+          <span class="k">return</span> <span class="nx">object</span><span class="p">;</span>
+      <span class="p">}</span> 
+      
+      
+      <span class="kd">function</span> <span class="nx">getFields</span><span class="p">(</span><span class="nx">person</span><span class="p">,</span> <span class="nx">location</span><span class="p">,</span> <span class="nx">shifts</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">overlap</span><span class="p">(</span><span class="nx">shifts</span><span class="p">))</span> <span class="k">throw</span> <span class="s1">&#39;Error: shifts overlap&#39;</span><span class="p">;</span>
+          <span class="kd">var</span> <span class="nx">fields</span> <span class="o">=</span> <span class="nx">addFieldValues</span><span class="p">(</span><span class="nx">shifts</span><span class="p">);</span>
+          </pre></div></td></tr><tr id="section-4"><td class="docs"><div class="pilwrap"><a href="#section-4" class="pilcrow">&#182;</a></div><p>set public holiday fields:</p>
+</td><td class="code"><div class="highlight"><pre>          <span class="kd">var</span> <span class="nx">ph</span> <span class="o">=</span> <span class="nx">fields</span><span class="p">.</span><span class="nx">publicHoliday</span><span class="p">;</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">ph</span><span class="p">)</span> <span class="p">{</span>
+              <span class="k">if</span> <span class="p">(</span><span class="nx">person</span><span class="p">.</span><span class="nx">status</span> <span class="o">===</span> <span class="s1">&#39;casual&#39;</span><span class="p">)</span> <span class="nx">fields</span><span class="p">.</span><span class="nx">publicHolWork2p5</span> <span class="o">=</span>  <span class="nx">ph</span><span class="p">;</span>
+              <span class="k">else</span> <span class="p">{</span>
+                  <span class="kd">var</span> <span class="nx">phw</span> <span class="o">=</span> <span class="nx">fields</span><span class="p">.</span><span class="nx">publicHolidayWorked</span><span class="p">;</span>
+                  <span class="k">if</span> <span class="p">(</span><span class="nx">phw</span><span class="p">)</span> <span class="p">{</span>
+                      <span class="kd">var</span> <span class="nx">over76</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">((</span><span class="nx">phw</span> <span class="o">-</span> <span class="mf">7.6</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span><span class="o">/</span><span class="mi">100</span><span class="p">;</span>
+                      <span class="nx">phw</span> <span class="o">=</span> <span class="nx">over76</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="mf">7.6</span> <span class="o">:</span> <span class="nx">phw</span><span class="p">;</span>
+                      <span class="nx">fields</span><span class="p">.</span><span class="nx">publicHolidayOrdinary</span> <span class="o">=</span> <span class="nx">phw</span><span class="p">;</span>
+                      <span class="nx">fields</span><span class="p">.</span><span class="nx">publicHolWorkPerm1p5</span> <span class="o">=</span> <span class="nx">phw</span><span class="p">;</span>
+                      <span class="k">if</span> <span class="p">(</span><span class="nx">over76</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="nx">fields</span><span class="p">.</span><span class="nx">publicHolWork2p5</span> <span class="o">=</span> <span class="nx">over76</span><span class="p">;</span>
+                  <span class="p">}</span>
+                  <span class="kd">var</span> <span class="nx">phnw</span> <span class="o">=</span> <span class="nx">fields</span><span class="p">.</span><span class="nx">publicHolidayNotWorked</span><span class="p">;</span>
+                  <span class="k">if</span> <span class="p">(</span><span class="nx">phnw</span><span class="p">)</span> <span class="p">{</span></pre></div></td></tr><tr id="section-5"><td class="docs"><div class="pilwrap"><a href="#section-5" class="pilcrow">&#182;</a></div><p>if (phnw > 7.6) { throw 'You cannot claim more than 7.6 hours for a public holiday.'; }
+max of 7.6 hours can be claimed</p>
+</td><td class="code"><div class="highlight"><pre>                      <span class="k">if</span> <span class="p">(</span><span class="nx">fields</span><span class="p">.</span><span class="nx">publicHolidayOrdinary</span><span class="p">)</span> <span class="nx">fields</span><span class="p">.</span><span class="nx">publicHolidayOrdinary</span> <span class="o">+=</span>  <span class="nx">phnw</span><span class="p">;</span>
+                      <span class="k">else</span> <span class="nx">fields</span><span class="p">.</span><span class="nx">publicHolidayOrdinary</span> <span class="o">=</span>  <span class="nx">phnw</span><span class="p">;</span>
+                  <span class="p">}</span>
+              <span class="p">}</span>
+              
+          <span class="p">}</span>
+          </pre></div></td></tr><tr id="section-6"><td class="docs"><div class="pilwrap"><a href="#section-6" class="pilcrow">&#182;</a></div><p>set overtime fields:</p>
+</td><td class="code"><div class="highlight"><pre>          <span class="kd">var</span> <span class="nx">SHIFT_MAXLEN</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+          <span class="kd">var</span> <span class="nx">dayHours</span> <span class="o">=</span> <span class="nx">fields</span><span class="p">.</span><span class="nx">day</span> <span class="o">?</span> <span class="nx">fields</span><span class="p">.</span><span class="nx">day</span> <span class="o">:</span> <span class="mi">0</span><span class="p">;</span>
+              <span class="kd">var</span> <span class="nx">disturbedSleepHours</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">fields</span><span class="p">.</span><span class="nx">night</span><span class="p">)</span> <span class="p">{</span> <span class="nx">fields</span><span class="p">.</span><span class="nx">disturbedSleepHours</span> <span class="o">=</span> <span class="nx">disturbedSleepHours</span> <span class="o">=</span> <span class="nx">fields</span><span class="p">.</span><span class="nx">night</span><span class="p">;</span> <span class="p">}</span>
+          <span class="nx">fields</span><span class="p">.</span><span class="nx">totalHoursWorked</span> <span class="o">=</span> <span class="nx">dayHours</span> <span class="o">+</span> <span class="nx">disturbedSleepHours</span><span class="p">;</span>
+          <span class="kd">var</span> <span class="nx">overtime</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+          <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">ph</span><span class="p">)</span> <span class="p">{</span>
+              <span class="nx">overtime</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">max</span><span class="p">(</span><span class="nx">fields</span><span class="p">.</span><span class="nx">day</span> <span class="o">-</span> <span class="nx">SHIFT_MAXLEN</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+              <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="nx">overtime</span><span class="p">);</span>
+              <span class="nx">adjustFields</span><span class="p">(</span><span class="nx">fields</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;weekend&#39;</span><span class="p">,</span> <span class="s1">&#39;late&#39;</span><span class="p">,</span> <span class="s1">&#39;ord&#39;</span><span class="p">,</span> <span class="s1">&#39;early&#39;</span><span class="p">],</span> <span class="nx">overtime</span><span class="p">);</span>
+          <span class="p">}</span>
+          
+          <span class="nx">overtime</span> <span class="o">+=</span> <span class="nx">disturbedSleepHours</span><span class="p">;</span>
+          <span class="k">if</span> <span class="p">(</span><span class="nx">overtime</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+              <span class="nx">fields</span><span class="p">.</span><span class="nx">overtime</span> <span class="o">=</span> <span class="nx">overtime</span><span class="p">;</span>
+              <span class="kd">var</span> <span class="nx">over3</span> <span class="o">=</span> <span class="nx">overtime</span> <span class="o">-</span><span class="mi">3</span><span class="p">;</span>
+              <span class="nx">fields</span><span class="p">.</span><span class="nx">overtimeT1p5</span> <span class="o">=</span> <span class="nx">over3</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="mi">3</span> <span class="o">:</span> <span class="nx">overtime</span><span class="p">;</span> 
+              <span class="k">if</span> <span class="p">(</span><span class="nx">over3</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="nx">fields</span><span class="p">.</span><span class="nx">overtimeT2</span> <span class="o">=</span> <span class="nx">over3</span><span class="p">;</span>
+          <span class="p">}</span>
+          </pre></div></td></tr><tr id="section-7"><td class="docs"><div class="pilwrap"><a href="#section-7" class="pilcrow">&#182;</a></div><p>toil fields?</p>
+</td><td class="code"><div class="highlight"><pre>          
+          
+          </pre></div></td></tr><tr id="section-8"><td class="docs"><div class="pilwrap"><a href="#section-8" class="pilcrow">&#182;</a></div><p>log.pp('fields', fields, 'person', person, 'location', location);</p>
+</td><td class="code"><div class="highlight"><pre>          
+          <span class="k">return</span> <span class="nx">fields</span><span class="p">;</span>
+      <span class="p">}</span>
+          </pre></div></td></tr><tr id="section-9"><td class="docs"><div class="pilwrap"><a href="#section-9" class="pilcrow">&#182;</a></div><p>overtime </p>
+</td><td class="code"><div class="highlight"><pre>          
+      <span class="k">return</span> <span class="p">{</span>
+          <span class="nx">getFields</span><span class="o">:</span> <span class="nx">getFields</span>
+      <span class="p">};</span>
+      
+    <span class="p">}});</span>
+
+</pre></div></td></tr></tbody></table><div id="generated">generated Thu Jan 17 2013 03:12:19 GMT+1000 (EST)  </div></div></body></html>
