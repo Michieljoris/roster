@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>timesheet_canvas.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="../doc-style.css" />
+  <script src="../doc-filelist.js"></script>
+  <script>
+    var relativeDir = '../', thisFile = 'js/timesheet_canvas.js', defaultSidebar = true;
+  </script>
+  <script src="../doc-script.js"></script>
+  <script src="../fileSearch.js"></script>
+  <link rel="stylesheet" href="../fileSearch.css" />
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+      <div class="heading h2">
+        <a href="#help-functions">Help functions</a>
+      </div>
+      <div class="heading h1">
+        <a href="#api">API</a>
+      </div>
+      <div class="heading h2">
+        <a href="#setdata">setData</a>
+      </div>
+      <div class="heading h2">
+        <a href="#setcell">setCell</a>
+      </div>
+      <div class="heading h2">
+        <a href="#setcolumn">setColumn</a>
+      </div>
+      <div class="heading h2">
+        <a href="#clear">clear</a>
+      </div>
+      <div class="heading h2">
+        <a href="#draw">draw</a>
+      </div>
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container"><div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+      <tr>
+        <td class="docs">
+          <h1>timesheet_canvas.js</h1>
+        </td>
+        <td class="code highlight"></td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-1" id="section-1">&#182;</a>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="cm">/*global  Raphael:false  define:false */</span>
+<span class="cm">/*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/</span>
+<span class="cm">/*jshint maxparams:6 maxcomplexity:7 maxlen:190 devel:true*/</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-2" id="section-2">&#182;</a>
+</div>
+<p>This module basically draws a Multicap timesheet using raphael.js It
+has an API to set individual cells and data fields, set a column in
+one go or clear the whole sheet.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="nx">define</span>
+<span class="p">({</span> <span class="c1">//load: [&#39;js!lib/raphael-min.js&#39;],</span>
+   <span class="nx">factory</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+       <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+       </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-3" id="section-3">&#182;</a>
+</div>
+<p>Dimensions:</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>       <span class="kd">var</span> <span class="nx">portWidth</span> <span class="o">=</span> <span class="mi">950</span>
+       <span class="p">,</span><span class="nx">portHeight</span> <span class="o">=</span> <span class="mi">660</span>
+       <span class="p">,</span><span class="nx">fontSize</span> <span class="o">=</span> <span class="mi">11</span>
+       <span class="p">,</span><span class="nx">labelBoxWidth</span> <span class="o">=</span> <span class="mi">175</span>
+       <span class="p">,</span><span class="nx">totalBoxWidth</span> <span class="o">=</span> <span class="mi">85</span> 
+       <span class="p">,</span><span class="nx">topRows</span> <span class="o">=</span> <span class="mi">4</span>
+       <span class="p">,</span><span class="nx">gridColumns</span> <span class="o">=</span><span class="mi">14</span> 
+       <span class="p">,</span><span class="nx">gridRows</span> <span class="o">=</span> <span class="mi">27</span>
+       <span class="p">,</span><span class="nx">bottomRows</span> <span class="o">=</span> <span class="mi">4</span>
+       <span class="p">,</span><span class="nx">rows</span> <span class="o">=</span> <span class="nx">topRows</span> <span class="o">+</span> <span class="nx">gridRows</span> <span class="o">+</span> <span class="nx">bottomRows</span>
+       <span class="p">,</span><span class="nx">gxs</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">((</span><span class="nx">portWidth</span><span class="o">-</span><span class="nx">labelBoxWidth</span><span class="o">-</span><span class="nx">totalBoxWidth</span><span class="p">)</span><span class="o">/</span><span class="nx">gridColumns</span><span class="p">)</span>
+       <span class="p">,</span><span class="nx">ys</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">(</span><span class="nx">portHeight</span><span class="o">/</span><span class="nx">rows</span><span class="p">)</span>
+       <span class="p">,</span><span class="nx">topBox</span> <span class="o">=</span> <span class="p">{</span>
+           <span class="nx">x</span><span class="o">:</span><span class="nx">portWidth</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">200</span><span class="p">,</span>
+           <span class="nx">y</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span>
+           <span class="nx">w</span><span class="o">:</span><span class="mi">400</span><span class="p">,</span>
+           <span class="nx">h</span><span class="o">:</span><span class="mi">2</span><span class="o">*</span><span class="nx">ys</span>
+       <span class="p">}</span>
+       </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-4" id="section-4">&#182;</a>
+</div>
+<p>Creation of canvas to draw on:</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>       <span class="p">,</span><span class="nx">paper</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Raphael</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="nx">portWidth</span><span class="p">,</span> <span class="nx">portHeight</span><span class="p">)</span>
+       </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-5" id="section-5">&#182;</a>
+</div>
+<p>Data to fill the timesheet with:</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>       <span class="p">,</span><span class="nx">title</span> <span class="o">=</span> <span class="s1">&#39;EMPLOYEE TIMESHEET - DISABILITY EMPLOYEE&#39;</span>
+       <span class="p">,</span><span class="nx">rowMap</span> <span class="o">=</span> <span class="p">[</span>
+           <span class="p">{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;*DAY&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;day&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;*DATE&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;date&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;*COST CENTRE&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;costCentre&#39;</span>  <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;START&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;start1&#39;</span>  <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;FINISH&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;finish1&#39;</span>  <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;START&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;start2&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;FINISH&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;finish2&#39;</span>  <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;START&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;start3&#39;</span>  <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;FINISH&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;finish3&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;*TOTAL HOURS WORKED&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;EARLY (6-7.30)&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;early&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;ORD (7.30-19.30)&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;ord&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;LATE (19.30-22.00)&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;late&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;WEEKEND T1.5&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;weekend&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;SICK LEAVE&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;sickLeave&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;ANNUAL LEAVE&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;annualLeave&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;LONG SERVICE LEAVE&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;longServiceLeave&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;OTHER LEAVE (specify)&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;otherLeave&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;PUBLIC HOLIDAY ORD&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;publicHolidayOrdinary:&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;OVERTIME T1.5&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;overtimeT1p5:&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;OVERTIME T2&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;overtimeT2:&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;PUBLIC HOL WORK PERM 1.5&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;publicHolWorkPerm1p5:&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;PUBLIC HOL WORK 2.5&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;publicHolWork2p5:&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;*SLEEP OVER 8 HRS&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;sleepOver&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;*AWAY FROM BASE ALLOW&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;awayFromBase&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;*ADMIN HOURS USED&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;admin&#39;</span> <span class="p">}</span>
+           <span class="p">,{</span> <span class="nx">title</span><span class="o">:</span> <span class="s1">&#39;*DISTURBED SLEEP HRS&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="o">:</span> <span class="s1">&#39;disturbedSleepHours&#39;</span> <span class="p">}</span>
+       <span class="p">]</span>
+       <span class="p">,</span><span class="nx">fields</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="kd">var</span> <span class="nx">obj</span> <span class="o">=</span> <span class="p">{};</span>
+                                  <span class="nx">rowMap</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">r</span><span class="p">,</span><span class="nx">i</span><span class="p">)</span> <span class="p">{</span> <span class="nx">r</span><span class="p">.</span><span class="nx">row</span> <span class="o">=</span> <span class="nx">i</span><span class="p">;</span> <span class="nx">obj</span><span class="p">[</span><span class="nx">r</span><span class="p">.</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="nx">r</span><span class="p">;});</span>
+                                  <span class="k">return</span> <span class="nx">obj</span><span class="p">;</span>
+                                <span class="p">})()</span>
+       <span class="p">,</span><span class="nx">line1</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;EMPLOYEE NAME:&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;EMPLOYEE PAYROLL NUMBER:&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;CONTACT PHONE:&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span> <span class="p">]</span>
+       <span class="p">,</span><span class="nx">data1</span> <span class="o">=</span> <span class="p">{</span><span class="nx">name</span> <span class="o">:</span> <span class="mi">10</span><span class="p">,</span> <span class="nx">number</span> <span class="o">:</span> <span class="mi">57</span><span class="p">,</span> <span class="nx">phone</span><span class="o">:</span> <span class="mi">80</span> <span class="p">}</span>
+       <span class="p">,</span><span class="nx">data2</span> <span class="o">=</span> <span class="p">{</span><span class="nx">fulltime</span><span class="o">:</span><span class="mf">6.5</span><span class="p">,</span> <span class="nx">parttime</span><span class="o">:</span><span class="mi">15</span><span class="p">,</span> <span class="nx">casual</span><span class="o">:</span><span class="mi">21</span><span class="p">,</span> <span class="nx">dsw</span><span class="o">:</span> <span class="mi">35</span><span class="p">,</span> <span class="nx">dsw2</span><span class="o">:</span><span class="mi">58</span><span class="p">,</span> <span class="nx">ending</span><span class="o">:</span><span class="mi">75</span><span class="p">}</span>
+       <span class="p">,</span><span class="nx">line1Pos</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="nx">data1</span><span class="p">.</span><span class="nx">name</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="nx">data1</span><span class="p">.</span><span class="nx">number</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="nx">data1</span><span class="p">.</span><span class="nx">phone</span><span class="p">,</span> <span class="mi">100</span><span class="p">]</span> 
+       <span class="p">,</span><span class="nx">line2</span> <span class="o">=</span> <span class="p">[</span> <span class="s1">&#39;FULLTIME:&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;PART TIME:&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;CASUAL:&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;DSW CA LEVEL:&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;ALTERNATIVE DSW CA LEVEL:&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;PERIOD ENDING:&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
+       <span class="p">,</span><span class="nx">line2Pos</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="nx">data2</span><span class="p">.</span><span class="nx">fulltime</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="nx">data2</span><span class="p">.</span><span class="nx">parttime</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="nx">data2</span><span class="p">.</span><span class="nx">casual</span><span class="p">,</span> <span class="mi">25</span><span class="p">,</span> <span class="nx">data2</span><span class="p">.</span><span class="nx">dsw</span><span class="p">,</span> <span class="mi">40</span><span class="p">,</span> <span class="nx">data2</span><span class="p">.</span><span class="nx">dsw2</span><span class="p">,</span> <span class="mi">65</span><span class="p">,</span> <span class="nx">data2</span><span class="p">.</span><span class="nx">ending</span><span class="p">,</span> <span class="mi">100</span><span class="p">]</span> 
+       <span class="p">,</span><span class="nx">employeeSign</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;EMPLOYEE&quot;S SIGNATURE:_____________________________________________________  DATE:_____________&#39;</span><span class="p">]</span>
+       <span class="p">,</span><span class="nx">managerSign</span> <span class="o">=</span>  <span class="p">[</span><span class="s1">&#39;MANAGER&quot;S SIGNATURE:______________________________________________________  DATE:_____________&#39;</span><span class="p">]</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-6" id="section-6">&#182;</a>
+</div>
+<p>,line5 = 'PLEASE NOTE ALL HOURS TO BE IN 24 HOUR TIME'</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>       <span class="p">,</span><span class="nx">days</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;SAT&#39;</span><span class="p">,</span> <span class="s1">&#39;SUN&#39;</span><span class="p">,</span> <span class="s1">&#39;MON&#39;</span><span class="p">,</span> <span class="s1">&#39;TUES&#39;</span><span class="p">,</span> <span class="s1">&#39;WED&#39;</span><span class="p">,</span> <span class="s1">&#39;THURS&#39;</span><span class="p">,</span> <span class="s1">&#39;FRI&#39;</span> <span class="p">]</span>
+       <span class="p">,</span><span class="nx">totalHours</span> <span class="o">=</span> <span class="s1">&#39;TOTAL HOURS&#39;</span>
+       <span class="p">,</span><span class="nx">enteredBy</span> <span class="o">=</span> <span class="s1">&#39;ENTERED BY:&#39;</span>
+       <span class="p">,</span><span class="nx">enteredByDate</span> <span class="o">=</span> <span class="s1">&#39;DATE:&#39;</span>
+       <span class="p">,</span><span class="nx">dataCells</span> <span class="o">=</span> <span class="p">{}</span>
+       <span class="p">,</span><span class="nx">unit</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">round</span><span class="p">(</span><span class="nx">portWidth</span> <span class="o">/</span> <span class="mi">100</span><span class="p">);</span>
+       </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="help-functions">
+  <h2>
+    <a href="#help-functions" class="pilcrow">&#182;</a>
+    Help functions
+  </h2>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-8" id="section-8">&#182;</a>
+</div>
+<p>Used in the API's draw that draw the complete timesheet</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>       </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-9" id="section-9">&#182;</a>
+</div>
+<p>Print the 2 top lines</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>       <span class="kd">function</span> <span class="nx">drawTopLines</span><span class="p">()</span> <span class="p">{</span>
+           <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span><span class="o">&lt;</span> <span class="nx">line1</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+               <span class="nx">text</span><span class="p">(</span><span class="nx">line1</span><span class="p">[</span><span class="nx">i</span><span class="p">],</span>
+                    <span class="p">{</span> <span class="nx">x</span><span class="o">:</span> <span class="nx">line1Pos</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">*</span> <span class="nx">unit</span><span class="p">,</span> <span class="nx">y</span> <span class="o">:</span> <span class="nx">ys</span> <span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="nx">h</span><span class="o">:</span> <span class="nx">ys</span><span class="o">*</span><span class="mi">1</span><span class="p">,</span> <span class="nx">w</span><span class="o">:</span> <span class="nx">line1Pos</span><span class="p">[</span><span class="nx">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span> <span class="nx">unit</span> <span class="p">},{</span><span class="nx">align</span><span class="o">:</span> <span class="s1">&#39;start&#39;</span><span class="p">},</span>
+                    <span class="p">{</span><span class="nx">weight</span><span class="o">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">});</span>
+           <span class="p">}</span>
+           <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span><span class="o">&lt;</span> <span class="nx">line2</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+               <span class="nx">text</span><span class="p">(</span><span class="nx">line2</span><span class="p">[</span><span class="nx">i</span><span class="p">],</span> <span class="p">{</span><span class="nx">x</span><span class="o">:</span> <span class="nx">line2Pos</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">*</span> <span class="nx">unit</span><span class="p">,</span> <span class="nx">y</span> <span class="o">:</span> <span class="nx">ys</span> <span class="o">*</span><span class="mi">3</span><span class="p">,</span> <span class="nx">h</span><span class="o">:</span> <span class="nx">ys</span><span class="o">*</span><span class="mi">1</span><span class="p">,</span> <span class="nx">w</span><span class="o">:</span> <span class="nx">line2Pos</span><span class="p">[</span><span class="nx">i</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span> <span class="nx">unit</span> <span class="p">},</span>
+                    <span class="p">{</span><span class="nx">align</span><span class="o">:</span> <span class="s1">&#39;start&#39;</span><span class="p">},</span> <span class="p">{</span><span class="nx">weight</span><span class="o">:</span> <span class="s1">&#39;normal&#39;</span><span class="p">});</span>
+           <span class="p">}</span>
+       <span class="p">}</span>
+
+       <span class="kd">function</span> <span class="nx">drawHLine</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span><span class="nx">y</span><span class="p">,</span><span class="nx">l</span><span class="p">)</span> <span class="p">{</span>
+           <span class="nx">paper</span><span class="p">.</span><span class="nx">path</span><span class="p">(</span><span class="s1">&#39;M&#39;</span> <span class="o">+</span> <span class="nx">x</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nx">y</span> <span class="o">+</span> <span class="s1">&#39;H&#39;</span> <span class="o">+</span> <span class="p">(</span><span class="nx">x</span><span class="o">+</span><span class="nx">l</span><span class="p">)).</span><span class="nx">attr</span><span class="p">(</span><span class="s1">&#39;fill&#39;</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">);</span>
+       <span class="p">}</span>
+       
+       <span class="kd">function</span> <span class="nx">drawVLine</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span><span class="nx">y</span><span class="p">,</span><span class="nx">l</span><span class="p">)</span> <span class="p">{</span>
+           <span class="nx">paper</span><span class="p">.</span><span class="nx">path</span><span class="p">(</span><span class="s1">&#39;M&#39;</span> <span class="o">+</span> <span class="nx">x</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span> <span class="o">+</span> <span class="nx">y</span> <span class="o">+</span> <span class="s1">&#39;V&#39;</span> <span class="o">+</span> <span class="p">(</span><span class="nx">y</span><span class="o">+</span><span class="nx">l</span><span class="p">)).</span><span class="nx">attr</span><span class="p">(</span><span class="s1">&#39;fill&#39;</span><span class="p">,</span> <span class="s1">&#39;black&#39;</span><span class="p">);</span>
+       <span class="p">}</span>
+
+       <span class="kd">function</span> <span class="nx">drawMatrix</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="p">,</span> <span class="nx">w</span><span class="p">,</span> <span class="nx">h</span><span class="p">,</span> <span class="nx">nColumn</span><span class="p">,</span> <span class="nx">nRow</span><span class="p">)</span> <span class="p">{</span>
+           <span class="kd">var</span> <span class="nx">xs</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">(</span><span class="nx">w</span><span class="o">/</span><span class="nx">nColumn</span><span class="p">);</span>
+           <span class="nx">w</span> <span class="o">=</span> <span class="nx">xs</span> <span class="o">*</span> <span class="nx">nColumn</span><span class="p">;</span> 
+           <span class="nx">h</span> <span class="o">=</span> <span class="nx">ys</span> <span class="o">*</span> <span class="nx">nRow</span><span class="p">;</span>
+           <span class="kd">var</span> <span class="nx">acc</span> <span class="o">=</span> <span class="nx">x</span><span class="p">;</span>
+           <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;=</span> <span class="nx">nColumn</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+               <span class="nx">drawVLine</span><span class="p">(</span><span class="nx">acc</span>  <span class="p">,</span> <span class="nx">y</span><span class="p">,</span> <span class="nx">h</span><span class="p">);</span>
+               <span class="nx">acc</span> <span class="o">+=</span> <span class="nx">xs</span><span class="p">;</span>
+           <span class="p">}</span> 
+           <span class="nx">acc</span> <span class="o">=</span> <span class="nx">y</span><span class="p">;</span>
+           <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;=</span> <span class="nx">nRow</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+               <span class="nx">drawHLine</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span> <span class="nx">acc</span><span class="p">,</span> <span class="nx">w</span><span class="p">);</span>
+               <span class="nx">acc</span> <span class="o">+=</span> <span class="nx">ys</span><span class="p">;</span>
+           <span class="p">}</span> 
+       <span class="p">}</span> 
+
+       <span class="kd">function</span> <span class="nx">text</span><span class="p">(</span><span class="nx">str</span><span class="p">,</span> <span class="nx">box</span><span class="p">,</span> <span class="nx">al</span><span class="p">,</span> <span class="nx">attr</span><span class="p">)</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-10" id="section-10">&#182;</a>
+</div>
+<p>align is a string with start or end, top or bottom ,  or combination, default is middle
+attr sets font, size (relative to fontSize), weight:
+normal | bold | bolder | lighter | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | inherit </p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>           <span class="kd">var</span> <span class="nx">x</span><span class="p">,</span><span class="nx">y</span><span class="p">;</span> 
+           <span class="nx">al</span> <span class="o">=</span> <span class="nx">al</span> <span class="o">?</span> <span class="nx">al</span> <span class="o">:</span> <span class="p">{};</span>  
+           <span class="nx">attr</span> <span class="o">=</span> <span class="nx">attr</span> <span class="o">?</span> <span class="nx">attr</span> <span class="o">:</span> <span class="p">{};</span>  
+           <span class="kd">var</span> <span class="nx">padding</span> <span class="o">=</span> <span class="nx">al</span><span class="p">.</span><span class="nx">padding</span> <span class="o">?</span> <span class="nx">al</span><span class="p">.</span><span class="nx">padding</span> <span class="o">:</span> <span class="mi">2</span><span class="p">;</span>
+           <span class="kd">var</span> <span class="nx">size</span> <span class="o">=</span> <span class="nx">attr</span><span class="p">.</span><span class="nx">size</span> <span class="o">?</span> <span class="nx">attr</span><span class="p">.</span><span class="nx">size</span> <span class="o">:</span> <span class="mi">0</span><span class="p">;</span>
+           <span class="nx">size</span> <span class="o">=</span> <span class="nx">fontSize</span> <span class="o">+</span> <span class="nx">size</span><span class="p">;</span>
+           <span class="kd">var</span> <span class="nx">font</span>  <span class="o">=</span> <span class="nx">attr</span><span class="p">.</span><span class="nx">font</span> <span class="o">?</span>  <span class="nx">attr</span><span class="p">.</span><span class="nx">font</span> <span class="o">:</span> <span class="s1">&#39;Courier&#39;</span><span class="p">;</span>
+           <span class="kd">var</span> <span class="nx">weight</span> <span class="o">=</span> <span class="nx">attr</span><span class="p">.</span><span class="nx">weight</span> <span class="o">?</span> <span class="nx">attr</span><span class="p">.</span><span class="nx">weight</span> <span class="o">:</span> <span class="s1">&#39;normal&#39;</span><span class="p">;</span>
+  
+           <span class="kd">var</span> <span class="nx">align</span> <span class="o">=</span> <span class="nx">al</span><span class="p">.</span><span class="nx">align</span> <span class="o">?</span> <span class="nx">al</span><span class="p">.</span><span class="nx">align</span> <span class="o">:</span> <span class="s1">&#39;middle&#39;</span><span class="p">;</span>
+           <span class="kd">var</span> <span class="nx">h_align</span> <span class="o">=</span> <span class="nx">align</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="s1">&#39;start&#39;</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;start&#39;</span><span class="o">:</span> <span class="nx">align</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="s1">&#39;end&#39;</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;end&#39;</span><span class="o">:</span> <span class="s1">&#39;middle&#39;</span><span class="p">;</span>
+           <span class="kd">var</span> <span class="nx">v_align</span> <span class="o">=</span> <span class="nx">align</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="s1">&#39;top&#39;</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;top&#39;</span><span class="o">:</span> <span class="nx">align</span><span class="p">.</span><span class="nx">match</span><span class="p">(</span><span class="s1">&#39;bottom&#39;</span><span class="p">)</span> <span class="o">?</span> <span class="s1">&#39;bottom&#39;</span><span class="o">:</span> <span class="s1">&#39;middle&#39;</span><span class="p">;</span>
+           <span class="k">switch</span> <span class="p">(</span><span class="nx">h_align</span><span class="p">)</span> <span class="p">{</span>
+             <span class="k">case</span> <span class="s1">&#39;start&#39;</span> <span class="o">:</span> <span class="nx">x</span> <span class="o">=</span> <span class="nx">box</span><span class="p">.</span><span class="nx">x</span> <span class="o">+</span> <span class="nx">padding</span><span class="p">;</span> <span class="k">break</span><span class="p">;</span>
+             <span class="k">case</span> <span class="s1">&#39;middle&#39;</span> <span class="o">:</span> <span class="nx">x</span> <span class="o">=</span> <span class="nx">box</span><span class="p">.</span><span class="nx">x</span> <span class="o">+</span> <span class="nx">box</span><span class="p">.</span><span class="nx">w</span><span class="o">/</span><span class="mi">2</span><span class="p">;</span>  <span class="k">break</span><span class="p">;</span>
+             <span class="k">case</span> <span class="s1">&#39;end&#39;</span> <span class="o">:</span> <span class="nx">x</span> <span class="o">=</span> <span class="nx">box</span><span class="p">.</span><span class="nx">x</span> <span class="o">+</span> <span class="nx">box</span><span class="p">.</span><span class="nx">w</span> <span class="o">-</span> <span class="nx">padding</span><span class="p">;</span> <span class="k">break</span><span class="p">;</span>
+           <span class="p">}</span>
+           <span class="k">switch</span> <span class="p">(</span><span class="nx">v_align</span><span class="p">)</span> <span class="p">{</span>
+             <span class="k">case</span> <span class="s1">&#39;top&#39;</span> <span class="o">:</span>  <span class="nx">y</span> <span class="o">=</span> <span class="nx">box</span><span class="p">.</span><span class="nx">y</span> <span class="o">+</span> <span class="nx">size</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="nx">padding</span><span class="p">;</span> <span class="k">break</span><span class="p">;</span>
+             <span class="k">case</span> <span class="s1">&#39;middle&#39;</span> <span class="o">:</span> <span class="nx">y</span> <span class="o">=</span> <span class="nx">box</span><span class="p">.</span><span class="nx">y</span> <span class="o">+</span> <span class="nx">box</span><span class="p">.</span><span class="nx">h</span><span class="o">/</span><span class="mi">2</span> <span class="o">+</span> <span class="mi">2</span><span class="p">;</span>  <span class="k">break</span><span class="p">;</span>
+             <span class="k">case</span> <span class="s1">&#39;bottom&#39;</span> <span class="o">:</span> <span class="nx">y</span> <span class="o">=</span> <span class="nx">box</span><span class="p">.</span><span class="nx">y</span> <span class="o">+</span> <span class="nx">box</span><span class="p">.</span><span class="nx">h</span> <span class="o">-</span> <span class="nx">size</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="nx">padding</span><span class="p">;</span> <span class="k">break</span><span class="p">;</span>
+           <span class="p">}</span>
+           <span class="k">return</span> <span class="nx">paper</span><span class="p">.</span><span class="nx">text</span><span class="p">(</span><span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="p">,</span> <span class="nx">str</span><span class="p">).</span><span class="nx">attr</span><span class="p">({</span><span class="s1">&#39;font-family&#39;</span><span class="o">:</span> <span class="nx">font</span><span class="p">,</span> <span class="s1">&#39;font-size&#39;</span><span class="o">:</span> <span class="nx">size</span><span class="p">,</span> <span class="s1">&#39;font-weight&#39;</span><span class="o">:</span> <span class="nx">weight</span><span class="p">,</span>  
+                     <span class="s1">&#39;height&#39;</span><span class="o">:</span> <span class="mi">200</span><span class="p">,</span> <span class="s1">&#39;text-anchor&#39;</span><span class="o">:</span> <span class="nx">h_align</span><span class="p">});</span>
+       <span class="p">}</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-11" id="section-11">&#182;</a>
+</div>
+<p>Set a value in the grid/matrix</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>       <span class="kd">function</span> <span class="nx">grid</span><span class="p">(</span><span class="nx">str</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">al</span><span class="p">,</span> <span class="nx">attr</span><span class="p">)</span> <span class="p">{</span>
+               <span class="nx">text</span><span class="p">(</span><span class="nx">str</span><span class="p">,</span> 
+              <span class="p">{</span> <span class="nx">x</span><span class="o">:</span> <span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">c</span> <span class="o">*</span> <span class="nx">gxs</span> <span class="p">,</span>
+                <span class="nx">y</span><span class="o">:</span> <span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="nx">r</span><span class="p">)</span> <span class="o">*</span> <span class="nx">ys</span><span class="p">,</span>
+                <span class="nx">w</span><span class="o">:</span> <span class="nx">gxs</span><span class="p">,</span>
+                <span class="nx">h</span><span class="o">:</span> <span class="nx">ys</span> <span class="p">},</span><span class="nx">al</span><span class="p">,</span> <span class="nx">attr</span><span class="p">);</span> 
+       <span class="p">}</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="api">
+  <h1>
+    <a href="#api" class="pilcrow">&#182;</a>
+    API
+  </h1>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>       </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs"><div class="dox">
+  <div class="summary">
+<div class="pilwrap" id="setdata">
+  <h2>
+    <a href="#setdata" class="pilcrow">&#182;</a>
+    setData
+  </h2>
+</div>
+
+  </div>
+  <div class="body"><p>Set a data field (name, phone etc) to a value</p>
+  </div>
+  <div class="details">
+    <div class="dox_tag_title">Params</div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">data</span>
+      <span class="dox_type">string</span>
+      <span>The name of the data field</span>
+    </div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">value</span>
+      <span class="dox_type">string</span>
+      <span>The value to set the data field to</span>
+    </div>
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>       <span class="kd">function</span> <span class="nx">setData</span><span class="p">(</span><span class="nx">data</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+           <span class="kd">var</span> <span class="nx">element</span><span class="p">;</span>
+           <span class="k">if</span> <span class="p">(</span><span class="nx">dataCells</span><span class="p">[</span><span class="nx">data</span><span class="p">])</span> <span class="nx">dataCells</span><span class="p">[</span><span class="nx">data</span><span class="p">].</span><span class="nx">remove</span><span class="p">();</span>
+           <span class="k">if</span> <span class="p">(</span><span class="nx">data1</span><span class="p">[</span><span class="nx">data</span><span class="p">])</span> <span class="p">{</span>
+               <span class="nx">element</span> <span class="o">=</span> <span class="nx">text</span><span class="p">(</span><span class="nx">value</span><span class="p">,</span> <span class="p">{</span> <span class="nx">x</span><span class="o">:</span> <span class="nx">data1</span><span class="p">[</span><span class="nx">data</span><span class="p">]</span> <span class="o">*</span> <span class="nx">unit</span><span class="p">,</span> <span class="nx">y</span> <span class="o">:</span> <span class="nx">ys</span> <span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="nx">h</span><span class="o">:</span> <span class="nx">ys</span><span class="o">*</span><span class="mi">1</span><span class="p">,</span> <span class="nx">w</span><span class="o">:</span> <span class="mi">999</span> <span class="p">},{</span><span class="nx">align</span><span class="o">:</span> <span class="s1">&#39;start&#39;</span><span class="p">},</span>
+                    <span class="p">{</span><span class="nx">weight</span><span class="o">:</span> <span class="s1">&#39;normal&#39;</span><span class="p">});</span>
+           <span class="p">}</span> 
+           <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">data2</span><span class="p">[</span><span class="nx">data</span><span class="p">])</span> <span class="p">{</span>
+               <span class="nx">element</span> <span class="o">=</span> <span class="nx">text</span><span class="p">(</span><span class="nx">value</span><span class="p">,</span> <span class="p">{</span> <span class="nx">x</span><span class="o">:</span> <span class="nx">data2</span><span class="p">[</span><span class="nx">data</span><span class="p">]</span> <span class="o">*</span> <span class="nx">unit</span><span class="p">,</span> <span class="nx">y</span> <span class="o">:</span> <span class="nx">ys</span> <span class="o">*</span><span class="mi">3</span><span class="p">,</span> <span class="nx">h</span><span class="o">:</span> <span class="nx">ys</span><span class="o">*</span><span class="mi">1</span><span class="p">,</span> <span class="nx">w</span><span class="o">:</span> <span class="mi">999</span> <span class="p">},{</span><span class="nx">align</span><span class="o">:</span> <span class="s1">&#39;start&#39;</span><span class="p">},</span>
+                    <span class="p">{</span><span class="nx">weight</span><span class="o">:</span> <span class="s1">&#39;norma l&#39;</span><span class="p">});</span>
+           <span class="p">}</span> 
+           <span class="k">if</span> <span class="p">(</span><span class="nx">element</span><span class="p">)</span> <span class="nx">dataCells</span><span class="p">[</span><span class="nx">data</span><span class="p">]</span> <span class="o">=</span> <span class="nx">element</span><span class="p">;</span>
+           <span class="k">return</span> <span class="nx">element</span><span class="p">;</span>
+       <span class="p">}</span>
+       </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="setcell">
+  <h2>
+    <a href="#setcell" class="pilcrow">&#182;</a>
+    setCell
+  </h2>
+</div>
+
+
+<p>Set a cell with row r and column c to the value str.  Set the
+alignment with the al string and any attributes with the attr
+object</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>       </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-15" id="section-15">&#182;</a>
+</div>
+<p>Align is a string with the value start or end, top or bottom , or
+combination, default is middle. Attr sets font:, size: (relative
+to fontSize), weight: normal | bold | bolder | lighter | 100
+| 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | inherit</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>       <span class="kd">function</span> <span class="nx">setCell</span><span class="p">(</span><span class="nx">str</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">al</span><span class="p">,</span> <span class="nx">attr</span><span class="p">)</span> <span class="p">{</span>
+           <span class="kd">var</span> <span class="nx">cell</span> <span class="o">=</span> <span class="nx">dataCells</span><span class="p">[</span><span class="s1">&#39;&#39;</span> <span class="o">+</span> <span class="nx">r</span> <span class="o">+</span> <span class="nx">c</span><span class="p">];</span>
+           <span class="k">if</span> <span class="p">(</span><span class="nx">cell</span><span class="p">)</span> <span class="nx">cell</span><span class="p">.</span><span class="nx">remove</span><span class="p">();</span>
+           <span class="nx">dataCells</span><span class="p">[</span><span class="s1">&#39;&#39;</span> <span class="o">+</span> <span class="nx">r</span> <span class="o">+</span> <span class="nx">c</span><span class="p">]</span>  <span class="o">=</span>
+               <span class="nx">text</span><span class="p">(</span><span class="nx">str</span><span class="p">,</span> 
+              <span class="p">{</span> <span class="nx">x</span><span class="o">:</span> <span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">c</span> <span class="o">*</span> <span class="nx">gxs</span> <span class="p">,</span>
+                <span class="nx">y</span><span class="o">:</span> <span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="nx">r</span><span class="p">)</span> <span class="o">*</span> <span class="nx">ys</span><span class="p">,</span>
+                <span class="nx">w</span><span class="o">:</span> <span class="nx">gxs</span><span class="p">,</span>
+                <span class="nx">h</span><span class="o">:</span> <span class="nx">ys</span> <span class="p">},</span><span class="nx">al</span><span class="p">,</span> <span class="nx">attr</span><span class="p">);</span> 
+       <span class="p">}</span>
+       </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="setcolumn">
+  <h2>
+    <a href="#setcolumn" class="pilcrow">&#182;</a>
+    setColumn
+  </h2>
+</div>
+
+
+<p>Set a day (0-13) to the values in the objecct column. See
+rowMap for possible field names</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>       <span class="kd">function</span> <span class="nx">setColumn</span><span class="p">(</span><span class="nx">column</span><span class="p">,</span> <span class="nx">day</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">column</span><span class="p">).</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">f</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">fields</span><span class="p">[</span><span class="nx">f</span><span class="p">])</span> <span class="p">{</span>
+                <span class="nx">setCell</span><span class="p">(</span><span class="nx">column</span><span class="p">[</span><span class="nx">f</span><span class="p">],</span> <span class="nx">fields</span><span class="p">[</span><span class="nx">f</span><span class="p">].</span><span class="nx">row</span><span class="p">,</span> <span class="nx">day</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">});</span> 
+       <span class="p">}</span>
+       </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="clear">
+  <h2>
+    <a href="#clear" class="pilcrow">&#182;</a>
+    clear
+  </h2>
+</div>
+
+
+<p>Clear the timesheet</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>       <span class="kd">function</span> <span class="nx">clear</span><span class="p">()</span> <span class="p">{</span>
+           <span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">dataCells</span><span class="p">).</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">c</span><span class="p">)</span> <span class="p">{</span>
+              <span class="nx">dataCells</span><span class="p">[</span><span class="nx">c</span><span class="p">].</span><span class="nx">remove</span><span class="p">();</span> 
+           <span class="p">});</span>
+       <span class="p">}</span>
+       </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="draw">
+  <h2>
+    <a href="#draw" class="pilcrow">&#182;</a>
+    draw
+  </h2>
+</div>
+
+
+<p>Draw the timesheet on its canvas</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>       <span class="kd">function</span> <span class="nx">draw</span><span class="p">()</span> <span class="p">{</span>
+           <span class="nx">text</span><span class="p">(</span><span class="nx">title</span><span class="p">,</span> <span class="nx">topBox</span><span class="p">,</span> <span class="p">{},</span> <span class="p">{</span> <span class="nx">size</span><span class="o">:</span> <span class="mi">4</span><span class="p">,</span> <span class="nx">weight</span><span class="o">:</span><span class="s1">&#39;bold&#39;</span><span class="p">});</span>
+           <span class="nx">paper</span><span class="p">.</span><span class="nx">rect</span><span class="p">(</span><span class="nx">topBox</span><span class="p">.</span><span class="nx">x</span><span class="p">,</span> <span class="nx">topBox</span><span class="p">.</span><span class="nx">y</span><span class="p">,</span> <span class="nx">topBox</span><span class="p">.</span><span class="nx">w</span><span class="p">,</span> <span class="nx">topBox</span><span class="p">.</span><span class="nx">h</span><span class="p">);</span>
+           <span class="nx">drawTopLines</span><span class="p">();</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-19" id="section-19">&#182;</a>
+</div>
+<p>grids</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>           <span class="nx">drawMatrix</span><span class="p">(</span><span class="nx">labelBoxWidth</span><span class="p">,</span> <span class="nx">topRows</span> <span class="o">*</span> <span class="nx">ys</span><span class="p">,</span> 
+                <span class="nx">portWidth</span> <span class="o">-</span> <span class="nx">labelBoxWidth</span> <span class="o">-</span> <span class="nx">totalBoxWidth</span><span class="p">,</span>   <span class="nx">ys</span> <span class="o">*</span> <span class="nx">gridRows</span><span class="p">,</span>
+                <span class="nx">gridColumns</span><span class="p">,</span> <span class="nx">gridRows</span><span class="p">);</span>
+           <span class="nx">drawMatrix</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nx">topRows</span> <span class="o">*</span> <span class="nx">ys</span><span class="p">,</span>   <span class="nx">labelBoxWidth</span><span class="p">,</span> <span class="nx">ys</span> <span class="o">*</span> <span class="nx">gridRows</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">gridRows</span><span class="p">);</span>
+           <span class="nx">drawMatrix</span><span class="p">(</span><span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="nx">gridColumns</span><span class="p">,</span> <span class="nx">topRows</span> <span class="o">*</span> <span class="nx">ys</span><span class="p">,</span> <span class="nx">totalBoxWidth</span><span class="p">,</span> <span class="nx">ys</span> <span class="o">*</span> <span class="nx">gridRows</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nx">gridRows</span><span class="p">);</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-20" id="section-20">&#182;</a>
+</div>
+<p>thick borders:</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>           <span class="nx">paper</span><span class="p">.</span><span class="nx">rect</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nx">topRows</span> <span class="o">*</span> <span class="nx">ys</span>  <span class="p">,</span> <span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">totalBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="nx">gridColumns</span> <span class="p">,</span> <span class="nx">gridRows</span> <span class="o">*</span> <span class="nx">ys</span> <span class="p">).</span><span class="nx">attr</span><span class="p">({</span><span class="s1">&#39;stroke-width&#39;</span><span class="o">:</span> <span class="mi">2</span><span class="p">});</span>
+           <span class="nx">paper</span><span class="p">.</span><span class="nx">rect</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nx">topRows</span> <span class="o">*</span> <span class="nx">ys</span>  <span class="p">,</span> <span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="nx">gridColumns</span> <span class="p">,</span> <span class="nx">gridRows</span> <span class="o">*</span> <span class="nx">ys</span> <span class="p">).</span><span class="nx">attr</span><span class="p">({</span><span class="s1">&#39;stroke-width&#39;</span><span class="o">:</span><span class="mi">2</span><span class="p">});</span>
+           <span class="nx">paper</span><span class="p">.</span><span class="nx">rect</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nx">topRows</span> <span class="o">*</span> <span class="nx">ys</span>  <span class="p">,</span> <span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">totalBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="nx">gridColumns</span> <span class="p">,</span>  <span class="nx">ys</span> <span class="p">).</span><span class="nx">attr</span><span class="p">({</span><span class="s1">&#39;stroke-width&#39;</span><span class="o">:</span><span class="mi">2</span><span class="p">});</span>
+           <span class="nx">paper</span><span class="p">.</span><span class="nx">rect</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="nx">ys</span>  <span class="p">,</span> <span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">totalBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="nx">gridColumns</span> <span class="p">,</span>  <span class="nx">ys</span> <span class="p">).</span><span class="nx">attr</span><span class="p">({</span><span class="s1">&#39;stroke-width&#39;</span><span class="o">:</span><span class="mi">2</span><span class="p">});</span>
+           <span class="nx">paper</span><span class="p">.</span><span class="nx">rect</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="nx">ys</span>  <span class="p">,</span> <span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">totalBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="nx">gridColumns</span> <span class="p">,</span>  <span class="nx">ys</span> <span class="p">).</span><span class="nx">attr</span><span class="p">({</span><span class="s1">&#39;stroke-width&#39;</span><span class="o">:</span><span class="mi">2</span><span class="p">});</span>
+           <span class="nx">paper</span><span class="p">.</span><span class="nx">rect</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="mi">9</span><span class="p">)</span> <span class="o">*</span> <span class="nx">ys</span>  <span class="p">,</span> <span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">totalBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="nx">gridColumns</span> <span class="p">,</span>  <span class="nx">ys</span> <span class="p">).</span><span class="nx">attr</span><span class="p">({</span><span class="s1">&#39;stroke-width&#39;</span><span class="o">:</span><span class="mi">2</span><span class="p">});</span>
+           <span class="nx">paper</span><span class="p">.</span><span class="nx">rect</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="mi">23</span><span class="p">)</span> <span class="o">*</span> <span class="nx">ys</span>  <span class="p">,</span> <span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">totalBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="nx">gridColumns</span> <span class="p">,</span>  <span class="nx">ys</span> <span class="p">).</span><span class="nx">attr</span><span class="p">({</span><span class="s1">&#39;stroke-width&#39;</span><span class="o">:</span><span class="mi">2</span><span class="p">});</span>
+           <span class="nx">paper</span><span class="p">.</span><span class="nx">rect</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="mi">24</span><span class="p">)</span> <span class="o">*</span> <span class="nx">ys</span>  <span class="p">,</span> <span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">totalBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="nx">gridColumns</span> <span class="p">,</span>  <span class="nx">ys</span> <span class="p">).</span><span class="nx">attr</span><span class="p">({</span><span class="s1">&#39;stroke-width&#39;</span><span class="o">:</span><span class="mi">2</span><span class="p">});</span>
+           <span class="nx">paper</span><span class="p">.</span><span class="nx">rect</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="mi">25</span><span class="p">)</span> <span class="o">*</span> <span class="nx">ys</span>  <span class="p">,</span> <span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">totalBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="nx">gridColumns</span> <span class="p">,</span>  <span class="nx">ys</span> <span class="p">).</span><span class="nx">attr</span><span class="p">({</span><span class="s1">&#39;stroke-width&#39;</span><span class="o">:</span><span class="mi">2</span><span class="p">});</span>
+           <span class="nx">paper</span><span class="p">.</span><span class="nx">rect</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="mi">26</span><span class="p">)</span> <span class="o">*</span> <span class="nx">ys</span>  <span class="p">,</span> <span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">totalBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="nx">gridColumns</span> <span class="p">,</span>  <span class="nx">ys</span> <span class="p">).</span><span class="nx">attr</span><span class="p">({</span><span class="s1">&#39;stroke-width&#39;</span><span class="o">:</span><span class="mi">2</span><span class="p">});</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-21" id="section-21">&#182;</a>
+</div>
+<p>grey out some boxes</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>           <span class="nx">paper</span><span class="p">.</span><span class="nx">rect</span><span class="p">(</span><span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="nx">gridColumns</span><span class="p">,</span> <span class="nx">topRows</span> <span class="o">*</span> <span class="nx">ys</span>  <span class="p">,</span> <span class="nx">totalBoxWidth</span><span class="p">,</span> <span class="mi">8</span> <span class="o">*</span> <span class="nx">ys</span> <span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="s1">&#39;fill&#39;</span><span class="p">,</span> <span class="s1">&#39;grey&#39;</span><span class="p">);</span>
+           <span class="nx">paper</span><span class="p">.</span><span class="nx">rect</span><span class="p">(</span><span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="mi">13</span><span class="p">)</span> <span class="o">*</span> <span class="nx">ys</span>  <span class="p">,</span> <span class="mi">5</span> <span class="o">*</span> <span class="nx">gxs</span><span class="p">,</span>  <span class="nx">ys</span> <span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="s1">&#39;fill&#39;</span><span class="p">,</span> <span class="s1">&#39;grey&#39;</span><span class="p">);</span>
+           <span class="nx">paper</span><span class="p">.</span><span class="nx">rect</span><span class="p">(</span><span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="mi">9</span><span class="p">,</span> <span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="mi">13</span><span class="p">)</span> <span class="o">*</span> <span class="nx">ys</span>  <span class="p">,</span> <span class="mi">5</span> <span class="o">*</span> <span class="nx">gxs</span><span class="p">,</span>  <span class="nx">ys</span> <span class="p">).</span><span class="nx">attr</span><span class="p">(</span><span class="s1">&#39;fill&#39;</span><span class="p">,</span> <span class="s1">&#39;grey&#39;</span><span class="p">);</span>
+
+           <span class="nx">text</span><span class="p">(</span><span class="nx">totalHours</span><span class="p">,{</span><span class="nx">x</span><span class="o">:</span><span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="nx">gridColumns</span><span class="p">,</span><span class="nx">y</span><span class="o">:</span><span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="mi">8</span><span class="p">)</span><span class="o">*</span> <span class="nx">ys</span> <span class="p">,</span><span class="nx">w</span><span class="o">:</span><span class="nx">totalBoxWidth</span><span class="p">,</span><span class="nx">h</span><span class="o">:</span><span class="nx">ys</span><span class="p">},</span>
+                <span class="p">{</span><span class="nx">align</span><span class="o">:</span> <span class="s1">&#39;middle&#39;</span><span class="p">},</span> <span class="p">{</span><span class="nx">weight</span><span class="o">:</span><span class="s1">&#39;bold&#39;</span><span class="p">});</span>
+           <span class="nx">text</span><span class="p">(</span><span class="nx">enteredBy</span> <span class="p">,{</span><span class="nx">x</span><span class="o">:</span><span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="nx">gridColumns</span><span class="p">,</span><span class="nx">y</span><span class="o">:</span><span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="mi">24</span><span class="p">)</span><span class="o">*</span> <span class="nx">ys</span> <span class="p">,</span><span class="nx">w</span><span class="o">:</span><span class="nx">totalBoxWidth</span><span class="p">,</span><span class="nx">h</span><span class="o">:</span><span class="nx">ys</span><span class="p">},</span>
+                <span class="p">{</span><span class="nx">align</span><span class="o">:</span> <span class="s1">&#39;start&#39;</span><span class="p">},</span> <span class="p">{</span><span class="nx">weight</span><span class="o">:</span><span class="s1">&#39;bold&#39;</span><span class="p">});</span>
+           <span class="nx">text</span><span class="p">(</span><span class="nx">enteredByDate</span><span class="p">,{</span><span class="nx">x</span><span class="o">:</span><span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">gxs</span> <span class="o">*</span> <span class="nx">gridColumns</span><span class="p">,</span><span class="nx">y</span><span class="o">:</span><span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="mi">26</span><span class="p">)</span><span class="o">*</span> <span class="nx">ys</span> <span class="p">,</span><span class="nx">w</span><span class="o">:</span><span class="nx">totalBoxWidth</span><span class="p">,</span><span class="nx">h</span><span class="o">:</span><span class="nx">ys</span><span class="p">},</span>
+                <span class="p">{</span><span class="nx">align</span><span class="o">:</span> <span class="s1">&#39;start&#39;</span><span class="p">},</span> <span class="p">{</span><span class="nx">weight</span><span class="o">:</span><span class="s1">&#39;bold&#39;</span><span class="p">});</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-22" id="section-22">&#182;</a>
+</div>
+<p>lefthand labels</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>           <span class="nx">rowMap</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span>
+               <span class="kd">function</span><span class="p">(</span><span class="nx">r</span><span class="p">,</span> <span class="nx">n</span><span class="p">)</span> <span class="p">{</span>
+                   <span class="kd">var</span> <span class="nx">weight</span> <span class="o">=</span> <span class="s1">&#39;normal&#39;</span><span class="p">;</span>
+                   <span class="kd">var</span> <span class="nx">label</span><span class="p">;</span>
+                   <span class="k">if</span> <span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">title</span><span class="p">.</span><span class="nx">charAt</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">===</span> <span class="s1">&#39;*&#39;</span><span class="p">)</span>  <span class="p">{</span>
+                       <span class="nx">label</span> <span class="o">=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">title</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+                       <span class="nx">weight</span> <span class="o">=</span> <span class="s1">&#39;bold&#39;</span><span class="p">;</span>
+                   <span class="p">}</span>
+                   <span class="k">else</span> <span class="nx">label</span> <span class="o">=</span> <span class="nx">r</span><span class="p">.</span><span class="nx">title</span><span class="p">;</span>
+                   <span class="nx">text</span><span class="p">(</span><span class="nx">label</span><span class="p">,</span> 
+                  <span class="p">{</span><span class="nx">x</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span> <span class="nx">y</span><span class="o">:</span> <span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="nx">n</span><span class="p">)</span><span class="o">*</span><span class="nx">ys</span><span class="p">,</span>
+                   <span class="nx">w</span><span class="o">:</span> <span class="nx">labelBoxWidth</span><span class="p">,</span> <span class="nx">h</span><span class="o">:</span> <span class="nx">ys</span><span class="p">},</span>
+                  <span class="p">{</span> <span class="nx">align</span><span class="o">:</span> <span class="s1">&#39;end&#39;</span> <span class="p">}</span> <span class="p">,</span> <span class="p">{</span><span class="nx">weight</span><span class="o">:</span> <span class="nx">weight</span><span class="p">});</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-23" id="section-23">&#182;</a>
+</div>
+<p>n++; </p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>               <span class="p">});</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-24" id="section-24">&#182;</a>
+</div>
+<p>days in toprow</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>           <span class="nx">days</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span>
+               <span class="kd">function</span><span class="p">(</span><span class="nx">d</span><span class="p">,</span> <span class="nx">n</span><span class="p">)</span> <span class="p">{</span>
+                   <span class="nx">grid</span><span class="p">(</span><span class="nx">d</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">n</span><span class="p">,</span> <span class="p">{},</span> <span class="p">{</span> <span class="nx">weight</span><span class="o">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">});</span>
+                   <span class="nx">grid</span><span class="p">(</span><span class="nx">d</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">n</span> <span class="o">+</span> <span class="mi">7</span><span class="p">,</span> <span class="p">{},</span> <span class="p">{</span> <span class="nx">weight</span><span class="o">:</span> <span class="s1">&#39;bold&#39;</span><span class="p">});</span>
+               <span class="p">});</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-25" id="section-25">&#182;</a>
+</div>
+<p>bottom</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>           <span class="nx">text</span><span class="p">(</span><span class="nx">employeeSign</span><span class="p">,</span> 
+                <span class="p">{</span><span class="nx">x</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span> <span class="nx">y</span><span class="o">:</span> <span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="nx">gridRows</span><span class="p">)</span><span class="o">*</span><span class="nx">ys</span><span class="p">,</span>
+                 <span class="nx">w</span><span class="o">:</span> <span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">totalBoxWidth</span> <span class="o">+</span> <span class="nx">gridColumns</span> <span class="o">*</span> <span class="nx">gxs</span><span class="p">,</span> <span class="nx">h</span><span class="o">:</span> <span class="nx">ys</span><span class="o">*</span><span class="mi">2</span><span class="p">},</span>
+                <span class="p">{</span> <span class="nx">align</span><span class="o">:</span> <span class="s1">&#39;start bottom&#39;</span> <span class="p">}</span> <span class="p">,</span> <span class="p">{</span><span class="nx">weight</span><span class="o">:</span> <span class="s1">&#39;normal&#39;</span><span class="p">});</span>
+           <span class="nx">text</span><span class="p">(</span><span class="nx">managerSign</span><span class="p">,</span> 
+                <span class="p">{</span><span class="nx">x</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span> <span class="nx">y</span><span class="o">:</span> <span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="nx">gridRows</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="nx">ys</span><span class="p">,</span>
+                 <span class="nx">w</span><span class="o">:</span> <span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">totalBoxWidth</span> <span class="o">+</span> <span class="nx">gridColumns</span> <span class="o">*</span> <span class="nx">gxs</span><span class="p">,</span> <span class="nx">h</span><span class="o">:</span> <span class="nx">ys</span><span class="o">*</span><span class="mi">2</span><span class="p">},</span>
+                <span class="p">{</span> <span class="nx">align</span><span class="o">:</span> <span class="s1">&#39;start&#39;</span> <span class="p">}</span> <span class="p">,</span> <span class="p">{</span><span class="nx">weight</span><span class="o">:</span> <span class="s1">&#39;normal&#39;</span><span class="p">});</span>
+       <span class="p">}</span>       
+       
+       <span class="k">return</span> <span class="p">{</span>
+           <span class="nx">draw</span><span class="o">:</span> <span class="nx">draw</span><span class="p">,</span>
+           <span class="nx">setCell</span><span class="o">:</span> <span class="nx">setCell</span><span class="p">,</span>
+           <span class="nx">setData</span><span class="o">:</span> <span class="nx">setData</span><span class="p">,</span>
+           <span class="nx">setColumn</span><span class="o">:</span> <span class="nx">setColumn</span><span class="p">,</span>
+           <span class="nx">clear</span><span class="o">:</span> <span class="nx">clear</span>
+       <span class="p">};</span>
+   <span class="p">}});</span>
+</pre></div>
+        </td>
+      </tr>
+  </tbody>
+</table>
+  </div>
+</body>
+</html>

@@ -8,8 +8,8 @@
 
 define
 ({ 
-    inject: ['shiftQualifier', 'calculateTimesheetColumn'],
-    factory: function(shiftQualifier, calculateTimesheetColumn)
+    inject: ['calculateTimesheet', 'shiftQualifier', 'calculateTimesheetColumn'],
+    factory: function(calculateTimesheet, shiftQualifier, calculateTimesheetColumn)
     { "use strict";
       var log = logger('test');
       logger.showStamp();
@@ -137,6 +137,20 @@ define
       //     });
       //     console.log('done');
       // }
+
+      function getDate(date, hour, minute) {
+          date = Date.parse(date); 
+          return Date.today().set({
+              hour: hour,
+              minute: minute,
+              second: 0,
+              year: date.getYear() + 1900,
+              month: date.getMonth(),
+              day: date.getDate()
+          });
+          
+      }
+      
       function makeShift(date, sHour, sMinute, eHour, eMinute, phWorked) {
           date = Date.parse(date); 
     
@@ -158,7 +172,7 @@ define
           });
           if (eHour === 0 && eMinute === 0) endDate.setDate(endDate.getDate() + 1);
     
-          var result = {
+          var shift = {
               // person: values.person, //array of _id's of people doing the shift
               // location: values.location,
               startDate: startDate,
@@ -174,8 +188,13 @@ define
               // endTime: values.endTime,
               // repeats: values.repeats, //TODO not implemented yet 
           };
-          if (phWorked) result.workedOnPublicHoliday = true;
-          return result;
+          if (phWorked) shift.workedOnPublicHoliday = true;
+          
+          var hourFields = shiftQualifier.getWorkHourFields(shift);
+          Object.keys(hourFields).forEach(function(s) {
+              shift[s] = hourFields[s];
+          });
+          return shift;
       }
       
       // test(1);
@@ -223,10 +242,10 @@ define
           var s2 = [];
           shifts.forEach(function(s) {
               var newShift = makeShift.apply(null, s);
-              var hourFields = shiftQualifier.getWorkHourFields(newShift);
-              Object.keys(hourFields).forEach(function(s) {
-                newShift[s] = hourFields[s];
-              });
+              // var hourFields = shiftQualifier.getWorkHourFields(newShift);
+              // Object.keys(hourFields).forEach(function(s) {
+              //   newShift[s] = hourFields[s];
+              // });
               s2.push(newShift);
               it('shift=> ' + newShift.toString());
           });
@@ -244,6 +263,36 @@ define
               });
           it('-------------------------');
       }
+      
+      
+      function makeSomeShifts() {
+          var shifts = [];
+          shifts.push(makeShift('7 Dec', 10,0,12,0));
+          shifts.push(makeShift('7 Dec', 15,0,22,0));
+          shifts.push(makeShift('8 Dec', 6,0,9,0));
+          shifts.push(makeShift('10 Dec',4,0,7,0 ));
+          // shifts.push(makeShift('7 Dec', ));
+          // shifts.push(makeShift('7 Dec', ));
+          // shifts.push(makeShift('7 Dec', ));
+          // shifts.push(makeShift('7 Dec', ));
+          // shifts.push(makeShift('7 Dec', ));
+          // shifts.push(makeShift('7 Dec', ));
+          return shifts;
+      }
+      
+      describe("Testing the calculation of a complete timesheet",
+               function() {
+                   var timesheet = calculateTimesheet(getDate('7 Dec',0,0), personPart, location, makeSomeShifts());
+                   it('timesheet is defined', function() {
+                       expect(timesheet).toBeDefined();
+                   });
+                   for (var i=0; i< 14; i++)
+                       log.d(timesheet.column(i));
+                   log.d(timesheet.totals());
+               });
+      
+      
+      
       
       describe("Testing calculation of a timesheet column:" 
                ,function() {

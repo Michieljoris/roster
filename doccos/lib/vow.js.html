@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>vow.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="../doc-style.css" />
+  <script src="../doc-filelist.js"></script>
+  <script>
+    var relativeDir = '../', thisFile = 'lib/vow.js', defaultSidebar = true;
+  </script>
+  <script src="../doc-script.js"></script>
+  <script src="../fileSearch.js"></script>
+  <link rel="stylesheet" href="../fileSearch.css" />
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container"><div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+      <tr>
+        <td class="docs">
+          <h1>vow.js</h1>
+        </td>
+        <td class="code highlight"></td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-1" id="section-1">&#182;</a>
+</div>
+<p>vow.js
+Douglas Crockford
+2012-10-29</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-2" id="section-2">&#182;</a>
+</div>
+<p>Public Domain</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="cm">/*global setTimeout, setImmediate */</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-3" id="section-3">&#182;</a>
+</div>
+<p>If this system does not have setImmediate, then simulate it with setTimeout.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">setImmediate</span> <span class="o">!==</span> <span class="s1">&#39;function&#39;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">setImmediate</span> <span class="o">=</span> <span class="kd">function</span> <span class="nx">setImmediate</span><span class="p">(</span><span class="nx">func</span><span class="p">,</span> <span class="nx">param</span><span class="p">)</span> <span class="p">{</span>
+        <span class="s1">&#39;use strict&#39;</span><span class="p">;</span>
+        <span class="k">return</span> <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="nx">func</span><span class="p">(</span><span class="nx">param</span><span class="p">);</span>
+        <span class="p">},</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="p">};</span>
+<span class="p">}</span>
+
+
+<span class="kd">var</span> <span class="nx">VOW</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+    <span class="s1">&#39;use strict&#39;</span><span class="p">;</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-4" id="section-4">&#182;</a>
+</div>
+<p>The VOW object contains a .make function that is used to make vows.
+It may also contain other useful functions.
+In some mythologies, 'VOW' is called 'deferrer'.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">enqueue</span><span class="p">(</span>
+        <span class="nx">queue</span><span class="p">,</span>      <span class="c1">// An array of resolve functions (keepers or breakers)</span>
+        <span class="nx">func</span><span class="p">,</span>       <span class="c1">// A function that was registered with the .when method</span>
+        <span class="nx">resolver</span><span class="p">,</span>   <span class="c1">// A resolve function to append to the queue</span>
+        <span class="nx">breaker</span>     <span class="c1">// A break resolve function to be used if func fails</span>
+    <span class="p">)</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-5" id="section-5">&#182;</a>
+</div>
+<p>enqueue is a helper function used by .when. It will append a function to
+either the keepers queue or the breakers queue.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>        <span class="nx">queue</span><span class="p">[</span><span class="nx">queue</span><span class="p">.</span><span class="nx">length</span><span class="p">]</span> <span class="o">=</span> <span class="k">typeof</span> <span class="nx">func</span> <span class="o">!==</span> <span class="s1">&#39;function&#39;</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-6" id="section-6">&#182;</a>
+</div>
+<p>If func is not a function, push the resolver so that the value passes to
+the next cascaded .when.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>            <span class="o">?</span> <span class="nx">resolver</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-7" id="section-7">&#182;</a>
+</div>
+<p>If the func is a function, push a function that calls func with a value.
+The result can be a promise, or not a promise, or an exception.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>            <span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+                <span class="k">try</span> <span class="p">{</span>
+                    <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">func</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-8" id="section-8">&#182;</a>
+</div>
+<p>If the result is a promise, then register our resolver with that promise.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                    <span class="k">if</span> <span class="p">(</span><span class="nx">result</span> <span class="o">&amp;&amp;</span> <span class="nx">result</span><span class="p">.</span><span class="nx">is_promise</span> <span class="o">===</span> <span class="kc">true</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="nx">result</span><span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="nx">resolver</span><span class="p">,</span> <span class="nx">breaker</span><span class="p">);</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-9" id="section-9">&#182;</a>
+</div>
+<p>But if it is not a promise, then use the result to resolve our promise.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                        <span class="nx">resolver</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
+                    <span class="p">}</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-10" id="section-10">&#182;</a>
+</div>
+<p>But if func throws an exception, then break our promise.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                <span class="p">}</span> <span class="k">catch</span> <span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">breaker</span><span class="p">(</span><span class="nx">e</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">};</span>
+    <span class="p">}</span>
+
+
+    <span class="kd">function</span> <span class="nx">enlighten</span><span class="p">(</span><span class="nx">queue</span><span class="p">,</span> <span class="nx">fate</span><span class="p">)</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-11" id="section-11">&#182;</a>
+</div>
+<p>enlighten is a helper function of herald and .when. It schedules the
+processing of all of the resolution functions in either the keepers queue
+or the breakers queue in later turns with the promise's fate.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>        <span class="nx">queue</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">func</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">setImmediate</span><span class="p">(</span><span class="nx">func</span><span class="p">,</span> <span class="nx">fate</span><span class="p">);</span>
+        <span class="p">});</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="nx">make</span><span class="o">:</span> <span class="kd">function</span> <span class="nx">make</span><span class="p">()</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-12" id="section-12">&#182;</a>
+</div>
+<p>The make function makes new vows. A vow contains a promise object and the
+two resolution functions (break and keep) that determine the fate of the
+promise.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>            <span class="kd">var</span> <span class="nx">breakers</span> <span class="o">=</span> <span class="p">[],</span>          <span class="c1">// .when&#39;s broken queue</span>
+                <span class="nx">fate</span><span class="p">,</span>                   <span class="c1">// The promise&#39;s ultimate value</span>
+                <span class="nx">keepers</span> <span class="o">=</span> <span class="p">[],</span>           <span class="c1">// .when&#39;s kept queue</span>
+                <span class="nx">status</span> <span class="o">=</span> <span class="s1">&#39;pending&#39;</span><span class="p">;</span>     <span class="c1">// &#39;broken&#39;, &#39;kept&#39;, or &#39;pending&#39;</span>
+
+            <span class="kd">function</span> <span class="nx">herald</span><span class="p">(</span><span class="nx">state</span><span class="p">,</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">queue</span><span class="p">)</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-13" id="section-13">&#182;</a>
+</div>
+<p>The herald function is a helper function of break and keep.
+It seals the promise's fate, updates its status, enlightens
+one of the queues, and empties both queues.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                <span class="k">if</span> <span class="p">(</span><span class="nx">status</span> <span class="o">!==</span> <span class="s1">&#39;pending&#39;</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">throw</span> <span class="s2">&quot;overpromise&quot;</span><span class="p">;</span>
+                <span class="p">}</span>
+                <span class="nx">fate</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+                <span class="nx">status</span> <span class="o">=</span> <span class="nx">state</span><span class="p">;</span>
+                <span class="nx">enlighten</span><span class="p">(</span><span class="nx">queue</span><span class="p">,</span> <span class="nx">fate</span><span class="p">);</span>
+                <span class="nx">keepers</span><span class="p">.</span><span class="nx">length</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+                <span class="nx">breakers</span><span class="p">.</span><span class="nx">length</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="p">}</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-14" id="section-14">&#182;</a>
+</div>
+<p>Construct and return the vow object.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>            <span class="k">return</span> <span class="p">{</span>
+                <span class="s1">&#39;break&#39;</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-15" id="section-15">&#182;</a>
+</div>
+<p>The break method breaks the promise. Programs targeted for obsolete ES3
+engines (which at this date is only IE&lt;9) must write vow.break() as
+vow<a href="">'break'</a>.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                    <span class="nx">herald</span><span class="p">(</span><span class="s1">&#39;broken&#39;</span><span class="p">,</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">breakers</span><span class="p">);</span>
+                <span class="p">},</span>
+                <span class="nx">keep</span><span class="o">:</span> <span class="kd">function</span> <span class="nx">keep</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-16" id="section-16">&#182;</a>
+</div>
+<p>The keep method keeps the promise.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                    <span class="nx">herald</span><span class="p">(</span><span class="s1">&#39;kept&#39;</span><span class="p">,</span> <span class="nx">value</span><span class="p">,</span> <span class="nx">keepers</span><span class="p">);</span>
+                <span class="p">},</span>
+                <span class="nx">promise</span><span class="o">:</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-17" id="section-17">&#182;</a>
+</div>
+<p>The promise is an object with a .when method.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                    <span class="nx">is_promise</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-18" id="section-18">&#182;</a>
+</div>
+<p>The .when method is the promise monad's bind. The .when method can take two
+optional functions. One of those functions may be called, depending on the
+promise's resolution. Both could be called if the the kept function throws.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                    <span class="nx">when</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">kept</span><span class="p">,</span> <span class="nx">broken</span><span class="p">)</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-19" id="section-19">&#182;</a>
+</div>
+<p>Make a new vow. Return the new promise.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                        <span class="kd">var</span> <span class="nx">vow</span> <span class="o">=</span> <span class="nx">make</span><span class="p">();</span>
+                        <span class="k">switch</span> <span class="p">(</span><span class="nx">status</span><span class="p">)</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-20" id="section-20">&#182;</a>
+</div>
+<p>If this promise is still pending, then enqueue both kept and broken.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                        <span class="k">case</span> <span class="s1">&#39;pending&#39;</span><span class="o">:</span>
+                            <span class="nx">enqueue</span><span class="p">(</span><span class="nx">keepers</span><span class="p">,</span>  <span class="nx">kept</span><span class="p">,</span>   <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">,</span>     <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">]);</span>
+                            <span class="nx">enqueue</span><span class="p">(</span><span class="nx">breakers</span><span class="p">,</span> <span class="nx">broken</span><span class="p">,</span> <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">],</span> <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">]);</span>
+                            <span class="k">break</span><span class="p">;</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-21" id="section-21">&#182;</a>
+</div>
+<p>If the promise has already been kept, then enqueue only the kept function,
+and enlighten it.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                        <span class="k">case</span> <span class="s1">&#39;kept&#39;</span><span class="o">:</span>
+                            <span class="nx">enqueue</span><span class="p">(</span><span class="nx">keepers</span><span class="p">,</span> <span class="nx">kept</span><span class="p">,</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">,</span> <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">]);</span>
+                            <span class="nx">enlighten</span><span class="p">(</span><span class="nx">keepers</span><span class="p">,</span> <span class="nx">fate</span><span class="p">);</span>
+                            <span class="k">break</span><span class="p">;</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-22" id="section-22">&#182;</a>
+</div>
+<p>If the promise has already been broken, then enqueue only the broken
+function, and enlighten it.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                        <span class="k">case</span> <span class="s1">&#39;broken&#39;</span><span class="o">:</span>
+                            <span class="nx">enqueue</span><span class="p">(</span><span class="nx">breakers</span><span class="p">,</span> <span class="nx">broken</span><span class="p">,</span> <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">],</span> <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">]);</span>
+                            <span class="nx">enlighten</span><span class="p">(</span><span class="nx">breakers</span><span class="p">,</span> <span class="nx">fate</span><span class="p">);</span>
+                            <span class="k">break</span><span class="p">;</span>
+                        <span class="p">}</span>
+                        <span class="k">return</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">};</span>
+        <span class="p">},</span>
+        <span class="nx">every</span><span class="o">:</span> <span class="kd">function</span> <span class="nx">every</span><span class="p">(</span><span class="nx">array</span><span class="p">)</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-23" id="section-23">&#182;</a>
+</div>
+<p>The every function takes an array of promises and returns a promise that
+will deliver an array of results only if every promise is kept.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>            <span class="kd">var</span> <span class="nx">remaining</span> <span class="o">=</span> <span class="nx">array</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span> <span class="nx">results</span> <span class="o">=</span> <span class="p">[],</span> <span class="nx">vow</span> <span class="o">=</span> <span class="nx">VOW</span><span class="p">.</span><span class="nx">make</span><span class="p">();</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">remaining</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">](</span><span class="nx">array</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">array</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">promise</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">promise</span><span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="nx">results</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+                        <span class="nx">remaining</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="nx">remaining</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                            <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">(</span><span class="nx">results</span><span class="p">);</span>
+                        <span class="p">}</span>
+                    <span class="p">},</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">reason</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="nx">remaining</span> <span class="o">=</span> <span class="kc">NaN</span><span class="p">;</span>
+                        <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">](</span><span class="nx">reason</span><span class="p">);</span>
+                    <span class="p">});</span>
+                <span class="p">});</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+        <span class="p">},</span>
+        <span class="nx">first</span><span class="o">:</span> <span class="kd">function</span> <span class="nx">first</span><span class="p">(</span><span class="nx">array</span><span class="p">)</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-24" id="section-24">&#182;</a>
+</div>
+<p>The first function takes an array of promises and returns a promise to
+deliver the first observed kept promise, or a broken promise if all of
+the promises are broken.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>            <span class="kd">var</span> <span class="nx">found</span> <span class="o">=</span> <span class="kc">false</span><span class="p">,</span> <span class="nx">remaining</span> <span class="o">=</span> <span class="nx">array</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span> <span class="nx">vow</span> <span class="o">=</span> <span class="nx">VOW</span><span class="p">.</span><span class="nx">make</span><span class="p">();</span>
+
+            <span class="kd">function</span> <span class="nx">check</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nx">remaining</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">remaining</span> <span class="o">===</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="nx">found</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">]();</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="nx">remaining</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">](</span><span class="nx">array</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">array</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">promise</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">promise</span><span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">found</span><span class="p">)</span> <span class="p">{</span>
+                            <span class="nx">found</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+                            <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
+                        <span class="p">}</span>
+                        <span class="nx">check</span><span class="p">();</span>
+                    <span class="p">},</span> <span class="nx">check</span><span class="p">);</span>
+                <span class="p">});</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+        <span class="p">},</span>
+        <span class="nx">any</span><span class="o">:</span> <span class="kd">function</span> <span class="nx">any</span><span class="p">(</span><span class="nx">array</span><span class="p">)</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-25" id="section-25">&#182;</a>
+</div>
+<p>The any function takes an array of promises and returns a promise that
+will deliver a possibly sparse array of results of any kept promises.
+The result will contain an undefined element for each broken promise.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>            <span class="kd">var</span> <span class="nx">remaining</span> <span class="o">=</span> <span class="nx">array</span><span class="p">.</span><span class="nx">length</span><span class="p">,</span> <span class="nx">results</span> <span class="o">=</span> <span class="p">[],</span> <span class="nx">vow</span> <span class="o">=</span> <span class="nx">VOW</span><span class="p">.</span><span class="nx">make</span><span class="p">();</span>
+
+            <span class="kd">function</span> <span class="nx">check</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nx">remaining</span> <span class="o">-=</span> <span class="mi">1</span><span class="p">;</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">remaining</span> <span class="o">===</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">(</span><span class="nx">results</span><span class="p">);</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">remaining</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">(</span><span class="nx">results</span><span class="p">);</span>
+            <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+                <span class="nx">array</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">promise</span><span class="p">,</span> <span class="nx">i</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">promise</span><span class="p">.</span><span class="nx">when</span><span class="p">(</span><span class="kd">function</span> <span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+                        <span class="nx">results</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">=</span> <span class="nx">value</span><span class="p">;</span>
+                        <span class="nx">check</span><span class="p">();</span>
+                    <span class="p">},</span> <span class="nx">check</span><span class="p">);</span>
+                <span class="p">});</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+        <span class="p">},</span>
+        <span class="nx">kept</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-26" id="section-26">&#182;</a>
+</div>
+<p>Returns a new kept promise.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>            <span class="kd">var</span> <span class="nx">vow</span> <span class="o">=</span> <span class="nx">VOW</span><span class="p">.</span><span class="nx">make</span><span class="p">();</span>
+            <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">(</span><span class="nx">value</span><span class="p">);</span>
+            <span class="k">return</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+        <span class="p">},</span>
+        <span class="nx">broken</span><span class="o">:</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">reason</span><span class="p">)</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-27" id="section-27">&#182;</a>
+</div>
+<p>Returns a new broken promise/</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>            <span class="kd">var</span> <span class="nx">vow</span> <span class="o">=</span> <span class="nx">VOW</span><span class="p">.</span><span class="nx">make</span><span class="p">();</span>
+            <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">](</span><span class="nx">reason</span><span class="p">);</span>
+            <span class="k">return</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+        <span class="p">}</span>
+    <span class="p">};</span>
+<span class="p">}());</span>
+</pre></div>
+        </td>
+      </tr>
+  </tbody>
+</table>
+  </div>
+</body>
+</html>

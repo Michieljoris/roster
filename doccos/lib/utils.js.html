@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>utils.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="../doc-style.css" />
+  <script src="../doc-filelist.js"></script>
+  <script>
+    var relativeDir = '../', thisFile = 'lib/utils.js', defaultSidebar = true;
+  </script>
+  <script src="../doc-script.js"></script>
+  <script src="../fileSearch.js"></script>
+  <link rel="stylesheet" href="../fileSearch.css" />
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+      <div class="heading h2">
+        <a href="#sortby">sortBy</a>
+      </div>
+      <div class="heading h2">
+        <a href="#addfieldvalues">addFieldValues</a>
+      </div>
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container"><div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+      <tr>
+        <td class="docs">
+          <h1>utils.js</h1>
+        </td>
+        <td class="code highlight"></td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-1" id="section-1">&#182;</a>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="cm">/*global VOW:false logger:false isc:false define:false */</span>
+<span class="cm">/*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/</span>
+<span class="cm">/*jshint maxparams:5 maxcomplexity:7 maxlen:190 devel:true*/</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-2" id="section-2">&#182;</a>
+</div>
+<hr />
+
+<p>A collection of general utility functions</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="nx">define</span>
+<span class="p">({</span> <span class="nx">factory</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span>
+   <span class="p">{</span> <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+     <span class="kd">var</span> <span class="nx">log</span> <span class="o">=</span> <span class="nx">logger</span><span class="p">(</span><span class="s1">&#39;utils&#39;</span><span class="p">);</span>
+     </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="sortby">
+  <h2>
+    <a href="#sortby" class="pilcrow">&#182;</a>
+    sortBy
+  </h2>
+</div>
+
+
+<p>Sorts an array of objects by the property, ascending unless dir
+is equal to the string 'desc'.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>     <span class="kd">function</span> <span class="nx">sortBy</span><span class="p">(</span><span class="nx">arr</span><span class="p">,</span> <span class="nx">prop</span><span class="p">,</span> <span class="nx">dir</span><span class="p">)</span> <span class="p">{</span>
+         <span class="k">return</span> <span class="nx">arr</span><span class="p">.</span><span class="nx">sort</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span><span class="nx">b</span><span class="p">)</span> <span class="p">{</span>
+             <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">a</span><span class="p">[</span><span class="nx">prop</span><span class="p">])</span> <span class="k">return</span> <span class="o">-</span><span class="mi">1</span><span class="p">;</span>
+             <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">b</span><span class="p">[</span><span class="nx">prop</span><span class="p">])</span> <span class="k">return</span> <span class="mi">1</span><span class="p">;</span>
+             <span class="k">if</span> <span class="p">(</span><span class="nx">dir</span> <span class="o">===</span> <span class="s1">&#39;desc&#39;</span><span class="p">)</span> <span class="k">return</span> <span class="nx">a</span><span class="p">[</span><span class="nx">prop</span><span class="p">]</span><span class="o">&gt;</span><span class="nx">b</span><span class="p">[</span><span class="nx">prop</span><span class="p">]</span> <span class="o">?</span> <span class="o">-</span><span class="mi">1</span> <span class="o">:</span> <span class="mi">1</span><span class="p">;</span>
+             <span class="k">else</span> <span class="k">return</span> <span class="nx">a</span><span class="p">[</span><span class="nx">prop</span><span class="p">]</span><span class="o">&lt;</span><span class="nx">b</span><span class="p">[</span><span class="nx">prop</span><span class="p">]</span> <span class="o">?</span> <span class="o">-</span><span class="mi">1</span> <span class="o">:</span> <span class="mi">1</span><span class="p">;</span>
+         <span class="p">});</span>
+     <span class="p">}</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="addfieldvalues">
+  <h2>
+    <a href="#addfieldvalues" class="pilcrow">&#182;</a>
+    addFieldValues
+  </h2>
+</div>
+
+
+<p>Returns a new object with the totals of the fields of the
+objects.  Any field that is not a number is ignored. Any field
+with a number assigned is expected to have a number assigned to
+it in other objects as well, if present in the object.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>     <span class="kd">function</span> <span class="nx">addFieldValues</span><span class="p">(</span><span class="nx">objects</span><span class="p">)</span> <span class="p">{</span>
+         <span class="k">return</span> <span class="nx">objects</span><span class="p">.</span><span class="nx">reduce</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">fields</span><span class="p">,</span> <span class="nx">object</span><span class="p">)</span> <span class="p">{</span>
+             <span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">object</span><span class="p">).</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">f</span><span class="p">)</span> <span class="p">{</span>
+                 <span class="k">if</span> <span class="p">(</span><span class="nx">fields</span><span class="p">[</span><span class="nx">f</span><span class="p">])</span> <span class="nx">fields</span><span class="p">[</span><span class="nx">f</span><span class="p">]</span> <span class="o">+=</span> <span class="nx">object</span><span class="p">[</span><span class="nx">f</span><span class="p">];</span>
+                 <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">object</span><span class="p">[</span><span class="nx">f</span><span class="p">]</span> <span class="o">===</span> <span class="s1">&#39;number&#39;</span><span class="p">)</span> <span class="nx">fields</span><span class="p">[</span><span class="nx">f</span><span class="p">]</span> <span class="o">=</span> <span class="nx">object</span><span class="p">[</span><span class="nx">f</span><span class="p">];</span>
+             <span class="p">});</span>   
+             <span class="k">return</span> <span class="nx">fields</span><span class="p">;</span>
+         <span class="p">},</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="kc">null</span><span class="p">));</span>
+     <span class="p">}</span>
+     
+     <span class="k">return</span> <span class="p">{</span>
+         <span class="nx">sortBy</span><span class="o">:</span> <span class="nx">sortBy</span><span class="p">,</span>
+         <span class="nx">addFieldValues</span><span class="o">:</span> <span class="nx">addFieldValues</span>
+     <span class="p">};</span>
+   <span class="p">}});</span>
+</pre></div>
+        </td>
+      </tr>
+  </tbody>
+</table>
+  </div>
+</body>
+</html>

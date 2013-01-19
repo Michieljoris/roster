@@ -7,45 +7,62 @@ define
     inject: ['lib/utils', 'calculateTimesheetColumn'],
     factory: function(utils, calculateTimesheetColumn)
     { "use strict";
-      // var log = logger('calculateTimesheet');
+      var log = logger('calculateTimesheet');
+      var DAY_IN_MILLISECONDS = 24*60*60*1000;
       
       var location, person, shifts, fortnight;
-      var days = [];
+      var columns = [];
+      var totals;
+      
+      // function addFieldValues(objects) {
+      //     return objects.reduce(function(fields, object) {
+      //         Object.keys(object).forEach(function(f) {
+      //             if (fields[f]) fields[f] += object[f];
+      //             else if (typeof object[f] === 'number') fields[f] = object[f];
+      //         });   
+      //         return fields;
+      //     }, Object.create(null));
+      // }
+      
+      //date, time, text, integer, boolean
+      function getColumn(number) { // 0<=number<14
+          return columns[number] ? columns[number] : {};
+      }
+      
+      function getTotals() {
+         return totals;
+      }
+      
       
       function init(aFortnight, aPerson, aLocation, someShifts) {
           fortnight = aFortnight;
+          fortnight.setHours(0);
+          fortnight.setMinutes(0);
+          fortnight.setSeconds(0);
           location = aLocation;
           person = aPerson;
           shifts = utils.sortBy(someShifts, 'startDate', 'asc');
           
-          var today = fortnight.clone();
-          var collection = [];
+          var startDay = fortnight.getTime();
           shifts.forEach(function(s) {
-              while (s.startDate > today); 
-                  {  days.push(collection); 
-                     collection = [];
-                     today.addDays(1);
-                  } 
-              collection.push(s);
+           var day = Math.floor((s.startDate.getTime() - startDay)/DAY_IN_MILLISECONDS);
+             if (!columns[day]) columns[day] = [];
+              columns[day].push(s);
           });
-          today = fortnight.clone();
-          days.map(function(c,i) {
+          columns = columns.map(function(c, i) {
+              if (!c) return {};
               var fields = calculateTimesheetColumn.getFields(
                   person, location, c);
               fields.shifts = c;
-              fields.date = today.clone();
-              today.addDays(1);
-              });
+              fields.date = fortnight.clone().addDays(i);
+              return fields;
+          });
+          totals = utils.addFieldValues(columns);
+          return {
+              column: getColumn,
+              totals: getTotals
+          };
       }
-   
-      //date, time, text, integer, boolean
-      function getDay(number) { // 0<=number<14
-          
-      }
-      
-      return {
-          init: init,
-          getDay: getDay
-      };
+      return init;
    
     }});

@@ -4,8 +4,8 @@
 
 define
 ({ //load: ['editorLoader'],
-   inject: ['calculateTimesheet'],
-   factory: function(calculateTimesheet) 
+   inject: ['isc_components/multicap_timesheet', 'calculateTimesheet'],
+   factory: function(Timesheet, calculateTimesheet) 
     { "use strict";
       var log = logger('timesheet');
       var observer;
@@ -47,109 +47,46 @@ define
           
           state = isc.addProperties(defaultState, isc.clone(state));
           log.d(state);
-          calculateTimesheet.go(state.person, state.location, state.fortnight);    
+          // calculateTimesheet.go(state.person, state.location, state.fortnight);    
       }
       
-      var timesheet = isc.ListGrid.create(
-          {   
-	      ID: "timesheet",
+      // var timesheet = isc.ListGrid.create(
+      //     {   
+      //         ID: "timesheet",
                
-              width:500, height:224, alternateRecordStyles:true,
-              fields:[
-                  {name:"countryCode", title:"Code"},
-                  {name:"countryName", title:"Country"},
-                  {name:"capital", title:"Capital"}
-              ],
-              // data: countryData
-	      // dataSource: pouchDS,
-              // showEmptyMessage: true,
-              // emptyMessage: "<br>Click the <b>Green plus butoon</b> to populate this grid.",    
-              // gridComponents:[toolStrip,"filterEditor", "header",  "body"],
-              // // titleField: 'title',
-	      // // useAllDataSourceFields:true,
-	      // //looks
-	      // alternateRecordStyles:true, 
-	      // //behaviour
-	      // selectionType:"single",
-	      // // headerAutoFitEvent:"doubleClick",
-	      // canHover:true,
-	      // canReorderRecords:true,
-	      // autoFetchData: true,
-	      // //editing
-	      // recordClick: function (viewer, record) {
-              //     var action = function() {
-              //         editRecord(record); 
-              //     };
-              //     setEditor(action);
-              // },
-              
-	      // cellChanged: function (record) {
-              //     var action = function() {
-              //         editRecord(record); 
-              //     };
-              //     setEditor(action);
-              // },
-              // // recordClick: updateEditForm,
-	      // canEdit:true,
-	      // modalEditing:true,
-	      // // cellChanged: updateEditForm,
-	      // editByCell: true,
-	      // //filteringg
-	      // showFilterEditor:true,
-	      // filterOnKeypress: true,
-	      // allowFilterExpressions: true,
-              // showDetailFields: false, 
-              // filterButtonPrompt: 'Clear filter',
-              // filterButtonProperties: {
-	      //     click : function () {
-	      //         dataTable.clearCriteria();
-              //         var appliedCriteria = isc.DataSource.combineCriteria(
-              //             dataTable.typeFilter,state.savedAdvCriteria);
-	      //         dataTable.filterData(appliedCriteria);
-              //         tableViewStateChanged('clearSimpleFilter');
-	      //     },
-              //     icon:'clear.png',
-              //     showRollOverIcon: false,
-              //     showDownIcon: true
-              // },
-               
-              // // headerContextMenu: true,
-              // // FilterText: 'Clear inline filter',
-	      // viewStateChanged: function() { tableViewStateChanged('viewStateChanged'); },
-	      // // 	  showEmptyMessage: true,
-	      // // emptyMessage: "<br>Click the <b>Set data</b> button to populate this grid.",
-	      // // cellContextClick:"return itemListMenu.showContextMenu()",
-	      // // Function to update details based on selection
-	      // filterEditorSubmit: function() {
-	      //     log.d('modified filter');
-              //     tableViewStateChanged('filterEditorSubmit');
-	      //     // storeTableViewState();
-	      // },
-              // setTypingState: setTypingState,
-              // setFilterLabel: function(label) {
-              //     tableFilterLabel.setContents(label);
-              // },
-              // setTypeLabel: function(label) {
-              //     tableTypeLabel.setContents(label);
-              // },
-              // contextMenu: tableContextMenu
-              // // bodyKeyPress : function() { 
-              // //    log.d('keypress');
-              // //    return true; 
-              // // }
-             
-              notify: function(newState) {
-                  log.d('timesheet is notified');
-                  setState(newState);
+      //         width:500, height:224, alternateRecordStyles:true,
+      //         notify: function(newState) {
+      //             log.d('timesheet is notified');
+      //             setState(newState);
                 
-              }
-              ,getState: getState
-              ,setObserver: function(f) {
-                  observer = f;
-              }
-              ,name: 'Timesheet'
-              // ,icon: "calendar.png"
-          });
+      //         }
+      //         ,getState: getState
+      //         ,setObserver: function(f) {
+      //             observer = f;
+      //         }
+      //         ,name: 'Timesheet'
+      //         // ,icon: "calendar.png"
+      //     });
+      
+      
+      var timesheet = Timesheet.create({
+          ID: 'test',
+          overflow:'auto',
+          showResizeBar: true,
+          padding: 35
+          ,notify: function(newState) {
+              log.d('timesheet is notified');
+              setState(newState);
+          }
+          ,getState: getState
+          ,setObserver: function(f) {
+              observer = f;
+          }
+          ,name: 'Timesheet'
+          // ,icon: "calendar.png"
+          // align: "center",
+          // height: "70%",
+      });
         
     
       return timesheet;

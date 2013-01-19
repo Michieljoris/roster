@@ -54,16 +54,6 @@ define
           return false;
       }
       
-      function addFieldValues(shifts) {
-          return shifts.reduce(function(fields, shift) {
-              Object.keys(shift).forEach(function(f) {
-                  if (fields[f]) fields[f] += shift[f];
-                  else if (typeof shift[f] === 'number') fields[f] = shift[f];
-              });   
-              return fields;
-          }, Object.create(null));
-      }
-      
       function adjustFields(object, fields, amount) {
           for (var i = 0; i<fields.length; i++) {
               var f = fields[i];
@@ -79,7 +69,7 @@ define
       
       function getFields(person, location, shifts) {
           if (overlap(shifts)) throw 'Error: shifts overlap';
-          var fields = addFieldValues(shifts);
+          var fields = utils.addFieldValues(shifts);
           
           // set public holiday fields:
           var ph = fields.publicHoliday;
@@ -114,7 +104,6 @@ define
           var overtime = 0;
           if (!ph) {
               overtime = Math.max(fields.day - SHIFT_MAXLEN, 0);
-              log.d(overtime);
               adjustFields(fields, ['weekend', 'late', 'ord', 'early'], overtime);
           }
           

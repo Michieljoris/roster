@@ -10,15 +10,16 @@
       namespace: 'roster',
       <!-- livepage loads main. Livepage reloads the page on save of any resource -->
       <!-- replace with main for production use -->
-      main: 'lib/livepage',
+      main: 'tryout/testcomponent',
       <!-- main: 'main', -->
       
       pathPrefix: './js',   
       <!-- verbosity: 'info',  -->
       <!-- verbosity: 'debug', -->
       verbosity: 'warn',
-      paths: {
-       'lib': '../lib'
+      paths: { 
+       'lib': '../lib',
+       'tryout': '../tryout'
       },
       scriptInsertionLocation : 'body',
       timeOut: 15,
@@ -102,7 +103,7 @@
     <!-- html manifest="/roster.appcache"> -\-> -->
     <script src=lib/manifestR.js></script>
     
-    <!-- connect with the page via slime -->
+    <!-- connect with the page via slime --> 
     <script> window.swank_server ='http://localhost:8009/' </script> 
     <script type="text/javascript"
     src="http://localhost:8009/swank-js/swank-js-inject.js"></script> 
@@ -115,5 +116,4 @@
     
   </BODY> 
 </HTML>
-
 
