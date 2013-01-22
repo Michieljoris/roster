@@ -31,6 +31,7 @@ define
            ,setColumn: timesheet.setColumn
            ,clear: timesheet.clear
            ,remove: timesheet.remove
+           ,canFocus: false
        });
 
        
