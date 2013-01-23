@@ -4,38 +4,69 @@
 
 define
 ({ //load: ['editorLoader'],
-    inject: ['View', 'globals', 'pouchDS',
+    inject: ['globals', 'pouchDS',
              'isc_components/multicap_timesheet',
              'calculateTimesheet', 'fetchTimesheetShifts'],
-   factory: function(View, globals, datasource, Timesheet,
+   factory: function(globals, datasource, Timesheet,
                      calculateTimesheet, fetchShifts) 
     { "use strict";
       var log = logger('timesheet');
+      var observer;
       
-      var view = View.create({
-          type: 'Timesheet'
-          ,icon: null
-          ,defaultState: { person:'guest', location:'',
-                          fortnight: Date.parse('2013-01-01')}
-          // ,sync: function(state) {
-          //     log.d('UPDATING STATE:', state);
-          // } 
-          ,set: function(state) {
-              log.d('SETTING STATE:', state);
-              if (typeof state.fortnight === 'string') {
-                  state.fortnight = Date.parse("2013-01-11T14:00:00");
-              }
-              state.fortnight = calculateFortnight(state.fortnight);
-              fortnightLabel.setContents(fortnightToString(state.fortnight));
-              // fetchShifts(person, location, fortnight, setShifts);
-              personForm.setValue('person', state.person);
-              locationForm.setValue('location', state.location);
-          }
-           
-      });
+      var currentState;
+      var defaultState = { person:'', location:'', fortnight: Date.parse('2013-01-01')};
       
       var fortnightStart = Date.parse('2000, 1 Jan').getTime();
       var fortnightLength = 14 *  24 * 60 * 60 *1000;
+      // var fortnight;
+      // var person;
+      // var location;
+      var state;
+      
+      // var settings = {
+      //     // minimumShiftLength: 10,
+      //     // maximumShiftLength: 600,
+      //     // eventSnapGap: 15, //only works with a refresh
+      //     // workdayStart: '6:00',
+      //     // workdayEnd: '22:00',
+      //     // currentViewName: 'week', //day, week or month
+      //     chosenDate: new Date()
+      // };
+      
+      function getState() {
+          log.d('GETTING STATE:', state);
+          log.d('+++++++++++++++++++++++++++++');
+          // state =  isc.addProperties(state, {
+          //     fortnight: fortnight,
+          //     location: location,
+          //     person: person
+          // });
+          currentState = isc.clone(state);
+          // log.d(currentState, state);
+          return currentState;
+      } 
+      
+      function setState(someState) {
+          if (currentState !== undefined && state === currentState) {
+              log.d('Same, so not setting state', state);
+              return;
+          }
+          log.d('and its new state is:', someState);
+          
+          state = isc.addProperties(defaultState, isc.clone(someState));
+          // person = state.person; location = state.location; 
+          if (typeof state.fortnight === 'string') {
+              state.fortnight = Date.parse("2013-01-11T14:00:00");
+          }
+          // else fortnight = state.fortnight;
+          log.d('SETTING STATE:', state);
+          state.fortnight = calculateFortnight(state.fortnight);
+          fortnightLabel.setContents(fortnightToString(state.fortnight));
+          // fetchShifts(person, location, fortnight, setShifts);
+          personForm.setValue('person', state.person);
+          locationForm.setValue('location', state.location);
+          // calculateTimesheet.go(state.person, state.location, state.fortnight);    
+      }
       
       function setShifts(data) {
           log.d('Fetched shifts and they are:', data.shifts);
@@ -55,11 +86,10 @@ define
                              editorType: 'comboBox',
                              required: true, 
                              change: function (form) {
-                                 var state = view.getState();
                                  state.person = form.getField('person')
                                      .pickList.getSelectedRecord();
                                  state.person = state.person._id;
-                                 view.modified();
+                                 observer('timesheet');
                                  log.d('PICKLIST', state.person);
                              },
                              // ID: 'personPickList' ,
@@ -88,11 +118,10 @@ define
                                editorType: 'comboBox',
                                required: true, 
                                change: function (form) {
-                                   var state = view.getState();
                                    state.location = form.getField('location')
                                        .pickList.getSelectedRecord();
                                    state.location = state.location._id;
-                                   view.modified();
+                                 observer('timesheet');
                                  log.d('PICKLIST', state.location);
                                },
                           
@@ -163,14 +192,11 @@ define
               
           ] 
       });
-    //in viewplugin  
-      
       
       var okButton = isc.Button.create({
           title: "Ok",
           width: 40,
           click: function fortnightPicked() {
-              var state = view.getState();
               state.fortnight = pickFortnightForm.getValue('date');
               setFortnightLabel();
               pickFortnightWindow.hide(); 
@@ -221,9 +247,7 @@ define
       });
       
       function setFortnightLabel() {
-          // observer('timesheet');
-          view.modified();
-          var state = view.getState();
+          observer('timesheet');
           fortnightLabel.setContents(fortnightToString(state.fortnight));
           
       }
@@ -247,7 +271,6 @@ define
                           title: '',
 	                  icon:"date_control.png"
                           ,click: function() {
-                              var state = view.getState();
                               pickFortnightForm.setValue('fortnightLabel',
                                                          fortnightToString(state.fortnight));
                               pickFortnightForm.setValue('date', state.fortnight);
@@ -260,7 +283,6 @@ define
                           title: '',
 	                  icon:"arrow_left.png"
                           ,click: function() {
-                              var state = view.getState();
                               state.fortnight.addWeeks(-2);
                               setFortnightLabel();
                           }
@@ -271,7 +293,6 @@ define
                           title: '',
 	                  icon:"arrow_right.png"
                           ,click: function() {
-                              var state = view.getState();
                               state.fortnight.addWeeks(2);
                               setFortnightLabel();
                           }
@@ -294,8 +315,25 @@ define
               })
               ,timesheet
           ] 
+          
+          
+          
+          ,notify: function(newState) {
+              log.d('timesheet is notified');
+              setState(newState);
+          }
+          ,getState: getState
+          ,setObserver: function(f) {
+              observer = f;
+          }
+          ,name: 'Timesheet'
+        
       });
       
-      view.setCmp(layout);
-      return view;
+      
+      
+      
+      return layout;
+     
+     
     }});

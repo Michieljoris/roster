@@ -85,7 +85,6 @@ define
           
           pouchDS.fetchData(null,
                             function (dsResponse, data) {
-                                log.d('response from asking for shifts', dsResponse);
                                 if (dsResponse.status < 0) vow['break'](dsResponse.status);
                                 else {
                                     log.d('GOT a response from pouchDS', data);

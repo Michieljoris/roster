@@ -3,8 +3,9 @@
 /*jshint maxparams:4 maxcomplexity:7 maxlen:90 devel:true*/
 
 define
-({inject: [ 'viewTree', 'table', 'calendar', 'timesheet'],
-  factory: function(viewTree, table, calendar, timesheet) 
+// ({inject: [ 'viewTree', 'table', 'calendar', 'timesheet'],
+({inject: [ 'viewTree', 'viewLoader'],
+  factory: function(viewTree, views) 
   { "use strict";
 
     //**********@Left hand side************************ 
@@ -73,6 +74,19 @@ define
 	    {title:"Help", expanded:false,  items:[helpCanvas]}
 	]
     });
+    
+    var sections = (function() {
+        var result = [];
+        views.forEach(function(v) {
+           result.push({
+               name: v.getType(),
+               showHeader: false,
+               hidden: true,
+               items: [v.getCmp()]
+           });
+        });
+        return result;
+    })();
 
     //*********************@right hand side*************************
     //TABLE
@@ -83,11 +97,12 @@ define
 	visibilityMode:"multiple",
 	animateSections:false
               
-	,sections:[
-	    {name: 'Table', showHeader:false, hidden: true, items:[table.grid]}
-	    ,{name: 'Calendar', showHeader: false, hidden: true,items:[calendar]}
-	    ,{name: 'Timesheet', showHeader: false, hidden: true,items:[timesheet]}
-	]
+	,sections: sections
+        // [
+	//     {name: 'Timesheet', showHeader: false, hidden: true,items:[timesheet]}
+	//     // ,{name: 'Table', showHeader:false, hidden: true, items:[table.grid]}
+	//     // ,{name: 'Calendar', showHeader: false, hidden: true,items:[calendar]}
+	// ]
     });
     //need to do this, the sectionstack seems to show
     //the first section regardless of its hidden prop.

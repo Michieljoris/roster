@@ -2,58 +2,45 @@
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:4 maxcomplexity:7 maxlen:90 devel:true*/
 
-// -----@ TOP ----- */
 define
 // ({inject: ['globals', 'table', 'calendar' ],
-({inject: ['globals', 'table', 'calendar', 'timesheet'],
-  factory: function(globals, table, calendar, timesheet) {
+({inject: ['viewLoader', 'globals'],
+  factory: function(views, globals) {
       "use strict";
       var log = logger('viewTree');
       //dummy empty view for initialization purposes. Also a template
       //for more views.
-      var emptyView =
-          { name: 'Empty'
-            ,getState: function() {}
-            ,setObserver: function() {}};
-      
-      //add new views to this list. Unfortunately you have to add it
-      //three times. Once to inject, once to pass it in, and then to
-      //add it to views, although we could read the args list..
-      var views = [
-          emptyView
-          ,table
-          ,calendar
-          ,timesheet
-      ];
       var newViewMenu = [];
       
       views = (function() {
           var result = {};
-          var proto = {
-              click: function() { newView(this.name); } 
-              ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-          };
           views.forEach(function(v) {
-              v.setObserver(viewStateChanged);
-              var aview = Object.create(proto);
-              aview.name = v.name;
-              aview.icon = v.icon || aview.icon;
-              if (aview.name !== 'Empty')
-                  newViewMenu.push(aview);
-              result[v.name] = v;
+              v.setObserver(function() { setViewModified(true); });
+              var type = v.getType();
+              if (type !== 'Empty') {
+                  newViewMenu.push({
+                      name: type,
+                      click: function() {
+                          // newView(type, views[type].getDefaultState()); } 
+                          newView(type); } 
+                      ,icon: v.getIcon()
+                  });
+              }
+              result[type] = v;
           });
           return result;
       })();
       
-      var show, //to be set by layout so we can show/hide views in the layout
-          modified, //whether the ui has changed
+      var show, //To be set by layout so we can show/hide views in the layout
+          treeModified, //Whether the ui has changed
+          viewModified,
       
-      //for initialization purposes when there is no view at all defined
-          leafShowing = {
-              view: 'Empty'
+      //For initialization purposes when there is no view at all defined
+          viewRecordShowing = {
+              type: 'Empty'
           };
       
-      //--------------------@HANDLING STATE----------------------------- 
+      //--------------------HANDLING STATE OF THE VIEWTREE-------------------------- 
       function notify(newState) {
           var viewTreeState = isc.JSON.decode(newState);
           if (viewTreeState) {
@@ -67,11 +54,11 @@ define
 	      viewTree.setSelectedPaths(viewTreeState.pathOfLeafShowing);
 	      var selRecord = viewTree.getSelectedRecord();
 	      if (selRecord && !selRecord.isFolder) { 
-	          openLeaf(selRecord);
+	          open(selRecord);
 	      }
               //not much use because there will be state change
               //callbacks from smartclient to come after this
-	      setModified(false);
+	      setTreeModified(false);
               //so set a interval time to see if the state is really
               //different from the stored state and if so setModified to true
               window.setTimeout(checkState, 2000);
@@ -90,7 +77,7 @@ define
       function checkState() {
           log.d("Checking state");
           // setModified(!isEqual(table.getState(), leafShowing.viewState));
-          setModified(!isEqual(views[leafShowing.view].getState(),leafShowing.viewState));
+          // setModified(!isEqual(views[viewShowing.type].getState(),viewShowing.viewState));
       }
       
       //reads state of tree
@@ -99,72 +86,84 @@ define
           //isc.JSON.encode(
           return { width: viewTree.getWidth(),
                    time: isc.timeStamp(),
-                   pathOfLeafShowing: leafShowing.path,
+                   pathOfLeafShowing: viewRecordShowing.path,
                    // selectedPaths: pathShowing, //viewTree.getSelectedPaths(),
                    //only store data needed to rebuild the tree 
-                   state: tree.map(function(n) {return {
-	               view: n.view,
-	               id: n.id,
-	               parentId: n.parentId,
-	               isFolder: n.isFolder,
-	               name: n.name,
-	               isOpen: n.isOpen,	
-	               viewState: n.viewState
-                   };
-			                       })
+                   state: tree.map(function(n) {
+                       return {
+	                   type: n.type,
+	                   id: n.id,
+	                   parentId: n.parentId,
+	                   isFolder: n.isFolder,
+	                   name: n.name,
+	                   isOpen: n.isOpen,	
+	                   state: n.state
+                       };
+		   })
                  };
       }
       
-      function setModified(bool) {
+      //Whenver the state of the navigation tree changes this gets called
+      function setTreeModified(bool) {
           // log.d('modified =' + bool);
-          modified = bool;
-          if (modified) saveButton.show(true);
+          treeModified = bool;
+          if (bool) saveButton.show(true);
           else {saveButton.hide(true);}                
       }
       
-      //gets called by currently showing views when their state changes
-      //should be set to the observer of any view implemented
-      function viewStateChanged(origin) {
-          log.d('Changed: ' + origin);
-          setModified(true);
+      //Gets called by currently showing views when their state changes
+      function setViewModified(bool) {
+          // log.d('modified =' + bool);
+          viewModified = bool;
+          if (bool) saveButton.show(true);
+          else {saveButton.hide(true);}                
       }
+      
+      //Gets called by currently showing views when their state changes
+      //It is set to the observer of any view implemented
+      // function viewStateChanged(origin) {
+      //     log.d('Changed: ' + origin);
+      //     setModified(true);
+      // }
       
       //this function gets called everytime a change in the viewtree occurs
       function treeStateChanged(origin) {
           log.d('******************tree changed: ' +  origin);
-          setModified(true);
+          setTreeModified(true);
           // if (saveOnChange) saveTreeToDb();
       }
       
-      function openLeaf(leaf) {
+      function open(viewRecord) {
           log.d('**************************---------------openLeaf');
           //opening same leaf, do nothing
-          if (leaf === leafShowing) {
-              log.d('Opening same leaf..');
+          if (viewRecord === viewRecordShowing) {
+              log.d('Opening same view..');
               return;         
           }
           
           //save any changes that might have occured in the leaf
-          leafShowing.viewState =
-              views[leafShowing.view].getState(); 
-          log.d('Saved changes to viewstate', leafShowing.viewState, leafShowing.name);
-	  if (leafShowing.view !== leaf.view) {
-	      show(leafShowing.view, false);
+          // leafShowing.viewState =
+          views[viewRecordShowing.type].sync(); 
+          log.d('Saved changes to the state of the view',
+                viewRecordShowing.state, viewRecordShowing.name);
+	  if (viewRecordShowing.type !== viewRecord.type) {
+	      show(viewRecordShowing.type, false);
 	  }
           // } 
           //give the component that's about to be shown the specific
           //data of the new leaf
-          views[leaf.view].notify(leaf.viewState);
+          // views[leaf.view].notify(isc.clone(leaf.viewState));
+          views[viewRecord.type].set(viewRecord.state);
           //show the leaf, redundant, harmless call if it's the same
           //type of view
-          show(leaf.view, true);   
+          show(viewRecord.type, true);   
           //set a pointer to the leaf that's now showing
-          leafShowing = leaf;
-          leafShowing.path = viewTree.getSelectedPaths();
+          viewRecordShowing = viewRecord;
+          viewRecordShowing.path = viewTree.getSelectedPaths();
           //we're changing views, so set modified flag
-          setModified(true);
+          setTreeModified(true);
           
-         log.d('finished opening leaf');
+          log.d('finished opening leaf');
           
       }
       
@@ -191,7 +190,8 @@ define
       
       function saveTreeToDb(callback) {
           console.log('saving');
-          leafShowing.viewState = views[leafShowing.view].getState();
+          // leafShowing.state =
+          views[viewRecordShowing.type].sync();
           // debugger;
           // console.log(leafShowing.viewState); 
           globals.user.viewTreeState = isc.JSON.encode(getTreeState());
@@ -207,14 +207,15 @@ define
           globals.db.put(globals.user, function(err, response) {
               if (err) {
 	          log.d('ERRROR: Could not save changed state of the view tree.' +
-                              err.error + ' ' + err.reason);
+                        err.error + ' ' + err.reason);
                   isc.warn('ERROR: Could not save the state of the ui..');
               }
               else {
 	          globals.user._rev = response.rev;
                   log.d('save',globals.user.viewTreeState);
               }
-              setModified(false);
+              setTreeModified(false);
+              setViewModified(false);
               // window.onbeforeunload = function() { };
               if (callback) callback();
           });
@@ -236,27 +237,19 @@ define
       
       //------------------@manipulate tree---------------------
       
-      // function clone() {
-      //     var selRecord = viewTree.getSelectedRecord();
-      //     if (!selRecord) return;
-      //     var view = selRecord.view;
-      //     var state = selRecord.viewState;
-      //     var name = selRecord.name;
-      //     log.d(state);
-      //     if (!selRecord)  selRecord = '/';
-      //     else {
-      //         viewTree.selectRecord(selRecord, false);
-      //         selRecord = selRecord['_parent_' + tree.ID];
-      //     }
-      //     var newRecord = tree.add({id:isc.timeStamp(),isFolder:false, 
-      //                               name: name + ' (clone)', view: view,
-      //                               viewState : state}, selRecord);
+      // function clone() { var selRecord =
+      //     viewTree.getSelectedRecord(); if (!selRecord) return; var
+      //     view = selRecord.view; var state = selRecord.viewState;
+      //     var name = selRecord.name; log.d(state); if (!selRecord)
+      //     selRecord = '/'; else { viewTree.selectRecord(selRecord,
+      //     false); selRecord = selRecord['_parent_' + tree.ID]; }
+      //     var newRecord =
+      //     tree.add({id:isc.timeStamp(),isFolder:false, name: name +
+      //     ' (clone)', view: view, viewState : state}, selRecord);
       //     viewTree.selectRecord(newRecord);
       //     viewTree.openFolder(selRecord);
-      //     treeStateChanged('clone');
-      //     viewTree.openLeaf(newRecord);
-      //     // ignoreChangeState = true;
-      // }
+      //     treeStateChanged('clone'); viewTree.openLeaf(newRecord);
+      //     // ignoreChangeState = true; }
       
       function getUniqueName(baseName, parent) {
           function nameExists(siblings, name) {
@@ -277,7 +270,7 @@ define
           return newName;
       } 
       
-      function newView(view) {
+      function newView(type) {
           log.d('newView')   ;
           var selRecord = viewTree.getSelectedRecord();
           // var state = selRecord.viewState;
@@ -288,17 +281,17 @@ define
               parent = selRecord['_parent_' + tree.ID];
               
           }
-          var newName = getUniqueName(view, parent);
-          var newRecord = tree.add({id:isc.timeStamp(),isFolder:false, 
-                                    name:newName, view: view
-                                    // ,viewState : '{}'
+          var newName = getUniqueName(type, parent);
+          var viewRecord = tree.add({id:isc.timeStamp(),isFolder:false, 
+                                    name:newName, type: type
+                                    // state: state  
                                    }, parent);
           
-          viewTree.selectRecord(newRecord);
+          viewTree.selectRecord(viewRecord);
           //open the parent folder, otherwise we can't see the the new record/view
           viewTree.openFolder(parent);
           // pp('In newView: leafShowing.viewState---------',leafShowing.viewState);
-          viewTree.openLeaf(newRecord);
+          viewTree.openLeaf(viewRecord);
           // eafShowing.viewState = table.getState();
           // pp('In newView: table.getState---------',leafShowing.viewState);t
           treeStateChanged('newView');
@@ -310,7 +303,7 @@ define
           if (!selRecord)  parent = '/';
           else {
               viewTree.selectRecord(selRecord, false);
-             parent = selRecord['_parent_' + tree.ID];
+              parent = selRecord['_parent_' + tree.ID];
           }
           var newName = getUniqueName('Folder', parent);
           var newRecord = tree.add({id:isc.timeStamp(),isFolder:true, 
@@ -343,28 +336,6 @@ define
       //--------------------------components-------------------
       //--------------------@MENUS AND TOOLSTRIP
       //for use in both toolstrip and context menu
-      
-      // var tableSubMenu = [
-      //     {title:"Everything", 
-      //      click: function() { newView(this.title); } 
-      //      // ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-      //      // ,submenu:tableSubMenu  
-      //     },
-      //     {title:"People",
-      //      click: function() { newView(this.title); } 
-      //      // ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-      //     },
-      //     {title:"Locations",
-      //      click: function() { newView(this.title); } 
-      //      // ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-      //     },
-      //     {title:"Shifts",
-      //      click: function() { newView(this.title); } 
-      //      // ,icon: isc.Page.getSkinDir() +"images/actions/add.png"
-      //     }
-
-      
-      // ];
       
       //TODO different menu for when you click not on a leaf or node?
       var rightClickMenu2 = isc.Menu.create(
@@ -420,9 +391,9 @@ define
 		  //  ,click: function() { newFolder(); } 
 	          // } ,
 	          {title:"Rename"
-		    ,icon: isc.Page.getSkinDir() +"images/actions/edit.png"
-		    ,click: function() { rename(); } 
-	           }
+		   ,icon: isc.Page.getSkinDir() +"images/actions/edit.png"
+		   ,click: function() { rename(); } 
+	          }
 	          ,{title:"Remove"
 		    ,icon: isc.Page.getSkinDir() +"images/actions/remove.png"
 		    ,click: function() { remove(); } 
@@ -496,13 +467,11 @@ define
       
       window.test = function() {
           tree.root.children.forEach(function(c, i) {
-              console.log(i, c.viewState);
+              console.log(i, c.state);
           });
           return 'end';
       };
       
-      
-
       var viewTree = isc.TreeGrid.
           create({
               ID: 'treegrid'
@@ -525,7 +494,7 @@ define
 	          // treeStateChanged('treeStateChanged');
                   var leaf = viewTree.getSelectedRecord();
                   if (leaf && !leaf.isFolder)
-                      openLeaf(viewTree.getSelectedRecord());
+                      open(viewTree.getSelectedRecord());
 	      }
 	      ,cellChanged: function() {
                   // log.d('cell');
@@ -544,48 +513,39 @@ define
 	      }
 		      ]
 	  });
+      
       function isEqual(a,b) {
           if (!a && !b) return true;
           if (!a || !b) return false;
           for (var p in a) {
-              var same = true;
-              if (typeof a[p] === 'object') same = isEqual(a[p], b[p]);
+              // var same = true;
+              if (typeof a[p] === 'object') return isEqual(a[p], b[p]);
               else {
-                  if (!a[p] && !b[p]) same = true;
-                  else same = (a[p] === b[p]);   
+                  if (!a[p] && !b[p]) return true;
+                  else return (a[p] === b[p]);   
               }
               
-              if (!same){
-                  // log.d(p);
-                  // log.d(a, b);
-                  return false;  
-              } 
+              // if (!same){
+              //     // log.d(p);
+              //     // log.d(a, b);
+              //     return false;  
+              // } 
           }
           return true;   
       }
       
       window.onbeforeunload= 
 	  function() { 
-              // pp('current state', table.getState());
-              // pp('original state', leafShowing.viewState);
-              // pp(isEqual(table.getState(), leafShowing.viewState));                   
-              if (isEqual(views[leafShowing.view].getState(), leafShowing.viewState)) {
-                  // if (isEqual(table.getState(), leafShowing.viewState)) {
-                  if (!modified) return null;
-                  return null;
-                  // else return 'Leaving will discard changes made to the organising tree.'+
-                  //     '\\n Select "Stay on this page" and then click the icon next to '+
-                  //     'the login name to save the changes.';
-              }
-              leafShowing.viewState = views[leafShowing.view].getState();
-              setModified(true);
-              // saveTreeToDb();
+              views[viewRecordShowing.type].sync();
+              // if (!modified) return null;
+              // else return 'Leaving will discard changes made to the organising tree.'+
+              //     '\\n Select "Stay on this page" and then click the icon next to '+
+              //         'the login name to save the changes.';
+              
               // return 'Leaving will discard changes made to a view.\n\nSelect "Stay on '+
               //     'this page" and then click the icon next to the login name to ' +
               //     'save the changes.';
               return null;
-	      // return 'Leaving will discard changes made to a
-	      // view.\nStay to save the changes.';
           };
       
       //-----------------------@API-----------------------
@@ -595,7 +555,7 @@ define
       //to set viewTree to a new state
       viewTree.notify = notify;
       viewTree.ls = function() {
-          log.d(leafShowing);
+          log.d(viewRecordShowing);
       };
       //exposes the loginButton, not really part of this component.
       viewTree.loginButton = loginButton;
