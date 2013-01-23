@@ -9,6 +9,7 @@ define
              'calculateTimesheet', 'fetchTimesheetShifts'],
    factory: function(View, globals, datasource, Timesheet,
                      calculateTimesheet, fetchShifts) 
+    
     { "use strict";
       var log = logger('timesheet');
       
