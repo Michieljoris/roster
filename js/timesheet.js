@@ -189,10 +189,10 @@ define
               
               { type: "BlurbItem", value: 'This date falls in the fortnight of:'},
               { name: 'fortnightLabel', type: "BlurbItem", value: '12 Dec - 14 Jan'}
-              // { name: 'static', type: "StaticTextItem", value: 'blabla', startRow: true},
               
           ] 
       });
+    //in viewplugin  
       
       var okButton = isc.Button.create({
           title: "Ok",
