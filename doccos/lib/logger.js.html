@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>logger.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="../doc-style.css" />
+  <script src="../doc-filelist.js"></script>
+  <script>
+    var relativeDir = '../', thisFile = 'lib/logger.js', defaultSidebar = true;
+  </script>
+  <script src="../doc-script.js"></script>
+  <script src="../fileSearch.js"></script>
+  <link rel="stylesheet" href="../fileSearch.css" />
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+      <div class="heading h2">
+        <a href="#todo--maybe-store-messages-to-output-somewhere-else">TODO: maybe store messages to output somewhere else</a>
+      </div>
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container"><div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+      <tr>
+        <td class="docs">
+          <h1>logger.js</h1>
+        </td>
+        <td class="code highlight"></td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-1" id="section-1">&#182;</a>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="cm">/*global isc:false console:false __stack:false __line:false*/</span>
+<span class="cm">/*jshint strict:false unused:true smarttabs:true eqeqeq:true immed: true undef:true*/</span>
+<span class="cm">/*jshint maxparams:5 maxcomplexity:20 maxlen:190 devel:true*/</span>
+
+<span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">global</span><span class="p">)</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-2" id="section-2">&#182;</a>
+</div>
+<p>A little logging utility.
+Load the script with:</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-3" id="section-3">&#182;</a>
+</div>
+<p><code>&lt;script src=pathto/logger.js&gt;&lt;/script&gt;</code>
+A new global is created named logger.
+Make a new logger with:
+var log = logger('nameOfLogger', level, showTimeStamp )
+these optional parameters default to 'logger', defaultGlobalLevel and false. 
+The object returned has the following function properties:
+e, w, i, d for error, warn, info and debug
+setLevel to set the level for this particular logger
+showTimeStamp and hideTimeStamp
+logger.setLevel sets the level for all debuggers, overriding their individual levels.
+logger.enable and logger.disable will make all loggers non-functional, in effect turning this
+script into a dummy script, doing nothing but returning its logging calls.
+to completely remove all log statements from the script, maybe use Douglas Crockford's JSDev
+<a href='https://github.com/douglascrockford/JSDev'>https://github.com/douglascrockford/JSDev</a></p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-4" id="section-4">&#182;</a>
+</div>
+<p>The logger will add to every printout to the console the
+logger's name, the function it was called from, the line number
+and optionally a timestamp. The same logger object can be
+retrieved as many times as you like by calling logger with the
+same name. Set the level of individual loggers anywhere in your
+app, and/or use the same logger in multiple places.  All
+printouts will go to the standard javascript
+console. console.debug, console.warn, console.info and
+console.error are used under the covers.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs"><p>TODO: detect console object, fail gracefully
+TODO: pass through other console properties</p>
+
+
+<div class="pilwrap" id="todo--maybe-store-messages-to-output-somewhere-else">
+  <h2>
+    <a href="#todo--maybe-store-messages-to-output-somewhere-else" class="pilcrow">&#182;</a>
+    TODO: maybe store messages to output somewhere else
+  </h2>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    <span class="kd">var</span> <span class="nx">globalHook</span> <span class="o">=</span> <span class="s1">&#39;logger&#39;</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">defaultGlobalLevel</span> <span class="o">=</span> <span class="s1">&#39;debug&#39;</span><span class="p">;</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-6" id="section-6">&#182;</a>
+</div>
+<hr />
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    
+    <span class="kd">var</span> <span class="nx">loggers</span> <span class="o">=</span> <span class="p">{};</span>
+    <span class="kd">var</span> <span class="nx">globalLevel</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">globalTimeStamp</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">globalStamp</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">enabled</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+    
+    <span class="kd">function</span> <span class="nx">addHooks</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">enabled</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+        <span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperty</span><span class="p">(</span><span class="nb">window</span><span class="p">,</span> <span class="s1">&#39;__stack&#39;</span><span class="p">,</span> <span class="p">{</span>
+            <span class="nx">get</span><span class="o">:</span> <span class="kd">function</span><span class="p">(){</span>
+                <span class="kd">var</span> <span class="nx">orig</span> <span class="o">=</span> <span class="nb">Error</span><span class="p">.</span><span class="nx">prepareStackTrace</span><span class="p">;</span>
+                <span class="nb">Error</span><span class="p">.</span><span class="nx">prepareStackTrace</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">_</span><span class="p">,</span> <span class="nx">stack</span><span class="p">){</span> <span class="k">return</span> <span class="nx">stack</span><span class="p">;</span> <span class="p">};</span>
+                <span class="kd">var</span> <span class="nx">err</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Error</span><span class="p">;</span>
+                <span class="nb">Error</span><span class="p">.</span><span class="nx">captureStackTrace</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">.</span><span class="nx">callee</span><span class="p">);</span>
+                <span class="kd">var</span> <span class="nx">stack</span> <span class="o">=</span> <span class="nx">err</span><span class="p">.</span><span class="nx">stack</span><span class="p">;</span>
+                <span class="nb">Error</span><span class="p">.</span><span class="nx">prepareStackTrace</span> <span class="o">=</span> <span class="nx">orig</span><span class="p">;</span>
+                <span class="k">return</span> <span class="nx">stack</span><span class="p">;</span>
+            <span class="p">},</span>
+            <span class="nx">configurable</span><span class="o">:</span><span class="kc">true</span>
+        <span class="p">});</span>
+
+        <span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperty</span><span class="p">(</span><span class="nb">window</span><span class="p">,</span> <span class="s1">&#39;__line&#39;</span><span class="p">,</span> <span class="p">{</span>
+            <span class="nx">get</span><span class="o">:</span> <span class="kd">function</span><span class="p">(){</span>
+                <span class="kd">var</span> <span class="nx">origin</span> <span class="o">=</span> <span class="nx">__stack</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-7" id="section-7">&#182;</a>
+</div>
+<p>console.log(origin);</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                <span class="kd">var</span> <span class="nx">name</span> <span class="o">=</span> <span class="nx">origin</span><span class="p">.</span><span class="nx">fun</span><span class="p">.</span><span class="nx">name</span><span class="p">;</span>
+                <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">name</span><span class="p">)</span> <span class="nx">name</span> <span class="o">=</span> <span class="s1">&#39;anon&#39;</span><span class="p">;</span>
+                <span class="k">return</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="nx">name</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="nx">origin</span><span class="p">.</span><span class="nx">getLineNumber</span><span class="p">();</span>
+            <span class="p">},</span>
+            <span class="nx">configurable</span><span class="o">:</span> <span class="kc">true</span>
+        <span class="p">});</span>
+        
+    <span class="p">}</span>
+    
+    <span class="kd">function</span> <span class="nx">removeHooks</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">enabled</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+        <span class="k">delete</span> <span class="nx">global</span><span class="p">.</span><span class="nx">__line</span><span class="p">;</span>
+        <span class="nb">Object</span><span class="p">.</span><span class="nx">defineProperty</span><span class="p">(</span><span class="nb">window</span><span class="p">,</span> <span class="s1">&#39;__line&#39;</span><span class="p">,</span> <span class="p">{</span>
+            <span class="nx">get</span><span class="o">:</span> <span class="kd">function</span><span class="p">(){</span>
+                <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="p">;</span>
+            <span class="p">},</span>
+            <span class="nx">configurable</span><span class="o">:</span> <span class="kc">true</span>
+        <span class="p">});</span>
+        <span class="k">delete</span> <span class="nx">global</span><span class="p">.</span><span class="nx">__stack</span><span class="p">;</span>
+    <span class="p">}</span>
+    
+    <span class="kd">var</span> <span class="nx">isArray</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">toString</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">value</span><span class="p">)</span> <span class="o">===</span> <span class="s2">&quot;[object Array]&quot;</span><span class="p">;</span>
+    <span class="p">};</span>
+    </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-8" id="section-8">&#182;</a>
+</div>
+<p>returns a timestamp in ms without arguments,</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    <span class="kd">var</span> <span class="nx">timeStamp</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">bootstart</span> <span class="o">=</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">();</span>
+  <span class="k">return</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="k">new</span> <span class="nb">Date</span><span class="p">()</span> <span class="o">-</span> <span class="nx">bootstart</span><span class="p">;};})();</span>
+    
+    <span class="kd">var</span> <span class="nx">levels</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;none&#39;</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;warn&#39;</span><span class="p">,</span> <span class="s1">&#39;info&#39;</span><span class="p">,</span> <span class="s1">&#39;debug&#39;</span><span class="p">];</span>
+        
+    <span class="kd">function</span> <span class="nx">print</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">level</span><span class="p">,</span> <span class="nx">args</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">enabled</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+        <span class="nx">args</span> <span class="o">=</span> <span class="nx">isc</span><span class="p">.</span><span class="nx">clone</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">args</span><span class="p">));</span>
+        <span class="nx">args</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span> <span class="p">{</span>
+           <span class="k">if</span>  <span class="p">(</span><span class="nx">a</span><span class="p">)</span> <span class="p">{</span>
+               <span class="nx">a</span><span class="p">.</span><span class="nx">__proto__</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span> <span class="c1">//bloody smartclient puts all these</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-9" id="section-9">&#182;</a>
+</div>
+<p>props on standard objects, they
+mess with console.log, it prints
+out way too much, so we nullify
+the proto of a clone of the
+object</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>           <span class="p">}</span>
+        <span class="p">});</span>
+        <span class="kd">var</span> <span class="nx">out</span> <span class="o">=</span> <span class="p">[];</span>
+        <span class="kd">var</span> <span class="nx">post</span> <span class="o">=</span> <span class="s1">&#39;(&#39;</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">globalTimeStamp</span> <span class="o">||</span> <span class="nx">loggers</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">timeStamp</span><span class="p">)</span> <span class="nx">post</span> <span class="o">+=</span> <span class="s1">&#39;[&#39;</span> <span class="o">+</span> <span class="nx">timeStamp</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;]&#39;</span><span class="p">;</span>
+        <span class="nx">post</span> <span class="o">+=</span> <span class="nx">name</span> <span class="o">+</span>  <span class="nx">__line</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span><span class="p">;</span>
+        <span class="nx">out</span> <span class="o">=</span> <span class="nx">out</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">args</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">globalStamp</span><span class="p">)</span> <span class="nx">out</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">post</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">level</span> <span class="o">&lt;=</span> <span class="nx">globalLevel</span> <span class="o">&amp;&amp;</span> <span class="nx">level</span> <span class="o">&lt;=</span> <span class="nx">loggers</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">level</span><span class="p">)</span>
+            <span class="nx">console</span><span class="p">[</span><span class="nx">levels</span><span class="p">[</span><span class="nx">level</span><span class="p">]].</span><span class="nx">apply</span><span class="p">(</span><span class="nx">console</span><span class="p">,</span> <span class="nx">out</span><span class="p">);</span>
+    <span class="p">}</span>
+        
+    <span class="kd">function</span> <span class="nx">setLevel</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">level</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">l</span> <span class="o">=</span> <span class="nx">levels</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">level</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">l</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">loggers</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">level</span> <span class="o">=</span> <span class="nx">l</span><span class="p">;</span>   
+        <span class="p">}</span> 
+        <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">warn</span><span class="p">(</span><span class="s2">&quot;logger.setLevel: level should be one of &#39;none&#39;, &#39;error&#39;, &#39;warn&#39;, &#39;info&#39; or &#39;debug&#39; not:&quot;</span><span class="p">,</span>
+                         <span class="nx">level</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="kd">function</span> <span class="nx">pp</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nx">i</span><span class="o">&lt;</span> <span class="nx">arguments</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+      <span class="kd">var</span> <span class="nx">arg</span><span class="o">=</span> <span class="nx">arguments</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+      <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span>  <span class="nx">arg</span> <span class="o">===</span> <span class="s2">&quot;string&quot;</span><span class="p">)</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">arg</span><span class="p">);</span> 
+      <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">arg</span> <span class="k">instanceof</span> <span class="nb">Date</span><span class="p">)</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">arg</span><span class="p">);</span> 
+            <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">isArray</span><span class="p">(</span><span class="nx">arg</span><span class="p">))</span> <span class="p">{</span>
+                <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Array: [&#39;</span><span class="p">);</span>
+                <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">k</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nx">k</span><span class="o">&lt;</span><span class="nx">arg</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">k</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">k</span><span class="p">);</span> <span class="nx">pp</span><span class="p">(</span><span class="nx">arg</span><span class="p">[</span><span class="nx">k</span><span class="p">]);</span>
+                <span class="p">}</span>
+                <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;]&#39;</span><span class="p">);</span>
+            <span class="p">}</span>
+      <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">arg</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span><span class="p">)</span> <span class="p">{</span>
+                <span class="kd">var</span> <span class="nx">pre</span> <span class="o">=</span> <span class="s1">&#39;{ &#39;</span><span class="p">,</span> <span class="nx">post</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="p">;</span>
+                <span class="kd">var</span> <span class="nx">index</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+                <span class="kd">var</span> <span class="nx">length</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">arg</span><span class="p">).</span><span class="nx">length</span><span class="p">;</span>
+                <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">j</span> <span class="k">in</span> <span class="nx">arg</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="k">if</span> <span class="p">(</span><span class="nx">index</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">)</span> <span class="nx">pre</span> <span class="o">=</span> <span class="s1">&#39;  &#39;</span><span class="p">;</span> 
+                    <span class="k">if</span> <span class="p">(</span><span class="nx">index</span> <span class="o">===</span> <span class="nx">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="nx">post</span> <span class="o">=</span> <span class="s1">&#39; }&#39;</span><span class="p">;</span> 
+                    <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">pre</span> <span class="o">+</span> <span class="nx">j</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nx">arg</span><span class="p">[</span><span class="nx">j</span><span class="p">]</span> <span class="o">+</span> <span class="nx">post</span><span class="p">);</span>   
+                    <span class="nx">index</span><span class="o">++</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+      <span class="k">else</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">arg</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+        
+    <span class="kd">function</span> <span class="nx">getLogger</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">level</span><span class="p">,</span> <span class="nx">showTimeStampVar</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">name</span> <span class="o">!==</span> <span class="s1">&#39;string&#39;</span><span class="p">)</span> <span class="k">return</span> <span class="nx">getLogger</span><span class="p">(</span><span class="s1">&#39;logger&#39;</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">loggers</span><span class="p">[</span><span class="nx">name</span><span class="p">])</span> <span class="k">return</span> <span class="nx">loggers</span><span class="p">[</span><span class="nx">name</span><span class="p">];</span>
+        
+        <span class="nx">loggers</span><span class="p">[</span><span class="nx">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="nx">e</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nx">print</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="nx">arguments</span><span class="p">);</span>   
+            <span class="p">},</span>
+            <span class="nx">w</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nx">print</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="nx">arguments</span><span class="p">);</span>   
+            <span class="p">},</span>
+            <span class="nx">i</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nx">print</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="nx">arguments</span><span class="p">);</span>   
+            <span class="p">},</span>
+            <span class="nx">d</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                <span class="nx">print</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="nx">arguments</span><span class="p">);</span>   
+            <span class="p">},</span>  
+            <span class="nx">pp</span><span class="o">:</span> <span class="nx">pp</span><span class="p">,</span>
+            <span class="nx">setLevel</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">level</span><span class="p">)</span> <span class="p">{</span> <span class="nx">setLevel</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">level</span><span class="p">);</span> <span class="p">},</span>
+            <span class="nx">showTimeStamp</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="nx">loggers</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">timeStamp</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span> <span class="p">},</span> 
+            <span class="nx">hideTimeStamp</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="nx">loggers</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">timeStamp</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span> <span class="p">}</span>
+        <span class="p">};</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">level</span> <span class="o">||</span> <span class="k">typeof</span> <span class="nx">level</span> <span class="o">!==</span> <span class="s1">&#39;string&#39;</span><span class="p">)</span> <span class="nx">loggers</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">level</span> <span class="o">=</span> <span class="nx">globalLevel</span><span class="p">;</span>
+        <span class="k">else</span> <span class="nx">setLevel</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">level</span><span class="p">);</span>
+        <span class="nx">loggers</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">timeStamp</span> <span class="o">=</span> <span class="nx">showTimeStampVar</span><span class="p">;</span>
+        <span class="k">return</span> <span class="nx">loggers</span><span class="p">[</span><span class="nx">name</span><span class="p">];</span>
+    <span class="p">}</span>
+        
+    <span class="kd">function</span> <span class="nx">setGlobalLevel</span><span class="p">(</span><span class="nx">level</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">globalLevel</span> <span class="o">=</span> <span class="nx">levels</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="nx">level</span><span class="p">);</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">globalLevel</span> <span class="o">===</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">warn</span><span class="p">(</span><span class="s2">&quot;logger.setLevel: level should be one of &#39;none&#39;, &#39;error&#39;, &#39;warn&#39;, &#39;info&#39; or &#39;debug&#39; not:&quot;</span><span class="p">,</span>
+                         <span class="nx">level</span><span class="p">);</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot;setting level of logger to &#39;debug&#39;&quot;</span><span class="p">);</span>
+            <span class="nx">globalLevel</span> <span class="o">=</span> <span class="nx">levels</span><span class="p">.</span><span class="nx">indexOf</span><span class="p">(</span><span class="s1">&#39;debug&#39;</span><span class="p">);</span>
+        <span class="p">}</span>
+        
+    <span class="p">}</span>
+    
+    
+    <span class="nx">setGlobalLevel</span><span class="p">(</span><span class="nx">defaultGlobalLevel</span><span class="p">);</span>
+    <span class="nx">addHooks</span><span class="p">();</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-10" id="section-10">&#182;</a>
+</div>
+<p>API</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    <span class="nx">getLogger</span><span class="p">.</span><span class="nx">setLevel</span> <span class="o">=</span> <span class="nx">setGlobalLevel</span><span class="p">;</span>
+    <span class="nx">getLogger</span><span class="p">.</span><span class="nx">showTimeStamp</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="nx">globalTimeStamp</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span> <span class="p">};</span>
+    <span class="nx">getLogger</span><span class="p">.</span><span class="nx">hideTimeStamp</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="nx">globalTimeStamp</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span> <span class="p">};</span>
+    <span class="nx">getLogger</span><span class="p">.</span><span class="nx">disable</span> <span class="o">=</span> <span class="nx">removeHooks</span><span class="p">;</span>
+    <span class="nx">getLogger</span><span class="p">.</span><span class="nx">enable</span> <span class="o">=</span> <span class="nx">addHooks</span><span class="p">;</span>
+    <span class="nx">getLogger</span><span class="p">.</span><span class="nx">showStamp</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="nx">globalStamp</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span> <span class="p">};</span>
+    <span class="nx">getLogger</span><span class="p">.</span><span class="nx">hideStamp</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="nx">globalStamp</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span> <span class="p">};</span>
+    <span class="nx">global</span><span class="p">[</span><span class="nx">globalHook</span><span class="p">]</span> <span class="o">=</span> <span class="nx">getLogger</span><span class="p">;</span>
+    
+<span class="p">})(</span><span class="k">this</span><span class="p">);</span>
+</pre></div>
+        </td>
+      </tr>
+  </tbody>
+</table>
+  </div>
+</body>
+</html>

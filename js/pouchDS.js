@@ -78,7 +78,7 @@ define
 				
 				    dsResponse.data.push(key);
                                 }
-			        log.d('data: ', dsResponse.data);
+			        // log.d('data: ', dsResponse.data);
 			        pouchDS.processResponse(requestId, dsResponse);}});});}
       function add(data, dsResponse, requestId) {
           doPouch(function(db) {
@@ -123,6 +123,7 @@ define
 	      fields: typesAndFields.allFields,
 	      autoDeriveTitles:true,
 	      dataProtocol: "clientCustom",
+              // autoCacheAllData: true,
 	
               // titleField: 'title',
 	      // recordName:"employee",
@@ -131,7 +132,7 @@ define
 	      transformRequest: function (dsRequest) {
 	          // DS = this;
 	          log.d(dsRequest);
-                  log.d(dsRequest.data);
+                  // log.d(dsRequest.data);
 	          var dsResponse;
 	          switch (dsRequest.operationType) {
 	            case "fetch":

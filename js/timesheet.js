@@ -4,20 +4,24 @@
 
 define
 ({ //load: ['editorLoader'],
-   inject: ['globals', 'pouchDS', 'isc_components/multicap_timesheet', 'calculateTimesheet'],
-   factory: function(globals, datasource, Timesheet, calculateTimesheet) 
+    inject: ['globals', 'pouchDS',
+             'isc_components/multicap_timesheet',
+             'calculateTimesheet', 'fetchTimesheetShifts'],
+   factory: function(globals, datasource, Timesheet,
+                     calculateTimesheet, fetchShifts) 
     { "use strict";
       var log = logger('timesheet');
       var observer;
       
       var currentState;
-      var defaultState = { person:'guest', location:'E745F82E-1CC9-46B5-A320-38F9595C6847', fortnight:'2013-01-01T11:00:00.000Z'};
+      var defaultState = { person:'', location:'', fortnight: Date.parse('2013-01-01')};
       
       var fortnightStart = Date.parse('2000, 1 Jan').getTime();
       var fortnightLength = 14 *  24 * 60 * 60 *1000;
-      var fortnight;
-      var person;
-      var location;
+      // var fortnight;
+      // var person;
+      // var location;
+      var state;
       
       // var settings = {
       //     // minimumShiftLength: 10,
@@ -30,32 +34,44 @@ define
       // };
       
       function getState() {
-          var state =  isc.addProperties(currentState, {
-              // grid: dataTable.getViewState(),
-              // criteria : dataTable.getFilterEditorCriteria(),
-              
-              // //editor
-              // height: (function() {
-              //     if (stack.sectionIsExpanded('Editor')) 
-              //         return dataTable.getHeight();
-              //     else return editorHeightExpanded;
-              // })(),
-              // isExpanded: stack.sectionIsExpanded('Editor')
-          });
-          // isc.addProperties(state, tableFilter.getState());
-          // log.d('getTableState', isc.clone(state));
+          log.d('GETTING STATE:', state);
+          log.d('+++++++++++++++++++++++++++++');
+          // state =  isc.addProperties(state, {
+          //     fortnight: fortnight,
+          //     location: location,
+          //     person: person
+          // });
           currentState = isc.clone(state);
+          // log.d(currentState, state);
           return currentState;
       } 
       
-      function setState(state) {
-          log.d("hello from timesheet");
-          if (currentState !== undefined && state === currentState) return;
+      function setState(someState) {
+          if (currentState !== undefined && state === currentState) {
+              log.d('Same, so not setting state', state);
+              return;
+          }
+          log.d('and its new state is:', someState);
           
-          state = isc.addProperties(defaultState, isc.clone(state));
-          log.d(state);
-          person = state.person; location = state.location; fortnight = state.fortnight;
+          state = isc.addProperties(defaultState, isc.clone(someState));
+          // person = state.person; location = state.location; 
+          if (typeof state.fortnight === 'string') {
+              state.fortnight = Date.parse("2013-01-11T14:00:00");
+          }
+          // else fortnight = state.fortnight;
+          log.d('SETTING STATE:', state);
+          state.fortnight = calculateFortnight(state.fortnight);
+          fortnightLabel.setContents(fortnightToString(state.fortnight));
+          // fetchShifts(person, location, fortnight, setShifts);
+          personForm.setValue('person', state.person);
+          locationForm.setValue('location', state.location);
           // calculateTimesheet.go(state.person, state.location, state.fortnight);    
+      }
+      
+      function setShifts(data) {
+          log.d('Fetched shifts and they are:', data.shifts);
+          personForm.setValue('person', data.person._id);
+          locationForm.setValue('location', data.location._id);
       }
       
       var timesheet = Timesheet.create({
@@ -64,51 +80,17 @@ define
           padding: 35
       });
       
-      
-      var fortnightPickList = { name: "fortnight",
-                                // type: 'enum',
-                                type: "select",
-                                // editorType: 'comboBox',
-                                required: true, 
-                          
-                                change: function (form) {
-                                    fortnight = form.getField('fortnight')
-                                        .pickList.getSelectedRecord();
-                                    log.d('PICKLIST', fortnight);
-                                },
-                                showTitle: false,
-                                startRow: true,
-                                // multiple: true,
-                                multipleAppearance: 'picklist',
-                                width:180
-                                
-                               ,valueMap : { 
-                                   "new" : "New",
-                                   "active" : "Active",
-                                   "revisit" : "Revisit",
-                                   "fixed" : "Fixed",
-                                   "delivered" : "Delivered",
-                                   "resolved" : "Resolved",
-                                   "reopened" : "Reopened"
-                               }
-                                // colSpan:2
-                                // icons: [{
-                                //     // src: isc.Page.getSkinDir() +"images/actions/edit.png",
-                                //     src: 'person.png'
-                                //     // click: "isc.say(item.helpText)"
-                                //     //TODO: make drag drop shift worker editor
-                                // }] 
-                              };
-      
       var personPickList = { name: "person",
                              type: 'enum',
                              // type: "select",
                              editorType: 'comboBox',
                              required: true, 
                              change: function (form) {
-                                 person = form.getField('person')
+                                 state.person = form.getField('person')
                                      .pickList.getSelectedRecord();
-                                 log.d('PICKLIST', person);
+                                 state.person = state.person._id;
+                                 observer('timesheet');
+                                 log.d('PICKLIST', state.person);
                              },
                              // ID: 'personPickList' ,
                              showTitle: false,
@@ -136,9 +118,11 @@ define
                                editorType: 'comboBox',
                                required: true, 
                                change: function (form) {
-                                   location = form.getField('location')
-                                       .pickList.getSelectedRecords();
-                                   log.d('PICKLIST', location);
+                                   state.location = form.getField('location')
+                                       .pickList.getSelectedRecord();
+                                   state.location = state.location._id;
+                                 observer('timesheet');
+                                 log.d('PICKLIST', state.location);
                                },
                           
                                // ID: 'locationPickList' ,
@@ -166,30 +150,24 @@ define
       
       var locationForm = isc.DynamicForm.create({fields: [locationPickList]});
 
-      var dateForm = isc.DynamicForm.create({fields: [fortnightPickList]});
       
-      function fortnightPicked() {
-          dateForm.setFortnight(fortnight);
-          pickFortnightWindow.hide();
-      }
+      
       function getDateStr(d) {
-          return d.getShortDayName() + '  ' + d.getDate() + ' ' + d.getMonthName() + ' ' +
+          return d.getShortDayName() + '  ' + d.getDate() + ' ' + d.getShortMonthName() + ' ' +
               d.getFullYear();
       }
       
       function fortnightToString(date) {
           var endFortnight = date.clone().addDays(13);
-          return getDateStr(fortnight) + ' - ' + getDateStr(endFortnight);
+          return getDateStr(date) + ' - ' + getDateStr(endFortnight);
       }
       
-      dateForm.setFortnight = function(date) {
-          var field = dateForm.getField('fortnight');
-          field.setValue(date);
-          field.setValueMap({ a: fortnightToString(date)});
-          
-      };
+      function calculateFortnight(date) {
+          var time = date.getTime();
+          var n = Math.floor((time - fortnightStart)/fortnightLength);
+          return new Date(fortnightStart + n * fortnightLength);
+      }
       
-      window.test = dateForm;
       
       var pickFortnightForm = isc.DynamicForm.create({
           autoDraw: false,
@@ -204,11 +182,9 @@ define
                type: "date", //titleOrientation: 'top',
                change: function() {
                    log.d(arguments[2]);
-                   var date = arguments[2];
-                   var time = date.getTime();
-                   var n = Math.floor((time - fortnightStart)/fortnightLength);
-                   fortnight = new Date(fortnightStart + n * fortnightLength);
+                   var fortnight = calculateFortnight(arguments[2]);
                    pickFortnightForm.setValue('fortnightLabel', fortnightToString(fortnight));
+                   pickFortnightForm.setValue('date', fortnight);
                    log.d('date changed'); }},
               
               { type: "BlurbItem", value: 'This date falls in the fortnight of:'},
@@ -219,15 +195,17 @@ define
       });
       
       var okButton = isc.Button.create({
-          // top: 60,
           title: "Ok",
           width: 40,
-          click: fortnightPicked
-          ,snapTo: 'R'
+          click: function fortnightPicked() {
+              state.fortnight = pickFortnightForm.getValue('date');
+              setFortnightLabel();
+              pickFortnightWindow.hide(); 
+          }
+
           });
       
       var cancelButton = isc.Button.create({
-          // top: 60,
           title: "Cancel",
           width: 40,
           click: function() { pickFortnightWindow.hide(); }
@@ -260,13 +238,20 @@ define
                        okButton 
                    ] 
                })
-              // {type: "button", title: "Cancel", width: 50, colSpan: 1,
-              //  click: "pickFortnightWindow.hide();" }
-              // ,{type: "button", title: "Done", startRow: true, 
-              //   click: fortnightPicked }
            ]
        });
       
+      var fortnightLabel = isc.Label.create({
+          contents: 'fortnight' ,
+          align: 'center',
+          width: 200
+      });
+      
+      function setFortnightLabel() {
+          observer('timesheet');
+          fortnightLabel.setContents(fortnightToString(state.fortnight));
+          
+      }
       
       var buttonWidth = 10; 
       var layout = isc.VLayout.create({
@@ -287,10 +272,32 @@ define
                           title: '',
 	                  icon:"date_control.png"
                           ,click: function() {
+                              pickFortnightForm.setValue('fortnightLabel',
+                                                         fortnightToString(state.fortnight));
+                              pickFortnightForm.setValue('date', state.fortnight);
                               pickFortnightWindow.show();
                           }
                       })
-                      ,dateForm
+                      ,isc.LayoutSpacer.create({width: 5})
+                      ,isc.Button.create({
+                          width: 22,				
+                          title: '',
+	                  icon:"arrow_left.png"
+                          ,click: function() {
+                              state.fortnight.addWeeks(-2);
+                              setFortnightLabel();
+                          }
+                      })
+                      ,fortnightLabel
+                      ,isc.Button.create({
+                          width: 22,				
+                          title: '',
+	                  icon:"arrow_right.png"
+                          ,click: function() {
+                              state.fortnight.addWeeks(2);
+                              setFortnightLabel();
+                          }
+                      })
                       ,isc.LayoutSpacer.create({width: 25})
                       ,isc.Label.create({
                           width:buttonWidth,				

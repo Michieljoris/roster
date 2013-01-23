@@ -26,6 +26,9 @@
       <div class="heading h2">
         <a href="#addfieldvalues">addFieldValues</a>
       </div>
+      <div class="heading h2">
+        <a href="#pp">pp</a>
+      </div>
     </div>
   </div>
   <div id="sidebar-toggle"></div>
@@ -113,10 +116,36 @@ it in other objects as well, if present in the object.</p>
              <span class="k">return</span> <span class="nx">fields</span><span class="p">;</span>
          <span class="p">},</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="kc">null</span><span class="p">));</span>
      <span class="p">}</span>
+     </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="pp">
+  <h2>
+    <a href="#pp" class="pilcrow">&#182;</a>
+    pp
+  </h2>
+</div>
+
+
+<p>Pretty prints an object.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>     <span class="kd">function</span> <span class="nx">pp</span><span class="p">()</span> <span class="p">{</span>
+         <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="nx">i</span><span class="o">&lt;</span> <span class="nx">arguments</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+       <span class="kd">var</span> <span class="nx">arg</span><span class="o">=</span> <span class="nx">arguments</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+       <span class="k">if</span> <span class="p">(</span><span class="nx">arg</span> <span class="k">instanceof</span> <span class="nb">Date</span><span class="p">)</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">arg</span><span class="p">);</span> 
+       <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span>  <span class="nx">arg</span> <span class="o">===</span> <span class="s2">&quot;string&quot;</span><span class="p">)</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">arg</span><span class="p">);</span> 
+       <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">arg</span> <span class="o">===</span> <span class="s1">&#39;object&#39;</span><span class="p">)</span>
+                 <span class="k">for</span> <span class="p">(</span><span class="kd">var</span> <span class="nx">j</span> <span class="k">in</span> <span class="nx">arg</span><span class="p">)</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="nx">j</span> <span class="o">+</span> <span class="s2">&quot;:&quot;</span> <span class="o">+</span> <span class="nx">arg</span><span class="p">[</span><span class="nx">j</span><span class="p">]);</span>
+       <span class="k">else</span> <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">arg</span><span class="p">);</span>
+         <span class="p">}</span>
+     <span class="p">}</span>
      
      <span class="k">return</span> <span class="p">{</span>
          <span class="nx">sortBy</span><span class="o">:</span> <span class="nx">sortBy</span><span class="p">,</span>
-         <span class="nx">addFieldValues</span><span class="o">:</span> <span class="nx">addFieldValues</span>
+         <span class="nx">addFieldValues</span><span class="o">:</span> <span class="nx">addFieldValues</span><span class="p">,</span>
+         <span class="nx">pp</span><span class="o">:</span> <span class="nx">pp</span>
      <span class="p">};</span>
    <span class="p">}});</span>
 </pre></div>

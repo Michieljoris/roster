@@ -118,17 +118,13 @@ define
            //no need to set the state if we're returning to the same one
            if (currentState !== undefined && newState === currentState) return;
            // log.d(newState);
-           log.d('1aaaaaaaaaaaaa');
            state = isc.addProperties(defaultState, isc.clone(newState));
            
-           log.d('2aaaaaaaaaaaaa');
           
            setTypingState(state.types);
           
-           log.d('3aaaaaaaaaaaaa');
            tableFilter.setState(state);
            
-           log.d('4aaaaaaaaaaaaa');
            //layout
            if (state.isExpanded) {
                stack.expandSection('Editor');   
@@ -137,13 +133,10 @@ define
            else {
                stack.collapseSection('Editor');   
            }
-           log.d('5aaaaaaaaaaaaa');
            editorHeightExpanded = state.height;
-           log.d('555aaaaaaaaaaaaa');
            //dataTable state
            dataTable.setViewState(state.grid);
               
-           log.d('6aaaaaaaaaaaaa');
            //filters
            // advancedFilter.setCriteria(state.savedAdvCriteria);
            // var advancedCriteria = {
@@ -171,7 +164,6 @@ define
            // log.d('bbbbbbbbbaaaaaaaaaaaaaaaaaaaaaaaaa',dataTable.typeFilter);
            var appliedCriteria = isc.DataSource.combineCriteria(
                dataTable.typeFilter,state.savedAdvCriteria);
-           log.d('7aaaaaaaaaaaaa');
            // appliedCriteria = advancedCriteria;
            // appliedCriteria = criteria;
            // log.d('Applied Criteria', appliedCriteria);
@@ -183,7 +175,6 @@ define
                                        dataTable.setCriteria(appliedCriteria);
                                        log.d('fetch completed');});
            else dataTable.setCriteria(appliedCriteria);
-           log.d('8aaaaaaaaaaaaa');
           
            // dataTable.setCriteria(criteria);
            //                     { myprop: 'blablabla'});

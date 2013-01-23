@@ -124,8 +124,8 @@ define
       
       //gets called by currently showing views when their state changes
       //should be set to the observer of any view implemented
-      function viewStateChanged() {
-          // log.d('************viewstateschanged');
+      function viewStateChanged(origin) {
+          log.d('Changed: ' + origin);
           setModified(true);
       }
       
@@ -139,12 +139,15 @@ define
       function openLeaf(leaf) {
           log.d('**************************---------------openLeaf');
           //opening same leaf, do nothing
-          if (leaf === leafShowing) return;
+          if (leaf === leafShowing) {
+              log.d('Opening same leaf..');
+              return;         
+          }
           
           //save any changes that might have occured in the leaf
-          // if (leafShowing) { //if the tree is empty
           leafShowing.viewState =
               views[leafShowing.view].getState(); 
+          log.d('Saved changes to viewstate', leafShowing.viewState, leafShowing.name);
 	  if (leafShowing.view !== leaf.view) {
 	      show(leafShowing.view, false);
 	  }
@@ -187,13 +190,15 @@ define
       // }
       
       function saveTreeToDb(callback) {
+          console.log('saving');
           leafShowing.viewState = views[leafShowing.view].getState();
-          log.d(leafShowing.viewState); 
+          // debugger;
+          // console.log(leafShowing.viewState); 
           globals.user.viewTreeState = isc.JSON.encode(getTreeState());
           
-          log.d('save',leafShowing);
-          log.d('save',globals.user.viewTreeState);
-          log.d('saving tree');
+          // log.d('save',leafShowing);
+          // log.d('save',globals.user.viewTreeState);
+          // log.d('saving tree');
           //TODO get the roster.user from the database and then use
           //that object to save the ui, or put the ui in a separate
           //doc...  at the moment there is an update error when you try to
@@ -488,6 +493,15 @@ define
 	      parentIdField: "parentId",
 	      openProperty :'isOpen'
 	  });
+      
+      window.test = function() {
+          tree.root.children.forEach(function(c, i) {
+              console.log(i, c.viewState);
+          });
+          return 'end';
+      };
+      
+      
 
       var viewTree = isc.TreeGrid.
           create({
@@ -505,16 +519,16 @@ define
 	      // ,editorExit: function() { this.canEdit = false;}
               ,canEdit: true
               ,leafContextClick: function() { rightClickMenu.showContextMenu(); }
-              ,cellContextClick: "log.d('hello')"
+              // ,cellContextClick: "log.d('hello')"
 	      ,viewStateChanged: function() {
                   // log.d('vsw');
 	          // treeStateChanged('treeStateChanged');
                   var leaf = viewTree.getSelectedRecord();
-                  if (!leaf.isFolder)
+                  if (leaf && !leaf.isFolder)
                       openLeaf(viewTree.getSelectedRecord());
 	      }
 	      ,cellChanged: function() {
-                  log.d('cell');
+                  // log.d('cell');
 	          treeStateChanged('cellChanged');
 	      }
 	      ,onFolderDrop: function() {

@@ -39,17 +39,8 @@
 </div>
 <p>vow.js
 Douglas Crockford
-2012-10-29</p>
-        </td>
-        <td class="code highlight"><div class="highlight"><pre></pre></div>
-        </td>
-      </tr>
-      <tr>
-        <td class="docs">
-<div class="pilwrap">
-  <a class="pilcrow" href="#section-2" id="section-2">&#182;</a>
-</div>
-<p>Public Domain</p>
+2012-10-29
+Public Domain</p>
         </td>
         <td class="code highlight"><div class="highlight"><pre><span class="cm">/*global setTimeout, setImmediate */</span></pre></div>
         </td>
@@ -57,7 +48,7 @@ Douglas Crockford
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-3" id="section-3">&#182;</a>
+  <a class="pilcrow" href="#section-2" id="section-2">&#182;</a>
 </div>
 <p>If this system does not have setImmediate, then simulate it with setTimeout.</p>
         </td>
@@ -78,7 +69,7 @@ Douglas Crockford
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-4" id="section-4">&#182;</a>
+  <a class="pilcrow" href="#section-3" id="section-3">&#182;</a>
 </div>
 <p>The VOW object contains a .make function that is used to make vows.
 It may also contain other useful functions.
@@ -95,7 +86,7 @@ In some mythologies, 'VOW' is called 'deferrer'.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-5" id="section-5">&#182;</a>
+  <a class="pilcrow" href="#section-4" id="section-4">&#182;</a>
 </div>
 <p>enqueue is a helper function used by .when. It will append a function to
 either the keepers queue or the breakers queue.</p>
@@ -106,7 +97,7 @@ either the keepers queue or the breakers queue.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-6" id="section-6">&#182;</a>
+  <a class="pilcrow" href="#section-5" id="section-5">&#182;</a>
 </div>
 <p>If func is not a function, push the resolver so that the value passes to
 the next cascaded .when.</p>
@@ -117,7 +108,7 @@ the next cascaded .when.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-7" id="section-7">&#182;</a>
+  <a class="pilcrow" href="#section-6" id="section-6">&#182;</a>
 </div>
 <p>If the func is a function, push a function that calls func with a value.
 The result can be a promise, or not a promise, or an exception.</p>
@@ -130,7 +121,7 @@ The result can be a promise, or not a promise, or an exception.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-8" id="section-8">&#182;</a>
+  <a class="pilcrow" href="#section-7" id="section-7">&#182;</a>
 </div>
 <p>If the result is a promise, then register our resolver with that promise.</p>
         </td>
@@ -141,7 +132,7 @@ The result can be a promise, or not a promise, or an exception.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-9" id="section-9">&#182;</a>
+  <a class="pilcrow" href="#section-8" id="section-8">&#182;</a>
 </div>
 <p>But if it is not a promise, then use the result to resolve our promise.</p>
         </td>
@@ -153,7 +144,7 @@ The result can be a promise, or not a promise, or an exception.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-10" id="section-10">&#182;</a>
+  <a class="pilcrow" href="#section-9" id="section-9">&#182;</a>
 </div>
 <p>But if func throws an exception, then break our promise.</p>
         </td>
@@ -170,7 +161,7 @@ The result can be a promise, or not a promise, or an exception.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-11" id="section-11">&#182;</a>
+  <a class="pilcrow" href="#section-10" id="section-10">&#182;</a>
 </div>
 <p>enlighten is a helper function of herald and .when. It schedules the
 processing of all of the resolution functions in either the keepers queue
@@ -188,7 +179,7 @@ or the breakers queue in later turns with the promise's fate.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-12" id="section-12">&#182;</a>
+  <a class="pilcrow" href="#section-11" id="section-11">&#182;</a>
 </div>
 <p>The make function makes new vows. A vow contains a promise object and the
 two resolution functions (break and keep) that determine the fate of the
@@ -205,7 +196,7 @@ promise.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-13" id="section-13">&#182;</a>
+  <a class="pilcrow" href="#section-12" id="section-12">&#182;</a>
 </div>
 <p>The herald function is a helper function of break and keep.
 It seals the promise's fate, updates its status, enlightens
@@ -225,7 +216,7 @@ one of the queues, and empties both queues.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-14" id="section-14">&#182;</a>
+  <a class="pilcrow" href="#section-13" id="section-13">&#182;</a>
 </div>
 <p>Construct and return the vow object.</p>
         </td>
@@ -236,7 +227,7 @@ one of the queues, and empties both queues.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-15" id="section-15">&#182;</a>
+  <a class="pilcrow" href="#section-14" id="section-14">&#182;</a>
 </div>
 <p>The break method breaks the promise. Programs targeted for obsolete ES3
 engines (which at this date is only IE&lt;9) must write vow.break() as
@@ -250,7 +241,7 @@ vow<a href="">'break'</a>.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-16" id="section-16">&#182;</a>
+  <a class="pilcrow" href="#section-15" id="section-15">&#182;</a>
 </div>
 <p>The keep method keeps the promise.</p>
         </td>
@@ -262,7 +253,7 @@ vow<a href="">'break'</a>.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-17" id="section-17">&#182;</a>
+  <a class="pilcrow" href="#section-16" id="section-16">&#182;</a>
 </div>
 <p>The promise is an object with a .when method.</p>
         </td>
@@ -272,7 +263,7 @@ vow<a href="">'break'</a>.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-18" id="section-18">&#182;</a>
+  <a class="pilcrow" href="#section-17" id="section-17">&#182;</a>
 </div>
 <p>The .when method is the promise monad's bind. The .when method can take two
 optional functions. One of those functions may be called, depending on the
@@ -284,7 +275,7 @@ promise's resolution. Both could be called if the the kept function throws.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-19" id="section-19">&#182;</a>
+  <a class="pilcrow" href="#section-18" id="section-18">&#182;</a>
 </div>
 <p>Make a new vow. Return the new promise.</p>
         </td>
@@ -295,7 +286,7 @@ promise's resolution. Both could be called if the the kept function throws.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-20" id="section-20">&#182;</a>
+  <a class="pilcrow" href="#section-19" id="section-19">&#182;</a>
 </div>
 <p>If this promise is still pending, then enqueue both kept and broken.</p>
         </td>
@@ -308,7 +299,7 @@ promise's resolution. Both could be called if the the kept function throws.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-21" id="section-21">&#182;</a>
+  <a class="pilcrow" href="#section-20" id="section-20">&#182;</a>
 </div>
 <p>If the promise has already been kept, then enqueue only the kept function,
 and enlighten it.</p>
@@ -322,7 +313,7 @@ and enlighten it.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-22" id="section-22">&#182;</a>
+  <a class="pilcrow" href="#section-21" id="section-21">&#182;</a>
 </div>
 <p>If the promise has already been broken, then enqueue only the broken
 function, and enlighten it.</p>
@@ -343,7 +334,7 @@ function, and enlighten it.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-23" id="section-23">&#182;</a>
+  <a class="pilcrow" href="#section-22" id="section-22">&#182;</a>
 </div>
 <p>The every function takes an array of promises and returns a promise that
 will deliver an array of results only if every promise is kept.</p>
@@ -374,7 +365,7 @@ will deliver an array of results only if every promise is kept.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-24" id="section-24">&#182;</a>
+  <a class="pilcrow" href="#section-23" id="section-23">&#182;</a>
 </div>
 <p>The first function takes an array of promises and returns a promise to
 deliver the first observed kept promise, or a broken promise if all of
@@ -410,7 +401,7 @@ the promises are broken.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-25" id="section-25">&#182;</a>
+  <a class="pilcrow" href="#section-24" id="section-24">&#182;</a>
 </div>
 <p>The any function takes an array of promises and returns a promise that
 will deliver a possibly sparse array of results of any kept promises.
@@ -443,7 +434,7 @@ The result will contain an undefined element for each broken promise.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-26" id="section-26">&#182;</a>
+  <a class="pilcrow" href="#section-25" id="section-25">&#182;</a>
 </div>
 <p>Returns a new kept promise.</p>
         </td>
@@ -457,7 +448,7 @@ The result will contain an undefined element for each broken promise.</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-27" id="section-27">&#182;</a>
+  <a class="pilcrow" href="#section-26" id="section-26">&#182;</a>
 </div>
 <p>Returns a new broken promise/</p>
         </td>
