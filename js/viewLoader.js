@@ -4,17 +4,14 @@
 
 // -----@ TOP ----- */
 define
-// ({ inject: ['table', 'calendar', 'timesheet'],
-({ inject: ['View', 'timesheet'],
-  factory: function(View) {
+({ inject: ['table', 'calendar', 'timesheet'],
+// ({ inject: ['timesheet', 'calendar'],
+// ({ inject: ['calendar'],
+  factory: function() {
       "use strict";
       var log = logger('viewLoader');
       
-      var emptyView = View.create({
-          type: 'Empty'
-      });
-      
-      var args = Array.prototype.slice.call(arguments, 1);
+      var args = Array.prototype.slice.call(arguments);
       var str = '';
       args.forEach(function(a) {
           console.log(a);
@@ -23,6 +20,5 @@ define
       
       log.d('Loaded views:' + str);
       
-      //Add views loaded by viewLoader.
-      return [ emptyView ].concat(args);
+      return args;
   }});

@@ -4,16 +4,103 @@
 
 define
 ({ load: ['editorLoader'], 
-   inject: [ 'typesAndFields', 'pouchDS', 'editorManager', 'tableFilter'],
-   factory: function (typesAndFields, database, editors, tableFilter) {
+   inject: [ 'View', 'typesAndFields', 'pouchDS', 'editorManager', 'tableFilter'],
+   factory: function (View, typesAndFields, database, editors, tableFilter) {
        "use strict";
-       
        var log = logger('table');
 
+       var view = View.create({
+           type: 'Table'
+           ,icon : "table.png"
+           ,defaultState : { height: 300, isExpanded: true, tab: 1, hidden: false}
+           
+           ,sync: function(state) {
+               state =  isc.addProperties(state, {
+                   grid: dataTable.getViewState(),
+                   criteria : dataTable.getFilterEditorCriteria(),
+              
+                   //editor
+                   height: (function() {
+                       if (stack.sectionIsExpanded('Editor')) 
+                           return dataTable.getHeight();
+                       else return editorHeightExpanded;
+                   })(),
+                   isExpanded: stack.sectionIsExpanded('Editor')
+               });
+               isc.addProperties(state, tableFilter.getState());
+           } 
+           
+           ,set: function(state) {
+               setTypingState(state);
+               tableFilter.setState(state);
+               //layout
+               if (state.isExpanded) {
+                   stack.expandSection('Editor');   
+                   dataTable.setHeight(state.height);
+               }
+               else {
+                   stack.collapseSection('Editor');   
+               }
+               editorHeightExpanded = state.height;
+               //dataTable state
+               dataTable.setViewState(state.grid);
+              
+               //filters
+               // advancedFilter.setCriteria(state.savedAdvCriteria);
+               // var advancedCriteria = {
+               //     _constructor:"AdvancedCriteria",
+               //     operator:"and",
+               //     criteria:[
+               //         // this is a Criterion
+               //         { fieldName:"group", operator:"equals", value:"shift" }
+               //         // { operator:"or", criteria:[
+               //         //     { fieldName:"title", operator:"iContains", value:"Manager" },
+               //         //     { fieldName:"reports", operator:"notNull" }
+               //         // ]  
+               //         // }
+               //     ]
+              
+               // };
+          
+               //TODO filter out the groups in pouchDS by giving extra props
+               //to dsrequest in the fetchData call instead of this client filtering
+               // var criteria = {
+               //     group : 'shift'
+               // };
+               // return;
+               // log.d('bbbbbbbbbaaaaaaaaaaaaaaaaaaaaaaaaa',dataTable.typeFilter);
+               var appliedCriteria = isc.DataSource.combineCriteria(
+                   dataTable.typeFilter,state.savedAdvCriteria);
+               // appliedCriteria = advancedCriteria;
+               // appliedCriteria = criteria;
+               // log.d('Applied Criteria', appliedCriteria);
+               // module.temp = appliedCriteria;
+               // log.d('will fetch data', dataTable.willFetchData(appliedCriteria));
+               if (dataTable.willFetchData(appliedCriteria)) 
+                   dataTable.fetchData(undefined, 
+                                       function() {
+                                           dataTable.setCriteria(appliedCriteria);
+                                           log.d('fetch completed');});
+               else dataTable.setCriteria(appliedCriteria);
+          
+               // dataTable.setCriteria(criteria);
+               //                     { myprop: 'blablabla'});
+               // dataTable.setCriteria(appliedCriteria);
+               // useSimpleFilter(state.usingSimpleFilter, appliedCriteria);
+               // layoutFilters(false); //start in normal mode
+               // setAdvFilterVisible(state.editableAdvFilter);
+          
+               // setFilterDescription();
+               //TODO alternative would be to remember the selectiion in the
+               //table and also to only enable the update/save button when the
+               //record has been edited
+               // editForm.getField('editNew').click() ;
+               // pp('****************finished setting table state');
+           }
+       });
+       //End of definition of the table view
+
        var editorHeightExpanded= 300;
-       // var typeFilter;
-       var state; 
-       var defaultState = { height: 300, isExpanded: true, tab: 1, hidden: false};
        var editorHasChanged = false;
        
        // tableFilter.filterStack.hide();
@@ -24,8 +111,8 @@ define
            width: 150,
            data: [ { title: 'hello' }]
        };
+       
        //all possible types for the right top add record button
-       // addRecordMenu.data = []; 
        var typeMenuItems = [];
        typesAndFields.allTypes.forEach(function(g) {
            typeMenuItems[g] = {
@@ -37,37 +124,11 @@ define
            }; 
        });
       
-       var API = {};
-      
-       //only one observer...
-       var observer;
-      
        //--------------------@handling state----------------------------- 
-       function getTableState() {
-           state =  isc.addProperties(state, {
-               grid: dataTable.getViewState(),
-               criteria : dataTable.getFilterEditorCriteria(),
-              
-               //editor
-               height: (function() {
-                   if (stack.sectionIsExpanded('Editor')) 
-                       return dataTable.getHeight();
-                   else return editorHeightExpanded;
-               })(),
-               isExpanded: stack.sectionIsExpanded('Editor')
-           });
-           isc.addProperties(state, tableFilter.getState());
-           log.d('getTableState', isc.clone(state));
-           currentState = isc.clone(state);
-           return currentState;
-       } 
-      
-       API.getState = getTableState;
-       
-       function setTypingState(types) {
+       function setTypingState(state) {
            //types
-           if (!types || types.length === 0) state.types = typesAndFields.allTypes;
-           types = state.types;
+           if (!state.types || state.types.length === 0) state.types = typesAndFields.allTypes;
+           var types = state.types;
            //set title of table to types displayed
            tableTypeLabel.setContents('[' + types.toString() + ']');  
            
@@ -110,107 +171,11 @@ define
            };
            // log.d('aaaaaaaaaaaaaaaaaaaaaaaaa',dataTable.typeFilter);
        } 
- 
-       var currentState;
-       function setTableState(newState) {
-           // log.showTimeStamp();
-           // log.d(newState, currentState);
-           //no need to set the state if we're returning to the same one
-           if (currentState !== undefined && newState === currentState) return;
-           // log.d(newState);
-           state = isc.addProperties(defaultState, isc.clone(newState));
-           
-          
-           setTypingState(state.types);
-          
-           tableFilter.setState(state);
-           
-           //layout
-           if (state.isExpanded) {
-               stack.expandSection('Editor');   
-               dataTable.setHeight(state.height);
-           }
-           else {
-               stack.collapseSection('Editor');   
-           }
-           editorHeightExpanded = state.height;
-           //dataTable state
-           dataTable.setViewState(state.grid);
-              
-           //filters
-           // advancedFilter.setCriteria(state.savedAdvCriteria);
-           // var advancedCriteria = {
-           //     _constructor:"AdvancedCriteria",
-           //     operator:"and",
-           //     criteria:[
-           //         // this is a Criterion
-           //         { fieldName:"group", operator:"equals", value:"shift" }
-           //         // { operator:"or", criteria:[
-           //         //     { fieldName:"title", operator:"iContains", value:"Manager" },
-           //         //     { fieldName:"reports", operator:"notNull" }
-           //         // ]  
-           //         // }
-           //     ]
-              
-           // };
-          
-          
-           //TODO filter out the groups in pouchDS by giving extra props
-           //to dsrequest in the fetchData call instead of this client filtering
-           // var criteria = {
-           //     group : 'shift'
-           // };
-           // return;
-           // log.d('bbbbbbbbbaaaaaaaaaaaaaaaaaaaaaaaaa',dataTable.typeFilter);
-           var appliedCriteria = isc.DataSource.combineCriteria(
-               dataTable.typeFilter,state.savedAdvCriteria);
-           // appliedCriteria = advancedCriteria;
-           // appliedCriteria = criteria;
-           // log.d('Applied Criteria', appliedCriteria);
-           // module.temp = appliedCriteria;
-           // log.d('will fetch data', dataTable.willFetchData(appliedCriteria));
-           if (dataTable.willFetchData(appliedCriteria)) 
-               dataTable.fetchData(undefined, 
-                                   function() {
-                                       dataTable.setCriteria(appliedCriteria);
-                                       log.d('fetch completed');});
-           else dataTable.setCriteria(appliedCriteria);
-          
-           // dataTable.setCriteria(criteria);
-           //                     { myprop: 'blablabla'});
-           // dataTable.setCriteria(appliedCriteria);
-           // useSimpleFilter(state.usingSimpleFilter, appliedCriteria);
-           // layoutFilters(false); //start in normal mode
-           // setAdvFilterVisible(state.editableAdvFilter);
-          
-           // setFilterDescription();
-           //TODO alternative would be to remember the selectiion in the
-           //table and also to only enable the update/save button when the
-           //record has been edited
-           // editForm.getField('editNew').click() ;
-           // pp('****************finished setting table state');
-       }
-      
-      
       
        //called when table's view is modified
        function tableViewStateChanged(){
-           // log.d('**************table changed: ' + origin);
-           if (observer) observer();
+           view.modified();
        }
-      
-       API.setObserver = function (f) {
-           // log.d('setobserver', f);
-           observer = f;
-       };
-      
-       //called from viewTree when a leaf is double clicked
-       API.notify = function (newstate) {
-           log.d('setting table to newstate!!!');
-           setTableState(newstate);
-       };
-      
-      
       
        //----------------------components---------------------    
        //----------------@TABLE----------------------------
@@ -259,6 +224,7 @@ define
            title: "Ok",
            click: function() {
                var sel = typeList.getSelection();
+               var state = view.getState();
                if (sel.length < 1) return;
                // make a proper groups array out of the selection
                state.types = sel.map(function(t) {
@@ -266,7 +232,6 @@ define
                });
                log.d(state.types);
                typeWindow.hide(); 
-               setTableState(state);
                tableViewStateChanged();
            }
        });
@@ -560,9 +525,10 @@ define
                
                filterButtonProperties: {
 	           click : function () {
+                       var state = view.getState();
 	               dataTable.clearCriteria();
-                       var appliedCriteria = isc.DataSource.combineCriteria(
-                           dataTable.typeFilter,state.savedAdvCriteria);
+                           var appliedCriteria = isc.DataSource.combineCriteria(
+                               dataTable.typeFilter,state.savedAdvCriteria);
 	               dataTable.filterData(appliedCriteria);
                        tableViewStateChanged('clearSimpleFilter');
 	           },
@@ -578,18 +544,18 @@ define
 	       // emptyMessage: "<br>Click the <b>Set data</b> button to populate this grid.",
 	       // cellContextClick:"return itemListMenu.showContextMenu()",
 	       // Function to update details based on selection
-	       filterEditorSubmit: function(criteria) {
+	       // filterEditorSubmit: function(criteria) {
                    
-                   tableViewStateChanged('filterEditorSubmit');
-                   // var appliedCriteria = isc.DataSource.combineCriteria(
-                   //     dataTable.typeFilter,state.savedAdvCriteria);
-                   // var finalCriteria = isc.DataSource.combineCriteria(
-                   //     criteria, appliedCriteria);
-                   // this.setCriteria(finalCriteria);
-	          // log.d('modified filter', finalCriteria);
-                   // return false;
-	           // storeTableViewState();
-	       },
+               //     tableViewStateChanged('filterEditorSubmit');
+               //     // var appliedCriteria = isc.DataSource.combineCriteria(
+               //     //     dataTable.typeFilter,state.savedAdvCriteria);
+               //     // var finalCriteria = isc.DataSource.combineCriteria(
+               //     //     criteria, appliedCriteria);
+               //     // this.setCriteria(finalCriteria);
+	       //    // log.d('modified filter', finalCriteria);
+               //     // return false;
+	       //     // storeTableViewState();
+	       // },
                setTypingState: setTypingState,
                setFilterLabel: function(label) {
                    tableFilterLabel.setContents(label);
@@ -604,7 +570,7 @@ define
                // }
            });
       
-       tableFilter.link(dataTable, defaultState);
+       tableFilter.link(dataTable);
        
        var emptyMessage = isc.Label.create({
            // ID:"editorMessage",
@@ -689,11 +655,8 @@ define
                
 	   });
       
-       //------------------@API----------------------------- 
        //for use in layout to show these components
-       API.grid = stack;
-       API.name = 'Table';
-       API.icon = "table.png";
-       return API;
+       view.setCmp(stack);
+       return view;
    }});
 //TODO get rid of all ID:

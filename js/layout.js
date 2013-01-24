@@ -1,4 +1,4 @@
-/*global isc:false define:false */
+/*global logger:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:4 maxcomplexity:7 maxlen:90 devel:true*/
 
@@ -7,6 +7,7 @@ define
 ({inject: [ 'viewTree', 'viewLoader'],
   factory: function(viewTree, views) 
   { "use strict";
+    var log = logger('layout');
 
     //**********@Left hand side************************ 
     //viewTree defined in viewtree.js
@@ -87,6 +88,7 @@ define
         });
         return result;
     })();
+    log.d(sections);
 
     //*********************@right hand side*************************
     //TABLE
@@ -106,7 +108,7 @@ define
     });
     //need to do this, the sectionstack seems to show
     //the first section regardless of its hidden prop.
-    rightSideLayout.hideSection('Table');
+    rightSideLayout.hideSection(sections[0].name);
 
     //**************************@main layout************************
     

@@ -4,12 +4,11 @@
 
 define
 // ({inject: ['globals', 'table', 'calendar' ],
-({inject: ['viewLoader', 'globals'],
-  factory: function(views, globals) {
+({inject: ['View', 'viewLoader', 'globals'],
+  factory: function(View, views, globals) {
       "use strict";
       var log = logger('viewTree');
-      //dummy empty view for initialization purposes. Also a template
-      //for more views.
+      
       var newViewMenu = [];
       
       views = (function() {
@@ -20,9 +19,7 @@ define
               if (type !== 'Empty') {
                   newViewMenu.push({
                       name: type,
-                      click: function() {
-                          // newView(type, views[type].getDefaultState()); } 
-                          newView(type); } 
+                      click: function() { newView(type); } 
                       ,icon: v.getIcon()
                   });
               }
@@ -34,11 +31,7 @@ define
       var show, //To be set by layout so we can show/hide views in the layout
           treeModified, //Whether the ui has changed
           viewModified,
-      
-      //For initialization purposes when there is no view at all defined
-          viewRecordShowing = {
-              type: 'Empty'
-          };
+          viewInstanceShowing;
       
       //--------------------HANDLING STATE OF THE VIEWTREE-------------------------- 
       function notify(newState) {
@@ -86,7 +79,7 @@ define
           //isc.JSON.encode(
           return { width: viewTree.getWidth(),
                    time: isc.timeStamp(),
-                   pathOfLeafShowing: viewRecordShowing.path,
+                   pathOfLeafShowing: viewInstanceShowing ? viewInstanceShowing.path : null,
                    // selectedPaths: pathShowing, //viewTree.getSelectedPaths(),
                    //only store data needed to rebuild the tree 
                    state: tree.map(function(n) {
@@ -133,33 +126,33 @@ define
           // if (saveOnChange) saveTreeToDb();
       }
       
-      function open(viewRecord) {
-          log.d('**************************---------------openLeaf');
-          //opening same leaf, do nothing
-          if (viewRecord === viewRecordShowing) {
+      function open(viewInstance) {
+          log.d('**************************---------------open view');
+          //opening same view with same data, do nothing
+          if (viewInstanceShowing && viewInstance === viewInstanceShowing) {
               log.d('Opening same view..');
               return;         
           }
           
-          //save any changes that might have occured in the leaf
-          // leafShowing.viewState =
-          views[viewRecordShowing.type].sync(); 
-          log.d('Saved changes to the state of the view',
-                viewRecordShowing.state, viewRecordShowing.name);
-	  if (viewRecordShowing.type !== viewRecord.type) {
-	      show(viewRecordShowing.type, false);
-	  }
+          //save any changes that might have occured in the view
+          if (viewInstanceShowing) {
+              views[viewInstanceShowing.type].sync(); 
+              log.d('Saved changes to the state of the view',
+                    viewInstanceShowing.name, viewInstanceShowing.state);
+	      if (viewInstanceShowing.type !== viewInstance.type) {
+	          show(viewInstanceShowing.type, false);
+	      }
+          }
           // } 
           //give the component that's about to be shown the specific
-          //data of the new leaf
-          // views[leaf.view].notify(isc.clone(leaf.viewState));
-          views[viewRecord.type].set(viewRecord.state);
-          //show the leaf, redundant, harmless call if it's the same
+          //data of this instance of the view
+          views[viewInstance.type].set(viewInstance.state);
+          //show the view, redundant, harmless call if it's the same
           //type of view
-          show(viewRecord.type, true);   
-          //set a pointer to the leaf that's now showing
-          viewRecordShowing = viewRecord;
-          viewRecordShowing.path = viewTree.getSelectedPaths();
+          show(viewInstance.type, true);   
+          //set a pointer to the view instance that's now showing
+          viewInstanceShowing = viewInstance;
+          viewInstanceShowing.path = viewTree.getSelectedPaths();
           //we're changing views, so set modified flag
           setTreeModified(true);
           
@@ -190,15 +183,10 @@ define
       
       function saveTreeToDb(callback) {
           console.log('saving');
-          // leafShowing.state =
-          views[viewRecordShowing.type].sync();
+          if (viewInstanceShowing) views[viewInstanceShowing.type].sync();
           // debugger;
-          // console.log(leafShowing.viewState); 
           globals.user.viewTreeState = isc.JSON.encode(getTreeState());
           
-          // log.d('save',leafShowing);
-          // log.d('save',globals.user.viewTreeState);
-          // log.d('saving tree');
           //TODO get the roster.user from the database and then use
           //that object to save the ui, or put the ui in a separate
           //doc...  at the moment there is an update error when you try to
@@ -237,19 +225,6 @@ define
       
       //------------------@manipulate tree---------------------
       
-      // function clone() { var selRecord =
-      //     viewTree.getSelectedRecord(); if (!selRecord) return; var
-      //     view = selRecord.view; var state = selRecord.viewState;
-      //     var name = selRecord.name; log.d(state); if (!selRecord)
-      //     selRecord = '/'; else { viewTree.selectRecord(selRecord,
-      //     false); selRecord = selRecord['_parent_' + tree.ID]; }
-      //     var newRecord =
-      //     tree.add({id:isc.timeStamp(),isFolder:false, name: name +
-      //     ' (clone)', view: view, viewState : state}, selRecord);
-      //     viewTree.selectRecord(newRecord);
-      //     viewTree.openFolder(selRecord);
-      //     treeStateChanged('clone'); viewTree.openLeaf(newRecord);
-      //     // ignoreChangeState = true; }
       
       function getUniqueName(baseName, parent) {
           function nameExists(siblings, name) {
@@ -282,18 +257,18 @@ define
               
           }
           var newName = getUniqueName(type, parent);
-          var viewRecord = tree.add({id:isc.timeStamp(),isFolder:false, 
-                                    name:newName, type: type
-                                    // state: state  
-                                   }, parent);
+          //make sure the state of the view is synced with data structures.
+          views[type].sync();
+          var viewInstance = tree.add({
+              id:isc.timeStamp(),isFolder:false, 
+              name:newName, type: type
+              ,state: views[type].create()
+          }, parent);
           
-          viewTree.selectRecord(viewRecord);
+          viewTree.selectRecord(viewInstance);
           //open the parent folder, otherwise we can't see the the new record/view
           viewTree.openFolder(parent);
-          // pp('In newView: leafShowing.viewState---------',leafShowing.viewState);
-          viewTree.openLeaf(viewRecord);
-          // eafShowing.viewState = table.getState();
-          // pp('In newView: table.getState---------',leafShowing.viewState);t
+          viewTree.openLeaf(viewInstance);
           treeStateChanged('newView');
       }
       
@@ -536,7 +511,7 @@ define
       
       window.onbeforeunload= 
 	  function() { 
-              views[viewRecordShowing.type].sync();
+              if (viewInstanceShowing) views[viewInstanceShowing.type].sync();
               // if (!modified) return null;
               // else return 'Leaving will discard changes made to the organising tree.'+
               //     '\\n Select "Stay on this page" and then click the icon next to '+
@@ -555,7 +530,7 @@ define
       //to set viewTree to a new state
       viewTree.notify = notify;
       viewTree.ls = function() {
-          log.d(viewRecordShowing);
+          log.d(viewInstanceShowing);
       };
       //exposes the loginButton, not really part of this component.
       viewTree.loginButton = loginButton;

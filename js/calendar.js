@@ -4,48 +4,34 @@
 
 define
 ({ load: ['editorLoader'],
-   inject: ['pouchDS', 'editorManager'],
-   factory: function(database, editors) 
+   inject: ['View', 'pouchDS', 'editorManager'],
+   factory: function(View, database, editors) 
    { "use strict";
      var log = logger('calendar');
-     var observer;
-     var defaultState = {
-         minimumShiftLength: 10,
-         maximumShiftLength: 600,
-         eventSnapGap: 15, //only works with a refresh
-         workdayStart: '6:00',
-         workdayEnd: '22:00',
-         currentViewName: 'week', //day, week or month
-         chosenDate: new Date()
-        
-     };
-     var state = isc.clone(defaultState);
-     var currentState;
      
-     function getState() {
-         if (calendar)
-             state.currentViewName = calendar.getCurrentViewName();
-         return state;
-     }
-     
-     function setState(someState) {
-         if (currentState !== undefined && someState === currentState) {
-             log.d('Same, so not setting state', state);
-             return;
+     var view = View.create({
+         type: 'Calendar'
+         ,icon: "calendar.png"
+         ,defaultState : {
+             minimumShiftLength: 10,
+             maximumShiftLength: 600,
+             eventSnapGap: 15, //only works with a refresh
+             workdayStart: '6:00',
+             workdayEnd: '22:00',
+             currentViewName: 'day', //day, week or month
+             chosenDate: new Date()
          }
-         // if (someState === currentState) return;
-         currentState = someState;
-         state = isc.addProperties(defaultState, isc.clone(someState));
-         // state = someState || state;
-         console.log(someState);
-         // state.chosenDate = state.chosenDate || new Date();
-         calendar.setChosenDate(new Date(state.chosenDate));
-         // state.currentViewName = state.currentViewName || 'week';
-         calendar.setCurrentViewName(state.currentViewName);
-     }
+         ,sync: function(state) {
+             state.currentViewName = calendar.getCurrentViewName();
+         }
+         ,set: function(state) {
+             calendar.setChosenDate(new Date(state.chosenDate));
+             calendar.setCurrentViewName(state.currentViewName);
+         }
+     }); 
     
      function getShiftDescription(event) {
-         console.log('in shiftdesc', event);
+        log.d('in shiftdesc', event);
          var sDate = event.startDate.toShortDate();
          var sTime = isc.Time.toTime(event.startDate, 'toShortPaddedTime', true);
          var eTime = isc.Time.toTime(event.endDate, 'toShortPaddedTime', true);
@@ -66,15 +52,16 @@ define
                  ,showWorkday: true
                  // ,showTimelineView:true
                  ,workdays: [0,1,2,3,4,5,6]
-                 ,workdayStart: state.workdayStart
-                 ,workdayEnd: state.workdayEnd
+                 ,workdayStart: view.getState().workdayStart
+                 ,workdayEnd: view.getState().workdayEnd
 	         ,initialCriteria: { type:'shift'  } 
                  ,criteria: { type: 'shift' }
-                 ,eventSnapGap: state.eventSnapGap
+                 ,eventSnapGap: view.getState().eventSnapGap
                  ,dateChanged: function() {
-                     console.log('change of current date', calendar.chosenDate);
+                     var state = view.getState();
+                     log.d('change of current date', calendar.chosenDate);
                      state.chosenDate = calendar.chosenDate.toString();
-                     observer();
+                     view.modified();
                  }
                  ,getDayBodyHTML: function(date, events, calendar, rowNum, colNum) {
                          // var day = date.getDay();
@@ -107,7 +94,7 @@ define
                      return retVal;
                  }
                  ,getEventHoverHTML : function (event, eventWindow) {
-                     console.log(event, eventWindow);
+                     log.d(event, eventWindow);
                      var cal = this;
     
                      // format date & times
@@ -123,10 +110,11 @@ define
                  }
                  // ,selectTab:function(tabNum) {
                  //     // TODO   
-                 //     console.log('selectTab', tabNum);
+                 //     log.d('selectTab', tabNum);
                  // }
 	         ,eventClick: function(event, viewName) {
-	             console.log("Update event", event, viewName);
+	             log.d("Update event", event, viewName);
+                     var state = view.getState();
                  
                      state.title = getShiftDescription(event);
                      state.cancelButton = true;
@@ -138,7 +126,7 @@ define
 	                 return false;
 	         }
 	         ,backgroundClick: function(startDate, endDate) {
-	             console.log('New event',startDate, endDate);
+	             log.d('New event',startDate, endDate);
                      var date =  new Date(startDate);
                      // var event = typesAndFields.newRecord('shift');
                      var event = {
@@ -153,6 +141,7 @@ define
                      
                      };
                 
+                     var state = view.getState();
                      state.title = getShiftDescription(event);
                      state.cancelButton = true;
                      state.saveButton = true;
@@ -163,30 +152,15 @@ define
                  
 	             return false;
 	         }
-                 ,notify: function(newState) {
-                     console.log('calendar is notified');
-                     setState(newState);
-                
-                 }
-                 ,getState: getState
-                 // ,getState: function() {
-                 //     if (calendar)
-                 //         state.currentViewName = calendar.getCurrentViewName();
-                 //     return state;
-                 // }
-                 ,setObserver: function(f) {
-                     observer = f;
-                 }
-                 ,name: 'Calendar'
-                 ,icon: "calendar.png"
              }); 
     
      calendar.addEventButton.click = function () {
-         console.log('TODO');
+         log.d('TODO');
          //this needs to also open the shift edit window..
      };
-      
-     return calendar; 
+
+     view.setCmp(calendar);
+     return view; 
       
    }});
 

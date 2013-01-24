@@ -420,8 +420,8 @@ define
 	      });
 	      
       return {
-          link: function(aDataTable, aDefaultState) {
-              defaultState = isc.addDefaults(defaultState, aDefaultState),
+          link: function(aDataTable) {
+              // defaultState = isc.addDefaults(defaultState, aDefaultState),
               dataTable = aDataTable; },
           filterStack: filterStack,
           setState: setState,

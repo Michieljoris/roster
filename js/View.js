@@ -13,9 +13,9 @@ define
           var state = data.defaultState;
           var observer, cmp;
           return {
-              getDefaultState: function () {
-                  return data.defaultState;
-              },
+              // getDefaultState: function () {
+              //     return isc.clone(data.defaultState);
+              // },
               getType: function () {
                   return data.type;
               },
@@ -37,7 +37,7 @@ define
                   if (observer) observer(data.type);
               }
               ,sync: function() {
-                  // if (!state) state = {};
+                  log.d('in sync of view: ' + data.type);
                   if (data.sync) data.sync(state);
               }
               ,set: function(someState) {
@@ -45,13 +45,17 @@ define
                       log.d('Same, so not setting state', state);
                       return;
                   }
-                  log.d('Setting view to its new state:', someState);
-                  if (!someState) someState = isc.clone(data.defaultState);
+                  // if (!someState) someState = isc.clone(data.defaultState);
                   state = someState;
+                  log.d('Setting view '+ data.type + ' to its new state:', state);
                   if (data.set) data.set(state);
               }
               ,getState: function() {
                   return state;
+              }
+              ,create: function() {
+                  return isc.clone(state);
+                  // return isc.clone(defaultState);
               }
           };    
       }
