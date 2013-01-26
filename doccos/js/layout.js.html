@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>layout.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="../doc-style.css" />
+  <script src="../doc-filelist.js"></script>
+  <script>
+    var relativeDir = '../', thisFile = 'js/layout.js', defaultSidebar = true;
+  </script>
+  <script src="../doc-script.js"></script>
+  <script src="../fileSearch.js"></script>
+  <link rel="stylesheet" href="../fileSearch.css" />
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+      <div class="heading h1">
+        <a href="#left-hand-side-of-the-layout">Left hand side of the layout</a>
+      </div>
+      <div class="heading h2">
+        <a href="#right-hand-side-of-the-layout">Right hand side of the layout</a>
+      </div>
+      <div class="heading h2">
+        <a href="#the-main-layout">The main layout</a>
+      </div>
+      <div class="heading h3">
+        <a href="#getwidth">getWidth</a>
+      </div>
+      <div class="heading h3">
+        <a href="#setwidth">setWidth</a>
+      </div>
+      <div class="heading h3">
+        <a href="#setshow">setShow</a>
+      </div>
+      <div class="heading h2">
+        <a href="#draw">draw</a>
+      </div>
+      <div class="heading h2">
+        <a href="#api">API</a>
+      </div>
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container"><div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+      <tr>
+        <td class="docs">
+          <h1>layout.js</h1>
+        </td>
+        <td class="code highlight"></td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-1" id="section-1">&#182;</a>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="cm">/*global logger:false isc:false define:false */</span>
+<span class="cm">/*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/</span>
+<span class="cm">/*jshint maxparams:4 maxcomplexity:7 maxlen:90 devel:true*/</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-2" id="section-2">&#182;</a>
+</div>
+<p>This module lays out the app into two main sections, left and
+right. The left side contains the tree of views to be shown in the
+right hand side, and a collapsable help section.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="nx">define</span>
+<span class="p">({</span><span class="nx">inject</span><span class="o">:</span> <span class="p">[</span> <span class="s1">&#39;viewTree&#39;</span><span class="p">,</span> <span class="s1">&#39;viewLoader&#39;</span><span class="p">],</span>
+  <span class="nx">factory</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">viewTree</span><span class="p">,</span> <span class="nx">views</span><span class="p">)</span> 
+  <span class="p">{</span> <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">log</span> <span class="o">=</span> <span class="nx">logger</span><span class="p">(</span><span class="s1">&#39;layout&#39;</span><span class="p">);</span>
+    <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;Executing layout.js&#39;</span><span class="p">);</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="left-hand-side-of-the-layout">
+  <h1>
+    <a href="#left-hand-side-of-the-layout" class="pilcrow">&#182;</a>
+    Left hand side of the layout
+  </h1>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-4" id="section-4">&#182;</a>
+</div>
+<p>Help section</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    <span class="kd">var</span> <span class="nx">helpCanvas</span> <span class="o">=</span> <span class="nx">isc</span><span class="p">.</span><span class="nx">HTMLPane</span><span class="p">.</span>
+    <span class="nx">create</span><span class="p">({</span>
+  <span class="nx">height</span><span class="o">:</span><span class="s1">&#39;25%&#39;</span><span class="p">,</span>
+  <span class="nx">contentsURL</span><span class="o">:</span><span class="s1">&#39;helptext.html&#39;</span>
+  <span class="p">,</span><span class="nx">overflow</span><span class="o">:</span><span class="s2">&quot;auto&quot;</span><span class="p">,</span>
+  <span class="nx">styleName</span><span class="o">:</span><span class="s2">&quot;defaultBorder&quot;</span><span class="p">,</span>
+  <span class="nx">padding</span><span class="o">:</span><span class="mi">10</span>
+    <span class="p">});</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-5" id="section-5">&#182;</a>
+</div>
+<p>A section stack with the viewTree and help section</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    <span class="kd">var</span> <span class="nx">leftSideLayout</span> <span class="o">=</span> <span class="nx">isc</span><span class="p">.</span><span class="nx">SectionStack</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span> 
+  <span class="nx">visibilityMode</span><span class="o">:</span><span class="s2">&quot;multiple&quot;</span><span class="p">,</span>
+  <span class="nx">animateSections</span><span class="o">:</span><span class="kc">true</span><span class="p">,</span>
+  <span class="nx">showResizeBar</span><span class="o">:</span><span class="kc">true</span><span class="p">,</span>
+  <span class="nx">width</span><span class="o">:</span><span class="mi">200</span><span class="p">,</span>
+  <span class="nx">sections</span><span class="o">:</span><span class="p">[</span>
+      <span class="p">{</span><span class="nx">showHeader</span><span class="o">:</span><span class="kc">false</span><span class="p">,</span> <span class="nx">items</span><span class="o">:</span><span class="p">[</span><span class="nx">viewTree</span><span class="p">]},</span>
+      <span class="p">{</span><span class="nx">title</span><span class="o">:</span><span class="s2">&quot;Help&quot;</span><span class="p">,</span> <span class="nx">expanded</span><span class="o">:</span><span class="kc">false</span><span class="p">,</span>  <span class="nx">items</span><span class="o">:</span><span class="p">[</span><span class="nx">helpCanvas</span><span class="p">]}</span>
+  <span class="p">]</span>
+    <span class="p">});</span>
+    
+    </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="right-hand-side-of-the-layout">
+  <h2>
+    <a href="#right-hand-side-of-the-layout" class="pilcrow">&#182;</a>
+    Right hand side of the layout
+  </h2>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-7" id="section-7">&#182;</a>
+</div>
+<p>A section for every view. These views are NOT lazily created,
+just hidden and shown when selected.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    <span class="kd">var</span> <span class="nx">sections</span> <span class="o">=</span> <span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="p">[];</span>
+        <span class="nx">views</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">v</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">result</span><span class="p">.</span><span class="nx">push</span><span class="p">({</span>
+                <span class="nx">name</span><span class="o">:</span> <span class="nx">v</span><span class="p">.</span><span class="nx">getType</span><span class="p">(),</span>
+                <span class="nx">showHeader</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span>
+                <span class="nx">hidden</span><span class="o">:</span> <span class="kc">true</span><span class="p">,</span>
+                <span class="nx">items</span><span class="o">:</span> <span class="p">[</span><span class="nx">v</span><span class="p">.</span><span class="nx">getCmp</span><span class="p">()]</span>
+            <span class="p">});</span>
+        <span class="p">});</span>
+        <span class="k">return</span> <span class="nx">result</span><span class="p">;</span>
+    <span class="p">})();</span>
+
+    <span class="kd">var</span> <span class="nx">rightSideLayout</span> <span class="o">=</span> <span class="nx">isc</span><span class="p">.</span><span class="nx">SectionStack</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span> 
+  <span class="nx">visibilityMode</span><span class="o">:</span><span class="s2">&quot;multiple&quot;</span><span class="p">,</span>
+  <span class="nx">animateSections</span><span class="o">:</span><span class="kc">false</span>
+  <span class="p">,</span><span class="nx">sections</span><span class="o">:</span> <span class="nx">sections</span>
+    <span class="p">});</span>
+    </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-8" id="section-8">&#182;</a>
+</div>
+<p>Need to do this, the sectionstack seems to show
+the first section regardless of its hidden prop.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    <span class="nx">rightSideLayout</span><span class="p">.</span><span class="nx">hideSection</span><span class="p">(</span><span class="nx">sections</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nx">name</span><span class="p">);</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="the-main-layout">
+  <h2>
+    <a href="#the-main-layout" class="pilcrow">&#182;</a>
+    The main layout
+  </h2>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    <span class="kd">var</span> <span class="nx">mainLayout</span> <span class="o">=</span> <span class="nx">isc</span><span class="p">.</span><span class="nx">HLayout</span><span class="p">.</span><span class="nx">create</span><span class="p">({</span> 
+  <span class="nx">width</span><span class="o">:</span> <span class="s2">&quot;100%&quot;</span><span class="p">,</span>
+  <span class="nx">height</span><span class="o">:</span> <span class="s2">&quot;100%&quot;</span><span class="p">,</span>
+  <span class="nx">members</span><span class="o">:</span> <span class="p">[</span>
+      <span class="nx">leftSideLayout</span><span class="p">,</span>
+      <span class="nx">rightSideLayout</span>
+  <span class="p">]</span>
+    <span class="p">});</span>
+    </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs"><p>viewTree can get data from, and influence data of the layout it is 
+a part of with the following functions:</p>
+
+
+<div class="pilwrap" id="getwidth">
+  <h3>
+    <a href="#getwidth" class="pilcrow">&#182;</a>
+    getWidth
+  </h3>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    <span class="nx">viewTree</span><span class="p">.</span><span class="nx">getWidth</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">leftSideLayout</span><span class="p">.</span><span class="nx">getWidth</span><span class="p">();</span>
+    <span class="p">};</span> </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="setwidth">
+  <h3>
+    <a href="#setwidth" class="pilcrow">&#182;</a>
+    setWidth
+  </h3>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    <span class="nx">viewTree</span><span class="p">.</span><span class="nx">setWidth</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">w</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nx">leftSideLayout</span><span class="p">.</span><span class="nx">setWidth</span><span class="p">(</span><span class="nx">w</span><span class="p">);</span>
+    <span class="p">};</span>
+    </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="setshow">
+  <h3>
+    <a href="#setshow" class="pilcrow">&#182;</a>
+    setShow
+  </h3>
+</div>
+
+
+<p>With this viewTree can show/hide sections in this layout</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    <span class="nx">viewTree</span><span class="p">.</span><span class="nx">setShow</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">cmp</span><span class="p">,</span> <span class="nx">bool</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">bool</span><span class="p">)</span> <span class="nx">rightSideLayout</span><span class="p">.</span><span class="nx">showSection</span><span class="p">(</span><span class="nx">cmp</span><span class="p">);</span>
+  <span class="k">else</span> <span class="nx">rightSideLayout</span><span class="p">.</span><span class="nx">hideSection</span><span class="p">(</span><span class="nx">cmp</span><span class="p">);</span>           
+    <span class="p">});</span>
+    </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="draw">
+  <h2>
+    <a href="#draw" class="pilcrow">&#182;</a>
+    draw
+  </h2>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-14" id="section-14">&#182;</a>
+</div>
+<p>The one exported function. It takes a JSON string
+containing the state of the ui to be drawn.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">draw</span><span class="p">(</span><span class="nx">uiState</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">viewTree</span><span class="p">.</span><span class="nx">notify</span><span class="p">(</span><span class="nx">uiState</span><span class="p">);</span> 
+        <span class="nx">mainLayout</span><span class="p">.</span><span class="nx">draw</span><span class="p">();</span>
+    <span class="p">}</span>
+    </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="api">
+  <h2>
+    <a href="#api" class="pilcrow">&#182;</a>
+    API
+  </h2>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>    <span class="k">return</span> <span class="p">{</span>
+        <span class="nx">draw</span> <span class="o">:</span> <span class="nx">draw</span>
+    <span class="p">};</span>
+    
+  <span class="p">}});</span>
+</pre></div>
+        </td>
+      </tr>
+  </tbody>
+</table>
+  </div>
+</body>
+</html>

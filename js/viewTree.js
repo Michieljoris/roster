@@ -3,9 +3,8 @@
 /*jshint maxparams:4 maxcomplexity:7 maxlen:90 devel:true*/
 
 define
-// ({inject: ['globals', 'table', 'calendar' ],
-({inject: ['View', 'viewLoader', 'globals'],
-  factory: function(View, views, globals) {
+({inject: ['View', 'viewLoader', 'user', 'globals'],
+  factory: function(View, views, user, globals) {
       "use strict";
       var log = logger('viewTree');
       
@@ -382,8 +381,12 @@ define
           });
       
       var loginButton = isc.ToolStripButton.create(
-          {
-              align:'left' 
+          {   align:'left' 
+	      ,action: function() {
+		  isc.showLoginDialog(user.checkCredentials,
+				      {username: user.getLogin(), password: user.getPwd(),
+				       dismissable:true});
+	      }
           });
       
       var saveButton = isc.ToolStripButton.create({
@@ -532,8 +535,7 @@ define
       viewTree.ls = function() {
           log.d(viewInstanceShowing);
       };
-      //exposes the loginButton, not really part of this component.
-      viewTree.loginButton = loginButton;
+      
       return viewTree;
   }});
 

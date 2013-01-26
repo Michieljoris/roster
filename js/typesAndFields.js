@@ -1,4 +1,4 @@
-/*global logger:false isc:false define:false emit:false*/
+/*global logger:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:5 maxcomplexity:10 maxlen:190 devel:true*/
 
@@ -11,26 +11,6 @@ define
         // var dataSource;
         var timeLists = {};
        
-        var views = {
-            all: {   map : function(doc) { emit(doc,null); }
-	             ,reduce: false}
-            ,shift: { map : function(doc) {
-	        if (doc.type === 'shift') emit(doc,null);}
-		      ,reduce: false}
-            ,location: { map : function(doc) {
-	        if (doc.type === 'location') emit(doc,null);}
-		         ,reduce: false}
-          
-            ,person: { map : function(doc) {
-	        if (doc.type === 'person') emit(doc,null);}
-		       ,reduce: false}
-            ,role: { map : function(doc) {
-	        if (doc.type === 'role') emit(doc,null);}
-		     ,reduce: false}
-            ,uiState: { map : function(doc) {
-	        if (doc.type === 'uiState') emit(doc,null);}
-		        ,reduce: false}
-        };
         // database.setViews(views);
         
         var genericFields = {
@@ -102,6 +82,56 @@ define
         //                       // }
         //                      };
         
+        
+        function formatTime(hour, minute) {
+            // var hourPrefix = hour<10 ? '0' : '';
+            var hourPrefix = hour<10 ? '' : '';
+            var minutePrefix = minute<10 ? '0' : '';
+            return hourPrefix + hour + ':' + minutePrefix + minute;
+        }
+    
+        function getTimeList(step, startTime, endTime, endHour, endMinute) {
+            step = step || 30;
+            startTime = startTime || 0;
+            endTime = endTime || 0;
+            endMinute = endMinute || 0;
+             
+            var hour, minute;
+            if (typeof startTime === 'object') {
+                if (startTime) {
+                    hour = startTime.getHours();
+                    minute = startTime.getMinutes();
+                } else { hour = 0; minute = 0; }
+                if (endTime) {
+                    endHour = endTime.getHours();
+                    endMinute = endTime.getMinutes();
+                } else { endHour = 24; endMinute = 0; }
+            }
+            else {
+                hour = startTime, minute = endTime;  
+                
+            } 
+            endHour = endHour || 24;
+            // log.d(hour, minute, endHour, endMinute);
+            if (endHour > 24) endHour = 24;
+            var uniqueList = formatTime(hour,minute) + '-' + 
+                formatTime(endHour, endMinute) + step;
+            if (timeLists[uniqueList]) return timeLists[uniqueList] ;
+            var list = [];
+            while (hour < endHour || (hour === endHour && minute <= endMinute)) {
+                // list.push(formatTime(hour,minute));
+                list.push(isc.Time.createLogicalTime(hour, minute, 0));
+                minute+=step; 
+                // log.d(minute,hour);
+                if ((minute/60) >= 1) hour++;
+                minute %= 60;
+            }
+            if (list.last() === '24:00') list[list.length-1] = '0.00';
+            timeLists[uniqueList] = list;
+
+            return list;
+        }
+        
         //add fields here and they will appear in dropdown boxes and when claimed will create
         //a field in the shift record with the value of the shift's length
         var claimFields =  {
@@ -120,10 +150,10 @@ define
         claimValueMap.push('Normal shift');
         claimValueMap.push('Away from base');
         Object.keys(claimFields).forEach(function(f) {
-            claimValueMap.push( claimFields[f].title ? claimFields[f].title : isc.DataSource.getAutoTitle(f) ); 
+            claimValueMap.push( claimFields[f].title ? claimFields[f].title :
+                                isc.DataSource.getAutoTitle(f) ); 
         });
         claimValueMap.push('Event');
-        
         
         
         var typeFields = {
@@ -232,10 +262,11 @@ define
             location: ['costCentre', 'name', 'address', 'suburb','postalCode', 'state',
                        'phone', 'mob', 'email', 'region', 'notes'],
             person: ['name', 'firstName', 'lastName', 'dswCALevel', 'payrollNumber', 'status',
-                     'address', 'suburb','postalCode', 'state', 'phone', 'mob', 'email', 'notes'],
-            role: ['permissions']
+                     'address', 'suburb','postalCode', 'state', 'phone', 'mob', 'email', 'notes']
         };
         
+        
+       //-================================================================ 
         typeFields = isc.addProperties(typeFields, claimFields);
         
         var fields = isc.addProperties({}, genericFields, typeFields);
@@ -366,54 +397,6 @@ define
         
         // );
     
-        function formatTime(hour, minute) {
-            // var hourPrefix = hour<10 ? '0' : '';
-            var hourPrefix = hour<10 ? '' : '';
-            var minutePrefix = minute<10 ? '0' : '';
-            return hourPrefix + hour + ':' + minutePrefix + minute;
-        }
-    
-        function getTimeList(step, startTime, endTime, endHour, endMinute) {
-            step = step || 30;
-            startTime = startTime || 0;
-            endTime = endTime || 0;
-            endMinute = endMinute || 0;
-             
-            var hour, minute;
-            if (typeof startTime === 'object') {
-                if (startTime) {
-                    hour = startTime.getHours();
-                    minute = startTime.getMinutes();
-                } else { hour = 0; minute = 0; }
-                if (endTime) {
-                    endHour = endTime.getHours();
-                    endMinute = endTime.getMinutes();
-                } else { endHour = 24; endMinute = 0; }
-            }
-            else {
-                hour = startTime, minute = endTime;  
-                
-            } 
-            endHour = endHour || 24;
-            // log.d(hour, minute, endHour, endMinute);
-            if (endHour > 24) endHour = 24;
-            var uniqueList = formatTime(hour,minute) + '-' + 
-                formatTime(endHour, endMinute) + step;
-            if (timeLists[uniqueList]) return timeLists[uniqueList] ;
-            var list = [];
-            while (hour < endHour || (hour === endHour && minute <= endMinute)) {
-                // list.push(formatTime(hour,minute));
-                list.push(isc.Time.createLogicalTime(hour, minute, 0));
-                minute+=step; 
-                // log.d(minute,hour);
-                if ((minute/60) >= 1) hour++;
-                minute %= 60;
-            }
-            if (list.last() === '24:00') list[list.length-1] = '0.00';
-            timeLists[uniqueList] = list;
-
-            return list;
-        }
         
         var newRecord = function(aType) {
             var record = {};
@@ -428,7 +411,7 @@ define
         // });
         
         typesAndFields = {
-            views: views,
+            // views: dbviews,
             allTypes: allTypes,
             allFields: isc.clone(fieldsArray),
             getField: function(fieldName) {

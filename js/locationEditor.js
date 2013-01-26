@@ -6,7 +6,7 @@
 //to use this editor, both load the editorLoader module and inject the editorManager
 define
 ({inject: ['typesAndFields', 'editorManager', 'editorUtils',  'parentListEditor'],
-  factory: function(typesAndFields, editorManager, editorUtils, bparentListEditor) {
+  factory: function(typesAndFields, editorManager, editorUtils, parentListEditor) {
       "use strict";
       var log = logger('locationEditor');
       

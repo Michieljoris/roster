@@ -1,12 +1,16 @@
-/*global logger:false isc:false define:false emit:false*/
+/*global Pouch:false logger:false isc:false define:false emit:false*/
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
-/*jshint maxparams:4 maxcomplexity:7 maxlen:130 devel:true*/
+/*jshint maxparams:4 maxcomplexity:7 maxlen:130 devel:true newcap:false*/
 
 define
-({inject: ['typesAndFields', 'globals'],
-  factory: function(typesAndFields, globals) {
+({inject: ['typesAndFields'],
+  factory: function(typesAndFields) {
       "use strict";
+      
       var log = logger('pouchDS', 'debug');
+      
+      var idbname= 'idb://pouchdb';
+      var pouchHandle;
       
       var dbviews = {
           all: {   map : function(doc) { emit(doc,null); }
@@ -126,74 +130,96 @@ define
 			     pouchDS.processResponse(requestId, dsResponse);}});});} 
 
       function doPouch(f) {
-          f(globals.db);
+          f(pouchHandle);
       }			 
 
       
       var pouchDS = isc.DataSource.create(
-          {  ID : "pouchDS",
-	     fields: typesAndFields.allFields,
-	     autoDeriveTitles:true,
-	     dataProtocol: "clientCustom",
-             // autoCacheAllData: true,
+          {   ID : "pouchDS",
+	      fields: typesAndFields.allFields,
+	      autoDeriveTitles:true,
+	      dataProtocol: "clientCustom",
+              // autoCacheAllData: true,
 	
-	     transformRequest: function (dsRequest) {
-	         // DS = this;
-	         log.d(dsRequest);
-                 // log.d(dsRequest.data);
-	         var dsResponse;
-	         switch (dsRequest.operationType) {
-	           case "fetch":
-	             var fetchView = dbviews.all;
-                     // log.d('about to switch......', dsRequest);
-                     switch (dsRequest.componentId) {
-	               case 'isc_ShiftCalendar' :
-                         fetchView = dbviews.shift;  
-	                 log.d('in shiftCalendar', fetchView); 
-	                 break;
-	             default:
-                         //log.d('getting all objects for: ', dsRequest.componentId); 
-	             }
-                     if (dsRequest.view) {
-                         fetchView = dbviews[dsRequest.view];   
-                     }
-	             log.d('fetch', fetchView); 
-	             dsResponse = {
-	                 clientContext: dsRequest.clientContext,
-	                 status: 1};
-	             fetch(fetchView, dsResponse, dsRequest.requestId);
-                     log.d('dsResponse', dsResponse);
-	             break;
-	           case "update" : 
-	             log.d("update", dsRequest); 
-	             log.d("old values", dsRequest.oldValues); 
-	             dsResponse = {
-	                 clientContext: dsRequest.clientContext,
-	                 errors: {},
+	      transformRequest: function (dsRequest) {
+	          // DS = this;
+	          log.d(dsRequest);
+                  // log.d(dsRequest.data);
+	          var dsResponse;
+	          switch (dsRequest.operationType) {
+	            case "fetch":
+	              var fetchView = dbviews.all;
+                      // log.d('about to switch......', dsRequest);
+                      switch (dsRequest.componentId) {
+	                case 'isc_ShiftCalendar' :
+                          fetchView = dbviews.shift;  
+	                  log.d('in shiftCalendar', fetchView); 
+	                  break;
+	              default:
+                          //log.d('getting all objects for: ', dsRequest.componentId); 
+	              }
+                      if (dsRequest.view) {
+                          fetchView = dbviews[dsRequest.view];   
+                      }
+	              log.d('fetch', fetchView); 
+	              dsResponse = {
+	                  clientContext: dsRequest.clientContext,
+	                  status: 1};
+	              fetch(fetchView, dsResponse, dsRequest.requestId);
+                      log.d('dsResponse', dsResponse);
+	              break;
+	            case "update" : 
+	              log.d("update", dsRequest); 
+	              log.d("old values", dsRequest.oldValues); 
+	              dsResponse = {
+	                  clientContext: dsRequest.clientContext,
+	                  errors: {},
 	      
-	                 status: 1};
-	             update(isc.addProperties({}, dsRequest.oldValues, dsRequest.data), 
-		            dsResponse, dsRequest.requestId);
-	             break; 
-	           case "add" : 
-	             log.d("add"); 
-	             log.d('data', dsRequest.data);
-	             dsResponse = {
-	                 clientContext: dsRequest.clientContext,
-	                 status: 1};
-	             add(dsRequest.data, dsResponse, dsRequest.requestId);
-	             break;
-	           case "remove" :
-	             log.d("remove"); 
-	             dsResponse = {
-	                 clientContext: dsRequest.clientContext,
-	                 status: 1};
-	             remove(dsRequest.data._id, dsResponse, dsRequest.requestId); 
-	             break; 
-	         default: log.d("This is unknown operation on pouchdb: ", dsRequest.operationType );
-	         }
-	     }
+	                  status: 1};
+	              update(isc.addProperties({}, dsRequest.oldValues, dsRequest.data), 
+		             dsResponse, dsRequest.requestId);
+	              break; 
+	            case "add" : 
+	              log.d("add"); 
+	              log.d('data', dsRequest.data);
+	              dsResponse = {
+	                  clientContext: dsRequest.clientContext,
+	                  status: 1};
+	              add(dsRequest.data, dsResponse, dsRequest.requestId);
+	              break;
+	            case "remove" :
+	              log.d("remove"); 
+	              dsResponse = {
+	                  clientContext: dsRequest.clientContext,
+	                  status: 1};
+	              remove(dsRequest.data._id, dsResponse, dsRequest.requestId); 
+	              break; 
+	          default: log.d("This is unknown operation on pouchdb: ", dsRequest.operationType );
+	          }
+	      }
           });    
       
-      return pouchDS;
+        function init(callback) {
+            Pouch(idbname, function(err, aPouchHandle) {
+	        if (!err) {
+                    pouchHandle = aPouchHandle;
+                    callback(null);
+                }
+                else { var msg = "Error opening idb database" + idbname +
+		       "err: "+ err.error + ' reason:' + err.reason;
+                       callback(msg);
+		     }
+            });
+        }
+        
+        
+      
+      return {
+          name: 'pouchDS'
+          ,shortName: 'Browser local storage (idb)'
+          ,description: 'The data will be stored in the browser local storage. This is persisted across refreshes of the browser you are using now. If you use a standalone version you will be able to carry the data with you on a usb stick for instance. '
+          ,handle: pouchDS 
+          ,sourceType: 'name:'
+          ,init: init
+      };
   }});

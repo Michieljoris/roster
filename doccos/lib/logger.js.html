@@ -203,8 +203,8 @@ TODO: pass through other console properties</p>
         <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">enabled</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
         <span class="nx">args</span> <span class="o">=</span> <span class="nx">isc</span><span class="p">.</span><span class="nx">clone</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">args</span><span class="p">));</span>
         <span class="nx">args</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span> <span class="p">{</span>
-           <span class="k">if</span>  <span class="p">(</span><span class="nx">a</span><span class="p">)</span> <span class="p">{</span>
-               <span class="nx">a</span><span class="p">.</span><span class="nx">__proto__</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span> <span class="c1">//bloody smartclient puts all these</span></pre></div>
+           <span class="k">if</span>  <span class="p">(</span><span class="nx">a</span> <span class="o">&amp;&amp;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">Class</span> <span class="o">===</span> <span class="s1">&#39;Array&#39;</span><span class="p">)</span> <span class="p">{</span>
+              <span class="nx">a</span><span class="p">.</span><span class="nx">__proto__</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span> <span class="c1">//bloody smartclient puts all these</span></pre></div>
         </td>
       </tr>
       <tr>
