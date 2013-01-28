@@ -4,7 +4,7 @@ docker js/multicap_timesheet_raphael.js\
  lib/utils.js\
  lib/vow.js\
  lib/logger.js\
- js/start.js\
+ js/main.js\
  js/layout.js\
  -o doccos -I -u  --extras fileSearch
 

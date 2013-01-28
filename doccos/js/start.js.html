@@ -60,8 +60,8 @@ on a user and finally calls draw from layout.js to show the app.</p>
         </td>
         <td class="code highlight"><div class="highlight"><pre><span class="nx">define</span><span class="p">(</span>
     <span class="p">{</span>   
-        <span class="nx">inject</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;viewTree&#39;</span><span class="p">,</span> <span class="s1">&#39;globals&#39;</span><span class="p">,</span> <span class="s1">&#39;layout&#39;</span><span class="p">],</span> 
-        <span class="nx">factory</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">navTree</span><span class="p">,</span> <span class="nx">globals</span><span class="p">,</span> <span class="nx">layout</span><span class="p">)</span> 
+        <span class="nx">inject</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;database&#39;</span><span class="p">,</span><span class="s1">&#39;viewTree&#39;</span><span class="p">,</span> <span class="s1">&#39;globals&#39;</span><span class="p">,</span> <span class="s1">&#39;layout&#39;</span><span class="p">],</span> 
+        <span class="nx">factory</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">dsLoader</span><span class="p">,</span> <span class="nx">navTree</span><span class="p">,</span> <span class="nx">globals</span><span class="p">,</span> <span class="nx">layout</span><span class="p">)</span> 
         <span class="p">{</span> <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
           <span class="kd">var</span> <span class="nx">log</span> <span class="o">=</span> <span class="nx">logger</span><span class="p">(</span><span class="s1">&#39;main&#39;</span><span class="p">);</span>
           

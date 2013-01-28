@@ -286,8 +286,11 @@ containing the state of the ui to be drawn.</p>
         </td>
         <td class="code highlight"><div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">draw</span><span class="p">(</span><span class="nx">uiState</span><span class="p">)</span> <span class="p">{</span>
         <span class="nx">viewTree</span><span class="p">.</span><span class="nx">notify</span><span class="p">(</span><span class="nx">uiState</span><span class="p">);</span> 
+        <span class="nx">viewTree</span><span class="p">.</span><span class="nx">setLoginName</span><span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">login</span><span class="p">);</span>
         <span class="nx">mainLayout</span><span class="p">.</span><span class="nx">draw</span><span class="p">();</span>
     <span class="p">}</span>
+    
+    
     </pre></div>
         </td>
       </tr>

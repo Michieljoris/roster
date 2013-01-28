@@ -109,11 +109,34 @@ var pouch =
             pouch(db, "put", obj, callback); //function(resp) { console.log("Response is:", resp); });
         };
 
-
+        
         var pget = function(id, callback) {
             pouch(db, "get", id, callback); //function(resp) { console.log("Response is:", resp); });
         };
+        
+        
+        var premove = function(id) {
+            Pouch(db, function(err, pdb) {
+	        if (err) {
+		    console.log(err.error, err.reason); 
+		    return;
+	        }
+                pdb.get(id, function(err, doc) {
+                    pdb.remove(doc, function(err, response) {
+                        console.log(response);
+                        // Response:
+                        // {
+                        //   "ok": true,
+                        //   "id": "mydoc",
+                        //   "rev": "2-9AF304BE281790604D1D8A4B0F4C9ADB"
+                        // }
+                    });
+                });
+	    });
+        };
+
         function getBool() {
+            
             var r = Math.floor(Math.random() * 2);
             return r === 0;
         }
@@ -232,7 +255,8 @@ var pouch =
             post: ppost,
             put: pput,
             destroy: pdestroy,
-            query: pquery
+            query: pquery,
+            remove: premove
         };
      
     })();

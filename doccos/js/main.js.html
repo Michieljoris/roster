@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>main.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="../doc-style.css" />
+  <script src="../doc-filelist.js"></script>
+  <script>
+    var relativeDir = '../', thisFile = 'js/main.js', defaultSidebar = true;
+  </script>
+  <script src="../doc-script.js"></script>
+  <script src="../fileSearch.js"></script>
+  <link rel="stylesheet" href="../fileSearch.css" />
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+      <div class="heading h2">
+        <a href="#startup-logic.">Startup logic.</a>
+      </div>
+      <div class="heading h2">
+        <a href="#getpouchdbhandle">getPouchdbHandle</a>
+      </div>
+      <div class="heading h2">
+        <a href="#savedsname">saveDsName</a>
+      </div>
+      <div class="heading h2">
+        <a href="#setdatasource">setDataSource</a>
+      </div>
+      <div class="heading h2">
+        <a href="#start">start</a>
+      </div>
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container"><div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+      <tr>
+        <td class="docs">
+          <h1>main.js</h1>
+        </td>
+        <td class="code highlight"></td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-1" id="section-1">&#182;</a>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="cm">/*global logger:false Pouch:false define:false VOW:false*/</span>
+<span class="cm">/*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/</span>
+<span class="cm">/*jshint maxparams:7 maxcomplexity:7 maxlen:150 devel:true newcap:false*/</span> </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-2" id="section-2">&#182;</a>
+</div>
+<p>The js file that kicks off the app. It sets up the database, decides
+on a user and finally calls draw from layout.js to show the app.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-3" id="section-3">&#182;</a>
+</div>
+<p>Changing database backend is as easy as wiping the doc with id
+DataSource in the puch db with name pouchdb. Then refresh the
+browser and it will ask for the backend to use. There is no
+restrictions on this.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-4" id="section-4">&#182;</a>
+</div>
+<p>When a user's setup gets confused or mucked up, wipe his settings
+doc. Their setup will revert to default
+To do this for everybody, wipe all docs with type 'settings'</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="nx">define</span><span class="p">(</span>
+    <span class="p">{</span>   
+        <span class="nx">inject</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;datasources/datasource&#39;</span><span class="p">,</span> <span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="s1">&#39;layout&#39;</span><span class="p">],</span> 
+        <span class="nx">factory</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">dataSource</span><span class="p">,</span> <span class="nx">user</span><span class="p">,</span> <span class="nx">layout</span><span class="p">)</span> 
+        <span class="p">{</span> <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+          <span class="kd">var</span> <span class="nx">log</span> <span class="o">=</span> <span class="nx">logger</span><span class="p">(</span><span class="s1">&#39;main&#39;</span><span class="p">);</span>
+          <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;Evaluating main&#39;</span><span class="p">);</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-5" id="section-5">&#182;</a>
+</div>
+<p>Some constants</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">var</span> <span class="nx">idbname</span><span class="o">=</span> <span class="s1">&#39;idb://pouchdb&#39;</span><span class="p">;</span>
+          <span class="kd">var</span> <span class="nx">dataSourceAdapterDocId</span> <span class="o">=</span> <span class="s1">&#39;DataSource&#39;</span><span class="p">;</span>
+          </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-6" id="section-6">&#182;</a>
+</div>
+<p>We use this to access the pouchdb at startup only. Any
+pouchdb datasource will have its own handle, possibly of a
+different database.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">var</span> <span class="nx">pouchHandle</span><span class="p">;</span>
+      </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-7" id="section-7">&#182;</a>
+</div>
+<p>Are we alive? </p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>          <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;Starting up app...&#39;</span><span class="p">);</span>
+      </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="startup-logic.">
+  <h2>
+    <a href="#startup-logic." class="pilcrow">&#182;</a>
+    Startup logic.
+  </h2>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>          </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-9" id="section-9">&#182;</a>
+</div>
+<p>This app is built on pouchdb.js and Smartclient.  Pouch
+(an frontend for idb that emulates the CouchDB API) is the
+always present database. We use it to find whether to
+continue with this database or another by looking for a
+doc with id datasource. It will have the name and details
+of the datasource adapter to use.  Pouchdb uses callbacks to
+return any data. To avoid the confusing nesting of
+callbacks we use Crockford's vow.js.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>          </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="getpouchdbhandle">
+  <h2>
+    <a href="#getpouchdbhandle" class="pilcrow">&#182;</a>
+    getPouchdbHandle
+  </h2>
+</div>
+
+
+<div class="dox">
+  <div class="summary"><p>Get a promise of the pouchdb handle</p>
+  </div>
+  <div class="body">
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">function</span> <span class="nx">getPouchdbHandle</span><span class="p">(){</span>
+              <span class="kd">var</span> <span class="nx">vow</span> <span class="o">=</span> <span class="nx">VOW</span><span class="p">.</span><span class="nx">make</span><span class="p">();</span>
+              <span class="nx">Pouch</span><span class="p">(</span><span class="nx">idbname</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">pouchHandle</span><span class="p">)</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">err</span><span class="p">)</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">(</span><span class="nx">pouchHandle</span><span class="p">);</span>
+                  <span class="k">else</span> <span class="p">{</span> <span class="kd">var</span> <span class="nx">msg</span> <span class="o">=</span> <span class="s2">&quot;Error opening idb database&quot;</span> <span class="o">+</span> <span class="nx">idbname</span> <span class="o">+</span>
+       <span class="s2">&quot;err: &quot;</span><span class="o">+</span> <span class="nx">err</span><span class="p">.</span><span class="nx">error</span> <span class="o">+</span> <span class="s1">&#39; reason:&#39;</span> <span class="o">+</span> <span class="nx">err</span><span class="p">.</span><span class="nx">reason</span><span class="p">;</span>
+                         <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">](</span><span class="nx">msg</span><span class="p">);</span>
+           <span class="p">}</span>
+              <span class="p">});</span>
+              <span class="k">return</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+          <span class="p">}</span>
+          </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="savedsname">
+  <h2>
+    <a href="#savedsname" class="pilcrow">&#182;</a>
+    saveDsName
+  </h2>
+</div>
+
+
+<div class="dox">
+  <div class="summary"><p>Save the name of the database backend to the local
+pouchdb   </p>
+  </div>
+  <div class="body">
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">function</span> <span class="nx">saveDsName</span><span class="p">(</span><span class="nx">vow</span><span class="p">,</span> <span class="nx">doc</span><span class="p">,</span> <span class="nx">ds</span><span class="p">){</span>
+              <span class="nx">pouchHandle</span><span class="p">.</span><span class="nx">put</span><span class="p">(</span><span class="nx">doc</span><span class="p">,</span>
+                              <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
+                            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">err</span><span class="p">)</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">(</span><span class="nx">ds</span><span class="p">);</span>
+                                  <span class="k">else</span> <span class="p">{</span> <span class="kd">var</span> <span class="nx">msg</span> <span class="o">=</span> <span class="s1">&#39;Error saving&#39;</span> <span class="o">+</span> <span class="nx">doc</span><span class="p">.</span><span class="nx">name</span> <span class="o">+</span> <span class="s1">&#39; to &#39;</span> <span class="o">+</span>
+                                         <span class="nx">idbname</span> <span class="o">+</span> <span class="s2">&quot; err: &quot;</span><span class="o">+</span> <span class="nx">err</span><span class="p">.</span><span class="nx">error</span> <span class="o">+</span> <span class="s1">&#39; reason:&#39;</span> <span class="o">+</span>
+                                         <span class="nx">err</span><span class="p">.</span><span class="nx">reason</span><span class="p">;</span>
+                                         <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">](</span><span class="nx">msg</span><span class="p">);</span>
+                           <span class="p">}</span>
+                              <span class="p">});</span>
+          <span class="p">}</span> </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="setdatasource">
+  <h2>
+    <a href="#setdatasource" class="pilcrow">&#182;</a>
+    setDataSource
+  </h2>
+</div>
+
+
+<div class="dox">
+  <div class="summary"><p>Promises to set the datasource, and save its name to the
+local pouchdb   </p>
+  </div>
+  <div class="body">
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">function</span> <span class="nx">findDataSource</span><span class="p">(</span><span class="nx">aPouchHandle</span><span class="p">)</span> <span class="p">{</span>
+              <span class="nx">pouchHandle</span> <span class="o">=</span> <span class="nx">aPouchHandle</span><span class="p">;</span>
+              <span class="kd">var</span> <span class="nx">vow</span> <span class="o">=</span> <span class="nx">VOW</span><span class="p">.</span><span class="nx">make</span><span class="p">();</span>
+              <span class="nx">pouchHandle</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">dataSourceAdapterDocId</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">doc</span><span class="p">)</span> <span class="p">{</span>
+                  <span class="kd">var</span> <span class="nx">ds</span><span class="p">;</span>
+                  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+                      <span class="nx">ds</span> <span class="o">=</span> <span class="nx">dataSource</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">doc</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+                      <span class="k">if</span> <span class="p">(</span><span class="nx">dataSource</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">doc</span><span class="p">.</span><span class="nx">name</span><span class="p">))</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">(</span><span class="nx">ds</span><span class="p">);</span>
+                      <span class="k">else</span> <span class="p">{</span> <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;Error: there is no datasource adapter &#39;</span> <span class="o">+</span>
+                                   <span class="s1">&#39;for this database: &#39;</span> <span class="o">+</span> <span class="nx">doc</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+                             <span class="nx">dataSource</span><span class="p">.</span><span class="nx">pick</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">ds</span><span class="p">)</span> <span class="p">{</span>
+                                 <span class="nx">doc</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">ds</span><span class="p">.</span><span class="nx">name</span><span class="p">;</span>
+                                 <span class="nx">saveDsName</span><span class="p">(</span><span class="nx">vow</span><span class="p">,</span> <span class="nx">doc</span><span class="p">,</span> <span class="nx">ds</span><span class="p">);</span>
+                             <span class="p">});</span>
+                           <span class="p">}</span>
+                  <span class="p">}</span>
+                  <span class="k">else</span> <span class="nx">dataSource</span><span class="p">.</span><span class="nx">pick</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">ds</span><span class="p">)</span> <span class="p">{</span>
+                      <span class="nx">saveDsName</span><span class="p">(</span><span class="nx">vow</span><span class="p">,</span> <span class="p">{</span>
+                          <span class="nx">_id</span><span class="o">:</span> <span class="nx">dataSourceAdapterDocId</span>
+                          <span class="p">,</span><span class="nx">name</span><span class="o">:</span> <span class="nx">ds</span><span class="p">.</span><span class="nx">name</span> <span class="p">},</span> <span class="nx">ds</span><span class="p">);</span>
+                  <span class="p">});</span>
+              <span class="p">});</span>
+              <span class="k">return</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+          <span class="p">}</span>
+          </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="start">
+  <h2>
+    <a href="#start" class="pilcrow">&#182;</a>
+    start
+  </h2>
+</div>
+
+
+<div class="dox">
+  <div class="summary"><p>This kicks off the app</p>
+  </div>
+  <div class="body">
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">function</span> <span class="nx">start</span><span class="p">()</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-14" id="section-14">&#182;</a>
+</div>
+<p>We need to be able to access the local pouchdb</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>              <span class="nx">getPouchdbHandle</span><span class="p">().</span><span class="nx">when</span><span class="p">(</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-15" id="section-15">&#182;</a>
+</div>
+<p>Then find the doc that tells us what datasource backend to use</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                  <span class="nx">findDataSource</span>
+              <span class="p">).</span><span class="nx">when</span><span class="p">(</span>
+                  <span class="kd">function</span><span class="p">(</span><span class="nx">ds</span><span class="p">)</span> <span class="p">{</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-16" id="section-16">&#182;</a>
+</div>
+<p>Initialize the datasource..</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                      <span class="k">return</span> <span class="nx">ds</span><span class="p">.</span><span class="nx">init</span><span class="p">();</span>
+                  <span class="p">}</span>
+              <span class="p">).</span><span class="nx">when</span><span class="p">(</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-17" id="section-17">&#182;</a>
+</div>
+<p>and decide on a user.</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                  <span class="nx">user</span><span class="p">.</span><span class="nx">init</span>
+              <span class="p">).</span><span class="nx">when</span><span class="p">(</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-18" id="section-18">&#182;</a>
+</div>
+<p>Give some feedback</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                  <span class="kd">function</span><span class="p">(</span><span class="nx">arg</span><span class="p">)</span> <span class="p">{</span>
+                      <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;Success!!!&#39;</span><span class="p">,</span> <span class="nx">arg</span><span class="p">);</span>
+                  <span class="p">},</span>
+                  <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
+                      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Failed&#39;</span><span class="p">,</span> <span class="nx">err</span><span class="p">);</span>
+                  <span class="p">}</span>
+              <span class="p">);</span>
+              
+          <span class="p">}</span>
+          </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-19" id="section-19">&#182;</a>
+</div>
+<p>Let's do it then!!</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>          <span class="nx">start</span><span class="p">();</span>
+      
+        <span class="p">}});</span>
+</pre></div>
+        </td>
+      </tr>
+  </tbody>
+</table>
+  </div>
+</body>
+</html>

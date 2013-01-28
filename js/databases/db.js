@@ -3,62 +3,67 @@
 /*jshint maxparams:5 maxcomplexity:10 maxlen:190 devel:true*/
 
 define
-({  inject : ['datasources/pouchDS', 'datasources/couchDS'],
-// ({  inject : ['datasources/pouchDS'],
+// ({  inject : ['databases/pouchDB', 'databases/couchDB'],
+({  inject : ['databases/pouchDB'],
     factory: function() {
         "use strict";
         var log = logger('datasource');
-        log.d('Evaluating datasource');
+        log.d('Evaluating datasource..');
         
-        var dataSource;
-        var idbname= 'idb://pouchdb';
+        var database;
+        // var idbname= 'idb://pouchdb';
         
         var args = Array.prototype.slice.apply(arguments);
-        var dsNames = [];
-        var dsMap = {};
+        var dbNames = [];
+        var dbs = {};
         var valueMap = {};
         
         args.forEach(function(a) {
-            dsNames.push(a.name);
-            dsMap[a.name] = a;
+            dbNames.push(a.name);
+            dbs[a.name] = a;
             valueMap[a.name] = a.shortName;
         });
         
         //return list of names of the databases available
-        function ls() {
-            return dsNames;
+        // function ls() {
+        //     return dbNames;
+        // }
+        
+        //set the database to be used to dbname
+        function set(dbName) {
+            database = dbs[dbName];
+            return database;
         }
         
-        //set the database adapter to be used to dbname
-        function set(dsName) {
-            dataSource = dsMap[dsName];
-            return dataSource;
+        //set the database to be used to dbname
+        function exists(dbName) {
+            return dbs[dbName];
         }
         
         function get() {
-            //return handle to the datasource currently used
-            return dataSource;
+            //return handle to the database currently used
+            return database;
         }
         
         
-        /** Pick a datasource */
+        /** Pick a database */
         function pick(callback){
-            var pickDsForm = isc.DynamicForm.create({
+            var pickDbForm = isc.DynamicForm.create({
                 columns: 1
                 ,fields: [
-                    {  type: 'radioGroup', name: "datasource",  showTitle: true, 
-                       valueMap: valueMap, titleOrientation: 'top', value: 'pouchDS'
+                    {  type: 'radioGroup', name: "databaseName",  showTitle: true, 
+                       valueMap: valueMap, titleOrientation: 'top', value: 'pouchDB'
                        ,width: 300
                        ,change: function() {
-                           var dataSourceName = arguments[2];
-                           log.d('change', dataSourceName);
-                           helpLabel.setContents(dsMap[dataSourceName].description);
-                           pickDsForm.getField('dbname').title=dsMap[dataSourceName].sourceType;
-                           pickDsForm.getField('dbname').redraw();
+                           var databaseName = arguments[2];
+                           log.d('change', databaseName);
+                           helpLabel.setContents(dbs[databaseName].description);
+                           pickDbForm.getField('dbname').title=dbs[databaseName].urlPrefix;
+                           pickDbForm.getField('dbname').redraw();
 k                           
                        }
                     }
-                    ,{ type: 'text', name: 'dbname', title: 'Url or name', ID:'test',
+                    ,{ type: 'text', name: 'url', title: 'Url or name', ID:'test',
                        titleOrientation: 'top', startRow: true, width: 300, value: 'pouchDB'}
                 ]
             });
@@ -68,7 +73,7 @@ k
                 width: 300,
                 height: '100%',
                 margin: 10
-                ,contents: dsMap.pouchDS.description
+                ,contents: dbs.pouchDB.description
             });
             
             var editorWindow = isc.Window.create({
@@ -85,7 +90,7 @@ k
                 ,showModalMask: true
                 ,autoDraw: false
                 ,items: [
-                    pickDsForm
+                    pickDbForm
                     ,helpLabel
                     ,isc.HLayout.create({
                         layoutMargin: 6,
@@ -99,17 +104,16 @@ k
                                 title: 'Ok'
                                 ,startRow: false
                                 ,click: function() {
-                                    var ds = pickDsForm.getValue('datasource'); 
-                                    // log.d(ds);
-                                    dataSource = dsMap[ds];
-                                    // console.log(dsMap, dataSource);
+                                    var databaseName = pickDbForm.getValue('databaseName'); 
+                                    var url = dbs[databaseName].urlPrefix +
+                                        pickDbForm.getValue('url');
+                                    database = dbs[databaseName];
                                     editorWindow.hide();
-                                    callback(dataSource.name);
+                                    callback(database, url);
                                 }  
                             })
                             ,isc.LayoutSpacer.create()
                         ]
-                        
                     })
                 ] 
             });
@@ -117,10 +121,11 @@ k
         }
         
         return {
-            ls: ls
-            ,pick: pick
+            pick: pick
+            ,exists: exists
             ,get: get
             ,set: set
+            // ,ls: ls
         };
     }
 });

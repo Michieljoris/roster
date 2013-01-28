@@ -1,4 +1,4 @@
-/*global Pouch:false logger:false isc:false define:false emit:false*/
+/*global VOW:false Pouch:false logger:false isc:false define:false emit:false*/
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:4 maxcomplexity:7 maxlen:130 devel:true newcap:false*/
 
@@ -7,10 +7,18 @@ define
   factory: function(typesAndFields) {
       "use strict";
       
-      var log = logger('pouchDS', 'debug');
+      var log = logger('pouchDB', 'debug');
       
-      var idbname= 'idb://pouchdb';
-      var pouchHandle;
+      var pouchDbHandle;
+      
+      var rootUser = {
+          _id:'root',
+          name: 'root',
+          type: 'person',
+          login: 'root',
+          autoLogin: true,
+          pwd:'root'
+      };
       
       var dbviews = {
           all: {   map : function(doc) { emit(doc,null); }
@@ -26,8 +34,8 @@ define
 	      if (doc.type === 'person') emit(doc,null);}
 		     ,reduce: false}
           ,settings: { map : function(doc) {
-	      if (doc.type === 'role') emit(doc,null);}
-		   ,reduce: false}
+	      if (doc.type === 'settings') emit(doc,null);}
+		       ,reduce: false}
       };
       
       function typefyProps(obj) {
@@ -128,21 +136,20 @@ define
 			     data._rev = response.rev; 
 			     dsResponse.data = data;
 			     pouchDS.processResponse(requestId, dsResponse);}});});} 
-
+      //TODO get rid of this function, it is useless and have a module wide var called db
       function doPouch(f) {
-          f(pouchHandle);
+          f(pouchDbHandle);
       }			 
 
       
       var pouchDS = isc.DataSource.create(
-          {   ID : "pouchDS",
+          {   ID : "pouchDS2",
 	      fields: typesAndFields.allFields,
 	      autoDeriveTitles:true,
 	      dataProtocol: "clientCustom",
               // autoCacheAllData: true,
 	
 	      transformRequest: function (dsRequest) {
-	          // DS = this;
 	          log.d(dsRequest);
                   // log.d(dsRequest.data);
 	          var dsResponse;
@@ -150,14 +157,10 @@ define
 	            case "fetch":
 	              var fetchView = dbviews.all;
                       // log.d('about to switch......', dsRequest);
-                      switch (dsRequest.componentId) {
-	                case 'isc_ShiftCalendar' :
+                      if (dsRequest.componentId === 'isc_ShiftCalendar') {
                           fetchView = dbviews.shift;  
 	                  log.d('in shiftCalendar', fetchView); 
-	                  break;
-	              default:
-                          //log.d('getting all objects for: ', dsRequest.componentId); 
-	              }
+                      } 
                       if (dsRequest.view) {
                           fetchView = dbviews[dsRequest.view];   
                       }
@@ -199,27 +202,85 @@ define
 	      }
           });    
       
-        function init(callback) {
-            Pouch(idbname, function(err, aPouchHandle) {
-	        if (!err) {
-                    pouchHandle = aPouchHandle;
-                    callback(null);
-                }
-                else { var msg = "Error opening idb database" + idbname +
-		       "err: "+ err.error + ' reason:' + err.reason;
-                       callback(msg);
-		     }
-            });
-        }
-        
-        
+      //##init
+      /** Make sure there is a handle for pouch, and a root user in
+       * the database */
+      function init(vow, idbname) {
+          Pouch(idbname, function(err, aDb) {
+	      if (!err) {
+                  log.d('pouchDB is ready');
+                  pouchDbHandle = aDb;
+                  VOW.first([
+                      getDoc('root'),
+                      putDoc(rootUser)]).when()
+                      .when(
+                          vow.keep, vow['break']
+                      );
+              }
+              else { var msg = "Error opening idb database for pouchDS" + idbname +
+		     "err: "+ err.error + ' reason:' + err.reason;
+                     vow['break'](msg);
+		   }
+          });
+      }
+      
+      //##getDoc
+          
+      //A helper function to easily extract a doc from the
+      //pouchdb. This function returns a promise of
+      //a doc.
+      function getDoc(record) {
+          log.d('getDoc ', record);
+          var vow = VOW.make();
+          if (!record)  
+              vow['break']('Can not get doc with undefined id');
+          else if (record._id) return vow.keep(record);
+          else pouchDbHandle.get(record, function(err, doc) {
+              if (!err) {
+                  log.d('keeping get vow');
+                  vow.keep(doc);   
+              }
+              else {
+                  log.d('breaking get vow');
+                  err.record = record; 
+                  vow['break'](err);   
+              }
+          });
+          return vow.promise;
+      }
+      
+      //##putDoc
+      /**A helper function to easily save a doc to the database. This
+       * function return a promise of a save.
+       */
+      function putDoc( record ){
+          console.log('putDoc ', record);
+          var vow = VOW.make();
+          pouchDbHandle.put(record, function(err, response) {
+              if (!err) {
+                      log.d('keeping put vow');
+                  record._id = response.id;
+                  record._rev = response.rev;
+                  vow.keep(record);   
+              }
+              else {
+                  log.d('breaking put vow');
+                  err.record = record; 
+                  vow['break'](err);   
+              }
+          });
+          return vow.promise;
+      }
+      
       
       return {
-          name: 'pouchDS'
+          name: 'pouchDB'
           ,shortName: 'Browser local storage (idb)'
           ,description: 'The data will be stored in the browser local storage. This is persisted across refreshes of the browser you are using now. If you use a standalone version you will be able to carry the data with you on a usb stick for instance. '
-          ,handle: pouchDS 
-          ,sourceType: 'name:'
+          ,getDS: function() { return pouchDS; }
+          ,urlPrefix: 'idb://' //or 'url' of the database
           ,init: init
+          ,getDoc: getDoc
+          ,putDoc: putDoc
       };
   }});

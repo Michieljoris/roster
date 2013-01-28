@@ -11,7 +11,7 @@ define
   factory: function(viewTree, views) 
   { "use strict";
     var log = logger('layout');
-    log.d('Executing layout.js');
+    log.d('Evaluating layout.js..');
 
     //#Left hand side of the layout
     

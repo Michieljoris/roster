@@ -201,10 +201,7 @@ TODO: pass through other console properties</p>
         
     <span class="kd">function</span> <span class="nx">print</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">level</span><span class="p">,</span> <span class="nx">args</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">enabled</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
-        <span class="nx">args</span> <span class="o">=</span> <span class="nx">isc</span><span class="p">.</span><span class="nx">clone</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">args</span><span class="p">));</span>
-        <span class="nx">args</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">a</span><span class="p">)</span> <span class="p">{</span>
-           <span class="k">if</span>  <span class="p">(</span><span class="nx">a</span> <span class="o">&amp;&amp;</span> <span class="nx">a</span><span class="p">.</span><span class="nx">Class</span> <span class="o">===</span> <span class="s1">&#39;Array&#39;</span><span class="p">)</span> <span class="p">{</span>
-              <span class="nx">a</span><span class="p">.</span><span class="nx">__proto__</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span> <span class="c1">//bloody smartclient puts all these</span></pre></div>
+        <span class="nx">args</span> <span class="o">=</span> <span class="nx">isc</span><span class="p">.</span><span class="nx">clone</span><span class="p">(</span><span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">args</span><span class="p">));</span></pre></div>
         </td>
       </tr>
       <tr>
@@ -212,15 +209,18 @@ TODO: pass through other console properties</p>
 <div class="pilwrap">
   <a class="pilcrow" href="#section-9" id="section-9">&#182;</a>
 </div>
-<p>props on standard objects, they
-mess with console.log, it prints
-out way too much, so we nullify
-the proto of a clone of the
-object</p>
+<p>args.forEach(function(a) {
+   if  (a &amp;&amp; a.Class === 'Array') {
+      a.<strong>proto</strong> = null; //bloody smartclient puts all these
+                           //props on standard objects, they
+                           //mess with console.log, it prints
+                           //out way too much, so we nullify
+                           //the proto of a clone of the
+                           //object
+   }
+});</p>
         </td>
-        <td class="code highlight"><div class="highlight"><pre>           <span class="p">}</span>
-        <span class="p">});</span>
-        <span class="kd">var</span> <span class="nx">out</span> <span class="o">=</span> <span class="p">[];</span>
+        <td class="code highlight"><div class="highlight"><pre>        <span class="kd">var</span> <span class="nx">out</span> <span class="o">=</span> <span class="p">[];</span>
         <span class="kd">var</span> <span class="nx">post</span> <span class="o">=</span> <span class="s1">&#39;(&#39;</span><span class="p">;</span>
         <span class="k">if</span> <span class="p">(</span><span class="nx">globalTimeStamp</span> <span class="o">||</span> <span class="nx">loggers</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">timeStamp</span><span class="p">)</span> <span class="nx">post</span> <span class="o">+=</span> <span class="s1">&#39;[&#39;</span> <span class="o">+</span> <span class="nx">timeStamp</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;]&#39;</span><span class="p">;</span>
         <span class="nx">post</span> <span class="o">+=</span> <span class="nx">name</span> <span class="o">+</span>  <span class="nx">__line</span> <span class="o">+</span> <span class="s1">&#39;)&#39;</span><span class="p">;</span>
@@ -236,7 +236,8 @@ object</p>
             <span class="nx">loggers</span><span class="p">[</span><span class="nx">name</span><span class="p">].</span><span class="nx">level</span> <span class="o">=</span> <span class="nx">l</span><span class="p">;</span>   
         <span class="p">}</span> 
         <span class="k">else</span> <span class="p">{</span>
-            <span class="nx">console</span><span class="p">.</span><span class="nx">warn</span><span class="p">(</span><span class="s2">&quot;logger.setLevel: level should be one of &#39;none&#39;, &#39;error&#39;, &#39;warn&#39;, &#39;info&#39; or &#39;debug&#39; not:&quot;</span><span class="p">,</span>
+            <span class="nx">console</span><span class="p">.</span><span class="nx">warn</span><span class="p">(</span><span class="s2">&quot;logger.setLevel: level should be one of &#39;none&#39;, &quot;</span> <span class="o">+</span>
+                         <span class="s2">&quot;&#39;error&#39;, &#39;warn&#39;, &#39;info&#39; or &#39;debug&#39; not:&quot;</span><span class="p">,</span>
                          <span class="nx">level</span><span class="p">);</span>
         <span class="p">}</span>
     <span class="p">}</span>

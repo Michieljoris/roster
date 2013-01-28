@@ -382,11 +382,7 @@ define
       
       var loginButton = isc.ToolStripButton.create(
           {   align:'left' 
-	      ,action: function() {
-		  isc.showLoginDialog(user.checkCredentials,
-				      {username: user.getLogin(), password: user.getPwd(),
-				       dismissable:true});
-	      }
+	      ,action: user.showLoginDialog 
           });
       
       var saveButton = isc.ToolStripButton.create({
@@ -443,12 +439,12 @@ define
 	      openProperty :'isOpen'
 	  });
       
-      window.test = function() {
-          tree.root.children.forEach(function(c, i) {
-              console.log(i, c.state);
-          });
-          return 'end';
-      };
+      // window.test = function() {
+      //     tree.root.children.forEach(function(c, i) {
+      //         console.log(i, c.state);
+      //     });
+      //     return 'end';
+      // };
       
       var viewTree = isc.TreeGrid.
           create({

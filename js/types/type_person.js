@@ -29,17 +29,23 @@ define
             ,lastName: { type: 'text'}
             ,sex: { type: 'text'}
             ,award: { type: 'text'}
-            ,login: { type: 'text'}
-            ,autoLogin: { type: 'text'}
-            ,password: { type: 'text'}
             ,dswCALevel:  { type: 'text' }
             ,payrollNumber: { type: 'text'}
             ,status: { type: 'text ',
                        valueMap: ['permanent', 'part time', 'casual']
                      }
-            //references to other docs, containing their _id's
-            ,role: { type: 'text' }
-            ,settings: { type: 'text' }
+        };
+        
+        var userFields = {
+            //user fields 
+            login: { type: 'text'}
+            ,autoLogin: { type: 'text'}
+            ,pwd: { type: 'text'}
+        };
+        
+        var referenceFields = {
+            //reference to a settings doc by id
+            settingsId: { type: 'text' }
         };
         
         

@@ -5,193 +5,147 @@
 //The js file that kicks off the app. It sets up the database, decides
 //on a user and finally calls draw from layout.js to show the app.
 
+//Changing database backend is as easy as wiping the doc with id
+//DataSource in the puch db with name pouchdb. Then refresh the
+//browser and it will ask for the backend to use. There is no
+//restrictions on this.
+
+//When a user's setup gets confused or mucked up, wipe his settings
+//doc. Their setup will revert to default
+//To do this for everybody, wipe all docs with type 'settings'
+
 
 define(
     {   
-        inject: ['datasources/datasource', 'user', 'globals', 'layout'], 
-        factory: function(dataSource, user, globals, layout) 
+        inject: ['lib/cookie', 'databases/db', 'user', 'layout'], 
+        factory: function(cookie, db, user, layout) 
         { "use strict";
           var log = logger('main');
-          log.d('Evaluating main');
+          log.d('Evaluating main..');
           
-          var idbname= 'idb://pouchdb';
-          var dataSourceAdapterDocId = 'dataSource';
-          var pouchHandle;
-          var ds;
-          
-	
-          var defaultSettings = {
-            fortnightStart: true   
-            ,dataSource: 'pouchDS'
-           };
-          
-          //##getDoc
-          
-          //A helper function to easily extract a doc from the
-          //pouchdb. This function returns a promise of
-          //a doc.
-          function getDoc(record) {
-              if (record._id) return VOW.kept(record);
-              var vow = VOW.make();
-              globals.db.get(record, function(err, doc) {
-                  log.d('getting doc',doc, err);
-                  if (!err) {
-                      vow.keep(doc);   
-                      log.d('keeping vow');
-                  }
-                  else {
-                      err.record = record; 
-                      vow['break'](err);   
-                      log.d('breaking vow');
-                  }
-              });
-              return vow.promise;
-          }
-          
-          
-		 
-          // function startApp() {
-	  //     // pp(user);
-          //     log.d('in startapp');
-	
-	  //     if (!user.autoLogin) {
-	  //         loginButton.action();
-	  //     }
-	  //     else globals.setUser(user);
-	  //     layout.draw(user.viewTreeData);	
-          // }
-      
-          //***********************@init*******************8
+          //Are we alive? 
           log.d('Starting up app...');
       
-          //##Startup logic.
-          
-          //This app is built on pouchdb.js and Smartclient.  Pouch is
-          //the always present database. We use it to find whether to
-          //continue with this database or another by looking for a
-          //doc with id datasource. It will have the name and details
-          //of the database adapter to use.
-          //Pouchdb uses callbacks to return any data. To
-          //avoid the confusing nesting of callbacks we use
-          //Crockford's vow.js.
-          
-          /** Get a promise of the pouchdb handle */
-          function getPouchdbHandle(){
-              var vow = VOW.make();
-              Pouch(idbname, function(err, pouchHandle) {
-	          if (!err) vow.keep(pouchHandle);
-                  else { var msg = "Error opening idb database" + idbname +
-			     "err: "+ err.error + ' reason:' + err.reason;
-                             vow['break'](msg);
-		           }
-              });
-              return vow.promise;
-          }
-          
-          
-	 /** Save the name of the database backend to the local pouchdb */
-          function saveDsName(vow, doc){
-              pouchHandle.put(doc,
-                              function(err, response) {
-	                          if (!err) vow.keep(response);
-                                  else { var msg = 'Error saving' + doc.name + ' to ' +
-                                         idbname + " err: "+ err.error + ' reason:' +
-                                         err.reason;
-                                         vow['break'](msg);
-		                       }
-                              });
-          } 
+          //##Startup logic.  We try to get the cookie with info on
+          //the database last used. If present we set up the app with
+          //the appropriate database adapter. If absent we let the
+          //user pick a database adapter. We then initialize this
+          //database. Same story for the user, first try a cookie,
+          //then show a login dialog. Finally we call layout.draw to
+          //display the app.
 
-          /** Promise to set the datasource, and save its name to the
-           local pouchdb */
-          function setDataSource(aPouchHandle) {
-              pouchHandle = aPouchHandle;
+          //##setDatabase
+          /** Promises to set the database backend. To change
+              database delete the cookie's database value*/
+          function setDatabase(vow, dbName) {
+              if (db.exists(dbName)) vow.keep(db.set(dbName));
+              else  {
+                  var msg = 'There is no database adapter' + 'named:' + dbName +
+                      '.\nAlert the developer!';
+                  log.d(msg);
+                  cookie.rm('database').when(
+                      function() {
+                          vow['break']( msg + 
+                                        '\nRefresh the browser (f5), choose a different database');
+                      },
+                      function() {
+                          vow['break'](msg + "\nCan't erase the database cookie!!!" +
+                                       ' \nMaybe ask your browser to delete all cookies' +
+                                       ' and then refresh (f5)!'); 
+                      }
+                  );
+              }             
+              return vow.promise;
+          }
+          
+          //##pickDatabase
+          /**Pick a database backend from a list, and set the cookie
+           * to the choice made.
+           */
+          function pickDatabase(vow) {
+              db.pick(function(database, url){
+                  var name = database.name;
+                  vow.keep(database);
+                  VOW.every([
+                      cookie.set('database', name, 3650)
+                      ,cookie.set('databaseUrl', url, 3650)]
+                  ).when(
+                      function() { log.d('Set database and url cookies'); }
+                      ,function() { log.e('Unable to set the database or url cookie!!'); }
+                  );
+              });
+              
+          }
+          
+          //##getDatabase
+          /**Gets the cookie, and then either sets or lets the user
+           * pick a database, depending on whether the cookie was
+           * existant
+           */
+          function getDatabase(){
               var vow = VOW.make();
-              pouchHandle.get(dataSourceAdapterDocId, function(err, doc) {
-                  if (!err) {
-                      if (dataSource.set(doc.name)) vow.keep(doc);
-                      else { log.d('Error: there is no datasource adapter ' +
-                                   'for this database: ' + doc.name);
-                             dataSource.pick(function(dsName) {
-                                 doc.name = dsName;
-                                 saveDsName(vow, doc);
-                             });
-                           }
+              cookie.get('database').when(
+                  function(dbName) {
+                      setDatabase(vow, dbName);   
                   }
-                  else dataSource.pick(function(dsName) {
-                          saveDsName(vow, {
-                              _id: dataSourceAdapterDocId
-                              ,name: dsName });
-                      });
-              });
+                  ,function() {
+                      pickDatabase(vow);
+                  });
               return vow.promise;
           }
           
-          /** Init the datasource */
-          function initDataSource(  ){
-              //we have a handle for the local pouch now and a the datasource is set
+          
+          //##initDatabase
+          /** Try to get the database url cooke and initialize the
+           * database with it.
+             */
+          function initDatabase(database){
               var vow = VOW.make();
-              ds = dataSource.get();
-              ds.init(function(err) {
-                  if (!err) vow.keep() ;
-                  else vow['break'](err);
-              });
+              cookie.get('databaseUrl').when(
+                  function(url) {
+                      database.init(vow, url);
+                  }
+                  ,function() {
+                      var msg = 'There is no database url cookie';
+                      log.d(msg);
+                      cookie.rm('database').when(
+                          function() {
+                              vow['break'](
+                                  msg + '\nRefresh the browser (f5), choose a database and url');
+                          },
+                          function() {
+                              vow['break'](msg + "\nCan't erase the database cookie!!!" +
+                                           ' \nMaybe ask your browser to delete all cookies' +
+                                           ' and then refresh (f5)!'); 
+                          }
+                      );
+                  });
               return vow.promise;
           }
           
-          getPouchdbHandle().when(
-             setDataSource
-          ).when(
-            initDataSource  
-          ).when(
+          //##start
+          /** This kicks off the app
+           */
+          function start() {
+              getDatabase().when(
+                  initDatabase
+              ).when(
+                  user.init
+             ) 
+              .when(
+                  //Give some feedback
+                  function(arg) {
+                      log.d('Success!!!', arg);
+                  },
+                  function(err) {
+                      console.log('Failed', err);
+                  }
+              );
               
-          ).
-          when(
-              function() {
-               log.d('Success!!!');
-              },
-              function(err) {
-                  log.d(err);
-              }
-          );
-              
+          }
           
-	          //if we stored Last user, use that otherwise user = guest
-	          // db.get(
-	          //     'Last user', 
-	          //     function(err, lastUser) {
-	          //         var currentUserId;
-	          //         if (err) {log.d('No init doc found. Setting user to guest');
-		  //                   currentUserId = 'guest';}			
-	          //         else currentUserId = lastUser.id;
-	          //         //get the current user's record from the database
-	          //         db.get(
-		  //             currentUserId, 
-		  //             function(notfound, response) {
-		  //                 if (notfound) { //currentUser is not in the database..
-		  //                     if (currentUserId === 'guest')  {
-		  //                         log.d('Must be first run. Entering guest user into the database'); }
-		  //                     else {
-		  //                         log.d('Strange.. Could not find last user ' +
-		  //       	                      'in the database. \nBut he was in the last user doc!!!!');
-		  //                         log.d('Starting as guest user.');
-		  //                         //shouldn't happen, but in this case default to guest again
-		  //                     }
-		  //                     user = globals.user;
-                  //                     log.d('User =',user);
-		  //                     db.put( //put guest in the database
-		  //                         user, 
-		  //                         function(err,resp) { 
-		  //                             if (err) log.d('ERROR: Could not save the guest user\' details to the database!!!', err);
-		  //                             else {
-		  //                                 user._rev = resp.rev;
-		  //                                 startApp();
-                  //                             }});}  
-		  //                 else { //start with the user found in the database
-		  //                     user = response;
-                  //                     log.d('finished startup logic');
-		  //                    startApp();
-                  //                 }   });});});
+          //Let's do it then!!
+          start();
       
         }});
 
