@@ -17,11 +17,10 @@
 
 define(
     {   
-        inject: ['lib/cookie', 'databases/db', 'user', 'layout'], 
-        factory: function(cookie, db, user, layout) 
+        inject: ['lib/cookie', 'loaders/backend', 'user', 'layout'], 
+        factory: function(cookie, backend, user, layout) 
         { "use strict";
           var log = logger('main');
-          log.d('Evaluating main..');
           
           //Are we alive? 
           log.d('Starting up app...');
@@ -37,19 +36,19 @@ define(
           //##setDatabase
           /** Promises to set the database backend. To change
               database delete the cookie's database value*/
-          function setDatabase(vow, dbName) {
-              if (db.exists(dbName)) vow.keep(db.set(dbName));
+          function setBackend(vow, backendName) {
+              if (backend.exists(backendName)) vow.keep(backend.set(backendName));
               else  {
-                  var msg = 'There is no database adapter' + 'named:' + dbName +
+                  var msg = 'There is no backend ' + 'named:' + backendName +
                       '.\nAlert the developer!';
                   log.d(msg);
-                  cookie.rm('database').when(
+                  cookie.rm('backendName').when(
                       function() {
                           vow['break']( msg + 
-                                        '\nRefresh the browser (f5), choose a different database');
+                                        '\nRefresh the browser (f5), choose a different backend');
                       },
                       function() {
-                          vow['break'](msg + "\nCan't erase the database cookie!!!" +
+                          vow['break'](msg + "\nCan't erase the backend cookie!!!" +
                                        ' \nMaybe ask your browser to delete all cookies' +
                                        ' and then refresh (f5)!'); 
                       }
@@ -58,38 +57,39 @@ define(
               return vow.promise;
           }
           
-          //##pickDatabase
-          /**Pick a database backend from a list, and set the cookie
+          //##pickBackend
+          /**Pick a backend from a list, and set the cookie
            * to the choice made.
            */
-          function pickDatabase(vow) {
-              db.pick(function(database, url){
-                  var name = database.name;
-                  vow.keep(database);
+          function pickBackend(vow) {
+              backend.pick(function(aBackend, url){
+                  var name = aBackend.name;
+                  vow.keep(aBackend);
                   VOW.every([
-                      cookie.set('database', name, 3650)
-                      ,cookie.set('databaseUrl', url, 3650)]
+                      cookie.set('backendName', name, 3650)
+                      ,cookie.set('backendUrl', url, 3650)]
                   ).when(
-                      function() { log.d('Set database and url cookies'); }
-                      ,function() { log.e('Unable to set the database or url cookie!!'); }
+                      function() { log.d('Saved backend cookie.'); }
+                      ,function() { log.e('Unable to set the backend or url cookie!!'); }
                   );
               });
               
           }
           
-          //##getDatabase
+          //##getBackend
           /**Gets the cookie, and then either sets or lets the user
-           * pick a database, depending on whether the cookie was
+           * pick a backend, depending on whether the cookie was
            * existant
            */
-          function getDatabase(){
+          function getBackend(){
               var vow = VOW.make();
-              cookie.get('database').when(
-                  function(dbName) {
-                      setDatabase(vow, dbName);   
+              cookie.get('backendName').when(
+                  function(backendName) {
+                      
+                      setBackend(vow, backendName);   
                   }
                   ,function() {
-                      pickDatabase(vow);
+                      pickBackend(vow);
                   });
               return vow.promise;
           }
@@ -99,22 +99,22 @@ define(
           /** Try to get the database url cooke and initialize the
            * database with it.
              */
-          function initDatabase(database){
+          function initBackend(aBackend){
               var vow = VOW.make();
-              cookie.get('databaseUrl').when(
+              cookie.get('backendUrl').when(
                   function(url) {
-                      database.init(vow, url);
+                      aBackend.init(vow, url);
                   }
                   ,function() {
-                      var msg = 'There is no database url cookie';
+                      var msg = 'There is no backend url cookie';
                       log.d(msg);
-                      cookie.rm('database').when(
+                      cookie.rm('backendName').when(
                           function() {
                               vow['break'](
-                                  msg + '\nRefresh the browser (f5), choose a database and url');
+                                  msg + '\nRefresh the browser (f5), choose a backend and url');
                           },
                           function() {
-                              vow['break'](msg + "\nCan't erase the database cookie!!!" +
+                              vow['break'](msg + "\nCan't erase the backend cookie!!!" +
                                            ' \nMaybe ask your browser to delete all cookies' +
                                            ' and then refresh (f5)!'); 
                           }
@@ -127,15 +127,19 @@ define(
           /** This kicks off the app
            */
           function start() {
-              getDatabase().when(
-                  initDatabase
+              getBackend().when(
+                  initBackend
+              ).when(
+                function(backend)  {
+                 return backend.login();   
+                }
               ).when(
                   user.init
-             ) 
-              .when(
+             ).when(
                   //Give some feedback
                   function(arg) {
                       log.d('Success!!!', arg);
+                      layout.draw({});
                   },
                   function(err) {
                       console.log('Failed', err);
@@ -143,6 +147,12 @@ define(
               );
               
           }
+          
+          window.reset = function() {
+              cookie.rm('backendName');
+              cookie.rm('backendUrl');
+              cookie.rm('lastLogin');
+          };
           
           //Let's do it then!!
           start();

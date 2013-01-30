@@ -3,7 +3,7 @@
 /*jshint maxparams:7 maxcomplexity:7 maxlen:150 devel:true*/
 
 define
-({ load: ['locationEditor'
-          ,'shiftEditor'
-          ,'personEditor'
+({ load: ['types/editors/locationEditor'
+          ,'types/editors/shiftEditor'
+          ,'types/editors/personEditor'
          ] });

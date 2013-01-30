@@ -3,24 +3,116 @@
 /*jshint maxparams:4 maxcomplexity:7 maxlen:130 devel:true newcap:false*/
 
 define
-({inject: ['typesAndFields'],
-  factory: function(typesAndFields) {
+({inject: ['lib/cookie', 'typesAndFields'],
+  factory: function(cookie, typesAndFields) {
       "use strict";
       
       var log = logger('pouchDB', 'debug');
       
       var pouchDbHandle;
+      var pouchDS;
+      var dbviews;
+      var authenticatedUser;
+      var settings;
       
       var rootUser = {
           _id:'root',
           name: 'root',
           type: 'person',
-          login: 'root',
-          autoLogin: true,
-          pwd:'root'
+          login: 'root'
+          // ,pwd:'root'
       };
       
-      var dbviews = {
+      
+      var defaultSettings = {
+          type: 'settings'
+          ,fortnightStart: true   
+          ,dataSource: 'pouchDS'
+      };
+      
+      var defaultUserId = 'root';
+      
+      //##init
+      /** Make sure there is a handle for pouch, and a root user in
+       * the database */
+      function init(vow, idbname) {
+          Pouch(idbname, function(err, aDb) {
+	      if (!err) {
+                  log.d('pouchDB is ready');
+                  pouchDbHandle = aDb;
+                  VOW.first([
+                      getDoc('root'),
+                      putDoc(rootUser)]).when()
+                      .when(
+                          function() {
+                              vow.keep(self);
+                          },
+                          vow['break']
+                      );
+              }
+              else { var msg = "Error opening idb database for pouchDS" + idbname +
+		     "err: "+ err.error + ' reason:' + err.reason;
+                     vow['break'](msg);
+		   }
+          });
+      }
+      
+      //**********************************************************************
+      //Implements direct access to the pouchdb
+      //##getDoc
+          
+      //A helper function to easily extract a doc from the
+      //pouchdb. This function returns a promise of
+      //a doc.
+      function getDoc(record) {
+          // log.d('getDoc ', record);
+          var vow = VOW.make();
+          if (!record)  
+              vow['break']('Can not get doc with undefined id');
+          else if (record._id) return vow.keep(record);
+          else pouchDbHandle.get(record, function(err, doc) {
+              if (!err) {
+                  // log.d('keeping get vow');
+                  vow.keep(doc);   
+              }
+              else {
+                  // log.d('breaking get vow');
+                  err.record = record; 
+                  vow['break'](err);   
+              }
+          });
+          return vow.promise;
+      }
+      
+      //##putDoc
+      /**A helper function to easily save a doc to the database. This
+       * function return a promise of a save.
+       */
+      function putDoc( record ){
+          // console.log('putDoc ', record);
+          var vow = VOW.make();
+          pouchDbHandle.put(record, function(err, response) {
+              if (!err) {
+                  // log.d('keeping put vow');
+                  record._id = response.id;
+                  record._rev = response.rev;
+                  vow.keep(record);   
+              }
+              else {
+                  // log.d('breaking put vow');
+                  err.record = record; 
+                  vow['break'](err);   
+              }
+          });
+          return vow.promise;
+      }
+      
+      
+      //**********************************************************************
+      //#DataSource
+      //This implements a smartclient datasource against pouchdb
+      
+      dbviews = {
           all: {   map : function(doc) { emit(doc,null); }
 	           ,reduce: false}
           ,shift: { map : function(doc) {
@@ -142,7 +234,7 @@ define
       }			 
 
       
-      var pouchDS = isc.DataSource.create(
+      pouchDS = isc.DataSource.create(
           {   ID : "pouchDS2",
 	      fields: typesAndFields.allFields,
 	      autoDeriveTitles:true,
@@ -200,87 +292,213 @@ define
 	          default: log.d("This is unknown operation on pouchdb: ", dsRequest.operationType );
 	          }
 	      }
-          });    
-      
-      //##init
-      /** Make sure there is a handle for pouch, and a root user in
-       * the database */
-      function init(vow, idbname) {
-          Pouch(idbname, function(err, aDb) {
-	      if (!err) {
-                  log.d('pouchDB is ready');
-                  pouchDbHandle = aDb;
-                  VOW.first([
-                      getDoc('root'),
-                      putDoc(rootUser)]).when()
-                      .when(
-                          vow.keep, vow['break']
-                      );
-              }
-              else { var msg = "Error opening idb database for pouchDS" + idbname +
-		     "err: "+ err.error + ' reason:' + err.reason;
-                     vow['break'](msg);
-		   }
           });
-      }
       
-      //##getDoc
+      //****************************************************************
+      //Simulation of serverside logic.
+      
+      //All this logging in and password verification is a bit silly
+      //in this local storage db adapter since anybody can in
+      //principle read the code and access the database. However it
+      //deters your regular luddite. If this logic was on the server
+      //side however you could still mess around with the app, but not
+      //with the data on the backend server, since only authenticated
+      //users could do that. That is if you implement permissions
+      //checking on the server end. It would read the permissions
+      //section of the settings file attached to a user and act
+      //accordingly. 
+      
+      var personCriterion = {
+          fieldName: 'type',
+          operator:'equals',
+          value: 'person'
+      };
           
-      //A helper function to easily extract a doc from the
-      //pouchdb. This function returns a promise of
-      //a doc.
-      function getDoc(record) {
-          log.d('getDoc ', record);
+      var loginCriterion = {
+          fieldName: 'login',
+          operator:'equals'
+      };
+        
+      var userCriteria = {
+          _constructor:"AdvancedCriteria",
+          operator:"and",
+          criteria: [personCriterion, loginCriterion]
+               
+      };
+      
+      function getUser(credentials) { 
           var vow = VOW.make();
-          if (!record)  
-              vow['break']('Can not get doc with undefined id');
-          else if (record._id) return vow.keep(record);
-          else pouchDbHandle.get(record, function(err, doc) {
-              if (!err) {
-                  log.d('keeping get vow');
-                  vow.keep(doc);   
+          var login = credentials.username;
+          log.d('LOGIN IS' , credentials);
+          pouchDS.fetchData(
+              null,
+              function (dsResponse, data) {
+                  if (dsResponse.status < 0) vow['break']('Could not query database..' +
+                                                          dsResponse.status);
+                  else {
+                      loginCriterion.value = login;
+                      var resultSet = isc.ResultSet.create({
+                          dataSource: pouchDS,
+                          criteria: userCriteria,
+                          allRows:data
+                      });
+                      var rows = resultSet.getAllVisibleRows();
+                      // console.log('and the visible rows are:', rows);
+                      if (rows.length < 1)
+                          vow['break']('A person with this login does not exist in this database:' +
+                                       login);
+                      else {
+                          if (rows.length > 1)
+                              log.w('There are two persons with the same login name!!! ' +
+                                    'Using the first one' , rows[0], 'from ', rows);
+                            
+                          if (rows[0].pwd === credentials.password) vow.keep(rows[0]);
+                          else vow['break']('Wrong password');
+                      }
+                  }
               }
-              else {
-                  log.d('breaking get vow');
-                  err.record = record; 
-                  vow['break'](err);   
+          );
+          return vow.promise;
+      } 
+      
+      function createLoginDialog(aVow, userId) {
+          var vow = aVow;
+          function checkCredentials(credentials, reportToLoginDialog) {
+              getUser(credentials).when(
+                  function(anAuthenticatedUser) {
+                      authenticatedUser = anAuthenticatedUser;
+                      log.i(authenticatedUser.login + ' logged in.');
+                      vow.keep(authenticatedUser);
+                      reportToLoginDialog(true);
+                  },
+                  function(err) {
+                      log.w(err);
+                      reportToLoginDialog(false);
+                  }
+              );
+          }
+      
+          function showLoginDialog() {
+	      isc.showLoginDialog(checkCredentials,
+			          {username: userId, password: '',
+			           dismissable:true});
+          } 
+          
+          return {
+              show: showLoginDialog
+          };
+      }
+      
+      function set(vow, userId) {
+          getDoc(userId).when(
+              function(user) {
+                  if (!user.pwd) {
+                      log.i(user.login + ' logged in (no pwd).');
+                      vow.keep(user);
+                  }
+                  else  createLoginDialog(vow, userId).show();
+              },
+              function() {
+                  createLoginDialog(vow, userId).show();
               }
-          });
+          ); 
+      }
+      
+      function changeUser(vow) {
+          createLoginDialog(vow, '').show();
+
+      }
+        
+      function login() {
+          //promises a user
+          var vow = VOW.make();
+          cookie.get('lastLogin').when(
+              function(userId) {
+                  set(vow, userId);
+              }
+              ,function() {
+                  set(vow, defaultUserId);     
+              }
+          );
           return vow.promise;
       }
       
-      //##putDoc
-      /**A helper function to easily save a doc to the database. This
-       * function return a promise of a save.
+      
+      //##getSettings
+      /**Get settings by type (look, behaviour or permissions)
+       * referenced by the authenticated user. The database backend
+       * is the guardian of these settings and will only hand out
+       * settings belonging to an authenticated user. Once these
+       * settings are handed over a clever hacker can have complete
+       * freedom in how he wants the app to behave (after reverse
+       * engineering the app, so going back to source state) If he
+       * has permission to save data to the database will be able to
+       * corrupt the database to some extent. It all depends on how
+       * precise the permissions are and to what extent the backend
+       * checks these permissions before altering the database. The
+       * only thing that is controllable is what gets saved to and
+       * retrieved from the database, and the authentication of a
+       * user. How the front end responds to settings is not
+       * controllable ultimately, but depends on the
+       * implementation. My original source code will behave
+       * properly, but the server doesn't know what frontend it is
+       * communicating with. So any security measures at the front
+       * end are best effort till browsers can receive and execute
+       * key encrypted source code. But the server can be locked down.
        */
-      function putDoc( record ){
-          console.log('putDoc ', record);
+      function readSettings(){
           var vow = VOW.make();
-          pouchDbHandle.put(record, function(err, response) {
-              if (!err) {
-                      log.d('keeping put vow');
-                  record._id = response.id;
-                  record._rev = response.rev;
-                  vow.keep(record);   
+          getDoc(authenticatedUser.settingsId).when(
+              function(someSettings) {
+                  vow.keep(someSettings);
               }
-              else {
-                  log.d('breaking put vow');
-                  err.record = record; 
-                  vow['break'](err);   
+              ,function() {
+                  vow.keep({});
               }
-          });
+          );
           return vow.promise;
       }
       
+      function getSettings(type) {
+          var vow = VOW.make();
+          readSettings().when(
+              function(someSettings) {
+                  settings = someSettings;
+                  var parse; 
+                  try {
+                      parse = JSON.parse(someSettings[type]);
+                  }
+                  catch(e) {
+                      parse = {};   
+                  }
+                  vow.keep(parse);
+              }
+          );
+          return vow.promise;
+      }
       
-      return {
+      function saveSettings(type, object) {
+          if (!settings) settings = {}; 
+          settings[type] = JSON.stringify(object);
+          return putDoc(settings);
+      }
+      
+      var self = {
           name: 'pouchDB'
           ,shortName: 'Browser local storage (idb)'
           ,description: 'The data will be stored in the browser local storage. This is persisted across refreshes of the browser you are using now. If you use a standalone version you will be able to carry the data with you on a usb stick for instance. '
           ,getDS: function() { return pouchDS; }
-          ,urlPrefix: 'idb://' //or 'url' of the database
+          ,urlPrefix: 'idb://' 
+          
           ,init: init
+          
           ,getDoc: getDoc
           ,putDoc: putDoc
+          
+          ,login: login
+          ,change: changeUser
+          ,getSettings: getSettings
+          ,saveSettings: saveSettings
       };
+      return self;
   }});

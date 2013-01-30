@@ -3,7 +3,7 @@
 /*jshint maxparams:4 maxcomplexity:7 maxlen:90 devel:true*/
 
 define
-({ inject: ['table', 'calendar', 'timesheet'],
+({ inject: ['views/table', 'views/calendar', 'views/timesheet'],
 // ({ inject: ['timesheet', 'calendar'],
 // ({ inject: ['calendar'],
   factory: function() {
@@ -11,13 +11,12 @@ define
       var log = logger('viewLoader');
       
       var args = Array.prototype.slice.call(arguments);
-      var str = '';
+      var arr = [];
       args.forEach(function(a) {
-          // console.log(a);
-          str += ' ' + a.getType();
+          arr.push(a.getType());
       });
       
-      log.d('Loaded views:' + str);
+      log.d('Loaded views: ' + arr);
       
       return args;
   }});

@@ -3,7 +3,7 @@
 /*jshint maxparams:5 maxcomplexity:7 maxlen:190 devel:true*/
 
 define
-({ load: ['editorLoader'],
+({ load: ['loaders/editor'],
    inject: ['View', 'pouchDS', 'editorManager'],
    factory: function(View, database, editors) 
    { "use strict";

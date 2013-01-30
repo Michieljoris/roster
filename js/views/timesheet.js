@@ -4,10 +4,10 @@
 
 define
 ({ //load: ['editorLoader'],
-    inject: ['View', 'globals', 'pouchDS',
-             'isc_components/multicap_timesheet',
-             'calculateTimesheet', 'fetchTimesheetShifts'],
-   factory: function(View, globals, datasource, Timesheet,
+    inject: ['View', 'pouchDS',
+             'timesheet/isc_components/multicap_timesheet',
+             'timesheet/calculateTimesheet', 'timesheet/fetchTimesheetShifts'],
+   factory: function(View, datasource, Timesheet,
                      calculateTimesheet, fetchShifts) 
     
     { "use strict";

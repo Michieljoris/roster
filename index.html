@@ -19,14 +19,16 @@
       verbosity: 'warn',
       paths: {
        'lib': '../lib'
+       ,'timesheet': 'views/timesheet'
+       
       },
       scriptInsertionLocation : 'body',
-      timeOut: 15,
+      timeOut: 5,
       testing: false
       };
       
       <!-- for test purposes in quickpouch-->
-      window.dbname= 'idb://pouchdb';
+      window.dbname= 'idb://pouchDB';
       
       <!-- get rid of annoying msg when testing licensed version -->
       window.isc_expirationOff=true;  

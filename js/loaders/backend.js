@@ -7,11 +7,9 @@ define
 ({  inject : ['databases/pouchDB'],
     factory: function() {
         "use strict";
-        var log = logger('datasource');
-        log.d('Evaluating datasource..');
+        var log = logger('backend');
         
         var database;
-        // var idbname= 'idb://pouchdb';
         
         var args = Array.prototype.slice.apply(arguments);
         var dbNames = [];
@@ -24,6 +22,7 @@ define
             valueMap[a.name] = a.shortName;
         });
         
+        log.d('Loaded database backends: ' + dbNames);
         //return list of names of the databases available
         // function ls() {
         //     return dbNames;
@@ -32,6 +31,7 @@ define
         //set the database to be used to dbname
         function set(dbName) {
             database = dbs[dbName];
+            log.d('Backend set to: ' + dbName);
             return database;
         }
         
@@ -107,7 +107,8 @@ k
                                     var databaseName = pickDbForm.getValue('databaseName'); 
                                     var url = dbs[databaseName].urlPrefix +
                                         pickDbForm.getValue('url');
-                                    database = dbs[databaseName];
+                                    set(databaseName);
+                                    // database = dbs[databaseName];
                                     editorWindow.hide();
                                     callback(database, url);
                                 }  

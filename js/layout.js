@@ -7,11 +7,10 @@
 //right hand side, and a collapsable help section.
 
 define
-({inject: [ 'viewTree', 'viewLoader'],
+({inject: [ 'viewTree', 'loaders/view'],
   factory: function(viewTree, views) 
   { "use strict";
     var log = logger('layout');
-    log.d('Evaluating layout.js..');
 
     //#Left hand side of the layout
     
@@ -99,7 +98,7 @@ define
     //containing the state of the ui to be drawn.
     function draw(uiState) {
         viewTree.notify(uiState); 
-        viewTree.setLoginName(user.login);
+        // viewTree.setLoginName(user.login);
         mainLayout.draw();
     }
     

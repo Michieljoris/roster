@@ -4,7 +4,7 @@
 
 
 define
-({ inject: ['multicap_timesheet_raphael'],
+({ inject: ['views/timesheet/multicap_timesheet_raphael'],
    factory: function(timesheet) {
        "use strict";
         

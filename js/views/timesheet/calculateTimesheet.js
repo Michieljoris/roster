@@ -4,7 +4,7 @@
 
 define
 ({ 
-    inject: ['lib/utils', 'calculateTimesheetColumn'],
+    inject: ['lib/utils', 'timesheet/calculateTimesheetColumn'],
     factory: function(utils, calculateTimesheetColumn)
     { "use strict";
       var log = logger('calculateTimesheet');

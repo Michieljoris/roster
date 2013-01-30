@@ -3,7 +3,7 @@
 /*jshint maxparams:4 maxcomplexity:7 maxlen:90 devel:true*/
 
 define
-({inject: ['View', 'viewLoader', 'user', 'globals'],
+({inject: ['View', 'loaders/view', 'user', 'globals'],
   factory: function(View, views, user, globals) {
       "use strict";
       var log = logger('viewTree');

@@ -3,8 +3,8 @@
 /*jshint maxparams:7 maxcomplexity:7 maxlen:150 devel:true*/
 
 define
-({ load: ['editorLoader'], 
-   inject: [ 'View', 'typesAndFields', 'pouchDS', 'editorManager', 'tableFilter'],
+({ load: ['loaders/editor'], 
+   inject: [ 'View', 'typesAndFields', 'pouchDS', 'editorManager', 'views/table/tableFilter'],
    factory: function (View, typesAndFields, database, editors, tableFilter) {
        "use strict";
        var log = logger('table');
