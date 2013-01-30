@@ -4,8 +4,8 @@
 
 // -----@ TOP ----- */
 define
-({inject: ['typesAndFields', 'pouchDS'] ,
-  factory: function(typesAndFields, pouchDS) {
+({inject: ['typesAndFields', 'loaders/backend'] ,
+  factory: function(typesAndFields, backend) {
       "use strict";
       var state, dataTable;
       var defaultState = { usingSimpleFilter: true };
@@ -261,7 +261,7 @@ define
               
 	      state.savedAdvCriteria = advancedFilter.getCriteria(); 
               log.d(isc.FilterBuilder.getFilterDescription(state.savedAdvCriteria,
-                                                           pouchDS));
+                                                         backend.get().getDS()));
               var appliedCriteria = isc.DataSource.combineCriteria(
                   dataTable.typeFilter,state.savedAdvCriteria);
 	      dataTable.filterData(appliedCriteria);
@@ -278,7 +278,7 @@ define
           if (state.savedAdvCriteria) {
               // log.d('setFilterDescription',state.savedAdvCriteria);
               filterDescription =
-                  isc.FilterBuilder.getFilterDescription(state.savedAdvCriteria, pouchDS);
+                  isc.FilterBuilder.getFilterDescription(state.savedAdvCriteria, backend.get().getDS());
               // log.d('setFilterDescription', filterDescription, state.savedAdvCriteria);
           }
           if (!filterDescription) filterDescription = 'No filter set';

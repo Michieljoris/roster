@@ -3,8 +3,8 @@
 /*jshint maxparams:7 maxcomplexity:10 maxlen:150 devel:true*/
 
 define
-({ inject: ['pouchDS', 'typesAndFields'],
-   factory: function(database, typesAndFields) {
+({ inject: ['loaders/backend', 'typesAndFields'],
+   factory: function(backend, typesAndFields) {
        "use strict";
        var log = logger('editorManager');
        var API = {};
@@ -151,10 +151,11 @@ define
                if (updateForm) updateForm(record);
            };
            
+           var dataSource = backend.get().getDS();
            if (record._rev) {
-               database.updateData(record, callback);
+               dataSource.updateData(record, callback);
            }
-           else database.addData(record, callback);
+           else dataSource.addData(record, callback);
            
            // log.d('saved record, now going to done');
        };
@@ -173,8 +174,9 @@ define
            var container = containers[record.type];
            if (container.removeRecord) container.removeRecord(record);
            else {
+               var dataSource = backend.get().getDS();
                log.d('removing record');
-               database.removeData(record);
+               dataSource.removeData(record);
                API.done(record, 'remove');
            }
        };

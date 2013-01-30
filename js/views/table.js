@@ -4,16 +4,22 @@
 
 define
 ({ load: ['loaders/editor'], 
-   inject: [ 'View', 'typesAndFields', 'pouchDS', 'editorManager', 'views/table/tableFilter'],
-   factory: function (View, typesAndFields, database, editors, tableFilter) {
+   inject: [ 'View', 'typesAndFields', 'editorManager', 'views/table/tableFilter'],
+   factory: function (View, typesAndFields, editors, tableFilter) {
        "use strict";
        var log = logger('table');
+       var dataSource;
 
        var view = View.create({
            type: 'Table'
            ,icon : "table.png"
            ,defaultState : { height: 300, isExpanded: true, tab: 1, hidden: false}
-           
+           ,init: function() {
+               //TODO you could do lazy creating of this view here...
+               //so only when init gets called.
+               dataSource = View.getBackend().getDS();
+               dataTable.setDataSource(dataSource);
+           }
            ,sync: function(state) {
                state =  isc.addProperties(state, {
                    grid: dataTable.getViewState(),
@@ -296,9 +302,9 @@ define
                        };
            
                        if (record._rev) {
-                           database.updateData(record, callback);
+                           dataSource.updateData(record, callback);
                        }
-                       else database.addData(record, callback);
+                       else dataSource.addData(record, callback);
                    }
                    else {
                        editorHasChanged = false;
@@ -318,8 +324,8 @@ define
        var newRecord = function(aType) {
            if (dataTable.selectionType === 'none') return;
            // addUpdateData('addData', { group: 'group'});
-           var record = typesAndFields.newRecord(aType);
-           database.addData( record,
+               var record = typesAndFields.newRecord(aType);
+           dataSource.addData( record,
                              function(resp, data, req) 
 		             {   dataTable.deselectAllRecords();
                                  dataTable.selectRecord(data);
@@ -483,7 +489,7 @@ define
        var dataTable = isc.ListGrid.create(
            {   
 	       ID: "dataTable",
-	       dataSource: database,
+	       // dataSource: backend.get().getDS(),
                showEmptyMessage: true,
                emptyMessage: "<br>Click the <b>Green plus butoon</b> to populate this grid.",    
                gridComponents:[toolStrip,"filterEditor", "header",  "body"],

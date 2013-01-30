@@ -4,8 +4,8 @@
 
 define
 ({ 
-    inject: ['globals', 'pouchDS'],
-    factory: function(globals, pouchDS) 
+    inject: ['globals', 'loaders/backend'],
+    factory: function(globals, backend) 
     { "use strict";
       
       var log = logger('fetchTimesheetShifts');
@@ -83,13 +83,13 @@ define
           fortnightCriterion.criteria[0].value = startDate;
           fortnightCriterion.criteria[1].value = endDate;
           
-          pouchDS.fetchData(null,
+          backend.get().getDS().fetchData(null,
                             function (dsResponse, data) {
                                 if (dsResponse.status < 0) vow['break'](dsResponse.status);
                                 else {
                                     log.d('GOT a response from pouchDS', data);
                                     var resultSet = isc.ResultSet.create({
-                                        dataSource:"pouchDS",
+                                        dataSource:backend.get().getDS(),
                                         criteria: timesheetCriteria,
                                         allRows:data
                                     });

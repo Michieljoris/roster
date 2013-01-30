@@ -4,10 +4,10 @@
 
 define
 ({ //load: ['editorLoader'],
-    inject: ['View', 'pouchDS',
+    inject: ['View', 
              'timesheet/isc_components/multicap_timesheet',
              'timesheet/calculateTimesheet', 'timesheet/fetchTimesheetShifts'],
-   factory: function(View, datasource, Timesheet,
+   factory: function(View, Timesheet,
                      calculateTimesheet, fetchShifts) 
     
     { "use strict";
@@ -21,6 +21,11 @@ define
           // ,sync: function(state) {
           //     log.d('UPDATING STATE:', state);
           // } 
+          ,init: function() {
+              var dataSource = View.getBackend().getDS();
+              personForm.getField('person').setOptionDataSource(dataSource);
+              locationForm.getField('location').setOptionDataSource(dataSource);
+          }
           ,set: function(state) {
               log.d('SETTING STATE:', state);
               if (typeof state.fortnight === 'string') {
@@ -68,7 +73,7 @@ define
                              // startRow: true,
                              // multiple: true,
                              multipleAppearance: 'picklist',
-                             optionDataSource: datasource,
+                             // optionDataSource: dataSource,
                              filterLocally: true, 
                              pickListCriteria: { type: 'person'},
                              displayField: 'name',
@@ -103,7 +108,7 @@ define
                                // multiple: true,
                                // multipleAppearance: 'picklist',
                                align: 'left',
-                               optionDataSource: datasource,
+                               // optionDataSource: dataSource,
                                filterLocally: true, 
                                pickListCriteria: { type: 'location'},
                                displayField: 'name',

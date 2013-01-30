@@ -7,8 +7,8 @@
 //This kind of module does not produce an injectable, but registers itself with the editorManager
 //to use this editor, both load the editorLoader module and inject the editorManager
 define
-({inject: ['shift', 'editorUtils', 'pouchDS', 'editorManager', 'typesAndFields'],
-  factory: function(shift, editorUtils, datasource, editorManager) 
+({inject: ['Editor', 'shift', 'editorUtils', 'editorManager', 'typesAndFields'],
+  factory: function(Editor, shift, editorUtils, editorManager) 
   { "use strict";
     var log = logger('shiftEditor');
 
@@ -181,7 +181,7 @@ define
                            startRow: true,
                            multiple: true,
                            multipleAppearance: 'picklist',
-                           optionDataSource: datasource,
+                           // optionDataSource: backend.get().getDS(),
                            filterLocally: true, 
                            pickListCriteria: { type: 'person'},
                            displayField: 'name',
@@ -219,7 +219,7 @@ define
                              // multiple: true,
                              // multipleAppearance: 'picklist',
                              align: 'left',
-                             optionDataSource: datasource,
+                             // optionDataSource: backend.get().getDS(),
                              filterLocally: true, 
                              pickListCriteria: { type: 'location'},
                              displayField: 'name',
@@ -440,6 +440,12 @@ define
         // if (settings.removeButton) removeButton.show(); else removeButton.hide();
         // if (settings.saveButton) saveButton.show(); else saveButton.hide();
     };
+    editor.init = function() {
+              var dataSource = Editor.getBackend().getDS();
+              eventForm.getField('person').setOptionDataSource(dataSource);
+              eventForm.getField('location').setOptionDataSource(dataSource);
+    };
     
+    return editor; 
 
   }});

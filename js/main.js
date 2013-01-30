@@ -17,8 +17,8 @@
 
 define(
     {   
-        inject: ['lib/cookie', 'loaders/backend', 'user', 'layout'], 
-        factory: function(cookie, backend, user, layout) 
+        inject: ['lib/cookie', 'loaders/backend', 'user', 'layout', 'View', 'Editor'], 
+        factory: function(cookie, backend, user, layout, View, Editor) 
         { "use strict";
           var log = logger('main');
           
@@ -130,19 +130,23 @@ define(
               getBackend().when(
                   initBackend
               ).when(
-                function(backend)  {
-                 return backend.login();   
-                }
+                  function(backend)  {
+                      View.setBackend(backend); 
+                      Editor.setBackend(backend);
+                      return backend.login();   
+                  }
               ).when(
                   user.init
              ).when(
                   //Give some feedback
-                  function(arg) {
-                      log.d('Success!!!', arg);
-                      layout.draw({});
+                  function() {
+                      log.d('Drawing app.');
+                      // layout.draw();
+                      try { layout.draw(); } catch(e) {
+                          console.error(e.stack); }
                   },
                   function(err) {
-                      console.log('Failed', err);
+                      console.log('Failed setting up app..', err);
                   }
               );
               

@@ -1,3 +1,6 @@
+
+//Hello simone! You're on the internet!!!
+
 /*global logger:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:4 maxcomplexity:7 maxlen:90 devel:true*/
@@ -7,8 +10,8 @@
 //right hand side, and a collapsable help section.
 
 define
-({inject: [ 'viewTree', 'loaders/view'],
-  factory: function(viewTree, views) 
+({inject: [ 'viewTree', 'loaders/view','loaders/editor'],
+  factory: function(viewTree, views, editors) 
   { "use strict";
     var log = logger('layout');
 
@@ -97,12 +100,18 @@ define
     //The one exported function. It takes a JSON string
     //containing the state of the ui to be drawn.
     function draw(uiState) {
+        views.forEach(function(v) {
+            v.init();
+        });
+        
+        editors.forEach(function(e) {
+            e.init();
+        });
+        
         viewTree.notify(uiState); 
         // viewTree.setLoginName(user.login);
         mainLayout.draw();
     }
-    
-    
     
     //##API 
     return {

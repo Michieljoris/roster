@@ -5,8 +5,8 @@
 //This kind of module does not produce an injectable, but registers itself with the editorManager
 //to use this editor, both load the editorLoader module and inject the editorManager
 define
-({inject: ['typesAndFields', 'editorManager', 'editorUtils',  'parentListEditor'],
-  factory: function(typesAndFields, editorManager, editorUtils, parentListEditor) {
+({inject: ['Editor', 'typesAndFields', 'editorManager', 'editorUtils',  'parentListEditor'],
+  factory: function(Editor, typesAndFields, editorManager, editorUtils, parentListEditor) {
       "use strict";
       var log = logger('locationEditor');
       
@@ -340,7 +340,7 @@ define
           // dataSource:"supplyItem",
           // width:"100%",
           // margin:"25",
-              emptyMessage:"Select an item to view its details",
+          emptyMessage:"Select an item to view its details",
           fields: typesAndFields.getFieldsCloner('location')()
       });
       
@@ -367,7 +367,7 @@ define
 	      tabs: [
 	          {title: "View"
 	           ,pane: itemViewer
-	              }
+	          }
                   ,{title: "Edit",
                     pane: editLayout
                    }
@@ -420,7 +420,13 @@ define
           allButtons.Save.setDisabled(true);
           formLayout.setVisibleMember(mainForm);
       };
+      
+      editor.init = function() {
+          // var dataSource = Editor.getBackend().getDS();
+      };
     
+    
+      return editor;
 
   }});
 

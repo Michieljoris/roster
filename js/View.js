@@ -8,15 +8,18 @@ define
   factory: function() {
       var log = logger('View');
       
+      var backend;
+      
       function create(data) {
           if (!data.defaultState) data.defaultState = {};
           var state = data.defaultState;
           var observer, cmp;
           return {
+              init: typeof data.init === 'function' ? data.init : function() {}
               // getDefaultState: function () {
               //     return isc.clone(data.defaultState);
               // },
-              getType: function () {
+              ,getType: function () {
                   return data.type;
               },
               getIcon: function() {
@@ -62,5 +65,11 @@ define
       
       return {
           create:create
+          ,setBackend: function(aBackend) {
+              backend = aBackend;
+          }
+          ,getBackend: function() {
+              return backend;
+          }
       }; 
   }});

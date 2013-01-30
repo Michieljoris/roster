@@ -3,8 +3,8 @@
 /*jshint maxparams:4 maxcomplexity:7 maxlen:190 devel:true*/
 
 define
-({inject: ['pouchDS'],
-  factory: function(pouchDS) {
+({inject: [],
+  factory: function() {
       "use strict";
       var API = {};
 

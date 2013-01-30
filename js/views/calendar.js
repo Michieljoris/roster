@@ -4,8 +4,8 @@
 
 define
 ({ load: ['loaders/editor'],
-   inject: ['View', 'pouchDS', 'editorManager'],
-   factory: function(View, database, editors) 
+   inject: ['View', 'editorManager'],
+   factory: function(View, editors) 
    { "use strict";
      var log = logger('calendar');
      
@@ -20,6 +20,10 @@ define
              workdayEnd: '22:00',
              currentViewName: 'day', //day, week or month
              chosenDate: new Date()
+         }
+         ,init: function() {
+             var dataSource = View.getBackend().getDS(); 
+             calendar.setDataSource(dataSource);
          }
          ,sync: function(state) {
              state.currentViewName = calendar.getCurrentViewName();
@@ -41,7 +45,7 @@ define
     
      var calendar = isc.Calendar.create(
              {   ID: "isc_ShiftCalendar", 
-	         dataSource: database, 
+	         // dataSource: database, 
 	         autoFetchData: true
 	         // ,descriptionField: 'notes'
 	         ,nameField: 'endTijd'
