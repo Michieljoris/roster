@@ -99,7 +99,7 @@ define
 
     //The one exported function. It takes a JSON string
     //containing the state of the ui to be drawn.
-    function draw(uiState) {
+    function draw() {
         views.forEach(function(v) {
             v.init();
         });
@@ -108,8 +108,8 @@ define
             e.init();
         });
         
-        viewTree.notify(uiState); 
-        // viewTree.setLoginName(user.login);
+        viewTree.notify(); 
+        
         mainLayout.draw();
     }
     

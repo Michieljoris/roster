@@ -12,8 +12,8 @@ define
       var pouchDbHandle;
       var pouchDS;
       var dbviews;
-      var authenticatedUser;
-      var settings;
+      // var authenticatedUser;
+      var settingsCache;
       
       var rootUser = {
           _id:'root',
@@ -59,6 +59,7 @@ define
       
       //**********************************************************************
       //Implements direct access to the pouchdb
+      
       //##getDoc
           
       //A helper function to easily extract a doc from the
@@ -125,7 +126,7 @@ define
           ,person: { map : function(doc) {
 	      if (doc.type === 'person') emit(doc,null);}
 		     ,reduce: false}
-          ,settings: { map : function(doc) {
+          ,settingsCache: { map : function(doc) {
 	      if (doc.type === 'settings') emit(doc,null);}
 		       ,reduce: false}
       };
@@ -275,8 +276,7 @@ define
 		             dsResponse, dsRequest.requestId);
 	              break; 
 	            case "add" : 
-	              log.d("add"); 
-	              log.d('data', dsRequest.data);
+	              log.d('add: data', dsRequest.data);
 	              dsResponse = {
 	                  clientContext: dsRequest.clientContext,
 	                  status: 1};
@@ -350,9 +350,11 @@ define
                       else {
                           if (rows.length > 1)
                               log.w('There are two persons with the same login name!!! ' +
-                                    'Using the first one' , rows[0], 'from ', rows);
-                            
-                          if (rows[0].pwd === credentials.password) vow.keep(rows[0]);
+                                    'Using the first one' , rows[0], 'from ', rows); 
+                          log.d('pwd',rows[0].pwd, 'given', credentials.password);
+                          
+                          if (!rows[0].pwd ||
+                              rows[0].pwd === credentials.password) vow.keep(rows[0]);
                           else vow['break']('Wrong password');
                       }
                   }
@@ -366,7 +368,7 @@ define
           function checkCredentials(credentials, reportToLoginDialog) {
               getUser(credentials).when(
                   function(anAuthenticatedUser) {
-                      authenticatedUser = anAuthenticatedUser;
+                      var authenticatedUser = anAuthenticatedUser;
                       log.i(authenticatedUser.login + ' logged in.');
                       vow.keep(authenticatedUser);
                       reportToLoginDialog(true);
@@ -404,8 +406,10 @@ define
           ); 
       }
       
-      function changeUser(vow) {
+      function changeUser() {
+          var vow = VOW.make();
           createLoginDialog(vow, '').show();
+          return vow.promise;
 
       }
         
@@ -425,63 +429,29 @@ define
       
       
       //##getSettings
-      /**Get settings by type (look, behaviour or permissions)
-       * referenced by the authenticated user. The database backend
-       * is the guardian of these settings and will only hand out
-       * settings belonging to an authenticated user. Once these
-       * settings are handed over a clever hacker can have complete
-       * freedom in how he wants the app to behave (after reverse
-       * engineering the app, so going back to source state) If he
-       * has permission to save data to the database will be able to
-       * corrupt the database to some extent. It all depends on how
-       * precise the permissions are and to what extent the backend
-       * checks these permissions before altering the database. The
-       * only thing that is controllable is what gets saved to and
-       * retrieved from the database, and the authentication of a
-       * user. How the front end responds to settings is not
-       * controllable ultimately, but depends on the
-       * implementation. My original source code will behave
-       * properly, but the server doesn't know what frontend it is
-       * communicating with. So any security measures at the front
-       * end are best effort till browsers can receive and execute
-       * key encrypted source code. But the server can be locked down.
+      /**Get settings by type (look, behaviour or permissions) *
+       referenced by the authenticated user. The database backend * is
+       the guardian of these settings and will only hand out *
+       settings belonging to an authenticated user. Once these *
+       settings are handed over a clever hacker can have complete *
+       freedom in how he wants the app to behave (after reverse *
+       engineering the app, so going back to source state) If he * has
+       permission to save data to the database will be able to *
+       corrupt the database to some extent. It all depends on how *
+       precise the permissions are and to what extent the backend *
+       checks these permissions before altering the database. The *
+       only thing that is controllable is what gets saved to and *
+       retrieved from the database, and the authentication of a *
+       user. How the front end responds to settings is not *
+       controllable ultimately, but depends on the *
+       implementation. My original source code will behave * properly,
+       but the server doesn't know what frontend it is * communicating
+       with. So any security measures at the front * end are best
+       effort till browsers can receive and execute * key encrypted
+       source code. But the server can be locked down. Couchdb
+       security consists of letting people have access to databases
+       based on id and role, assigned by an admin.
        */
-      function readSettings(){
-          var vow = VOW.make();
-          getDoc(authenticatedUser.settingsId).when(
-              function(someSettings) {
-                  vow.keep(someSettings);
-              }
-              ,function() {
-                  vow.keep({});
-              }
-          );
-          return vow.promise;
-      }
-      
-      function getSettings(type) {
-          var vow = VOW.make();
-          readSettings().when(
-              function(someSettings) {
-                  settings = someSettings;
-                  var parse; 
-                  try {
-                      parse = JSON.parse(someSettings[type]);
-                  }
-                  catch(e) {
-                      parse = {};   
-                  }
-                  vow.keep(parse);
-              }
-          );
-          return vow.promise;
-      }
-      
-      function saveSettings(type, object) {
-          if (!settings) settings = {}; 
-          settings[type] = JSON.stringify(object);
-          return putDoc(settings);
-      }
       
       var self = {
           name: 'pouchDB'
@@ -496,9 +466,7 @@ define
           ,putDoc: putDoc
           
           ,login: login
-          ,change: changeUser
-          ,getSettings: getSettings
-          ,saveSettings: saveSettings
+          ,changeUser: changeUser
       };
       return self;
   }});

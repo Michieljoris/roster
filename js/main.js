@@ -144,9 +144,10 @@ define(
                       // layout.draw();
                       try { layout.draw(); } catch(e) {
                           console.error(e.stack); }
+                      
                   },
                   function(err) {
-                      console.log('Failed setting up app..', err);
+                      console.log('Failed setting up app..', err.stack);
                   }
               );
               

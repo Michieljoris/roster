@@ -218,8 +218,7 @@ define
             ,sex: { type: 'text'}
             ,award: { type: 'text'}
             ,login: { type: 'text'}
-            ,autoLogin: { type: 'text'}
-            ,password: { type: 'text'}
+            ,pwd: { type: 'text'}
             ,role: { type: 'text'}
             ,permissions: { type: 'text'}
             ,dswCALevel:  { type: 'text' }
@@ -261,7 +260,7 @@ define
                     'personNames', 'locationNames', 'notes', 'ad', 'claim', 'sleepOver'],
             location: ['costCentre', 'name', 'address', 'suburb','postalCode', 'state',
                        'phone', 'mob', 'email', 'region', 'notes'],
-            person: ['name', 'firstName', 'lastName', 'dswCALevel', 'payrollNumber', 'status',
+            person: ['login', 'pwd', 'name', 'firstName', 'lastName', 'dswCALevel', 'payrollNumber', 'status',
                      'address', 'suburb','postalCode', 'state', 'phone', 'mob', 'email', 'notes']
         };
         

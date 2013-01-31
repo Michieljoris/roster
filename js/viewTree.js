@@ -3,12 +3,13 @@
 /*jshint maxparams:4 maxcomplexity:7 maxlen:90 devel:true*/
 
 define
-({inject: ['View', 'loaders/view', 'user', 'globals'],
-  factory: function(View, views, user, globals) {
+({inject: ['View', 'loaders/view', 'user'],
+  factory: function(View, views, user) {
       "use strict";
       var log = logger('viewTree');
       
       var newViewMenu = [];
+      
       
       views = (function() {
           var result = {};
@@ -33,8 +34,11 @@ define
           viewInstanceShowing;
       
       //--------------------HANDLING STATE OF THE VIEWTREE-------------------------- 
-      function notify(newState) {
-          var viewTreeState = isc.JSON.decode(newState);
+      function notify() {
+          log.d('viewTree got notified of a change of user!');
+          // var viewTreeState = isc.JSON.decode(newState);
+          var viewTreeState = user.getLook();
+          loginButton.setTitle(user.get().name);
           if (viewTreeState) {
               //width of side bar
               viewTree.setWidth(viewTreeState.width);
@@ -42,7 +46,7 @@ define
 	      tree.removeList(tree.getChildren(tree.getRoot()));
               //set the tree to the saved state
 	      tree.linkNodes(viewTreeState.state);
-              log.d('path:::::',viewTreeState.pathOfLeafShowing);
+              // log.d('path:::::',viewTreeState.pathOfLeafShowing);
 	      viewTree.setSelectedPaths(viewTreeState.pathOfLeafShowing);
 	      var selRecord = viewTree.getSelectedRecord();
 	      if (selRecord && !selRecord.isFolder) { 
@@ -54,6 +58,7 @@ define
               //so set a interval time to see if the state is really
               //different from the stored state and if so setModified to true
               window.setTimeout(checkState, 2000);
+              // window.setImmediate(checkState);
               //now any changes made by user will be stored in the
               //leaf and tree when opening up another leaf, when the
               //user saves the tree to the db and when the user
@@ -67,6 +72,10 @@ define
       } 
       
       function checkState() {
+	  // var selRecord = viewTree.getSelectedRecord();
+          // if (selRecord && !selRecord.isFolder) { 
+	  //     open(selRecord);
+	  // }
           log.d("Checking state");
           // setModified(!isEqual(table.getState(), leafShowing.viewState));
           // setModified(!isEqual(views[viewShowing.type].getState(),viewShowing.viewState));
@@ -184,28 +193,35 @@ define
           console.log('saving');
           if (viewInstanceShowing) views[viewInstanceShowing.type].sync();
           // debugger;
-          globals.user.viewTreeState = isc.JSON.encode(getTreeState());
+          // user.setLook(isc.JSON.encode(getTreeState())); 
+          user.setLook(getTreeState()); 
+          // globals.user.viewTreeState = isc.JSON.encode(getTreeState());
           
-          //TODO get the roster.user from the database and then use
-          //that object to save the ui, or put the ui in a separate
-          //doc...  at the moment there is an update error when you try to
-          //save after modifying the current user in a table for
-          //instance
-          globals.db.put(globals.user, function(err, response) {
-              if (err) {
-	          log.d('ERRROR: Could not save changed state of the view tree.' +
-                        err.error + ' ' + err.reason);
-                  isc.warn('ERROR: Could not save the state of the ui..');
+          user.saveSettings().when(
+              function() {
+                  log.d('Saved UI successfully');
+              },
+              function(err) {
+                  var msg = 'Error: Could not save the UI state of the app!!';
+                  log.d(msg + err);
+                  isc.warn(msg + err);
+                  alert(msg + err);
               }
-              else {
-	          globals.user._rev = response.rev;
-                  log.d('save',globals.user.viewTreeState);
-              }
+              
+          );
+          // globals.db.put(globals.user, function(err, response) {
+          //     if (err) {
+	  //         log.d('ERRROR: Could not save changed state of the view tree.' +
+          //               err.error + ' ' + err.reason);
+          //         isc.warn('ERROR: Could not save the state of the ui..');
+          //     }
+          //     else {
+	  //         globals.user._rev = response.rev;
+          //         log.d('save',globals.user.viewTreeState);
+          //     }
               setTreeModified(false);
               setViewModified(false);
               // window.onbeforeunload = function() { };
-              if (callback) callback();
-          });
       }
       
       // function setSaveOnChange(bool) { saveOnChange = bool; //
@@ -382,7 +398,7 @@ define
       
       var loginButton = isc.ToolStripButton.create(
           {   align:'left' 
-	      ,action: user.showLoginDialog 
+	      ,action: user.change 
           });
       
       var saveButton = isc.ToolStripButton.create({
@@ -531,6 +547,8 @@ define
       viewTree.ls = function() {
           log.d(viewInstanceShowing);
       };
+      
+      user.addObserver(viewTree);
       
       return viewTree;
   }});

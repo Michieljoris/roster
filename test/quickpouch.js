@@ -80,7 +80,7 @@ var pouch =
 			response.rows.forEach(function(e) {
 						    
 			    console.log(i + '------------------');
-			    pp(e.key); 
+			    console.dir(e.key); 
 			});
 		    }
 		}); 

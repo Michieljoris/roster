@@ -50,6 +50,7 @@ define
                editorHeightExpanded = state.height;
                //dataTable state
                dataTable.setViewState(state.grid);
+               applyCriteria(state);
               
                //filters
                // advancedFilter.setCriteria(state.savedAdvCriteria);
@@ -75,19 +76,6 @@ define
                // };
                // return;
                // log.d('bbbbbbbbbaaaaaaaaaaaaaaaaaaaaaaaaa',dataTable.typeFilter);
-               var appliedCriteria = isc.DataSource.combineCriteria(
-                   dataTable.typeFilter,state.savedAdvCriteria);
-               // appliedCriteria = advancedCriteria;
-               // appliedCriteria = criteria;
-               // log.d('Applied Criteria', appliedCriteria);
-               // module.temp = appliedCriteria;
-               // log.d('will fetch data', dataTable.willFetchData(appliedCriteria));
-               if (dataTable.willFetchData(appliedCriteria)) 
-                   dataTable.fetchData(undefined, 
-                                       function() {
-                                           dataTable.setCriteria(appliedCriteria);
-                                           log.d('fetch completed');});
-               else dataTable.setCriteria(appliedCriteria);
           
                // dataTable.setCriteria(criteria);
                //                     { myprop: 'blablabla'});
@@ -105,7 +93,7 @@ define
            }
        });
        //End of definition of the table view
-
+       
        var editorHeightExpanded= 300;
        var editorHasChanged = false;
        
@@ -131,6 +119,17 @@ define
        });
       
        //--------------------@handling state----------------------------- 
+       function applyCriteria(state) {
+           var appliedCriteria = isc.DataSource.combineCriteria(
+               dataTable.typeFilter,state.savedAdvCriteria);
+           if (dataTable.willFetchData(appliedCriteria)) 
+               dataTable.fetchData(undefined, 
+                                   function() {
+                                       dataTable.setCriteria(appliedCriteria);
+                                       log.d('fetch completed');});
+           else dataTable.setCriteria(appliedCriteria);
+       }
+
        function setTypingState(state) {
            //types
            if (!state.types || state.types.length === 0) state.types = typesAndFields.allTypes;
@@ -239,6 +238,8 @@ define
                log.d(state.types);
                typeWindow.hide(); 
                tableViewStateChanged();
+               setTypingState(state);
+               applyCriteria(state);
            }
        });
        
