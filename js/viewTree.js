@@ -399,7 +399,7 @@ define
       var loginButton = isc.ToolStripButton.create(
           {   align:'left' 
 	      ,action: user.change 
-          });
+          }); 
       
       var saveButton = isc.ToolStripButton.create({
 	  icon: "[SKIN]/actions/save.png",

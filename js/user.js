@@ -86,6 +86,7 @@ define(
             
         }
         
+        
         function init(aUser) {
             var vow = VOW.make();
             backend = backend.get();

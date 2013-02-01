@@ -369,6 +369,7 @@ define
               getUser(credentials).when(
                   function(anAuthenticatedUser) {
                       var authenticatedUser = anAuthenticatedUser;
+                      cookie.set('lastLogin', authenticatedUser.login, 3650);
                       log.i(authenticatedUser.login + ' logged in.');
                       vow.keep(authenticatedUser);
                       reportToLoginDialog(true);
@@ -410,7 +411,6 @@ define
           var vow = VOW.make();
           createLoginDialog(vow, '').show();
           return vow.promise;
-
       }
         
       function login() {
