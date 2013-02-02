@@ -4,8 +4,8 @@
 
 define
 ({ 
-    inject: ['globals', 'loaders/backend'],
-    factory: function(globals, backend) 
+    inject: ['loaders/backend'],
+    factory: function(backend) 
     { "use strict";
       
       var log = logger('fetchTimesheetShifts');
@@ -51,24 +51,24 @@ define
       };
       
       
-      function getDoc(record) {
-          if (record._id) return VOW.kept(record);
-          var vow = VOW.make();
-          globals.db.get(record, function(err, doc) {
-              log.d('getting doc',doc, err);
-              if (!err) {
-                  vow.keep(doc);   
-                  log.d('keeping vow');
-              }
-              else {
-                  err.record = record; 
-                  vow['break'](err);   
-                  log.d('breaking vow');
-              }
-          });
-          vow.promise.test =record;
-          return vow.promise;
-      }
+      // function getDoc(record) {
+      //     if (record._id) return VOW.kept(record);
+      //     var vow = VOW.make();
+      //     globals.db.get(record, function(err, doc) {
+      //         log.d('getting doc',doc, err);
+      //         if (!err) {
+      //             vow.keep(doc);   
+      //             log.d('keeping vow');
+      //         }
+      //         else {
+      //             err.record = record; 
+      //             vow['break'](err);   
+      //             log.d('breaking vow');
+      //         }
+      //     });
+      //     vow.promise.test =record;
+      //     return vow.promise;
+      // }
       
       function getShifts(person, location, fortnight) {
           log.d("Getting shifts..");
@@ -87,18 +87,19 @@ define
                             function (dsResponse, data) {
                                 if (dsResponse.status < 0) vow['break'](dsResponse.status);
                                 else {
-                                    log.d('GOT a response from pouchDS', data);
+                                    // log.d('GOT a response from pouchDS', data);
                                     var resultSet = isc.ResultSet.create({
                                         dataSource:backend.get().getDS(),
                                         criteria: timesheetCriteria,
                                         allRows:data
                                     });
-                                    log.d('and the result set is:', resultSet);
-                                    log.d('and the visible rows are:', resultSet.getAllVisibleRows());
+                                    // log.d('and the result set is:', resultSet);
+                                    // log.d('and the visible rows are:', resultSet.getAllVisibleRows());
                                     vow.keep({
                                         person: person,
                                         location: location,
-                                        shifts: resultSet.getAllVisibleRows()
+                                        shifts: resultSet.getAllVisibleRows(),
+                                        fortnight: fortnight
                                     });
                                 }
                             }
@@ -108,10 +109,11 @@ define
       
   
       function fetch(person, location, fortnight, callback) {
-
+          var db = backend.get();
+          
           VOW.every([
-              getDoc(person),
-              getDoc(location)
+              db.getDoc(person),
+              db.getDoc(location)
           ]).when(
               function(arr) {
                   person = arr[0];

@@ -14,15 +14,6 @@ define
       var columns = [];
       var totals;
       
-      // function addFieldValues(objects) {
-      //     return objects.reduce(function(fields, object) {
-      //         Object.keys(object).forEach(function(f) {
-      //             if (fields[f]) fields[f] += object[f];
-      //             else if (typeof object[f] === 'number') fields[f] = object[f];
-      //         });   
-      //         return fields;
-      //     }, Object.create(null));
-      // }
       
       //date, time, text, integer, boolean
       function getColumn(number) { // 0<=number<14
@@ -30,11 +21,12 @@ define
       }
       
       function getTotals() {
-         return totals;
+          return totals;
       }
       
       
       function init(aFortnight, aPerson, aLocation, someShifts) {
+          console.log('in calcsheet');
           fortnight = aFortnight;
           fortnight.setHours(0);
           fortnight.setMinutes(0);
@@ -45,18 +37,22 @@ define
           
           var startDay = fortnight.getTime();
           shifts.forEach(function(s) {
-           var day = Math.floor((s.startDate.getTime() - startDay)/DAY_IN_MILLISECONDS);
-             if (!columns[day]) columns[day] = [];
+              var day = Math.floor((s.startDate.getTime() - startDay)/DAY_IN_MILLISECONDS);
+              if (!columns[day]) columns[day] = [];
               columns[day].push(s);
           });
+          log.pp(columns);
+          // (columns);
           columns = columns.map(function(c, i) {
               if (!c) return {};
               var fields = calculateTimesheetColumn.getFields(
                   person, location, c);
               fields.shifts = c;
-              fields.date = fortnight.clone().addDays(i);
+              fields.costCentre = location.costCentre ? location.costCentre : '??';
+              fields.date = fortnight.clone().addDays(i).toEuropeanShortDate().slice(0,5);
               return fields;
           });
+          log.pp(columns);
           totals = utils.addFieldValues(columns);
           return {
               column: getColumn,

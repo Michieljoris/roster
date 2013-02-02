@@ -5,10 +5,8 @@
 define
 ({ //load: ['editorLoader'],
     inject: ['View', 
-             'timesheet/isc_components/multicap_timesheet',
-             'timesheet/calculateTimesheet', 'timesheet/fetchTimesheetShifts'],
-   factory: function(View, Timesheet,
-                     calculateTimesheet, fetchShifts) 
+             'timesheet/isc_components/multicap_timesheet'],
+   factory: function(View, TimesheetWW)
     
     { "use strict";
       var log = logger('timesheet');
@@ -29,27 +27,38 @@ define
           ,set: function(state) {
               log.d('SETTING STATE:', state);
               if (typeof state.fortnight === 'string') {
-                  state.fortnight = Date.parse("2013-01-11T14:00:00");
+                  var fn = state.fortnight;
+                  log.d('parsing: ', fn);
+                  // state.fortnight = Date.parse("2013-01-11T14:00:00");
+                  state.fortnight = Date.parseSchemaDate(state.fortnight);
+                  
               }
               state.fortnight = calculateFortnight(state.fortnight);
-              fortnightLabel.setContents(fortnightToString(state.fortnight));
-              // fetchShifts(person, location, fortnight, setShifts);
-              personForm.setValue('person', state.person);
-              locationForm.setValue('location', state.location);
+              setData(state);
           }
            
       });
       
+      function setData(state) {
+          var person = state.person, location = state.location, fortnight = state.fortnight;
+          fortnightLabel.setContents(fortnightToString(fortnight));
+          personForm.setValue('person', person);
+          locationForm.setValue('location', location);
+          //TODO: depending on location and perhaps person, do
+          //setVisibility(true) and false on the other ones, have all
+          //the different timesheets added to the layout, build a
+          //separate smartclient component for each, and add them all.
+          //Have a field in location that lets you pick the timesheet to use.
+          timesheet.setData(state);
+          
+      }
+      
       var fortnightStart = Date.parse('2000, 1 Jan').getTime();
       var fortnightLength = 14 *  24 * 60 * 60 *1000;
       
-      function setShifts(data) {
-          log.d('Fetched shifts and they are:', data.shifts);
-          personForm.setValue('person', data.person._id);
-          locationForm.setValue('location', data.location._id);
-      }
       
-      var timesheet = Timesheet.create({
+      var timesheet = TimesheetWW.create({
+          ID: 'timesheet',
           overflow:'auto',
           showResizeBar: false,
           padding: 35

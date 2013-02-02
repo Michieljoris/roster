@@ -1,4 +1,4 @@
-/*global  Raphael:false  define:false */
+/*global  logger:false Raphael:false  define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:6 maxcomplexity:7 maxlen:190 devel:true*/
 
@@ -10,6 +10,7 @@ define
 ({ //load: ['js!lib/raphael-min.js'],
    factory: function() {
        "use strict";
+       var log = logger('raphael');
        
        //Dimensions:
        var portWidth = 950
@@ -72,8 +73,8 @@ define
                                   return obj;
                                 })()
        ,line1 = ['EMPLOYEE NAME:', '', 'EMPLOYEE PAYROLL NUMBER:', '', 'CONTACT PHONE:', '' ]
-       ,data1 = {name : 10, number : 57, phone: 80 }
-       ,data2 = {fulltime:6.5, parttime:15, casual:21, dsw: 35, dsw2:58, ending:75}
+       ,data1 = {name : 10, payrollNumber : 57, phone: 80 }
+       ,data2 = {permanent:6.5, 'parttime':15, casual:21, dswCALevel: 35, dsw2:58, ending:75}
        ,line1Pos = [0,data1.name, 40, data1.number, 70, data1.phone, 100] 
        ,line2 = [ 'FULLTIME:', '', 'PART TIME:','', 'CASUAL:','', 'DSW CA LEVEL:','', 'ALTERNATIVE DSW CA LEVEL:','', 'PERIOD ENDING:','']
        ,line2Pos = [0,data2.fulltime, 8, data2.parttime, 16, data2.casual, 25, data2.dsw, 40, data2.dsw2, 65, data2.ending, 100] 
@@ -168,6 +169,12 @@ define
        }
 
        //#API
+       function setData(props) {
+           log.d('in setData in raphael', props);
+           Object.keys(props).forEach(function(p) {
+               setDataField(p, props[p]);
+           });
+       }
        
        /**
         * ## setData
@@ -177,7 +184,7 @@ define
         * @param {string} data The name of the data field
         * @param {string} value The value to set the data field to
         */
-       function setData(data, value) {
+       function setDataField(data, value) {
            var element;
            if (dataCells[data]) dataCells[data].remove();
            if (data1[data]) {
@@ -202,6 +209,7 @@ define
        //to fontSize), weight: normal | bold | bolder | lighter | 100
        //| 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | inherit
        function setCell(str, r, c, al, attr) {
+           // console.log('setting cell', str, r,c);
            var cell = dataCells['' + r + c];
            if (cell) cell.remove();
            dataCells['' + r + c]  =
@@ -213,9 +221,13 @@ define
        }
        
        //##setColumn
-       //Set a day (0-13) to the values in the object column. See
-       //rowMap for possible field names.
-       function setColumn(column, day) {
+       /* Set a day (0-13) to the values of the object column. See
+         * rowMap for possible field names.
+         * @param {number} day Between 0 and 13 for the days of the week
+         * @param {object} column An object containing the values for the column
+        */
+       
+       function setColumn(day, column) {
         Object.keys(column).forEach(function(f) {
             if (fields[f]) {
                 setCell(column[f], fields[f].row, day);

@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>timesheet_canvas.js</title>
+  <title>multicap_timesheet_raphael.js</title>
   <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-  <link rel="stylesheet" media="all" href="../doc-style.css" />
-  <script src="../doc-filelist.js"></script>
+  <link rel="stylesheet" media="all" href="../../../doc-style.css" />
+  <script src="../../../doc-filelist.js"></script>
   <script>
-    var relativeDir = '../', thisFile = 'js/timesheet_canvas.js', defaultSidebar = true;
+    var relativeDir = '../../../', thisFile = 'js/views/timesheet/multicap_timesheet_raphael.js', defaultSidebar = true;
   </script>
-  <script src="../doc-script.js"></script>
-  <script src="../fileSearch.js"></script>
-  <link rel="stylesheet" href="../fileSearch.css" />
+  <script src="../../../doc-script.js"></script>
+  <script src="../../../fileSearch.js"></script>
+  <link rel="stylesheet" href="../../../fileSearch.css" />
 </head>
 <body>
   <div id="sidebar_wrapper">
@@ -41,6 +41,9 @@
       <div class="heading h2">
         <a href="#draw">draw</a>
       </div>
+      <div class="heading h1">
+        <a href="#resize">resize</a>
+      </div>
     </div>
   </div>
   <div id="sidebar-toggle"></div>
@@ -49,7 +52,7 @@
   <tbody>
       <tr>
         <td class="docs">
-          <h1>timesheet_canvas.js</h1>
+          <h1>multicap_timesheet_raphael.js</h1>
         </td>
         <td class="code highlight"></td>
       </tr>
@@ -89,7 +92,8 @@ one go or clear the whole sheet.</p>
 <p>Dimensions:</p>
         </td>
         <td class="code highlight"><div class="highlight"><pre>       <span class="kd">var</span> <span class="nx">portWidth</span> <span class="o">=</span> <span class="mi">950</span>
-       <span class="p">,</span><span class="nx">portHeight</span> <span class="o">=</span> <span class="mi">660</span>
+       <span class="p">,</span><span class="nx">portHeight</span> <span class="o">=</span> <span class="mi">640</span>
+       <span class="p">,</span><span class="nx">aspectRatio</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
        <span class="p">,</span><span class="nx">fontSize</span> <span class="o">=</span> <span class="mi">11</span>
        <span class="p">,</span><span class="nx">labelBoxWidth</span> <span class="o">=</span> <span class="mi">175</span>
        <span class="p">,</span><span class="nx">totalBoxWidth</span> <span class="o">=</span> <span class="mi">85</span> 
@@ -114,10 +118,11 @@ one go or clear the whole sheet.</p>
 <div class="pilwrap">
   <a class="pilcrow" href="#section-4" id="section-4">&#182;</a>
 </div>
-<p>Creation of canvas to draw on:</p>
+<p>Creation of canvas to draw on:
+,paper = new Raphael(0,0,portWidth, portHeight)</p>
         </td>
-        <td class="code highlight"><div class="highlight"><pre>       <span class="p">,</span><span class="nx">paper</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Raphael</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="nx">portWidth</span><span class="p">,</span> <span class="nx">portHeight</span><span class="p">)</span>
-       </pre></div>
+        <td class="code highlight"><div class="highlight"><pre>       <span class="p">,</span><span class="nx">paper</span>
+       <span class="p">,</span><span class="nx">element</span></pre></div>
         </td>
       </tr>
       <tr>
@@ -394,6 +399,7 @@ to fontSize), weight: normal | bold | bolder | lighter | 100
 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | inherit</p>
         </td>
         <td class="code highlight"><div class="highlight"><pre>       <span class="kd">function</span> <span class="nx">setCell</span><span class="p">(</span><span class="nx">str</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span> <span class="nx">c</span><span class="p">,</span> <span class="nx">al</span><span class="p">,</span> <span class="nx">attr</span><span class="p">)</span> <span class="p">{</span>
+           <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;setting cell&#39;</span><span class="p">,</span> <span class="nx">str</span><span class="p">,</span> <span class="nx">r</span><span class="p">,</span><span class="nx">c</span><span class="p">);</span>
            <span class="kd">var</span> <span class="nx">cell</span> <span class="o">=</span> <span class="nx">dataCells</span><span class="p">[</span><span class="s1">&#39;&#39;</span> <span class="o">+</span> <span class="nx">r</span> <span class="o">+</span> <span class="nx">c</span><span class="p">];</span>
            <span class="k">if</span> <span class="p">(</span><span class="nx">cell</span><span class="p">)</span> <span class="nx">cell</span><span class="p">.</span><span class="nx">remove</span><span class="p">();</span>
            <span class="nx">dataCells</span><span class="p">[</span><span class="s1">&#39;&#39;</span> <span class="o">+</span> <span class="nx">r</span> <span class="o">+</span> <span class="nx">c</span><span class="p">]</span>  <span class="o">=</span>
@@ -416,10 +422,29 @@ to fontSize), weight: normal | bold | bolder | lighter | 100
 </div>
 
 
-<p>Set a day (0-13) to the values in the objecct column. See
-rowMap for possible field names</p>
+<div class="dox">
+  <div class="summary"><p>Set a day (0-13) to the values of the object column. See
+rowMap for possible field names.</p>
+  </div>
+  <div class="body">
+  </div>
+  <div class="details">
+    <div class="dox_tag_title">Params</div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">day</span>
+      <span class="dox_type">number</span>
+      <span>Between 0 and 13 for the days of the week</span>
+    </div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">column</span>
+      <span class="dox_type">object</span>
+      <span>An object containing the values for the column</span>
+    </div>
+  </div>
+</div>
         </td>
-        <td class="code highlight"><div class="highlight"><pre>       <span class="kd">function</span> <span class="nx">setColumn</span><span class="p">(</span><span class="nx">column</span><span class="p">,</span> <span class="nx">day</span><span class="p">)</span> <span class="p">{</span>
+        <td class="code highlight"><div class="highlight"><pre>       
+       <span class="kd">function</span> <span class="nx">setColumn</span><span class="p">(</span><span class="nx">column</span><span class="p">,</span> <span class="nx">day</span><span class="p">)</span> <span class="p">{</span>
         <span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">column</span><span class="p">).</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">f</span><span class="p">)</span> <span class="p">{</span>
             <span class="k">if</span> <span class="p">(</span><span class="nx">fields</span><span class="p">[</span><span class="nx">f</span><span class="p">])</span> <span class="p">{</span>
                 <span class="nx">setCell</span><span class="p">(</span><span class="nx">column</span><span class="p">[</span><span class="nx">f</span><span class="p">],</span> <span class="nx">fields</span><span class="p">[</span><span class="nx">f</span><span class="p">].</span><span class="nx">row</span><span class="p">,</span> <span class="nx">day</span><span class="p">);</span>
@@ -459,10 +484,25 @@ rowMap for possible field names</p>
 </div>
 
 
-<p>Draw the timesheet on its canvas</p>
+<p>Draw the timesheet, set element to DOM element or its
+ID which is going to be a parent for drawing surface.</p>
         </td>
-        <td class="code highlight"><div class="highlight"><pre>       <span class="kd">function</span> <span class="nx">draw</span><span class="p">()</span> <span class="p">{</span>
-           <span class="nx">text</span><span class="p">(</span><span class="nx">title</span><span class="p">,</span> <span class="nx">topBox</span><span class="p">,</span> <span class="p">{},</span> <span class="p">{</span> <span class="nx">size</span><span class="o">:</span> <span class="mi">4</span><span class="p">,</span> <span class="nx">weight</span><span class="o">:</span><span class="s1">&#39;bold&#39;</span><span class="p">});</span>
+        <td class="code highlight"><div class="highlight"><pre>       <span class="kd">function</span> <span class="nx">draw</span><span class="p">(</span><span class="nx">anElement</span><span class="p">)</span> <span class="p">{</span>
+           <span class="nx">element</span> <span class="o">=</span> <span class="nx">anElement</span><span class="p">;</span>
+           <span class="k">if</span> <span class="p">(</span><span class="nx">element</span><span class="p">)</span> <span class="nx">paper</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Raphael</span><span class="p">(</span><span class="nx">element</span><span class="p">,</span><span class="nx">portWidth</span><span class="p">,</span> <span class="nx">portHeight</span><span class="p">);</span>
+           <span class="k">else</span> <span class="nx">paper</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Raphael</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span> <span class="p">,</span><span class="nx">portWidth</span><span class="p">,</span> <span class="nx">portHeight</span><span class="p">);</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-19" id="section-19">&#182;</a>
+</div>
+<p>paper = new Raphael(0,0,portWidth, portHeight, function() {
+    console.log('hello', arguments);
+});</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>           <span class="nx">text</span><span class="p">(</span><span class="nx">title</span><span class="p">,</span> <span class="nx">topBox</span><span class="p">,</span> <span class="p">{},</span> <span class="p">{</span> <span class="nx">size</span><span class="o">:</span> <span class="mi">4</span><span class="p">,</span> <span class="nx">weight</span><span class="o">:</span><span class="s1">&#39;bold&#39;</span><span class="p">});</span>
            <span class="nx">paper</span><span class="p">.</span><span class="nx">rect</span><span class="p">(</span><span class="nx">topBox</span><span class="p">.</span><span class="nx">x</span><span class="p">,</span> <span class="nx">topBox</span><span class="p">.</span><span class="nx">y</span><span class="p">,</span> <span class="nx">topBox</span><span class="p">.</span><span class="nx">w</span><span class="p">,</span> <span class="nx">topBox</span><span class="p">.</span><span class="nx">h</span><span class="p">);</span>
            <span class="nx">drawTopLines</span><span class="p">();</span></pre></div>
         </td>
@@ -470,7 +510,7 @@ rowMap for possible field names</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-19" id="section-19">&#182;</a>
+  <a class="pilcrow" href="#section-20" id="section-20">&#182;</a>
 </div>
 <p>grids</p>
         </td>
@@ -484,7 +524,7 @@ rowMap for possible field names</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-20" id="section-20">&#182;</a>
+  <a class="pilcrow" href="#section-21" id="section-21">&#182;</a>
 </div>
 <p>thick borders:</p>
         </td>
@@ -503,7 +543,7 @@ rowMap for possible field names</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-21" id="section-21">&#182;</a>
+  <a class="pilcrow" href="#section-22" id="section-22">&#182;</a>
 </div>
 <p>grey out some boxes</p>
         </td>
@@ -522,7 +562,7 @@ rowMap for possible field names</p>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-22" id="section-22">&#182;</a>
+  <a class="pilcrow" href="#section-23" id="section-23">&#182;</a>
 </div>
 <p>lefthand labels</p>
         </td>
@@ -538,17 +578,8 @@ rowMap for possible field names</p>
                    <span class="nx">text</span><span class="p">(</span><span class="nx">label</span><span class="p">,</span> 
                   <span class="p">{</span><span class="nx">x</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span> <span class="nx">y</span><span class="o">:</span> <span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="nx">n</span><span class="p">)</span><span class="o">*</span><span class="nx">ys</span><span class="p">,</span>
                    <span class="nx">w</span><span class="o">:</span> <span class="nx">labelBoxWidth</span><span class="p">,</span> <span class="nx">h</span><span class="o">:</span> <span class="nx">ys</span><span class="p">},</span>
-                  <span class="p">{</span> <span class="nx">align</span><span class="o">:</span> <span class="s1">&#39;end&#39;</span> <span class="p">}</span> <span class="p">,</span> <span class="p">{</span><span class="nx">weight</span><span class="o">:</span> <span class="nx">weight</span><span class="p">});</span></pre></div>
-        </td>
-      </tr>
-      <tr>
-        <td class="docs">
-<div class="pilwrap">
-  <a class="pilcrow" href="#section-23" id="section-23">&#182;</a>
-</div>
-<p>n++; </p>
-        </td>
-        <td class="code highlight"><div class="highlight"><pre>               <span class="p">});</span></pre></div>
+                  <span class="p">{</span> <span class="nx">align</span><span class="o">:</span> <span class="s1">&#39;end&#39;</span> <span class="p">}</span> <span class="p">,</span> <span class="p">{</span><span class="nx">weight</span><span class="o">:</span> <span class="nx">weight</span><span class="p">});</span>
+               <span class="p">});</span></pre></div>
         </td>
       </tr>
       <tr>
@@ -580,14 +611,57 @@ rowMap for possible field names</p>
                 <span class="p">{</span><span class="nx">x</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span> <span class="nx">y</span><span class="o">:</span> <span class="p">(</span><span class="nx">topRows</span> <span class="o">+</span> <span class="nx">gridRows</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="nx">ys</span><span class="p">,</span>
                  <span class="nx">w</span><span class="o">:</span> <span class="nx">labelBoxWidth</span> <span class="o">+</span> <span class="nx">totalBoxWidth</span> <span class="o">+</span> <span class="nx">gridColumns</span> <span class="o">*</span> <span class="nx">gxs</span><span class="p">,</span> <span class="nx">h</span><span class="o">:</span> <span class="nx">ys</span><span class="o">*</span><span class="mi">2</span><span class="p">},</span>
                 <span class="p">{</span> <span class="nx">align</span><span class="o">:</span> <span class="s1">&#39;start&#39;</span> <span class="p">}</span> <span class="p">,</span> <span class="p">{</span><span class="nx">weight</span><span class="o">:</span> <span class="s1">&#39;normal&#39;</span><span class="p">});</span>
+           <span class="k">return</span> <span class="nx">paper</span><span class="p">;</span>
        <span class="p">}</span>       
+       </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="resize">
+  <h1>
+    <a href="#resize" class="pilcrow">&#182;</a>
+    resize
+  </h1>
+</div>
+
+
+<p>Resize the timesheet using either width or height or both.
+If one is not given, the other is calculated using the
+aspectRation</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>       <span class="kd">function</span> <span class="nx">resize</span><span class="p">(</span><span class="nx">dimensions</span><span class="p">)</span> <span class="p">{</span>
+           <span class="k">if</span> <span class="p">(</span><span class="nx">dimensions</span><span class="p">.</span><span class="nx">width</span><span class="p">)</span> <span class="p">{</span>
+               <span class="nx">portWidth</span> <span class="o">=</span> <span class="nx">dimensions</span><span class="p">.</span><span class="nx">width</span><span class="p">;</span>
+               <span class="nx">portHeight</span> <span class="o">=</span> <span class="nx">dimensions</span><span class="p">.</span><span class="nx">height</span> <span class="o">?</span>
+                   <span class="nx">dimensions</span><span class="p">.</span><span class="nx">height</span> <span class="o">:</span> <span class="nx">portWidth</span><span class="o">/</span><span class="nx">aspectRatio</span><span class="p">;</span>
+           <span class="p">}</span>
+           <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="nx">dimensions</span><span class="p">.</span><span class="nx">height</span><span class="p">)</span> <span class="p">{</span>
+               <span class="nx">portHeight</span> <span class="o">=</span> <span class="nx">dimensions</span><span class="p">.</span><span class="nx">height</span><span class="p">;</span>
+               <span class="nx">portWidth</span> <span class="o">=</span> <span class="nx">portHeight</span><span class="o">*</span><span class="nx">aspectRatio</span><span class="p">;</span>
+           <span class="p">}</span>
+           <span class="k">if</span> <span class="p">(</span><span class="nx">dimensions</span><span class="p">.</span><span class="nx">fontSize</span><span class="p">)</span> <span class="nx">fontSize</span> <span class="o">=</span> <span class="nx">dimensions</span><span class="p">.</span><span class="nx">fontSize</span><span class="p">;</span>
+           <span class="nx">paper</span><span class="p">.</span><span class="nx">remove</span><span class="p">();</span>
+           <span class="nx">gxs</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">((</span><span class="nx">portWidth</span><span class="o">-</span><span class="nx">labelBoxWidth</span><span class="o">-</span><span class="nx">totalBoxWidth</span><span class="p">)</span><span class="o">/</span><span class="nx">gridColumns</span><span class="p">);</span>
+           <span class="nx">ys</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">floor</span><span class="p">(</span><span class="nx">portHeight</span><span class="o">/</span><span class="nx">rows</span><span class="p">);</span>
+           <span class="nx">topBox</span> <span class="o">=</span> <span class="p">{</span>
+               <span class="nx">x</span><span class="o">:</span><span class="nx">portWidth</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">200</span><span class="p">,</span>
+               <span class="nx">y</span><span class="o">:</span><span class="mi">0</span><span class="p">,</span>
+               <span class="nx">w</span><span class="o">:</span><span class="mi">400</span><span class="p">,</span>
+               <span class="nx">h</span><span class="o">:</span><span class="mi">2</span><span class="o">*</span><span class="nx">ys</span>
+           <span class="p">};</span>
+           <span class="nx">unit</span> <span class="o">=</span> <span class="nb">Math</span><span class="p">.</span><span class="nx">round</span><span class="p">(</span><span class="nx">portWidth</span> <span class="o">/</span> <span class="mi">100</span><span class="p">);</span>
+           <span class="nx">draw</span><span class="p">(</span><span class="nx">element</span><span class="p">);</span>
+       <span class="p">}</span>
        
        <span class="k">return</span> <span class="p">{</span>
            <span class="nx">draw</span><span class="o">:</span> <span class="nx">draw</span><span class="p">,</span>
            <span class="nx">setCell</span><span class="o">:</span> <span class="nx">setCell</span><span class="p">,</span>
            <span class="nx">setData</span><span class="o">:</span> <span class="nx">setData</span><span class="p">,</span>
            <span class="nx">setColumn</span><span class="o">:</span> <span class="nx">setColumn</span><span class="p">,</span>
-           <span class="nx">clear</span><span class="o">:</span> <span class="nx">clear</span>
+           <span class="nx">clear</span><span class="o">:</span> <span class="nx">clear</span><span class="p">,</span>
+           <span class="nx">resize</span><span class="o">:</span> <span class="nx">resize</span><span class="p">,</span>
+           <span class="nx">remove</span><span class="o">:</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="nx">paper</span><span class="p">.</span><span class="nx">remove</span><span class="p">();</span> <span class="p">}</span>
        <span class="p">};</span>
    <span class="p">}});</span>
 </pre></div>

@@ -21,16 +21,19 @@
     <div id="tree"></div>
     <div id="headings">
       <div class="heading h2">
-        <a href="#startup-logic.">Startup logic.</a>
+        <a href="#startup-logic.--we-try-to-get-the-cookie-with-info-on">Startup logic.  We try to get the cookie with info on</a>
       </div>
       <div class="heading h2">
-        <a href="#getpouchdbhandle">getPouchdbHandle</a>
+        <a href="#setdatabase">setDatabase</a>
       </div>
       <div class="heading h2">
-        <a href="#savedsname">saveDsName</a>
+        <a href="#pickbackend">pickBackend</a>
       </div>
       <div class="heading h2">
-        <a href="#setdatasource">setDataSource</a>
+        <a href="#getbackend">getBackend</a>
+      </div>
+      <div class="heading h2">
+        <a href="#initdatabase">initDatabase</a>
       </div>
       <div class="heading h2">
         <a href="#start">start</a>
@@ -94,42 +97,17 @@ To do this for everybody, wipe all docs with type 'settings'</p>
         </td>
         <td class="code highlight"><div class="highlight"><pre><span class="nx">define</span><span class="p">(</span>
     <span class="p">{</span>   
-        <span class="nx">inject</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;datasources/datasource&#39;</span><span class="p">,</span> <span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="s1">&#39;layout&#39;</span><span class="p">],</span> 
-        <span class="nx">factory</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">dataSource</span><span class="p">,</span> <span class="nx">user</span><span class="p">,</span> <span class="nx">layout</span><span class="p">)</span> 
+        <span class="nx">inject</span><span class="o">:</span> <span class="p">[</span><span class="s1">&#39;lib/cookie&#39;</span><span class="p">,</span> <span class="s1">&#39;loaders/backend&#39;</span><span class="p">,</span> <span class="s1">&#39;user&#39;</span><span class="p">,</span> <span class="s1">&#39;layout&#39;</span><span class="p">,</span> <span class="s1">&#39;View&#39;</span><span class="p">,</span> <span class="s1">&#39;Editor&#39;</span><span class="p">],</span> 
+        <span class="nx">factory</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">cookie</span><span class="p">,</span> <span class="nx">backend</span><span class="p">,</span> <span class="nx">user</span><span class="p">,</span> <span class="nx">layout</span><span class="p">,</span> <span class="nx">View</span><span class="p">,</span> <span class="nx">Editor</span><span class="p">)</span> 
         <span class="p">{</span> <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
           <span class="kd">var</span> <span class="nx">log</span> <span class="o">=</span> <span class="nx">logger</span><span class="p">(</span><span class="s1">&#39;main&#39;</span><span class="p">);</span>
-          <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;Evaluating main&#39;</span><span class="p">);</span></pre></div>
-        </td>
-      </tr>
-      <tr>
-        <td class="docs">
-<div class="pilwrap">
-  <a class="pilcrow" href="#section-5" id="section-5">&#182;</a>
-</div>
-<p>Some constants</p>
-        </td>
-        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">var</span> <span class="nx">idbname</span><span class="o">=</span> <span class="s1">&#39;idb://pouchdb&#39;</span><span class="p">;</span>
-          <span class="kd">var</span> <span class="nx">dataSourceAdapterDocId</span> <span class="o">=</span> <span class="s1">&#39;DataSource&#39;</span><span class="p">;</span>
           </pre></div>
         </td>
       </tr>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-6" id="section-6">&#182;</a>
-</div>
-<p>We use this to access the pouchdb at startup only. Any
-pouchdb datasource will have its own handle, possibly of a
-different database.</p>
-        </td>
-        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">var</span> <span class="nx">pouchHandle</span><span class="p">;</span>
-      </pre></div>
-        </td>
-      </tr>
-      <tr>
-        <td class="docs">
-<div class="pilwrap">
-  <a class="pilcrow" href="#section-7" id="section-7">&#182;</a>
+  <a class="pilcrow" href="#section-5" id="section-5">&#182;</a>
 </div>
 <p>Are we alive? </p>
         </td>
@@ -139,60 +117,60 @@ different database.</p>
       </tr>
       <tr>
         <td class="docs">
-<div class="pilwrap" id="startup-logic.">
+<div class="pilwrap" id="startup-logic.--we-try-to-get-the-cookie-with-info-on">
   <h2>
-    <a href="#startup-logic." class="pilcrow">&#182;</a>
-    Startup logic.
+    <a href="#startup-logic.--we-try-to-get-the-cookie-with-info-on" class="pilcrow">&#182;</a>
+    Startup logic.  We try to get the cookie with info on
   </h2>
 </div>
 
+
+<p>the database last used. If present we set up the app with
+the appropriate database adapter. If absent we let the
+user pick a database adapter. We then initialize this
+database. Same story for the user, first try a cookie,
+then show a login dialog. Finally we call layout.draw to
+display the app.</p>
         </td>
-        <td class="code highlight"><div class="highlight"><pre>          </pre></div>
-        </td>
-      </tr>
-      <tr>
-        <td class="docs">
-<div class="pilwrap">
-  <a class="pilcrow" href="#section-9" id="section-9">&#182;</a>
-</div>
-<p>This app is built on pouchdb.js and Smartclient.  Pouch
-(an frontend for idb that emulates the CouchDB API) is the
-always present database. We use it to find whether to
-continue with this database or another by looking for a
-doc with id datasource. It will have the name and details
-of the datasource adapter to use.  Pouchdb uses callbacks to
-return any data. To avoid the confusing nesting of
-callbacks we use Crockford's vow.js.</p>
-        </td>
-        <td class="code highlight"><div class="highlight"><pre>          </pre></div>
+        <td class="code highlight"><div class="highlight"><pre></pre></div>
         </td>
       </tr>
       <tr>
         <td class="docs">
-<div class="pilwrap" id="getpouchdbhandle">
+<div class="pilwrap" id="setdatabase">
   <h2>
-    <a href="#getpouchdbhandle" class="pilcrow">&#182;</a>
-    getPouchdbHandle
+    <a href="#setdatabase" class="pilcrow">&#182;</a>
+    setDatabase
   </h2>
 </div>
 
 
 <div class="dox">
-  <div class="summary"><p>Get a promise of the pouchdb handle</p>
+  <div class="summary"><p>Promises to set the database backend. To change
+database delete the cookie's database value  </p>
   </div>
   <div class="body">
   </div>
 </div>
         </td>
-        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">function</span> <span class="nx">getPouchdbHandle</span><span class="p">(){</span>
-              <span class="kd">var</span> <span class="nx">vow</span> <span class="o">=</span> <span class="nx">VOW</span><span class="p">.</span><span class="nx">make</span><span class="p">();</span>
-              <span class="nx">Pouch</span><span class="p">(</span><span class="nx">idbname</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">pouchHandle</span><span class="p">)</span> <span class="p">{</span>
-            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">err</span><span class="p">)</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">(</span><span class="nx">pouchHandle</span><span class="p">);</span>
-                  <span class="k">else</span> <span class="p">{</span> <span class="kd">var</span> <span class="nx">msg</span> <span class="o">=</span> <span class="s2">&quot;Error opening idb database&quot;</span> <span class="o">+</span> <span class="nx">idbname</span> <span class="o">+</span>
-       <span class="s2">&quot;err: &quot;</span><span class="o">+</span> <span class="nx">err</span><span class="p">.</span><span class="nx">error</span> <span class="o">+</span> <span class="s1">&#39; reason:&#39;</span> <span class="o">+</span> <span class="nx">err</span><span class="p">.</span><span class="nx">reason</span><span class="p">;</span>
-                         <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">](</span><span class="nx">msg</span><span class="p">);</span>
-           <span class="p">}</span>
-              <span class="p">});</span>
+        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">function</span> <span class="nx">setBackend</span><span class="p">(</span><span class="nx">vow</span><span class="p">,</span> <span class="nx">backendName</span><span class="p">)</span> <span class="p">{</span>
+              <span class="k">if</span> <span class="p">(</span><span class="nx">backend</span><span class="p">.</span><span class="nx">exists</span><span class="p">(</span><span class="nx">backendName</span><span class="p">))</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">(</span><span class="nx">backend</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">backendName</span><span class="p">));</span>
+              <span class="k">else</span>  <span class="p">{</span>
+                  <span class="kd">var</span> <span class="nx">msg</span> <span class="o">=</span> <span class="s1">&#39;There is no backend &#39;</span> <span class="o">+</span> <span class="s1">&#39;named:&#39;</span> <span class="o">+</span> <span class="nx">backendName</span> <span class="o">+</span>
+                      <span class="s1">&#39;.\nAlert the developer!&#39;</span><span class="p">;</span>
+                  <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="nx">msg</span><span class="p">);</span>
+                  <span class="nx">cookie</span><span class="p">.</span><span class="nx">rm</span><span class="p">(</span><span class="s1">&#39;backendName&#39;</span><span class="p">).</span><span class="nx">when</span><span class="p">(</span>
+                      <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                          <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">](</span> <span class="nx">msg</span> <span class="o">+</span> 
+                                        <span class="s1">&#39;\nRefresh the browser (f5), choose a different backend&#39;</span><span class="p">);</span>
+                      <span class="p">},</span>
+                      <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                          <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">](</span><span class="nx">msg</span> <span class="o">+</span> <span class="s2">&quot;\nCan&#39;t erase the backend cookie!!!&quot;</span> <span class="o">+</span>
+                                       <span class="s1">&#39; \nMaybe ask your browser to delete all cookies&#39;</span> <span class="o">+</span>
+                                       <span class="s1">&#39; and then refresh (f5)!&#39;</span><span class="p">);</span> 
+                      <span class="p">}</span>
+                  <span class="p">);</span>
+              <span class="p">}</span>             
               <span class="k">return</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
           <span class="p">}</span>
           </pre></div>
@@ -200,75 +178,113 @@ callbacks we use Crockford's vow.js.</p>
       </tr>
       <tr>
         <td class="docs">
-<div class="pilwrap" id="savedsname">
+<div class="pilwrap" id="pickbackend">
   <h2>
-    <a href="#savedsname" class="pilcrow">&#182;</a>
-    saveDsName
+    <a href="#pickbackend" class="pilcrow">&#182;</a>
+    pickBackend
   </h2>
 </div>
 
 
 <div class="dox">
-  <div class="summary"><p>Save the name of the database backend to the local
-pouchdb   </p>
+  <div class="summary"><p>Pick a backend from a list, and set the cookie
+to the choice made.</p>
   </div>
   <div class="body">
   </div>
 </div>
         </td>
-        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">function</span> <span class="nx">saveDsName</span><span class="p">(</span><span class="nx">vow</span><span class="p">,</span> <span class="nx">doc</span><span class="p">,</span> <span class="nx">ds</span><span class="p">){</span>
-              <span class="nx">pouchHandle</span><span class="p">.</span><span class="nx">put</span><span class="p">(</span><span class="nx">doc</span><span class="p">,</span>
-                              <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">response</span><span class="p">)</span> <span class="p">{</span>
-                            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">err</span><span class="p">)</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">(</span><span class="nx">ds</span><span class="p">);</span>
-                                  <span class="k">else</span> <span class="p">{</span> <span class="kd">var</span> <span class="nx">msg</span> <span class="o">=</span> <span class="s1">&#39;Error saving&#39;</span> <span class="o">+</span> <span class="nx">doc</span><span class="p">.</span><span class="nx">name</span> <span class="o">+</span> <span class="s1">&#39; to &#39;</span> <span class="o">+</span>
-                                         <span class="nx">idbname</span> <span class="o">+</span> <span class="s2">&quot; err: &quot;</span><span class="o">+</span> <span class="nx">err</span><span class="p">.</span><span class="nx">error</span> <span class="o">+</span> <span class="s1">&#39; reason:&#39;</span> <span class="o">+</span>
-                                         <span class="nx">err</span><span class="p">.</span><span class="nx">reason</span><span class="p">;</span>
-                                         <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">](</span><span class="nx">msg</span><span class="p">);</span>
-                           <span class="p">}</span>
-                              <span class="p">});</span>
-          <span class="p">}</span> </pre></div>
+        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">function</span> <span class="nx">pickBackend</span><span class="p">(</span><span class="nx">vow</span><span class="p">)</span> <span class="p">{</span>
+              <span class="nx">backend</span><span class="p">.</span><span class="nx">pick</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">aBackend</span><span class="p">,</span> <span class="nx">url</span><span class="p">){</span>
+                  <span class="kd">var</span> <span class="nx">name</span> <span class="o">=</span> <span class="nx">aBackend</span><span class="p">.</span><span class="nx">name</span><span class="p">;</span>
+                  <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">(</span><span class="nx">aBackend</span><span class="p">);</span>
+                  <span class="nx">VOW</span><span class="p">.</span><span class="nx">every</span><span class="p">([</span>
+                      <span class="nx">cookie</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;backendName&#39;</span><span class="p">,</span> <span class="nx">name</span><span class="p">,</span> <span class="mi">3650</span><span class="p">)</span>
+                      <span class="p">,</span><span class="nx">cookie</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="s1">&#39;backendUrl&#39;</span><span class="p">,</span> <span class="nx">url</span><span class="p">,</span> <span class="mi">3650</span><span class="p">)]</span>
+                  <span class="p">).</span><span class="nx">when</span><span class="p">(</span>
+                      <span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;Saved backend cookie.&#39;</span><span class="p">);</span> <span class="p">}</span>
+                      <span class="p">,</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span> <span class="nx">log</span><span class="p">.</span><span class="nx">e</span><span class="p">(</span><span class="s1">&#39;Unable to set the backend or url cookie!!&#39;</span><span class="p">);</span> <span class="p">}</span>
+                  <span class="p">);</span>
+              <span class="p">});</span>
+              
+          <span class="p">}</span>
+          </pre></div>
         </td>
       </tr>
       <tr>
         <td class="docs">
-<div class="pilwrap" id="setdatasource">
+<div class="pilwrap" id="getbackend">
   <h2>
-    <a href="#setdatasource" class="pilcrow">&#182;</a>
-    setDataSource
+    <a href="#getbackend" class="pilcrow">&#182;</a>
+    getBackend
   </h2>
 </div>
 
 
 <div class="dox">
-  <div class="summary"><p>Promises to set the datasource, and save its name to the
-local pouchdb   </p>
+  <div class="summary"><p>Gets the cookie, and then either sets or lets the user
+pick a backend, depending on whether the cookie was
+existant</p>
   </div>
   <div class="body">
   </div>
 </div>
         </td>
-        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">function</span> <span class="nx">findDataSource</span><span class="p">(</span><span class="nx">aPouchHandle</span><span class="p">)</span> <span class="p">{</span>
-              <span class="nx">pouchHandle</span> <span class="o">=</span> <span class="nx">aPouchHandle</span><span class="p">;</span>
+        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">function</span> <span class="nx">getBackend</span><span class="p">(){</span>
               <span class="kd">var</span> <span class="nx">vow</span> <span class="o">=</span> <span class="nx">VOW</span><span class="p">.</span><span class="nx">make</span><span class="p">();</span>
-              <span class="nx">pouchHandle</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">dataSourceAdapterDocId</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">,</span> <span class="nx">doc</span><span class="p">)</span> <span class="p">{</span>
-                  <span class="kd">var</span> <span class="nx">ds</span><span class="p">;</span>
-                  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
-                      <span class="nx">ds</span> <span class="o">=</span> <span class="nx">dataSource</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">doc</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
-                      <span class="k">if</span> <span class="p">(</span><span class="nx">dataSource</span><span class="p">.</span><span class="nx">set</span><span class="p">(</span><span class="nx">doc</span><span class="p">.</span><span class="nx">name</span><span class="p">))</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">keep</span><span class="p">(</span><span class="nx">ds</span><span class="p">);</span>
-                      <span class="k">else</span> <span class="p">{</span> <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;Error: there is no datasource adapter &#39;</span> <span class="o">+</span>
-                                   <span class="s1">&#39;for this database: &#39;</span> <span class="o">+</span> <span class="nx">doc</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
-                             <span class="nx">dataSource</span><span class="p">.</span><span class="nx">pick</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">ds</span><span class="p">)</span> <span class="p">{</span>
-                                 <span class="nx">doc</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">ds</span><span class="p">.</span><span class="nx">name</span><span class="p">;</span>
-                                 <span class="nx">saveDsName</span><span class="p">(</span><span class="nx">vow</span><span class="p">,</span> <span class="nx">doc</span><span class="p">,</span> <span class="nx">ds</span><span class="p">);</span>
-                             <span class="p">});</span>
-                           <span class="p">}</span>
+              <span class="nx">cookie</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;backendName&#39;</span><span class="p">).</span><span class="nx">when</span><span class="p">(</span>
+                  <span class="kd">function</span><span class="p">(</span><span class="nx">backendName</span><span class="p">)</span> <span class="p">{</span>
+                      
+                      <span class="nx">setBackend</span><span class="p">(</span><span class="nx">vow</span><span class="p">,</span> <span class="nx">backendName</span><span class="p">);</span>   
                   <span class="p">}</span>
-                  <span class="k">else</span> <span class="nx">dataSource</span><span class="p">.</span><span class="nx">pick</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">ds</span><span class="p">)</span> <span class="p">{</span>
-                      <span class="nx">saveDsName</span><span class="p">(</span><span class="nx">vow</span><span class="p">,</span> <span class="p">{</span>
-                          <span class="nx">_id</span><span class="o">:</span> <span class="nx">dataSourceAdapterDocId</span>
-                          <span class="p">,</span><span class="nx">name</span><span class="o">:</span> <span class="nx">ds</span><span class="p">.</span><span class="nx">name</span> <span class="p">},</span> <span class="nx">ds</span><span class="p">);</span>
+                  <span class="p">,</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                      <span class="nx">pickBackend</span><span class="p">(</span><span class="nx">vow</span><span class="p">);</span>
                   <span class="p">});</span>
-              <span class="p">});</span>
+              <span class="k">return</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
+          <span class="p">}</span>
+          
+          </pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="initdatabase">
+  <h2>
+    <a href="#initdatabase" class="pilcrow">&#182;</a>
+    initDatabase
+  </h2>
+</div>
+
+
+<div class="dox">
+  <div class="summary"><p>Try to get the database url cooke and initialize the
+database with it.</p>
+  </div>
+  <div class="body">
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">function</span> <span class="nx">initBackend</span><span class="p">(</span><span class="nx">aBackend</span><span class="p">){</span>
+              <span class="kd">var</span> <span class="nx">vow</span> <span class="o">=</span> <span class="nx">VOW</span><span class="p">.</span><span class="nx">make</span><span class="p">();</span>
+              <span class="nx">cookie</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="s1">&#39;backendUrl&#39;</span><span class="p">).</span><span class="nx">when</span><span class="p">(</span>
+                  <span class="kd">function</span><span class="p">(</span><span class="nx">url</span><span class="p">)</span> <span class="p">{</span>
+                      <span class="nx">aBackend</span><span class="p">.</span><span class="nx">init</span><span class="p">(</span><span class="nx">vow</span><span class="p">,</span> <span class="nx">url</span><span class="p">);</span>
+                  <span class="p">}</span>
+                  <span class="p">,</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                      <span class="kd">var</span> <span class="nx">msg</span> <span class="o">=</span> <span class="s1">&#39;There is no backend url cookie&#39;</span><span class="p">;</span>
+                      <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="nx">msg</span><span class="p">);</span>
+                      <span class="nx">cookie</span><span class="p">.</span><span class="nx">rm</span><span class="p">(</span><span class="s1">&#39;backendName&#39;</span><span class="p">).</span><span class="nx">when</span><span class="p">(</span>
+                          <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                              <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">](</span>
+                                  <span class="nx">msg</span> <span class="o">+</span> <span class="s1">&#39;\nRefresh the browser (f5), choose a backend and url&#39;</span><span class="p">);</span>
+                          <span class="p">},</span>
+                          <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                              <span class="nx">vow</span><span class="p">[</span><span class="s1">&#39;break&#39;</span><span class="p">](</span><span class="nx">msg</span> <span class="o">+</span> <span class="s2">&quot;\nCan&#39;t erase the backend cookie!!!&quot;</span> <span class="o">+</span>
+                                           <span class="s1">&#39; \nMaybe ask your browser to delete all cookies&#39;</span> <span class="o">+</span>
+                                           <span class="s1">&#39; and then refresh (f5)!&#39;</span><span class="p">);</span> 
+                          <span class="p">}</span>
+                      <span class="p">);</span>
+                  <span class="p">});</span>
               <span class="k">return</span> <span class="nx">vow</span><span class="p">.</span><span class="nx">promise</span><span class="p">;</span>
           <span class="p">}</span>
           </pre></div>
@@ -291,77 +307,61 @@ local pouchdb   </p>
   </div>
 </div>
         </td>
-        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">function</span> <span class="nx">start</span><span class="p">()</span> <span class="p">{</span></pre></div>
-        </td>
-      </tr>
-      <tr>
-        <td class="docs">
-<div class="pilwrap">
-  <a class="pilcrow" href="#section-14" id="section-14">&#182;</a>
-</div>
-<p>We need to be able to access the local pouchdb</p>
-        </td>
-        <td class="code highlight"><div class="highlight"><pre>              <span class="nx">getPouchdbHandle</span><span class="p">().</span><span class="nx">when</span><span class="p">(</span></pre></div>
-        </td>
-      </tr>
-      <tr>
-        <td class="docs">
-<div class="pilwrap">
-  <a class="pilcrow" href="#section-15" id="section-15">&#182;</a>
-</div>
-<p>Then find the doc that tells us what datasource backend to use</p>
-        </td>
-        <td class="code highlight"><div class="highlight"><pre>                  <span class="nx">findDataSource</span>
+        <td class="code highlight"><div class="highlight"><pre>          <span class="kd">function</span> <span class="nx">start</span><span class="p">()</span> <span class="p">{</span>
+              <span class="nx">getBackend</span><span class="p">().</span><span class="nx">when</span><span class="p">(</span>
+                  <span class="nx">initBackend</span>
               <span class="p">).</span><span class="nx">when</span><span class="p">(</span>
-                  <span class="kd">function</span><span class="p">(</span><span class="nx">ds</span><span class="p">)</span> <span class="p">{</span></pre></div>
-        </td>
-      </tr>
-      <tr>
-        <td class="docs">
-<div class="pilwrap">
-  <a class="pilcrow" href="#section-16" id="section-16">&#182;</a>
-</div>
-<p>Initialize the datasource..</p>
-        </td>
-        <td class="code highlight"><div class="highlight"><pre>                      <span class="k">return</span> <span class="nx">ds</span><span class="p">.</span><span class="nx">init</span><span class="p">();</span>
+                  <span class="kd">function</span><span class="p">(</span><span class="nx">backend</span><span class="p">)</span>  <span class="p">{</span>
+                      <span class="nx">View</span><span class="p">.</span><span class="nx">setBackend</span><span class="p">(</span><span class="nx">backend</span><span class="p">);</span> 
+                      <span class="nx">Editor</span><span class="p">.</span><span class="nx">setBackend</span><span class="p">(</span><span class="nx">backend</span><span class="p">);</span>
+                      <span class="k">return</span> <span class="nx">backend</span><span class="p">.</span><span class="nx">login</span><span class="p">();</span>   
                   <span class="p">}</span>
-              <span class="p">).</span><span class="nx">when</span><span class="p">(</span></pre></div>
+              <span class="p">).</span><span class="nx">when</span><span class="p">(</span>
+                  <span class="nx">user</span><span class="p">.</span><span class="nx">init</span>
+             <span class="p">).</span><span class="nx">when</span><span class="p">(</span></pre></div>
         </td>
       </tr>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-17" id="section-17">&#182;</a>
-</div>
-<p>and decide on a user.</p>
-        </td>
-        <td class="code highlight"><div class="highlight"><pre>                  <span class="nx">user</span><span class="p">.</span><span class="nx">init</span>
-              <span class="p">).</span><span class="nx">when</span><span class="p">(</span></pre></div>
-        </td>
-      </tr>
-      <tr>
-        <td class="docs">
-<div class="pilwrap">
-  <a class="pilcrow" href="#section-18" id="section-18">&#182;</a>
+  <a class="pilcrow" href="#section-12" id="section-12">&#182;</a>
 </div>
 <p>Give some feedback</p>
         </td>
-        <td class="code highlight"><div class="highlight"><pre>                  <span class="kd">function</span><span class="p">(</span><span class="nx">arg</span><span class="p">)</span> <span class="p">{</span>
-                      <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;Success!!!&#39;</span><span class="p">,</span> <span class="nx">arg</span><span class="p">);</span>
+        <td class="code highlight"><div class="highlight"><pre>                  <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+                      <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;Drawing app.&#39;</span><span class="p">);</span></pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-13" id="section-13">&#182;</a>
+</div>
+<p>layout.draw();</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>                      <span class="k">try</span> <span class="p">{</span> <span class="nx">layout</span><span class="p">.</span><span class="nx">draw</span><span class="p">();</span> <span class="p">}</span> <span class="k">catch</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+                          <span class="nx">console</span><span class="p">.</span><span class="nx">error</span><span class="p">(</span><span class="nx">e</span><span class="p">.</span><span class="nx">stack</span><span class="p">);</span> <span class="p">}</span>
+                      
                   <span class="p">},</span>
                   <span class="kd">function</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span> <span class="p">{</span>
-                      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Failed&#39;</span><span class="p">,</span> <span class="nx">err</span><span class="p">);</span>
+                      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="s1">&#39;Failed setting up app..&#39;</span><span class="p">,</span> <span class="nx">err</span><span class="p">.</span><span class="nx">stack</span><span class="p">);</span>
                   <span class="p">}</span>
               <span class="p">);</span>
               
           <span class="p">}</span>
+          
+          <span class="nb">window</span><span class="p">.</span><span class="nx">reset</span> <span class="o">=</span> <span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+              <span class="nx">cookie</span><span class="p">.</span><span class="nx">rm</span><span class="p">(</span><span class="s1">&#39;backendName&#39;</span><span class="p">);</span>
+              <span class="nx">cookie</span><span class="p">.</span><span class="nx">rm</span><span class="p">(</span><span class="s1">&#39;backendUrl&#39;</span><span class="p">);</span>
+              <span class="nx">cookie</span><span class="p">.</span><span class="nx">rm</span><span class="p">(</span><span class="s1">&#39;lastLogin&#39;</span><span class="p">);</span>
+          <span class="p">};</span>
           </pre></div>
         </td>
       </tr>
       <tr>
         <td class="docs">
 <div class="pilwrap">
-  <a class="pilcrow" href="#section-19" id="section-19">&#182;</a>
+  <a class="pilcrow" href="#section-14" id="section-14">&#182;</a>
 </div>
 <p>Let's do it then!!</p>
         </td>

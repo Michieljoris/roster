@@ -61,7 +61,7 @@
 <div class="pilwrap">
   <a class="pilcrow" href="#section-1" id="section-1">&#182;</a>
 </div>
-
+<p>Hello simone! You're on the internet!!!</p>
         </td>
         <td class="code highlight"><div class="highlight"><pre><span class="cm">/*global logger:false isc:false define:false */</span>
 <span class="cm">/*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/</span>
@@ -78,11 +78,10 @@ right. The left side contains the tree of views to be shown in the
 right hand side, and a collapsable help section.</p>
         </td>
         <td class="code highlight"><div class="highlight"><pre><span class="nx">define</span>
-<span class="p">({</span><span class="nx">inject</span><span class="o">:</span> <span class="p">[</span> <span class="s1">&#39;viewTree&#39;</span><span class="p">,</span> <span class="s1">&#39;viewLoader&#39;</span><span class="p">],</span>
-  <span class="nx">factory</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">viewTree</span><span class="p">,</span> <span class="nx">views</span><span class="p">)</span> 
+<span class="p">({</span><span class="nx">inject</span><span class="o">:</span> <span class="p">[</span> <span class="s1">&#39;viewTree&#39;</span><span class="p">,</span> <span class="s1">&#39;loaders/view&#39;</span><span class="p">,</span><span class="s1">&#39;loaders/editor&#39;</span><span class="p">],</span>
+  <span class="nx">factory</span><span class="o">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">viewTree</span><span class="p">,</span> <span class="nx">views</span><span class="p">,</span> <span class="nx">editors</span><span class="p">)</span> 
   <span class="p">{</span> <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
-    <span class="kd">var</span> <span class="nx">log</span> <span class="o">=</span> <span class="nx">logger</span><span class="p">(</span><span class="s1">&#39;layout&#39;</span><span class="p">);</span>
-    <span class="nx">log</span><span class="p">.</span><span class="nx">d</span><span class="p">(</span><span class="s1">&#39;Executing layout.js&#39;</span><span class="p">);</span></pre></div>
+    <span class="kd">var</span> <span class="nx">log</span> <span class="o">=</span> <span class="nx">logger</span><span class="p">(</span><span class="s1">&#39;layout&#39;</span><span class="p">);</span></pre></div>
         </td>
       </tr>
       <tr>
@@ -284,13 +283,19 @@ a part of with the following functions:</p>
 <p>The one exported function. It takes a JSON string
 containing the state of the ui to be drawn.</p>
         </td>
-        <td class="code highlight"><div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">draw</span><span class="p">(</span><span class="nx">uiState</span><span class="p">)</span> <span class="p">{</span>
-        <span class="nx">viewTree</span><span class="p">.</span><span class="nx">notify</span><span class="p">(</span><span class="nx">uiState</span><span class="p">);</span> 
-        <span class="nx">viewTree</span><span class="p">.</span><span class="nx">setLoginName</span><span class="p">(</span><span class="nx">user</span><span class="p">.</span><span class="nx">login</span><span class="p">);</span>
+        <td class="code highlight"><div class="highlight"><pre>    <span class="kd">function</span> <span class="nx">draw</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">views</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">v</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">v</span><span class="p">.</span><span class="nx">init</span><span class="p">();</span>
+        <span class="p">});</span>
+        
+        <span class="nx">editors</span><span class="p">.</span><span class="nx">forEach</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">e</span><span class="p">.</span><span class="nx">init</span><span class="p">();</span>
+        <span class="p">});</span>
+        
+        <span class="nx">viewTree</span><span class="p">.</span><span class="nx">notify</span><span class="p">();</span> 
+        
         <span class="nx">mainLayout</span><span class="p">.</span><span class="nx">draw</span><span class="p">();</span>
     <span class="p">}</span>
-    
-    
     </pre></div>
         </td>
       </tr>
