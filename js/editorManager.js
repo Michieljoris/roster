@@ -3,7 +3,7 @@
 /*jshint maxparams:7 maxcomplexity:10 maxlen:150 devel:true*/
 
 define
-({ inject: ['loaders/backend', 'typesAndFields'],
+({ inject: ['loaders/backend', 'types/typesAndFields'],
    factory: function(backend, typesAndFields) {
        "use strict";
        var log = logger('editorManager');

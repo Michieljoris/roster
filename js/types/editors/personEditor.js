@@ -5,7 +5,7 @@
 //This kind of module does not produce an injectable, but registers itself with the editorManager
 //to use this editor, both load the editorLoader module and inject the editorManager
 define
-({inject: ['Editor', 'typesAndFields', 'editorUtils', 'editorManager' ],
+({inject: ['Editor', 'types/typesAndFields', 'editorUtils', 'editorManager' ],
   factory: function(Editor, typesAndFields, editorUtils, editorManager) {
       "use strict";
       var log = logger('typesAndFields') ;

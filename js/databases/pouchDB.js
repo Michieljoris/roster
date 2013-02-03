@@ -3,7 +3,7 @@
 /*jshint maxparams:4 maxcomplexity:7 maxlen:130 devel:true newcap:false*/
 
 define
-({inject: ['lib/cookie', 'typesAndFields'],
+({inject: ['lib/cookie', 'types/typesAndFields'],
   factory: function(cookie, typesAndFields) {
       "use strict";
       

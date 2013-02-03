@@ -11,7 +11,6 @@ define
         // var dataSource;
         var timeLists = {};
         var eventSnapGap = 30;
-       
         // database.setViews(views);
         
         var genericFields = {
@@ -257,16 +256,16 @@ define
         
         var types = {
             shift: { fields: ['personstring', 'location', 'person', 'isPublicHolidayWorked',
-                    'sickLeave', 'annualLeave', 'adminHoursUsed',
-                    'startDate', 'endDate', 'date', 'startTime', 'endTime', 'length',
-                    'personNames', 'locationNames', 'notes', 'ad', 'claim', 'sleepOver']
-                   ,icon: 'shift.png'
+                              'sickLeave', 'annualLeave', 'adminHoursUsed',
+                              'startDate', 'endDate', 'date', 'startTime', 'endTime', 'length',
+                              'personNames', 'locationNames', 'notes', 'ad', 'claim', 'sleepOver']
+                     ,icon: 'shift.png'
                    },
             location: {
                 fields: ['costCentre', 'name', 'address', 'suburb','postalCode', 'state',
-                       'phone', 'mob', 'email', 'region', 'notes']
+                         'phone', 'mob', 'email', 'region', 'notes']
                 ,icon: 'home.png'
-                 }
+            }
             ,person: {
                 fields: ['login', 'pwd', 'name', 'firstName', 'lastName', 'dswCALevel',
                          'payrollNumber', 'status', 'address', 'suburb','postalCode',
@@ -276,7 +275,7 @@ define
             }};
         
         
-       //-================================================================ 
+        //-================================================================ 
         typeFields = isc.addProperties(typeFields, claimFields);
         
         var fields = isc.addProperties({}, genericFields, typeFields);
@@ -349,7 +348,7 @@ define
                 // if (!asObject) return isc.clone(result);
                 // return isc.clone(obj);
             };
-        }
+            }
 
         
         var initializer = {
@@ -405,7 +404,7 @@ define
         //         // return validator.errorMessage;
         //     }
         
-        // );
+            // );
     
         
         var newRecord = function(aType) {

@@ -5,7 +5,8 @@
 define
 ({ //load: ['editorLoader'],
     inject: ['View', 
-             'views/timesheet/isc_multicap_timesheet'],
+             'views/timesheet/isc_multicap_timesheet'
+            ],
    factory: function(View, TimesheetWW)
     
     { "use strict";
@@ -35,6 +36,7 @@ define
               state.fortnight = calculateFortnight(state.fortnight);
               setData(state);
           }
+          
            
       });
       

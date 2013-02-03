@@ -4,7 +4,7 @@
 
 define
 ({ load: ['loaders/editor'], 
-   inject: [ 'View', 'typesAndFields', 'editorManager', 'views/table/tableFilter'],
+   inject: [ 'View', 'types/typesAndFields', 'editorManager', 'views/table/tableFilter'],
    factory: function (View, typesAndFields, editors, tableFilter) {
        "use strict";
        var log = logger('table');

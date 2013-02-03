@@ -7,7 +7,7 @@
 //This kind of module does not produce an injectable, but registers itself with the editorManager
 //to use this editor, both load the editorLoader module and inject the editorManager
 define
-({inject: ['Editor', 'shift', 'editorUtils', 'editorManager', 'typesAndFields'],
+({inject: ['Editor', 'types/Shift', 'editorUtils', 'editorManager', 'types/typesAndFields'],
   factory: function(Editor, shift, editorUtils, editorManager) 
   { "use strict";
     var log = logger('shiftEditor');

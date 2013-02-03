@@ -4,7 +4,7 @@
 
 // -----@ TOP ----- */
 define
-({inject: ['typesAndFields', 'loaders/backend'] ,
+({inject: ['types/typesAndFields', 'loaders/backend'] ,
   factory: function(typesAndFields, backend) {
       "use strict";
       var state, dataTable;

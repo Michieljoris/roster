@@ -4,8 +4,9 @@
 
 
 define
-({ inject: ['views/timesheet/multicap_timesheet_raphael',
-            'views/timesheet/fetchTimesheetShifts'
+({ inject: ['views/timesheet/multicap_ww_timesheet_raphael'
+            // ,'views/timesheet/multicap_2_timesheet_raphael',
+            ,'views/timesheet/fetchTimesheetShifts'
             ,'views/timesheet/calculateTimesheet'],
    factory: function(timesheet, fetchShifts, calc) {
        "use strict";
