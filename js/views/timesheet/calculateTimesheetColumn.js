@@ -68,9 +68,15 @@ define
       
       
       function getFields(person, location, shifts) {
-          if (overlap(shifts)) throw 'Error: shifts overlap';
+          if (overlap(shifts)) {
+              log.d('overlapping!!');
+              throw new Error('Shifts overlap on ' + shifts[0].date.toEuropeanShortDate());
+                   }
           var fields = utils.addFieldValues(shifts);
+          fields.awayFromBase = fields.awayFromBase ? 1 : '';
+          fields.sleepOver = fields.sleepOver ? 1 : '';
           
+          log.d("FIELDS:", fields);
           // set public holiday fields:
           var ph = fields.publicHoliday;
           if (ph) {
@@ -98,7 +104,7 @@ define
           //set overtime fields:
           var SHIFT_MAXLEN = 10;
           var dayHours = fields.day ? fields.day : 0;
-              var disturbedSleepHours = 0;
+          var disturbedSleepHours = 0;
           if (fields.night) { fields.disturbedSleepHours = disturbedSleepHours = fields.night; }
           fields.totalHoursWorked = dayHours + disturbedSleepHours;
           var overtime = 0;

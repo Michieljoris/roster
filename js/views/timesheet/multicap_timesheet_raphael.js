@@ -1,6 +1,6 @@
-/*global  logger:false Raphael:false  define:false */
+/*global  xlsx:false logger:false Raphael:false  define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
-/*jshint maxparams:6 maxcomplexity:7 maxlen:190 devel:true*/
+/*jshint maxparams:6 maxcomplexity:7 maxlen:1190 devel:true*/
 
 //This module basically draws a Multicap timesheet using raphael.js It
 //has an API to set individual cells and data fields, set a column in
@@ -8,352 +8,437 @@
 
 define
 ({ //load: ['js!lib/raphael-min.js'],
-   factory: function() {
-       "use strict";
-       var log = logger('raphael');
+    factory: function() {
+        "use strict";
+        var log = logger('raphael');
        
-       //Dimensions:
-       var portWidth = 950
-       ,portHeight = 640
-       ,aspectRatio = Math.sqrt(2)
-       ,fontSize = 11
-       ,labelBoxWidth = 175
-       ,totalBoxWidth = 85 
-       ,topRows = 4
-       ,gridColumns =14 
-       ,gridRows = 27
-       ,bottomRows = 4
-       ,rows = topRows + gridRows + bottomRows
-       ,gxs = Math.floor((portWidth-labelBoxWidth-totalBoxWidth)/gridColumns)
-       ,ys = Math.floor(portHeight/rows)
-       ,topBox = {
-           x:portWidth/2 - 200,
-           y:0,
-           w:400,
-           h:2*ys
-       }
+        var data = {
+            props: {},
+            grid: []
+        };
        
-       //Creation of canvas to draw on:
-       // ,paper = new Raphael(0,0,portWidth, portHeight)
-       ,paper
-       ,element
-       //Data to fill the timesheet with:
-       ,title = 'EMPLOYEE TIMESHEET - DISABILITY EMPLOYEE'
-       ,rowMap = [
-           { title: '*DAY', name: 'day' }
-           ,{ title: '*DATE', name: 'date' }
-           ,{ title: '*COST CENTRE', name: 'costCentre'  }
-           ,{ title: 'START', name: 'start1'  }
-           ,{ title: 'FINISH', name: 'finish1'  }
-           ,{ title: 'START', name: 'start2' }
-           ,{ title: 'FINISH', name: 'finish2'  }
-           ,{ title: 'START', name: 'start3'  }
-           ,{ title: 'FINISH', name: 'finish3' }
-           ,{ title: '*TOTAL HOURS WORKED', name: '' }
-           ,{ title: 'EARLY (6-7.30)', name: 'early' }
-           ,{ title: 'ORD (7.30-19.30)', name: 'ord' }
-           ,{ title: 'LATE (19.30-22.00)', name: 'late' }
-           ,{ title: 'WEEKEND T1.5', name: 'weekend' }
-           ,{ title: 'SICK LEAVE', name: 'sickLeave' }
-           ,{ title: 'ANNUAL LEAVE', name: 'annualLeave' }
-           ,{ title: 'LONG SERVICE LEAVE', name: 'longServiceLeave' }
-           ,{ title: 'OTHER LEAVE (specify)', name: 'otherLeave' }
-           ,{ title: 'PUBLIC HOLIDAY ORD', name: 'publicHolidayOrdinary:' }
-           ,{ title: 'OVERTIME T1.5', name: 'overtimeT1p5:' }
-           ,{ title: 'OVERTIME T2', name: 'overtimeT2:' }
-           ,{ title: 'PUBLIC HOL WORK PERM 1.5', name: 'publicHolWorkPerm1p5:' }
-           ,{ title: 'PUBLIC HOL WORK 2.5', name: 'publicHolWork2p5:' }
-           ,{ title: '*SLEEP OVER 8 HRS', name: 'sleepOver' }
-           ,{ title: '*AWAY FROM BASE ALLOW', name: 'awayFromBase' }
-           ,{ title: '*ADMIN HOURS USED', name: 'admin' }
-           ,{ title: '*DISTURBED SLEEP HRS', name: 'disturbedSleepHours' }
-       ]
-       ,fields = (function() { var obj = {};
-                                  rowMap.forEach(function(r,i) { r.row = i; obj[r.name] = r;});
-                                  return obj;
-                                })()
-       ,line1 = ['EMPLOYEE NAME:', '', 'EMPLOYEE PAYROLL NUMBER:', '', 'CONTACT PHONE:', '' ]
-       ,data1 = {name : 10, payrollNumber : 57, phone: 80 }
-       ,data2 = {permanent:6.5, 'parttime':15, casual:21, dswCALevel: 35, dsw2:58, ending:75}
-       ,line1Pos = [0,data1.name, 40, data1.number, 70, data1.phone, 100] 
-       ,line2 = [ 'FULLTIME:', '', 'PART TIME:','', 'CASUAL:','', 'DSW CA LEVEL:','', 'ALTERNATIVE DSW CA LEVEL:','', 'PERIOD ENDING:','']
-       ,line2Pos = [0,data2.fulltime, 8, data2.parttime, 16, data2.casual, 25, data2.dsw, 40, data2.dsw2, 65, data2.ending, 100] 
-       ,employeeSign = ['EMPLOYEE"S SIGNATURE:_____________________________________________________  DATE:_____________']
-       ,managerSign =  ['MANAGER"S SIGNATURE:______________________________________________________  DATE:_____________']
-       // ,line5 = 'PLEASE NOTE ALL HOURS TO BE IN 24 HOUR TIME'
-       ,days = ['SAT', 'SUN', 'MON', 'TUES', 'WED', 'THURS', 'FRI' ]
-       ,totalHours = 'TOTAL HOURS'
-       ,enteredBy = 'ENTERED BY:'
-       ,enteredByDate = 'DATE:'
-       ,dataCells = {}
-       ,unit = Math.round(portWidth / 100);
+        window.test = function() { return data; };
        
-       //##Help functions
+        //Dimensions:
+            var portWidth = 950
+        ,portHeight = 640
+        ,aspectRatio = Math.sqrt(2)
+        ,fontSize = 11
+        ,labelBoxWidth = 175
+        ,totalBoxWidth = 85 
+        ,topRows = 4
+        ,gridColumns =14 
+        ,gridRows = 27
+        ,bottomRows = 4
+        ,rows = topRows + gridRows + bottomRows
+        ,gxs = Math.floor((portWidth-labelBoxWidth-totalBoxWidth)/gridColumns)
+        ,ys = Math.floor(portHeight/rows)
+        ,topBox = {
+            x:portWidth/2 - 200,
+            y:0,
+            w:400,
+            h:2*ys
+        }
+       
+        //Creation of canvas to draw on:
+        // ,paper = new Raphael(0,0,portWidth, portHeight)
+        ,paper
+        ,element
+        //Data to fill the timesheet with:
+        ,title = 'EMPLOYEE TIMESHEET - DISABILITY EMPLOYEE'
+        ,rowMap = [
+            { title: '*DAY', name: 'dayname' }
+            ,{ title: '*DATE', name: 'date' }
+            ,{ title: '*COST CENTRE', name: 'costCentre'  }
+            ,{ title: 'START', name: 'start1'  }
+            ,{ title: 'FINISH', name: 'finish1'  }
+            ,{ title: 'START', name: 'start2' }
+            ,{ title: 'FINISH', name: 'finish2'  }
+            ,{ title: 'START', name: 'start3'  }
+            ,{ title: 'FINISH', name: 'finish3' }
+            ,{ title: '*TOTAL HOURS WORKED', name: 'totalHoursWorked' }
+            ,{ title: 'EARLY (6-7.30)', name: 'early' }
+            ,{ title: 'ORD (7.30-19.30)', name: 'ord' }
+            ,{ title: 'LATE (19.30-22.00)', name: 'late' }
+            ,{ title: 'WEEKEND T1.5', name: 'weekend' }
+            ,{ title: 'SICK LEAVE', name: 'sickLeave' }
+            ,{ title: 'ANNUAL LEAVE', name: 'annualLeave' }
+            ,{ title: 'LONG SERVICE LEAVE', name: 'longServiceLeave' }
+            ,{ title: 'OTHER LEAVE (specify)', name: 'otherLeave' }
+            ,{ title: 'PUBLIC HOLIDAY ORD', name: 'publicHolidayOrdinary' }
+            ,{ title: 'OVERTIME T1.5', name: 'overtimeT1p5' }
+            ,{ title: 'OVERTIME T2', name: 'overtimeT2' }
+            ,{ title: 'PUBLIC HOL WORK PERM 1.5', name: 'publicHolWorkPerm1p5' }
+            ,{ title: 'PUBLIC HOL WORK 2.5', name: 'publicHolWork2p5' }
+            ,{ title: '*SLEEP OVER 8 HRS', name: 'sleepOver' }
+            ,{ title: '*AWAY FROM BASE ALLOW', name: 'awayFromBase' }
+            ,{ title: '*ADMIN HOURS USED', name: 'adminHoursUsed' }
+            ,{ title: '*DISTURBED SLEEP HRS', name: 'disturbedSleepHours' }
+        ]
+        ,fields = (function() { var obj = {};
+                                rowMap.forEach(function(r,i) { r.row = i; obj[r.name] = r;});
+                                return obj;
+                              })()
+        ,line1 = ['EMPLOYEE NAME:', '', 'EMPLOYEE PAYROLL NUMBER:', '', 'CONTACT PHONE:', '' ]
+            ,data1 = {name : 10, payrollNumber : 57, phone: 80 }
+        ,data2 = {permanent:6.5, 'parttime':15, casual:21, dswCALevel: 35, dsw2:58, ending:75}
+        ,line1Pos = [0,data1.name, 40, data1.number, 70, data1.phone, 100] 
+        ,line2 = [ 'FULLTIME:', '', 'PART TIME:','', 'CASUAL:','', 'DSW CA LEVEL:','', 'ALTERNATIVE DSW CA LEVEL:','', 'PERIOD ENDING:','']
+        ,line2Pos = [0,data2.fulltime, 8, data2.parttime, 16, data2.casual, 25, data2.dsw, 40, data2.dsw2, 65, data2.ending, 100] 
+        ,employeeSign = ['EMPLOYEE"S SIGNATURE:_____________________________________________________  DATE:_____________']
+        ,managerSign =  ['MANAGER"S SIGNATURE:______________________________________________________  DATE:_____________']
+        // ,line5 = 'PLEASE NOTE ALL HOURS TO BE IN 24 HOUR TIME'
+            ,days = ['SAT', 'SUN', 'MON', 'TUES', 'WED', 'THURS', 'FRI' ]
+            ,totalHours = 'TOTAL HOURS'
+        ,enteredBy = 'ENTERED BY:'
+        ,enteredByDate = 'DATE:'
+        ,dataCells = {}
+        ,unit = Math.round(portWidth / 100);
+       
+        //##Help functions
 
-       //Used in the API's draw that draw the complete timesheet
+        //Used in the API's draw that draw the complete timesheet
        
-       //Print the 2 top lines
-       function drawTopLines() {
-           for (var i = 0; i< line1.length; i++) {
-               text(line1[i],
-                    { x: line1Pos[i] * unit, y : ys *2, h: ys*1, w: line1Pos[i+1]* unit },{align: 'start'},
-                    {weight: 'bold'});
-           }
-           for (i = 0; i< line2.length; i++) {
-               text(line2[i], {x: line2Pos[i] * unit, y : ys *3, h: ys*1, w: line2Pos[i+1]* unit },
-                    {align: 'start'}, {weight: 'normal'});
-           }
-       }
+        //Print the 2 top lines
+        function drawTopLines() {
+            for (var i = 0; i< line1.length; i++) {
+                text(line1[i],
+                     { x: line1Pos[i] * unit, y : ys *2, h: ys*1, w: line1Pos[i+1]* unit },{align: 'start'},
+                     {weight: 'bold'});
+            }
+            for (i = 0; i< line2.length; i++) {
+                text(line2[i], {x: line2Pos[i] * unit, y : ys *3, h: ys*1, w: line2Pos[i+1]* unit },
+                     {align: 'start'}, {weight: 'normal'});
+            }
+        }
 
-       function drawHLine(x,y,l) {
-           paper.path('M' + x + ' ' + y + 'H' + (x+l)).attr('fill', 'black');
-       }
+        function drawHLine(x,y,l) {
+            paper.path('M' + x + ' ' + y + 'H' + (x+l)).attr('fill', 'black');
+        }
        
-       function drawVLine(x,y,l) {
-           paper.path('M' + x + ' ' + y + 'V' + (y+l)).attr('fill', 'black');
-       }
+        function drawVLine(x,y,l) {
+            paper.path('M' + x + ' ' + y + 'V' + (y+l)).attr('fill', 'black');
+        }
 
-       function drawMatrix(x, y, w, h, nColumn, nRow) {
-           var xs = Math.floor(w/nColumn);
-           w = xs * nColumn; 
-           h = ys * nRow;
-           var acc = x;
-           for (var i = 0; i <= nColumn; i++) {
-               drawVLine(acc  , y, h);
-               acc += xs;
-           } 
-           acc = y;
-           for (i = 0; i <= nRow; i++) {
-               drawHLine(x, acc, w);
-               acc += ys;
-           } 
-       } 
+        function drawMatrix(x, y, w, h, nColumn, nRow) {
+            var xs = Math.floor(w/nColumn);
+            w = xs * nColumn; 
+            h = ys * nRow;
+            var acc = x;
+            for (var i = 0; i <= nColumn; i++) {
+                drawVLine(acc  , y, h);
+                acc += xs;
+            } 
+            acc = y;
+            for (i = 0; i <= nRow; i++) {
+                drawHLine(x, acc, w);
+                acc += ys;
+            } 
+        } 
 
-       function text(str, box, al, attr) {
-           //align is a string with start or end, top or bottom ,  or combination, default is middle
-           //attr sets font, size (relative to fontSize), weight:
-           //normal | bold | bolder | lighter | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | inherit 
-           var x,y; 
-           al = al ? al : {};  
-           attr = attr ? attr : {};  
-           var padding = al.padding ? al.padding : 2;
-           var size = attr.size ? attr.size : 0;
-           size = fontSize + size;
-           var font  = attr.font ?  attr.font : 'Courier';
-           var weight = attr.weight ? attr.weight : 'normal';
+        function text(str, box, al, attr) {
+            //align is a string with start or end, top or bottom ,  or combination, default is middle
+            //attr sets font, size (relative to fontSize), weight:
+            //normal | bold | bolder | lighter | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | inherit 
+            var x,y; 
+                al = al ? al : {};  
+            attr = attr ? attr : {};  
+            var padding = al.padding ? al.padding : 2;
+            var size = attr.size ? attr.size : 0;
+            size = fontSize + size;
+            var font  = attr.font ?  attr.font : 'Courier';
+            var weight = attr.weight ? attr.weight : 'normal';
   
-           var align = al.align ? al.align : 'middle';
-           var h_align = align.match('start') ? 'start': align.match('end') ? 'end': 'middle';
-           var v_align = align.match('top') ? 'top': align.match('bottom') ? 'bottom': 'middle';
-           switch (h_align) {
-             case 'start' : x = box.x + padding; break;
-             case 'middle' : x = box.x + box.w/2;  break;
-             case 'end' : x = box.x + box.w - padding; break;
-           }
-           switch (v_align) {
-             case 'top' :  y = box.y + size/2 + padding; break;
-             case 'middle' : y = box.y + box.h/2 + 2;  break;
-             case 'bottom' : y = box.y + box.h - size/2 - padding; break;
-           }
-           return paper.text(x, y, str).attr({'font-family': font, 'font-size': size, 'font-weight': weight,  
-			               'height': 200, 'text-anchor': h_align});
-       }
+            var align = al.align ? al.align : 'middle';
+            var h_align = align.match('start') ? 'start': align.match('end') ? 'end': 'middle';
+            var v_align = align.match('top') ? 'top': align.match('bottom') ? 'bottom': 'middle';
+            switch (h_align) {
+              case 'start' : x = box.x + padding; break;
+              case 'middle' : x = box.x + box.w/2;  break;
+              case 'end' : x = box.x + box.w - padding; break;
+            }
+            switch (v_align) {
+              case 'top' :  y = box.y + size/2 + padding; break;
+              case 'middle' : y = box.y + box.h/2 + 2;  break;
+              case 'bottom' : y = box.y + box.h - size/2 - padding; break;
+            }
+            return paper.text(x, y, str).attr({'font-family': font, 'font-size': size, 'font-weight': weight,  
+			                       'height': 200, 'text-anchor': h_align});
+        }
 
-       //Set a value in the grid/matrix
-       function grid(str, r, c, al, attr) {
-               text(str, 
-	            { x: labelBoxWidth + c * gxs ,
-	              y: (topRows + r) * ys,
-	              w: gxs,
-	              h: ys },al, attr); 
-       }
+        //Set a value in the grid/matrix
+        function grid(str, r, c, al, attr) {
+            text(str, 
+	         { x: labelBoxWidth + c * gxs ,
+	           y: (topRows + r) * ys,
+	           w: gxs,
+	           h: ys },al, attr); 
+        }
 
-       //#API
-       function setData(props) {
-           log.d('in setData in raphael', props);
-           Object.keys(props).forEach(function(p) {
-               setDataField(p, props[p]);
-           });
-       }
+        //#API
+        function setData(props) {
+            // log.d('in setData in raphael', props);
+            Object.keys(props).forEach(function(p) {
+                setDataField(p, props[p]);
+            });
+        }
        
-       /**
-        * ## setData
-        *
-        * Set a data field (name, phone etc) to a value
-        *
-        * @param {string} data The name of the data field
-        * @param {string} value The value to set the data field to
-        */
-       function setDataField(data, value) {
-           var element;
-           if (dataCells[data]) dataCells[data].remove();
-           if (data1[data]) {
-               element = text(value, { x: data1[data] * unit, y : ys *2, h: ys*1, w: 999 },{align: 'start'},
-                    {weight: 'normal'});
-           } 
-           else if (data2[data]) {
-               element = text(value, { x: data2[data] * unit, y : ys *3, h: ys*1, w: 999 },{align: 'start'},
-                    {weight: 'norma l'});
-           } 
-           if (element) dataCells[data] = element;
-           return element;
-       }
+        /**
+         * ## setData
+         *
+         * Set a data field (name, phone etc) to a value
+         *
+         * @param {string} data The name of the data field
+             * @param {string} value The value to set the data field to
+             */
+        function setDataField(key, value) {
+            data.props[key] = value;
+            if (!value) value = '';
+            var element;
+            if (dataCells[key]) dataCells[key].remove();
+            if (data1[key]) {
+                element = text(value, { x: data1[key] * unit, y : ys *2, h: ys*1, w: 999 },{align: 'start'},
+                               {weight: 'normal'});
+            } 
+            else if (data2[key]) {
+                element = text(value, { x: data2[key] * unit, y : ys *3, h: ys*1, w: 999 },{align: 'start'},
+                               {weight: 'norma l'});
+            } 
+            if (element) dataCells[key] = element;
+            return element;
+        }
        
-       //##setCell
-       //Set a cell with row r and column c to the value str.  Set the
-       //alignment with the al string and any attributes with the attr
-       //object
+        //##setCell
+        //Set a cell with row r and column c to the value str.  Set the
+        //alignment with the al string and any attributes with the attr
+        //object
        
-       //Align is a string with the value start or end, top or bottom , or
-       //combination, default is middle. Attr sets font:, size: (relative
-       //to fontSize), weight: normal | bold | bolder | lighter | 100
-       //| 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | inherit
-       function setCell(str, r, c, al, attr) {
-           // console.log('setting cell', str, r,c);
-           var cell = dataCells['' + r + c];
-           if (cell) cell.remove();
-           dataCells['' + r + c]  =
-               text(str, 
-	            { x: labelBoxWidth + c * gxs ,
-	              y: (topRows + r) * ys,
-	              w: gxs,
-	              h: ys },al, attr); 
-       }
+        //Align is a string with the value start or end, top or bottom , or
+        //combination, default is middle. Attr sets font:, size: (relative
+        //to fontSize), weight: normal | bold | bolder | lighter | 100
+        //| 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | inherit
+        function setCell(value, r, c, al, attr) {
+            //store data to export
+            if (!data.grid[r]) data.grid[r] = [];
+            data.grid[r][c + 1] = value;
+            //paint it on the timesheet
+            var cell = dataCells['' + r + c];
+            if (cell) cell.remove();
+            dataCells['' + r + c]  =
+                text(value, 
+	             { x: labelBoxWidth + c * gxs ,
+	               y: (topRows + r) * ys,
+	               w: gxs,
+	               h: ys },al, attr); 
+        }
        
-       //##setColumn
-       /* Set a day (0-13) to the values of the object column. See
+        function setShiftTimes(shift, n, day) {
+            n++;
+            function pad(n) {
+                if (n < 10) return '0' + n;
+                else return '' + n;
+            }
+            var startStr = pad(shift.startDate.getHours()) + ':' +
+                pad(shift.startDate.getMinutes());
+            var finishStr = pad(shift.endDate.getHours()) + ':' +
+                pad(shift.endDate.getMinutes());
+            // log.d(startstr, finishStr, fields);
+           
+            setCell(startStr, fields['start' + n].row, day);
+            setCell(finishStr, fields['finish' + n].row, day);
+        }
+       
+        //##setColumn
+        /* Set a day (0-13) to the values of the object column. See
          * rowMap for possible field names.
          * @param {number} day Between 0 and 13 for the days of the week
          * @param {object} column An object containing the values for the column
-        */
+         */
        
-       function setColumn(day, column) {
-        Object.keys(column).forEach(function(f) {
-            if (fields[f]) {
-                setCell(column[f], fields[f].row, day);
+        function setColumn(day, column) {
+            // var vert = data.grid[day] = [];
+            Object.keys(column).forEach(function(f) {
+                if (fields[f]) {
+                    // log.d('setting: ' + fields[f].name + ' to ' + column[f]);
+                    setCell(column[f], fields[f].row, day);
+                    // vert[fields[f].row] = column[f];
+                }
+            }); 
+            var shifts = column.shifts;
+            // var total = 0;
+            if (shifts) {
+                if (shifts.length > 3) {
+                    log.e('Only room for 3 shifts per day!!!');   
+                    throw new Error('Only room for 3 shifts per day on this timesheet!!! Fix: ' +
+                                    shifts[0].date.toEuropeanShortDate());
+                }
+                shifts.forEach(function (s, i) {
+                    setShiftTimes(s, i, day);
+                });
             }
-        }); 
-       }
+           
+           
+        }
        
-       //##clear
-       //Clear the timesheet
-       function clear() {
-           Object.keys(dataCells).forEach(function(c) {
-              dataCells[c].remove(); 
-           });
-       }
+        //##clear
+        //Clear the timesheet
+        function clear() {
+            initData();
+            Object.keys(dataCells).forEach(function(c) {
+                dataCells[c].remove(); 
+            });
+        }
        
-       //##draw
-       //Draw the timesheet, set element to DOM element or its
-       //ID which is going to be a parent for drawing surface.
-       function draw(anElement) {
-           element = anElement;
-           if (element) paper = new Raphael(element,portWidth, portHeight);
-           else paper = new Raphael(0, 0 ,portWidth, portHeight);
+        //##draw
+        //Draw the timesheet, set element to DOM element or its
+        //ID which is going to be a parent for drawing surface.
+        function draw(anElement) {
+            element = anElement;
+            if (element) paper = new Raphael(element,portWidth, portHeight);
+            else paper = new Raphael(0, 0 ,portWidth, portHeight);
 
-           // paper = new Raphael(0,0,portWidth, portHeight, function() {
-           //     console.log('hello', arguments);
-           // });
-           text(title, topBox, {}, { size: 4, weight:'bold'});
-           paper.rect(topBox.x, topBox.y, topBox.w, topBox.h);
-           drawTopLines();
+            // paper = new Raphael(0,0,portWidth, portHeight, function() {
+            //     console.log('hello', arguments);
+            // });
+            text(title, topBox, {}, { size: 4, weight:'bold'});
+            paper.rect(topBox.x, topBox.y, topBox.w, topBox.h);
+            drawTopLines();
 
-           //grids
-           drawMatrix(labelBoxWidth, topRows * ys, 
-	              portWidth - labelBoxWidth - totalBoxWidth,   ys * gridRows,
-	              gridColumns, gridRows);
-           drawMatrix(0, topRows * ys,   labelBoxWidth, ys * gridRows, 1, gridRows);
-           drawMatrix(labelBoxWidth + gxs * gridColumns, topRows * ys, totalBoxWidth, ys * gridRows, 1, gridRows);
-           //thick borders:
-           paper.rect(1, topRows * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns , gridRows * ys ).attr({'stroke-width': 2});
-           paper.rect(1, topRows * ys  , labelBoxWidth + gxs * gridColumns , gridRows * ys ).attr({'stroke-width':2});
-           paper.rect(1, topRows * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
-           paper.rect(1, (topRows + 1) * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
-           paper.rect(1, (topRows + 2) * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
-           paper.rect(1, (topRows + 9) * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
-           paper.rect(1, (topRows + 23) * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
-           paper.rect(1, (topRows + 24) * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
-           paper.rect(1, (topRows + 25) * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
-           paper.rect(1, (topRows + 26) * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
-           //grey out some boxes
-           paper.rect(labelBoxWidth + gxs * gridColumns, topRows * ys  , totalBoxWidth, 8 * ys ).attr('fill', 'grey');
-           paper.rect(labelBoxWidth + gxs * 2, (topRows + 13) * ys  , 5 * gxs,  ys ).attr('fill', 'grey');
-           paper.rect(labelBoxWidth + gxs * 9, (topRows + 13) * ys  , 5 * gxs,  ys ).attr('fill', 'grey');
+            //grids
+            drawMatrix(labelBoxWidth, topRows * ys, 
+	               portWidth - labelBoxWidth - totalBoxWidth,   ys * gridRows,
+	               gridColumns, gridRows);
+            drawMatrix(0, topRows * ys,   labelBoxWidth, ys * gridRows, 1, gridRows);
+            drawMatrix(labelBoxWidth + gxs * gridColumns, topRows * ys, totalBoxWidth, ys * gridRows, 1, gridRows);
+            //thick borders:
+            paper.rect(1, topRows * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns , gridRows * ys ).attr({'stroke-width': 2});
+            paper.rect(1, topRows * ys  , labelBoxWidth + gxs * gridColumns , gridRows * ys ).attr({'stroke-width':2});
+            paper.rect(1, topRows * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
+            paper.rect(1, (topRows + 1) * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
+            paper.rect(1, (topRows + 2) * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
+            paper.rect(1, (topRows + 9) * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
+            paper.rect(1, (topRows + 23) * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
+            paper.rect(1, (topRows + 24) * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
+            paper.rect(1, (topRows + 25) * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
+            paper.rect(1, (topRows + 26) * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
+            //grey out some boxes
+            paper.rect(labelBoxWidth + gxs * gridColumns, topRows * ys  , totalBoxWidth, 8 * ys ).attr('fill', 'grey');
+            paper.rect(labelBoxWidth + gxs * 2, (topRows + 13) * ys  , 5 * gxs,  ys ).attr('fill', 'grey');
+            paper.rect(labelBoxWidth + gxs * 9, (topRows + 13) * ys  , 5 * gxs,  ys ).attr('fill', 'grey');
 
-           text(totalHours,{x:labelBoxWidth + gxs * gridColumns,y:(topRows + 8)* ys ,w:totalBoxWidth,h:ys},
-                {align: 'middle'}, {weight:'bold'});
-           text(enteredBy ,{x:labelBoxWidth + gxs * gridColumns,y:(topRows + 24)* ys ,w:totalBoxWidth,h:ys},
-                {align: 'start'}, {weight:'bold'});
-           text(enteredByDate,{x:labelBoxWidth + gxs * gridColumns,y:(topRows + 26)* ys ,w:totalBoxWidth,h:ys},
-                {align: 'start'}, {weight:'bold'});
-           //lefthand labels
-           rowMap.forEach(
-               function(r, n) {
-                   var weight = 'normal';
-                   var label;
-                   if (r.title.charAt(0) === '*')  {
-                       label = r.title.slice(1);
-                       weight = 'bold';
-                   }
-                   else label = r.title;
-                   text(label, 
-	                {x:0, y: (topRows + n)*ys,
-	                 w: labelBoxWidth, h: ys},
-	                { align: 'end' } , {weight: weight});
-               });
-           //days in toprow
-           days.forEach(
-               function(d, n) {
-                   grid(d, 0, n, {}, { weight: 'bold'});
-                   grid(d, 0, n + 7, {}, { weight: 'bold'});
-               });
-           //bottom
-           text(employeeSign, 
-                {x:0, y: (topRows + gridRows)*ys,
-                 w: labelBoxWidth + totalBoxWidth + gridColumns * gxs, h: ys*2},
-                { align: 'start bottom' } , {weight: 'normal'});
-           text(managerSign, 
-                {x:0, y: (topRows + gridRows + 2)*ys,
-                 w: labelBoxWidth + totalBoxWidth + gridColumns * gxs, h: ys*2},
-                { align: 'start' } , {weight: 'normal'});
-           return paper;
-       }       
+            text(totalHours,{x:labelBoxWidth + gxs * gridColumns,y:(topRows + 8)* ys ,w:totalBoxWidth,h:ys},
+                 {align: 'middle'}, {weight:'bold'});
+            text(enteredBy ,{x:labelBoxWidth + gxs * gridColumns,y:(topRows + 24)* ys ,w:totalBoxWidth,h:ys},
+                     {align: 'start'}, {weight:'bold'});
+            text(enteredByDate,{x:labelBoxWidth + gxs * gridColumns,y:(topRows + 26)* ys ,w:totalBoxWidth,h:ys},
+                 {align: 'start'}, {weight:'bold'});
+            //lefthand labels
+            rowMap.forEach(
+                function(r, n) {
+                    var weight = 'normal';
+                    var label;
+                    if (r.title.charAt(0) === '*')  {
+                        label = r.title.slice(1);
+                        weight = 'bold';
+                    }
+                    else label = r.title;
+                    text(label, 
+	                 {x:0, y: (topRows + n)*ys,
+	                  w: labelBoxWidth, h: ys},
+	                 { align: 'end' } , {weight: weight});
+                });
+            //days in toprow
+            days.forEach(
+                function(d, n) {
+                    grid(d, 0, n, {}, { weight: 'bold'});
+                    grid(d, 0, n + 7, {}, { weight: 'bold'});
+                });
+            //bottom
+            text(employeeSign, 
+                 {x:0, y: (topRows + gridRows)*ys,
+                  w: labelBoxWidth + totalBoxWidth + gridColumns * gxs, h: ys*2},
+                 { align: 'start bottom' } , {weight: 'normal'});
+            text(managerSign, 
+                 {x:0, y: (topRows + gridRows + 2)*ys,
+                  w: labelBoxWidth + totalBoxWidth + gridColumns * gxs, h: ys*2},
+                 { align: 'start' } , {weight: 'normal'});
+            return paper;
+        }       
        
-       //#resize
-       //Resize the timesheet using either width or height or both.
-       //If one is not given, the other is calculated using the
-       //aspectRation
-       function resize(dimensions) {
-           if (dimensions.width) {
-               portWidth = dimensions.width;
-               portHeight = dimensions.height ?
-                   dimensions.height : portWidth/aspectRatio;
-           }
-           else if (dimensions.height) {
-               portHeight = dimensions.height;
-               portWidth = portHeight*aspectRatio;
-           }
-           if (dimensions.fontSize) fontSize = dimensions.fontSize;
-           paper.remove();
-           gxs = Math.floor((portWidth-labelBoxWidth-totalBoxWidth)/gridColumns);
-           ys = Math.floor(portHeight/rows);
-           topBox = {
-               x:portWidth/2 - 200,
-               y:0,
-               w:400,
-               h:2*ys
-           };
-           unit = Math.round(portWidth / 100);
-           draw(element);
-       }
+        //#resize
+        //Resize the timesheet using either width or height or both.
+        //If one is not given, the other is calculated using the
+        //aspectRation
+        function resize(dimensions) {
+            if (dimensions.width) {
+                portWidth = dimensions.width;
+                portHeight = dimensions.height ?
+                    dimensions.height : portWidth/aspectRatio;
+            }
+            else if (dimensions.height) {
+                portHeight = dimensions.height;
+                portWidth = portHeight*aspectRatio;
+            }
+            if (dimensions.fontSize) fontSize = dimensions.fontSize;
+            paper.remove();
+            gxs = Math.floor((portWidth-labelBoxWidth-totalBoxWidth)/gridColumns);
+            ys = Math.floor(portHeight/rows);
+            topBox = {
+                x:portWidth/2 - 200,
+                y:0,
+                w:400,
+                h:2*ys
+            };
+            unit = Math.round(portWidth / 100);
+            draw(element);
+        }
        
-       return {
-           draw: draw,
-           setCell: setCell,
-           setData: setData,
-           setColumn: setColumn,
-           clear: clear,
-           resize: resize,
-           remove: function() { paper.remove(); }
-       };
-   }});
+        function initData () {
+            data.props = {};
+            rowMap.forEach(function(r, i) {
+                data.grid[i] = [];
+                data.grid[i][0] = r.title;
+            });
+            data.grid[0] = data.grid[0].concat(days).concat(days);
+            data.grid[9][15] = totalHours;
+        }
+       
+        function exportToExcel(creator, fileName) {
+            log.d('In export');
+            // log.pp(data.grid);
+            data.grid.forEach(function(r) {
+                // log.pp(data.grid[r]);
+                for (var i = 1; i < r.length; i++) {
+                    if (!r[i]) r[i] = { value: '' };
+                    else r[i] = { value: r[i] };
+                }
+               
+            });
+           
+            var file = {
+                worksheets: [], // worksheets has one empty worksheet (array)
+                creator: creator, created: new Date('8/16/2012'),
+                lastModifiedBy: creator, modified: new Date(),
+                activeWorksheet: 0
+            };
+            file.worksheets[0] = {};
+            file.worksheets[0].data = data.grid;
+            file.worksheets[0].name = data.props.name;
+            var result = xlsx(file);
+            var a = document.createElement('a');
+            a.href = result.href();
+            a.download = data.props.name + ' ' + fileName + '.xlsx';
+            a.click();
+        } 
+        return {
+            draw: draw,
+            setCell: setCell,
+            setData: setData,
+            setColumn: setColumn,
+            clear: clear,
+            resize: resize,
+            remove: function() { paper.remove(); },
+            exportToExcel: exportToExcel
+           
+        };
+    }});

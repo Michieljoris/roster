@@ -100,7 +100,10 @@ define
               date: values.date,
               startTime: values.startTime,
               endTime: values.endTime,
+              sleepOver: values.sleepOver,
               claim: values.claim,
+              adminHoursUsed: values.adminHoursUsed,
+              isPublicHolidayWorked: values.isPublicHolidayWorked,
               repeats: values.repeats, //TODO not implemented yet 
               notes: values.notes || '',
               endTijd: '- ' + isc.Time.toTime(values.endDate, 'toShortPaddedTime', true),
@@ -109,24 +112,19 @@ define
           shift.length = calculateLength(shift);
           
           //set claim fields TODO replace with switch
+          if (shift.claim === 'Away from base') { shift.awayFromBase = true; }
           if (shift.claim === 'Event') ;
-          else if (shift.claim === 'Away from base') shift.awayFromBase = true;
-          else if (shift.claim === 'Normal shift') {
+          else if (shift.claim === 'Away from base' || shift.claim === 'Normal shift') {
               isc.addProperties(shift, shiftQualifier.getWorkHourFields(shift));    
               if (shift.publicHoliday) {
                   if (shift.isPublicHolidayWorked) shift.publicHolidayWorked = shift.publicHoliday;
                   else shift.publicHolidayNotWorked = shift.publicHoliday;
+                  // log.d('CHECK',shift.isPublicHolidayWorked, shift.publicHolidayWorked, shift.publicHolidayNotWorked);
               }
           }
           
           else shift[typesAndFields.getFieldNameByTitle(shift.claim)] = shift.length;
-          
-          if (shift.adminHoursUsed) shift.ord = shift.adminHoursUsed; //TODO proper implementation
-          //at the moment a shift is a complete admin shift. Otherwise
-          //make a separate field for the adminhours used in the UI
-          //editor and make sure it is less than length of the shift
-          
-
+          // log.d('+++++++++++++++++++++++++++++++++++++', shift);
           //check for limits and rules and policies..  min length of
           //shift, max length of shift, max overtime, working during
           //sleepover time, but it's not disturbed sleep etc

@@ -95,10 +95,13 @@ define
                                     });
                                     // log.d('and the result set is:', resultSet);
                                     // log.d('and the visible rows are:', resultSet.getAllVisibleRows());
+                                    var shifts = resultSet.getAllVisibleRows();
+                                    // log.pp('SSSSSSSSSSSSSSSSSSSSSSSSHIFTS', shifts);
+                                    // shifts = shifts ? shifts : [];
                                     vow.keep({
                                         person: person,
                                         location: location,
-                                        shifts: resultSet.getAllVisibleRows(),
+                                        shifts: shifts,
                                         fortnight: fortnight
                                     });
                                 }
@@ -122,7 +125,12 @@ define
                   return getShifts(person, location, fortnight);
               }
           ).when(
-              callback,
+              function() {
+              // try { callback.apply(null, arguments); } catch (e) { log.d(e, e.stack); }
+              callback.apply(null, arguments);
+                  
+              },
+              // callback,
               function (msg) {
                   log.e('ERROR: could not get some of the data needed to build this timesheet', msg);
               }

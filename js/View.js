@@ -21,12 +21,12 @@ define
               // },
               ,getType: function () {
                   return data.type;
-              },
-              getIcon: function() {
-                  if (!data.icon)
-                      return isc.Page.getSkinDir() +"images/actions/add.png";
-                  return data.icon;
               }
+              // ,getIcon: function() {
+              //     if (!data.icon)
+              //         return isc.Page.getSkinDir() +"images/actions/add.png";
+              //     return data.icon;
+              // }
               ,setCmp: function(someCmp) {
                   cmp = someCmp;
               }
@@ -44,7 +44,7 @@ define
                   if (data.sync) data.sync(state);
               }
               ,set: function(someState) {
-                  if (someState && someState === state) {
+                  if (!data.alwaysSet && someState && someState === state) {
                       log.d('Same, so not setting state', state);
                       return;
                   }
@@ -60,6 +60,7 @@ define
                   return isc.clone(state);
                   // return isc.clone(defaultState);
               }
+              ,getIcon: function() { log.d('getting icon', data.icon); return data.icon; }
           };    
       }
       

@@ -310,7 +310,7 @@ define
             }, fields.date),
             isc.addDefaults({
                 showTitle: false,
-                itleOrientation: 'top',
+                titleOrientation: 'top',
                 // name: "sleepOver",
                 align: 'left',
                 startRow: false 
@@ -359,7 +359,16 @@ define
                 width: 50,
                 canEdit: true
                 // ,valueMap: getTimeList(settings.eventSnapGap)
-            }, fields.admin),
+            }, fields.adminHoursUsed),
+            
+            isc.addDefaults({
+                showTitle: false,
+                titleOrientation: 'top',
+                title: 'Working on public holiday',
+                align: 'left',
+                startRow: true 
+                // colSpan:2
+            }, fields.isPublicHolidayWorked),
             //TODO implement repeats UI, similar to Extensible calenda
             
             //---------------------------------------- 
@@ -375,7 +384,6 @@ define
             //-------------------------------------- 
         ]
     };
-    
     
     var eventForm = isc.DynamicForm.create(eventFormData);
     

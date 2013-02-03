@@ -194,8 +194,9 @@ define
                       //TODO: implement 'event'. Change form when this is selected to somethin
                       //appropriate for an event 
                      }
+            ,isPublicHolidayWorked: { type: 'boolean'}
             ,sleepOver: { type: 'boolean'}
-            ,admin: { type: 'float' , canEdit: false, showIf: 'true'}
+            ,adminHoursUsed: { type: 'float' , canEdit: false, showIf: 'true'}
             ,name: { type: 'text', title: 'Name'} //should be unique within its type..
             ,address: { type: 'text'}
             ,suburb: { type: 'text'}
@@ -254,15 +255,24 @@ define
         };
         
         var types = {
-            shift: ['personstring', 'location', 'person',
-                    'sickLeave', 'annualLeave', 'admin',
+            shift: { fields: ['personstring', 'location', 'person', 'isPublicHolidayWorked',
+                    'sickLeave', 'annualLeave', 'adminHoursUsed',
                     'startDate', 'endDate', 'date', 'startTime', 'endTime', 'length',
-                    'personNames', 'locationNames', 'notes', 'ad', 'claim', 'sleepOver'],
-            location: ['costCentre', 'name', 'address', 'suburb','postalCode', 'state',
-                       'phone', 'mob', 'email', 'region', 'notes'],
-            person: ['login', 'pwd', 'name', 'firstName', 'lastName', 'dswCALevel', 'payrollNumber', 'status',
-                     'address', 'suburb','postalCode', 'state', 'phone', 'mob', 'email', 'notes']
-        };
+                    'personNames', 'locationNames', 'notes', 'ad', 'claim', 'sleepOver']
+                   ,icon: 'shift.png'
+                   },
+            location: {
+                fields: ['costCentre', 'name', 'address', 'suburb','postalCode', 'state',
+                       'phone', 'mob', 'email', 'region', 'notes']
+                ,icon: 'home.png'
+                 }
+            ,person: {
+                fields: ['login', 'pwd', 'name', 'firstName', 'lastName', 'dswCALevel',
+                         'payrollNumber', 'status', 'address', 'suburb','postalCode',
+                         'state', 'phone', 'mob', 'email', 'notes']
+                ,icon: 'person.png'
+
+            }};
         
         
        //-================================================================ 
@@ -317,7 +327,7 @@ define
             var obj = {};
             someTypes.forEach(function(t) {
                 if (types[t]) {
-                    types[t].forEach(function(fieldName) {
+                    types[t].fields.forEach(function(fieldName) {
                         var field = typeFields[fieldName];
                         if (field && !result.containsProperty('name', fieldName)) {
                             field.name = fieldName;
@@ -418,7 +428,10 @@ define
             },
             getFieldsCloner: fieldsCloner,
             newRecord: newRecord,
-            getFieldNameByTitle: getFieldNameByTitle
+            getFieldNameByTitle: getFieldNameByTitle,
+            getType: function (aType) {
+                return types[aType];
+            }
             // setDataSource: function(ds) {
             //     dataSource = ds;
             // }

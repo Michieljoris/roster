@@ -98,7 +98,8 @@ define
 	                   isFolder: n.isFolder,
 	                   name: n.name,
 	                   isOpen: n.isOpen,	
-	                   state: n.state
+	                   state: n.state,
+                           icon: n.icon
                        };
 		   })
                  };
@@ -276,7 +277,8 @@ define
           views[type].sync();
           var viewInstance = tree.add({
               id:isc.timeStamp(),isFolder:false, 
-              name:newName, type: type
+              // name:newName, type: type , icon: 'timesheet.png' //''icon: views[type].getIcon()
+              name:newName, type: type , icon: views[type].getIcon()
               ,state: views[type].create()
           }, parent);
           
@@ -477,7 +479,7 @@ define
 	      ,escapeKeyEditAction: 'cancel'
 	      // ,editorExit: function() { this.canEdit = false;}
               ,canEdit: true
-              ,leafContextClick: function() { rightClickMenu.showContextMenu(); }
+              ,nodeContextClick: function() { rightClickMenu.showContextMenu(); }
               // ,cellContextClick: "log.d('hello')"
 	      ,viewStateChanged: function() {
                   // log.d('vsw');
@@ -504,25 +506,25 @@ define
 		      ]
 	  });
       
-      function isEqual(a,b) {
-          if (!a && !b) return true;
-          if (!a || !b) return false;
-          for (var p in a) {
-              // var same = true;
-              if (typeof a[p] === 'object') return isEqual(a[p], b[p]);
-              else {
-                  if (!a[p] && !b[p]) return true;
-                  else return (a[p] === b[p]);   
-              }
+      // function isEqual(a,b) {
+      //     if (!a && !b) return true;
+      //     if (!a || !b) return false;
+      //     for (var p in a) {
+      //         // var same = true;
+      //         if (typeof a[p] === 'object') return isEqual(a[p], b[p]);
+      //         else {
+      //             if (!a[p] && !b[p]) return true;
+      //             else return (a[p] === b[p]);   
+      //         }
               
-              // if (!same){
-              //     // log.d(p);
-              //     // log.d(a, b);
-              //     return false;  
-              // } 
-          }
-          return true;   
-      }
+      //         // if (!same){
+      //         //     // log.d(p);
+      //         //     // log.d(a, b);
+      //         //     return false;  
+      //         // } 
+      //     }
+      //     return true;   
+      // }
       
       window.onbeforeunload= 
 	  function() { 

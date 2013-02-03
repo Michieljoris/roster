@@ -5,7 +5,7 @@
 define
 ({ //load: ['editorLoader'],
     inject: ['View', 
-             'timesheet/isc_components/multicap_timesheet'],
+             'views/timesheet/isc_multicap_timesheet'],
    factory: function(View, TimesheetWW)
     
     { "use strict";
@@ -13,7 +13,8 @@ define
       
       var view = View.create({
           type: 'Timesheet'
-          ,icon: null
+          ,alwaysSet: true
+          ,icon: 'timesheet.png'
           ,defaultState: { person:'guest', location:'',
                           fortnight: Date.parse('2013-01-01')}
           // ,sync: function(state) {
@@ -29,9 +30,7 @@ define
               if (typeof state.fortnight === 'string') {
                   var fn = state.fortnight;
                   log.d('parsing: ', fn);
-                  // state.fortnight = Date.parse("2013-01-11T14:00:00");
                   state.fortnight = Date.parseSchemaDate(state.fortnight);
-                  
               }
               state.fortnight = calculateFortnight(state.fortnight);
               setData(state);
@@ -49,7 +48,7 @@ define
           //the different timesheets added to the layout, build a
           //separate smartclient component for each, and add them all.
           //Have a field in location that lets you pick the timesheet to use.
-          timesheet.setData(state);
+          isc_timesheet.setData(state);
           
       }
       
@@ -57,7 +56,7 @@ define
       var fortnightLength = 14 *  24 * 60 * 60 *1000;
       
       
-      var timesheet = TimesheetWW.create({
+      var isc_timesheet = TimesheetWW.create({
           ID: 'timesheet',
           overflow:'auto',
           showResizeBar: false,
@@ -74,6 +73,7 @@ define
                                  state.person = form.getField('person')
                                      .pickList.getSelectedRecord();
                                  state.person = state.person._id;
+                                 setData(state);
                                  view.modified();
                                  log.d('PICKLIST', state.person);
                              },
@@ -107,8 +107,9 @@ define
                                    state.location = form.getField('location')
                                        .pickList.getSelectedRecord();
                                    state.location = state.location._id;
+                                   setData(state);
                                    view.modified();
-                                 log.d('PICKLIST', state.location);
+                                   log.d('PICKLIST', state.location);
                                },
                           
                                // ID: 'locationPickList' ,
@@ -134,7 +135,7 @@ define
       
       var personForm = isc.DynamicForm.create({fields: [personPickList]});
       
-      var locationForm = isc.DynamicForm.create({fields: [locationPickList]});
+      var locationForm = isc.DynamicForm.create({ID:'myform', fields: [locationPickList]});
 
       
       
@@ -254,7 +255,23 @@ define
                           width:100,				
                           title: 'Print',
 	                  height: '100%',
-	                  icon:"print.png"
+	                  icon:"print.png",
+                          click: function() {
+                              isc_timesheet.print();
+                          }
+                      })
+                      ,isc.Button.create({
+                          width:100,				
+                          title: 'Export',
+	                  height: '100%',
+	                  icon:"Excel-icon.png",
+                          click: function() {
+                              var location = locationForm.getValueMap()[locationForm.getValue('location')];
+                              var person = personForm.getValueMap()[personForm.getValue('person')];
+                              // var creator = user.get().login;
+                              var creator = 'creator';
+                              isc_timesheet.saveAsExcel(creator, '(' +person + ') at ' + location + ' ' + fortnightLabel.getContents());
+                          }
                       })
                       ,isc.LayoutSpacer.create({width: 25})
                       ,isc.Button.create({
@@ -278,6 +295,7 @@ define
                               var state = view.getState();
                               state.fortnight.addWeeks(-2);
                               setFortnightLabel();
+                              setData(state);
                           }
                       })
                       ,fortnightLabel
@@ -289,6 +307,7 @@ define
                               var state = view.getState();
                               state.fortnight.addWeeks(2);
                               setFortnightLabel();
+                              setData(state);
                           }
                       })
                       ,isc.LayoutSpacer.create({width: 25})
@@ -307,7 +326,7 @@ define
                       ,locationForm
                   ]
               })
-              ,timesheet
+              ,isc_timesheet
           ] 
       });
       

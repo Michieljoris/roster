@@ -4,9 +4,9 @@
 
 
 define
-({ inject: ['timesheet/multicap_timesheet_raphael',
-            'timesheet/fetchTimesheetShifts'
-            ,'timesheet/calculateTimesheet'],
+({ inject: ['views/timesheet/multicap_timesheet_raphael',
+            'views/timesheet/fetchTimesheetShifts'
+            ,'views/timesheet/calculateTimesheet'],
    factory: function(timesheet, fetchShifts, calc) {
        "use strict";
        var log = logger('timesheet component');
@@ -30,18 +30,34 @@ define
                ,ending: fortnight.clone().addDays(13).toEuropeanShortDate()
            }); 
            
-           switch(person.status) {
-               case 'permanent' : timesheet.setData({ permanent: 'X'}); break;
-               case 'part time' : timesheet.setData({ parttime: 'X'}); break;
-               case 'casual' : timesheet.setData({ casual: 'X'}); break;
-               default: log.e('Person status is not valid', person);
+           try {
+               switch(person.status) {
+                 case 'permanent' : timesheet.setData({ permanent: 'X'}); break;
+                 case 'part time' : timesheet.setData({ parttime: 'X'}); break;
+                 case 'casual' : timesheet.setData({ casual: 'X'}); break;
+               default: throw new Error('Person status is not valid', person);
+               }
+               calc.init(fortnight, person, location, shifts);
+               for (var i=0; i<14; i++) {
+                   log.pp(calc.getColumn(i));
+                   timesheet.setColumn( i, calc.getColumn(i));
+               }
+               timesheet.setColumn(14, calc.getTotals());
            }
-
-           calc(fortnight, person, location, shifts);
-           for (var i=0; i<14; i++) {
-               // timesheet.setColumn( i, sheet.getColumn(i));
+           catch (e) {
+               // alert(e);
+               log.d(e, e.stack);
            }
-           
+       }
+       
+       
+       function printDiv()
+       {
+           var divToPrint=document.getElementById('timesheet1');
+           var newWin= window.open("");
+           newWin.document.write(divToPrint.outerHTML);
+           newWin.print();
+           newWin.close();
        }
        
         
@@ -51,7 +67,7 @@ define
            getInnerHTML : function () {
                // return "<div style='width:100%;height:100%' ID='" + 
                return "<div  ID='" + 
-                   this.getID() + "_timesheet" + "'></div>";
+                   "timesheet1" + "'></div>";
            },
            // call superclass method to draw, then have
            // timesheet_canvas replace the textarea we wrote out with
@@ -59,7 +75,7 @@ define
            draw : function () {
                if (!this.readyToDraw()) return this;
                this.Super("draw", arguments);
-               timesheet.draw(this.getID() + "_timesheet");
+               timesheet.draw("timesheet1");
                return this;
            }
            ,redrawOnResize:false // see next section
@@ -69,17 +85,10 @@ define
            // ,clear: timesheet.clear
            // ,remove: timesheet.remove
            ,canFocus: false
+           ,print: printDiv
+           ,saveAsExcel: timesheet.exportToExcel
+           
        });
 
-       
        return component;
-       
-       
    }});
-
-       
-      // function setShifts(data) {
-      //     log.d('Fetched shifts and they are:', data.shifts);
-      //     // personForm.setValue('person', data.person._id);
-      //     // locationForm.setValue('location', data.location._id);
-      // }

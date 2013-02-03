@@ -108,10 +108,12 @@ define
        
        //all possible types for the right top add record button
        var typeMenuItems = [];
+       log.d('allTypes----------------', typesAndFields.allTypes);
        typesAndFields.allTypes.forEach(function(g) {
            typeMenuItems[g] = {
                name: g,
-               icon: isc.Page.getSkinDir() +"images/actions/add.png",
+               // icon: isc.Page.getSkinDir() +"images/actions/add.png",
+               icon: typesAndFields.getType(g).icon,
                click: function() {
                    newRecord(g);
                }

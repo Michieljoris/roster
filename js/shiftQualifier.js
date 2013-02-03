@@ -271,10 +271,10 @@ define
               h = Math.floor(h*100)/100;
               fields[p.pattern.type] = h;
           });
-          if (fields.publicHoliday) {
-              if (shift.workedOnPublicHoliday) fields.publicHolidayWorked = fields.publicHoliday;
-              else fields.publicHolidayNotWorked = fields.publicHoliday;
-          } 
+          // if (fields.publicHoliday) {
+          //     if (shift.workedOnPublicHoliday) fields.publicHolidayWorked = fields.publicHoliday;
+          //     else fields.publicHolidayNotWorked = fields.publicHoliday;
+          // } 
           
           return fields;
       }
