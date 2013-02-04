@@ -21,6 +21,12 @@ define
                dataTable.setDataSource(dataSource);
            }
            ,sync: function(state) {
+               log.d('XXXXXXXXXXXXXXXX', editorHasChanged);
+               // if (editorHasChanged)
+               //     getConfirmDialog('The editor has unsaved changes.' +
+               //                      ' Save now? If you choose no, you can still ' +
+               //                      'go back to the table and save it from there',
+               //                      'Yes', 'No').show();
                state =  isc.addProperties(state, {
                    grid: dataTable.getViewState(),
                    criteria : dataTable.getFilterEditorCriteria(),
@@ -283,14 +289,13 @@ define
        //     return false;
        // };
            
-       
-       function setEditor(action) {
+       function getConfirmDialog(msg, yes, no, action) {
            var confirmDiscardDialog = isc.Dialog.create({
-               message : "Values have changed. Save?",
+               message : msg,
                icon:"[SKIN]ask.png",
                buttons : [
-                   isc.Button.create({ title:"Discard" }), //0
-                   isc.Button.create({ title:"Save" })  //1
+                   isc.Button.create({ title: no }), //0
+                   isc.Button.create({ title: yes })  //1
                ],
                buttonClick : function (button, index) {
                    log.d(index);
@@ -301,7 +306,7 @@ define
                        var callback = function(response, record) {
                            log.d('CALLBACK', response, record);
                            editorHasChanged = false;
-                           action();
+                           if (action)  action();
                        };
            
                        if (record._rev) {
@@ -310,16 +315,21 @@ define
                        else dataSource.addData(record, callback);
                    }
                    else {
-                       editorHasChanged = false;
-                       action();   
+                       if (no === 'Discard') editorHasChanged = false;
+                       if (action) action();   
                    }
                    this.hide();
                }
            });
-           
+           return confirmDiscardDialog;
+       }
+       
+       function setEditor(action) {
+           log.d(editorHasChanged);
            if (!editorHasChanged) action();
            else {
-               confirmDiscardDialog.show();
+               getConfirmDialog('Values have changed. Save?',
+                               'Save', 'Discard', action).show();
            }
        }
        
@@ -591,7 +601,7 @@ define
        });
       
        var editorContainer = isc.Canvas.create({
-           
+           overflow:'auto',
            width: '100%',
            height:'100%',
            getCanvas: function() {

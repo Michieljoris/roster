@@ -4,8 +4,8 @@
 
 define
 ({ load: ['loaders/editor'],
-   inject: ['View', 'editorManager'],
-   factory: function(View, editors) 
+   inject: ['View', 'editorManager', 'types/Shift'],
+   factory: function(View, editors, Shift) 
    { "use strict";
      var log = logger('calendar');
      
@@ -16,8 +16,8 @@ define
              minimumShiftLength: 10,
              maximumShiftLength: 600,
              eventSnapGap: 15, //only works with a refresh
-             workdayStart: '6:00',
-             workdayEnd: '22:00',
+             workdayStart: '6:00am',
+             workdayEnd: '10:00pm',
              currentViewName: 'day', //day, week or month
              chosenDate: new Date()
          }
@@ -31,6 +31,10 @@ define
          ,set: function(state) {
              calendar.setChosenDate(new Date(state.chosenDate));
              calendar.setCurrentViewName(state.currentViewName);
+             calendar.fetchData();
+             // calendar.fetchData({  }, function() {
+             //     calendar.setCriteria({ adminHoursUsed: 1 });
+             //     log.d('in callback!!'); });
          }
      }); 
     
@@ -44,9 +48,9 @@ define
      }
     
      var calendar = isc.Calendar.create(
-             {   ID: "isc_ShiftCalendar", 
-	         // dataSource: database, 
-	         autoFetchData: true
+             {   ID: "isc_ShiftCalendar" 
+	         // ,dataSource: database, 
+	         // autoFetchData: true
 	         // ,descriptionField: 'notes'
 	         ,nameField: 'endTijd'
                  ,eventOverlapIdenticalStartTimes: true
@@ -58,9 +62,51 @@ define
                  ,workdays: [0,1,2,3,4,5,6]
                  ,workdayStart: view.getState().workdayStart
                  ,workdayEnd: view.getState().workdayEnd
-	         ,initialCriteria: { type:'shift'  } 
-                 ,criteria: { type: 'shift' }
+                 ,scrollToWorkday: true
+                 // ,initialCriteria: { adminHoursUsed: 1 }
+                 // ,criteria: { adminHoursUsed: 1 }
                  ,eventSnapGap: view.getState().eventSnapGap
+                 ,eventResized: function(newDate, event) {
+                     log.d('NEWDATE', newDate);
+                     // var length = event.endDate.getTime() - event.startDate.getTime();
+                     // var endTime = newDate.getTime() + length;
+                     // event.startDate = newDate;
+                     // event.date = newDate;
+                     event.endDate = newDate;
+                     event.endTime = isc.Time.createLogicalTime(event.endDate.getHours(),
+                                                              event.endDate.getMinutes(),0),
+                     event.startTime = isc.Time.createLogicalTime(event.startDate.getHours(),
+                                                                event.startDate.getMinutes(),0);
+                     var resizedEvent = Shift.create(event);
+                     calendar.updateEvent(resizedEvent, resizedEvent.startDate,
+                                          resizedEvent.endDate,
+                                          resizedEvent[calendar.nameField],
+                                          resizedEvent.description);
+                     return false;
+                 }
+                 ,eventMoved: function(newDate, event) {
+                     log.d('NEWDATE', newDate);
+                     var length = event.endDate.getTime() - event.startDate.getTime();
+                     var endTime = newDate.getTime() + length;
+                     event.startDate = newDate;
+                     event.date = newDate;
+                     event.endDate = Date.create(endTime);
+                     event.endTime = isc.Time.createLogicalTime(event.endDate.getHours(),
+                                                              event.endDate.getMinutes(),0),
+                     event.startTime = isc.Time.createLogicalTime(event.startDate.getHours(),
+                                                                event.startDate.getMinutes(),0);
+                     log.d('EVENT',event);
+                     var movedEvent = Shift.create(event);
+                     log.d('moved event:', movedEvent);
+                     
+                     calendar.updateEvent(movedEvent, newDate,
+                                          Date.create(endTime),
+                                          movedEvent[calendar.nameField],
+                                          movedEvent.description);
+                     return false;
+                     
+                     
+                 }
                  ,dateChanged: function() {
                      var state = view.getState();
                      log.d('change of current date', calendar.chosenDate);
@@ -86,6 +132,7 @@ define
                              persons = evtArr[i].personNames; //TODO format persons
                              // retVal += template + eTime + evtArr[i][this.nameField] + ' ' + persons + "</a><br/>";
                              retVal += template + eTime + eeTime + ' ' + persons + "</a><br/>";
+                             log.d('TEMPLATE' , retVal);
                          } else {
                              // retVal += eTime + evtArr[i][this.nameField] + "<br/>";      
                              retVal += eTime + eeTime + "<br/>";      
@@ -98,7 +145,7 @@ define
                      return retVal;
                  }
                  ,getEventHoverHTML : function (event, eventWindow) {
-                     log.d(event, eventWindow);
+                     // log.d(event, eventWindow);
                      var cal = this;
     
                      // format date & times
@@ -109,7 +156,7 @@ define
                      return sDate + "&nbsp;" + sTime + "&nbsp;-&nbsp;" + eTime +
                          "<p>" + 
                          // event.displayPerson + "</br></br>"  +
-                         event[cal.descriptionField];       
+                         '<h3>' + event[cal.descriptionField] + '</h3>';       
 
                  }
                  // ,selectTab:function(tabNum) {
@@ -124,6 +171,7 @@ define
                      state.cancelButton = true;
                      state.saveButton = true;
                      state.removeButton = true;
+                     state.isNewRecord = false;
                  
                      editors.show(event, state);
                  

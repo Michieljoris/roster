@@ -49,7 +49,8 @@ define
       function calcFields(person, location, shifts) {
           if (overlap(shifts)) {
               log.d('overlapping!!');
-              throw new Error('Shifts overlap on ' + shifts[0].date.toEuropeanShortDate());
+              throw new Error("Alert:Can't calculate timesheet. Shifts overlap on " +
+                              shifts[0].date.toEuropeanShortDate());
           }
           var fields = utils.addFieldValues(shifts);
           fields.awayFromBase = fields.awayFromBase ? 1 : '';
@@ -87,11 +88,11 @@ define
           if (fields.night) { fields.disturbedSleepHours = disturbedSleepHours = fields.night; }
           fields.totalHoursWorked = dayHours + disturbedSleepHours;
           var overtime = 0;
+          // debugger
           if (!ph) {
-              overtime = Math.max(fields.day - SHIFT_MAXLEN, 0);
+              overtime = Math.max(dayHours - SHIFT_MAXLEN, 0);
               adjustFields(fields, ['weekend', 'late', 'ord', 'early'], overtime);
           }
-          
           overtime += disturbedSleepHours;
           if (overtime > 0) {
               fields.overtime = overtime;

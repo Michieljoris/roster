@@ -36,7 +36,7 @@ define
                  case 'permanent' : timesheet.setData({ permanent: 'X'}); break;
                  case 'part time' : timesheet.setData({ parttime: 'X'}); break;
                  case 'casual' : timesheet.setData({ casual: 'X'}); break;
-               default: throw new Error('Person status is not valid', person);
+               default: throw new Error("Alert:Person's status is not set (permanent, part time or casual): " + person.name);
                }
                calc.init(fortnight, person, location, shifts);
                for (var i=0; i<14; i++) {
@@ -46,7 +46,11 @@ define
                timesheet.setColumn(14, calc.getTotals());
            }
            catch (e) {
-               // alert(e);
+               var message = e.message;
+               if (message.substr(0,5) === 'Alert')
+                  {  message = message.substr(6, message.length);
+                     alert(message);
+                  }
                log.d(e, e.stack);
            }
        }

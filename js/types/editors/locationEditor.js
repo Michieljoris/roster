@@ -376,17 +376,17 @@ define
       
       
       
-      var layout = isc.VLayout.create({
+      // var layout = isc.VLayout.create({
           
-          // autoSize: true,
-          height: '100%',
-          width: '100%',
-          members: [
+      //     // autoSize: true,
+      //     height: '100%',
+      //     width: '100%',
+      //     members: [
 
-              tabSet
-              // ,buttons
-          ]  
-      });
+      //         tabSet
+      //         // ,buttons
+      //     ]  
+      // });
       
       
       // editor.canvas = layout;

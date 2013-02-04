@@ -60,10 +60,9 @@ define
                            helpLabel.setContents(dbs[databaseName].description);
                            pickDbForm.getField('dbname').title=dbs[databaseName].urlPrefix;
                            pickDbForm.getField('dbname').redraw();
-k                           
                        }
                     }
-                    ,{ type: 'text', name: 'url', title: 'Url or name', ID:'test',
+                    ,{ type: 'text', name: 'url', title: 'Url or name', 
                        titleOrientation: 'top', startRow: true, width: 300, value: 'pouchDB'}
                 ]
             });

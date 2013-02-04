@@ -15,7 +15,8 @@ define
            title: "TODO: Set to event date, start and end",
            // autoSize: true,
            width: 400,
-           height:370,
+           height:410,
+           // height:'100%',
            canDragReposition: true,
            canDragResize: false
            ,
@@ -111,7 +112,7 @@ define
                if (editor.canvas !== presentCanvas) {
                    if (oldContainer) oldContainer.removeCanvas();
                    presentContainer.removeCanvas();
-                   editor.canvas.setHeight('100%');
+                   // editor.canvas.setHeight('100%');
                    editor.canvas.setWidth('100%');
                    presentContainer.setCanvas(editor.canvas); 
                    containers[record.type] = presentContainer;

@@ -126,7 +126,7 @@ define
                 if ((minute/60) >= 1) hour++;
                 minute %= 60;
             }
-            if (list.last() === '24:00') list[list.length-1] = '0.00';
+            // if (list.last() === '24:00') list[list.length-1] = '0.00';
             timeLists[uniqueList] = list;
 
             return list;
@@ -156,6 +156,7 @@ define
         claimValueMap.push('Event');
         
         
+        
         var typeFields = {
             startDate: {  type: "datetime"}
             ,endDate: {  type: "datetime"}
@@ -163,19 +164,19 @@ define
                      ,canEdit:false 
                    }
             ,startTime: { type: 'time',
-                          editorType: 'comboBox',
+                          // editorType: 'select',
                           required: true,
-                          title:'From',
-                          canEdit:false,
-                          valueMap: getTimeList(eventSnapGap)
+                          title:'From'
+                          // ,canEdit:false,
+                          // ,valueMap: getTimeList(eventSnapGap)
                         }
             ,endTime: { type: 'time',
-                        canEdit:false,
-                        editorType: 'comboBox',
+                        // canEdit:false,
+                        // editorType: 'select',
                         required: true,
-                        title:'To',
-                        // validators: [{ type:'isAfter'}],
-                        valueMap: getTimeList(eventSnapGap)
+                        title:'To'
+                        // ,validators: [{ type:'isAfter'}],
+                        // valueMap: getTimeList(eventSnapGap)
                       }
             ,person: { type: 'enum', canEdit: false }
             ,personstring: { type: 'text', canEdit: false }

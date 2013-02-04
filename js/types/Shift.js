@@ -176,14 +176,22 @@ define
       }
 
       function checkTime(shift, pattern) {
+          // log.d('checkTime', pattern);
           var start1 = pattern.date.getHours() * 60 + pattern.date.getMinutes();
           var end1 = start1 + pattern.length * 60;
           var start2 = shift.startDate.getHours() * 60 + shift.startDate.getMinutes();
-          var end2 = shift.endDate.getHours() * 60 + shift.endDate.getMinutes();
+          var end2;
+          var h = shift.endDate.getHours();
+          var m = shift.endDate.getMinutes();
+          
+          if (h === 0 && m === 0) end2 = 24*60;
+          else end2 = h * 60 + m;
+          
           if (start1 >= end2 || end1 <= start2) return false;
           var start = start1 > start2 ? start1 : start2;
           var end = end1 < end2 ? end1 : end2;
           var length = end - start;
+          // log.d('XXXXXXXXXXXXXXXXXXXXXXXXXXXX',pattern.type, length);
           return {
               pattern: pattern, length: length   
           };
@@ -243,7 +251,7 @@ define
       function getWorkHourFields(shift) {
           if (shift.location && shift.location.workHoursPattern)
               setPatternsObject(shift.location.workHoursPattern);
-          
+          // log.d('getting work hour fields');
           var qualifiers = [];
           var rank = 0;
           var l = patternsArray.length;
@@ -304,7 +312,9 @@ define
               day: values.date.getDate()
           });
           if (values.endTime.getHours() === 0 &&
-              values.endTime.getMinutes() === 0) endDate.setDate(endDate.getDate() + 1);
+              values.endTime.getMinutes() === 0) {
+              endDate.setDate(startDate.getDate() + 1);   
+          }
           
           
           var shift = {
@@ -330,9 +340,26 @@ define
               isPublicHolidayWorked: values.isPublicHolidayWorked,
               repeats: values.repeats, //TODO not implemented yet 
               notes: values.notes || '',
-              endTijd: '- ' + isc.Time.toTime(values.endDate, 'toShortPaddedTime', true),
-              description: values.personNames && (values.personNames.toString() + '<p>' + (values.notes || ''))
+              endTijd: '- ' + isc.Time.toTime(values.endDate, 'toShortPaddedTime', true)
+              // description: '<h3>' + (values.personNames && (values.personNames.toString()) + '</h3><p>' + (values.notes || ''))
+              // description: makeDescription(values.personNames) + (values.notes || '')
           };
+          function makeDescription(list) {
+              // log.d(typeof listString, listString);
+              // var names = listString.split(',');
+              var result = '';
+              list.forEach(function(n) {
+                  result += n + '<br>';
+              });
+               
+              return '<h3>' + result + '</h3>';
+          }
+          if (typeof values.personNames === 'string') shift.description = values.description;
+          else shift.description = makeDescription(values.personNames) + (values.notes || '');
+          if (values.endTime.getHours() === 0 &&
+              values.endTime.getMinutes() === 0) {
+              shift.endTime.setDate(shift.startTime.getDate() + 1);   
+          }
           shift.length = calculateLength(shift);
           
           //set claim fields TODO replace with switch
@@ -364,7 +391,8 @@ define
       // }
       
       return {
-          create: create
+          create: create,
+          calculateLength: calculateLength
       };
    
     }});

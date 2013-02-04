@@ -7,8 +7,8 @@
 //This kind of module does not produce an injectable, but registers itself with the editorManager
 //to use this editor, both load the editorLoader module and inject the editorManager
 define
-({inject: ['Editor', 'types/Shift', 'editorUtils', 'editorManager', 'types/typesAndFields'],
-  factory: function(Editor, shift, editorUtils, editorManager) 
+({inject: ['Editor', 'types/Shift', 'editorUtils', 'editorManager'],
+  factory: function(Editor, Shift, editorUtils, editorManager) 
   { "use strict";
     var log = logger('shiftEditor');
 
@@ -35,105 +35,73 @@ define
         var changed = eventForm.valuesHaveChanged();
         allButtons.Save.setDisabled(!changed);
         editorManager.changed(editor, changed);
+        
+        var startTime = isc.Time.createLogicalTime(eventForm.getValue('startTime').getHours(),
+                                                   eventForm.getValue('startTime').getMinutes(),0);
+        var endTime = isc.Time.createLogicalTime(eventForm.getValue('endTime').getHours(),
+                                                 eventForm.getValue('endTime').getMinutes(),0);
+        if (endTime.getHours() === 0 &&
+            endTime.getMinutes() === 0) endTime.setDate(startTime.getDate() + 1);
+        var period = {
+            startDate: startTime,
+            endDate: endTime
+        };
+        var length = Shift.calculateLength(period);
+        eventForm.setValue('length', length);
+        eventForm.validate();
     }
-
-    // var fieldsCloner = typesAndFields.getFieldsCloner('shift', 'asObject');
-    // var fields = fieldsCloner();
-    // log.d('fields:', fields);
-    // var fields;
-    
-    // var timeLists = {};
-    //     function formatTime(hour, minute) {
-    //         // var hourPrefix = hour<10 ? '0' : '';
-    //         var hourPrefix = hour<10 ? '' : '';
-    //         var minutePrefix = minute<10 ? '0' : '';
-    //         return hourPrefix + hour + ':' + minutePrefix + minute;
-    //     }
-         
-    // function getTimeList(step, startTime, endTime, endHour, endMinute) {
-    //     step = step || 30;
-    //     startTime = startTime || 0;
-    //     endTime = endTime || 0;
-    //     endMinute = endMinute || 0;
-             
-    //         var hour, minute;
-    //     if (typeof startTime === 'object') {
-    //         if (startTime) {
-    //             hour = startTime.getHours();
-    //             minute = startTime.getMinutes();
-    //         } else { hour = 0; minute = 0; }
-    //         if (endTime) {
-    //             endHour = endTime.getHours();
-    //             endMinute = endTime.getMinutes();
-    //         } else { endHour = 24; endMinute = 0; }
-    //     }
-    //     else {
-    //         hour = startTime, minute = endTime;  
-                
-    //     } 
-    //     endHour = endHour || 24;
-    //     // log.d(hour, minute, endHour, endMinute);
-    //     if (endHour > 24) endHour = 24;
-    //     var uniqueList = formatTime(hour,minute) + '-' + 
-    //         formatTime(endHour, endMinute) + step;
-    //     if (timeLists[uniqueList]) return timeLists[uniqueList] ;
-    //     var list = [];
-    //     while (hour < endHour || (hour === endHour && minute <= endMinute)) {
-    //         // list.push(formatTime(hour,minute));
-    //         list.push(isc.Time.createLogicalTime(hour, minute, 0));
-    //         minute+=step; 
-    //         // log.d(minute,hour);
-    //         if ((minute/60) >= 1) hour++;
-    //         minute %= 60;
-    //     }
-    //     if (list.last() === '24:00') list[list.length-1] = '0.00';
-    //     timeLists[uniqueList] = list;
-
-    //     return list;
-    // }
-    
-    
     
     isc.Validator.addValidator(
         'isAfter',
-        function(item, validator, endTime, record) {
-            log.d('validator',validator);
-            var startTime = eventForm.getValue('startTime');
+        function(item, validator, dummy, record) {
+            log.d('validator',validator, record);
+            // var startTime = eventForm.getValue('startTime');
+            var startTime = isc.Time.createLogicalTime(record.startTime.getHours(),
+                                                     record.startTime.getMinutes(),0);
+            var endTime = isc.Time.createLogicalTime(record.endTime.getHours(),
+                                                       record.endTime.getMinutes(),0);
+            // var startTime = record.startTime;
+            // var endTime = record.endTime;
             log.d(startTime<endTime);
             var errorMessage;
             
             if (endTime.getHours() === 0 &&
-                endTime.getMinutes() === 0) endTime.setDate(endTime.getDate() + 1);
+                endTime.getMinutes() === 0) endTime.setDate(startTime.getDate() + 1);
             var length = endTime.getTime() - startTime.getTime();
-            if (startTime >= endTime) 
+            log.d(startTime, endTime, ' validated--------------------------');
+            if (startTime >= endTime)  {
                 errorMessage = 'Finish time should be after start time';
+            }
             //TODO should this be enforced or reminded?
             //TODO should we check shifts are in worktime?
-            //TODO should we add extra shifts when somebody does a sleepover?
             else if (length < settings.minimumShiftLength * 60000) 
-                errorMessage = 'Too small';
+                errorMessage = 'Smaller than ' + settings.minimumShiftLength/60 + ' hours.';
             else if (length > settings.maximumShiftLength * 60000) 
-                errorMessage = 'Too big';
-            log.d(validator.errorMessage);
+                errorMessage = 'Bigger than ' + settings.maximumShiftLength/60 + ' hours';
+            // log.d('XXXXXXXXXX',validator.errorMessage, startTime, endTime);
             validator.errorMessage = errorMessage;
             return !errorMessage;
-            // if (errorMessage) return false;
-            // else return true;
-            // return validator.errorMessage;
         }
         
     );
     
     
     function addEvent() {
-        log.d('addEvent',eventForm.getValues());
-        
-        if (eventForm.valuesHaveChanged() && eventForm.validate()) {
+        var validates = eventForm.validate();
+        if (!validates) {
+            var errors = eventForm.valuesAreValid(false, true);
+            validates = true;
+            if (errors.location || errors.person ||
+                errors.startTime.startsWith('Finish')) 
+                validates = false;
+            log.d(errors);
+        }
+        if (validates && eventForm.valuesHaveChanged()) {
             var eventValues = eventForm.getValues();
             eventValues.personNames = personNames;
             eventValues.locationNames = locationNames;
             
-            event =shift.create(eventValues);
+            event =Shift.create(eventValues);
             editorManager.save(event, updateForm);
         }
     }
@@ -271,13 +239,14 @@ define
     var eventFormData = {
         ID: "eventForm",
         autoDraw: false,
-        width:250,
+        // width:250,
         // dataSource: datasource,
-        // height: 400,
+        height: 350,
         colWidths: ['60', '60', '*'],
         cellPadding: 4,
         numCols: 3,
         timeFormatter: 'toShort24HourTime',
+        validateOnChange: true,
         
         itemChanged: formChanged,
         // itemKeyPress: function(item,keyName) {
@@ -321,6 +290,7 @@ define
                 titleOrientation: 'top',
                 startRow: true
                 ,canEdit: true
+                ,validators: [{ type:'isAfter'}]
                 // ,valueMap: getTimeList(settings.eventSnapGap)
             }, fields.startTime),
             isc.addDefaults({
@@ -358,6 +328,7 @@ define
                 startRow: false,
                 width: 50,
                 canEdit: true
+                //TODO add validator to make sure the value is smaller than the length
                 // ,valueMap: getTimeList(settings.eventSnapGap)
             }, fields.adminHoursUsed),
             
@@ -369,11 +340,21 @@ define
                 startRow: true 
                 // colSpan:2
             }, fields.isPublicHolidayWorked),
+            {
+                titleOrientation: 'top',
+                type: 'text',
+                title: 'Shift length (hours)',
+                canEdit: false,
+                name:'length'
+            },
+            // isc.BlurbItem.create({
+            //   name: 'blurb', value: 'hello'  
+            // }),
             //TODO implement repeats UI, similar to Extensible calenda
             
             //---------------------------------------- 
             isc.addDefaults(
-                { height: '100',
+                { height: 100,
                   titleOrientation: 'top',
                   showTitle: true,
                   width: '340',
@@ -388,7 +369,8 @@ define
     var eventForm = isc.DynamicForm.create(eventFormData);
     
     var layout = isc.VLayout.create({
-          
+        // overflow:'auto',
+          // autoSize:true,
         height: '100%',
         width: '100%',
         members: [
@@ -420,7 +402,8 @@ define
         return eventForm.getValues();
     };
     editor.set = function(someEvent, someSettings) {
-        log.d('AAAAAA', someEvent.person);
+        // log.d('AAAAAAAAAAAAAAAAA', someSettings.isNewRecord);
+        // log.d('AAAAAA', someEvent.person);
         event = someEvent;
         personNames = [];
         // log.d(event.person);
@@ -434,11 +417,12 @@ define
         event.startTime = isc.Time.createLogicalTime(event.startDate.getHours(),
                                                      event.startDate.getMinutes(),0);
         event.date = event.startDate;
+        event.length = Shift.calculateLength(event);
         
         
         eventForm.clearErrors();
         eventForm.setValues(someEvent);
-        // log.d('CHANGED', eventForm.valuesHaveChanged());
+       // log.d('CHANGED', eventForm.valuesHaveChanged());
         
         allButtons.Cancel.setVisibility(settings.cancelButton);
         allButtons.Delete.setVisibility(settings.removeButton);
@@ -453,7 +437,6 @@ define
               eventForm.getField('person').setOptionDataSource(dataSource);
               eventForm.getField('location').setOptionDataSource(dataSource);
     };
-    
     return editor; 
 
   }});

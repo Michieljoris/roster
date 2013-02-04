@@ -90,8 +90,10 @@ define
         // ,line5 = 'PLEASE NOTE ALL HOURS TO BE IN 24 HOUR TIME'
             ,days = ['SAT', 'SUN', 'MON', 'TUES', 'WED', 'THURS', 'FRI' ]
             ,totalHours = 'TOTAL HOURS'
-        ,enteredBy = 'ENTERED BY:'
-        ,enteredByDate = 'DATE:'
+        // ,enteredBy = 'ENTERED BY:'
+        ,enteredBy = ''
+        // ,enteredByDate = 'DATE:'
+         ,enteredByDate = ''
         ,dataCells = {}
         ,unit = Math.round(portWidth / 100);
        
