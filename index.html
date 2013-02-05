@@ -1,5 +1,5 @@
 <!doctype HTML>
-<!-- <html manifest="/roster.appcache"> -->
+<!-- <html manifest="./manifest.appcache"> -->
 <html>
   <HEAD>
   </HEAD>
@@ -23,7 +23,7 @@
        
       },
       scriptInsertionLocation : 'body',
-      timeOut: 5,
+      timeOut: 15,
       testing: false
       };
       
@@ -94,12 +94,15 @@
     <!-- vector graphics for the timesheet-->
     <script src=lib/raphael-min.js></script>    
     <!-- //copy arrays over to Excel strings -->
-    <!-- <script src=lib/sheetclip.js></script>     -->
-    <script src=lib/jszip/jszip.js></script>    
-    <script src=lib/jszip/jszip-load.js></script>    
-    <script src=lib/jszip/jszip-inflate.js></script>    
-    <script src=lib/jszip/jszip-deflate.js></script>    
+    <script src=lib/sheetclip.js></script>
+    <!-- save data in excel format -->
+    <script src=lib/jszip/jszip.js></script>
+    <script src=lib/jszip/jszip-load.js></script>
+    <script src=lib/jszip/jszip-inflate.js></script>
+    <script src=lib/jszip/jszip-deflate.js></script>
     <script src=lib/xlsx.js></script>
+    <!-- copy stuff to the system clipboard -->
+    <script src=lib/ZeroClipboard.js></script>
     
     <!-- necessary for postal.js -->
     <!-- <script src=lib/underscore.js></script>     -->
@@ -120,9 +123,9 @@
     <script src=lib/manifestR.js></script>
     
     <!-- connect with the page via slime -->
-    <script> window.swank_server ='http://localhost:8009/' </script> 
-    <script type="text/javascript"
-    src="http://localhost:8009/swank-js/swank-js-inject.js"></script> 
+    <!-- <script> window.swank_server ='http://localhost:8009/' </script>  -->
+    <!-- <script type="text/javascript" -->
+    <!-- src="http://localhost:8009/swank-js/swank-js-inject.js"></script>  -->
     
     <!--/temp for testing purposes, can be removed  -->
     <script src=test/quickpouch.js></script>    

@@ -52,7 +52,7 @@ define
 	         // ,dataSource: database, 
 	         // autoFetchData: true
 	         // ,descriptionField: 'notes'
-	         ,nameField: 'endTijd'
+	         // ,nameField: 'endTijd'
                  ,eventOverlapIdenticalStartTimes: true
                  ,eventOverlap:false
                  ,firstDayOfWeek: 6
@@ -62,6 +62,7 @@ define
                  ,workdays: [0,1,2,3,4,5,6]
                  ,workdayStart: view.getState().workdayStart
                  ,workdayEnd: view.getState().workdayEnd
+                 // ,workdayBaseStyle: "element.style { background-color:oldlace }"
                  ,scrollToWorkday: true
                  // ,initialCriteria: { adminHoursUsed: 1 }
                  // ,criteria: { adminHoursUsed: 1 }
@@ -114,6 +115,7 @@ define
                      view.modified();
                  }
                  ,getDayBodyHTML: function(date, events, calendar, rowNum, colNum) {
+                     // return 'hello';
                          // var day = date.getDay();
                          var persons;  
                      var evtArr = events, lineHeight = 15,
@@ -129,7 +131,7 @@ define
                              var template  = "<a href='javascript:" + this.ID + ".monthViewEventClick(" + 
                                  rowNum + "," + colNum + "," + i + ");' class='" +
                                  this.calMonthEventLinkStyle + "'>";
-                             persons = evtArr[i].personNames; //TODO format persons
+                             persons = evtArr[i].personString; //TODO format persons
                              // retVal += template + eTime + evtArr[i][this.nameField] + ' ' + persons + "</a><br/>";
                              retVal += template + eTime + eeTime + ' ' + persons + "</a><br/>";
                              log.d('TEMPLATE' , retVal);
@@ -146,17 +148,16 @@ define
                  }
                  ,getEventHoverHTML : function (event, eventWindow) {
                      // log.d(event, eventWindow);
-                     var cal = this;
-    
-                     // format date & times
-                     var sDate = event[cal.startDateField].toShortDate(this.dateFormatter);
-                     var sTime = isc.Time.toTime(event[cal.startDateField], this.timeFormatter, true);
-                     var eTime = isc.Time.toTime(event[cal.endDateField], this.timeFormatter, true);
+                     var cal = this;                     // format date & times
+                     // var sDate = event[cal.startDateField].toShortDate(this.dateFormatter);
+                     // var sTime = isc.Time.toTime(event[cal.startDateField], this.timeFormatter, true);
+                     // var eTime = isc.Time.toTime(event[cal.endDateField], this.timeFormatter, true);
 
-                     return sDate + "&nbsp;" + sTime + "&nbsp;-&nbsp;" + eTime +
-                         "<p>" + 
-                         // event.displayPerson + "</br></br>"  +
-                         '<h3>' + event[cal.descriptionField] + '</h3>';       
+                     // return sDate + "&nbsp;" + sTime + "&nbsp;-&nbsp;" + eTime +
+                     //     "<p>" + 
+                     //     // event.displayPerson + "</br></br>"  +
+                     //     '<h3>' + event[cal.descriptionField] + '</h3>';       
+                     return event[cal.descriptionField];
 
                  }
                  // ,selectTab:function(tabNum) {

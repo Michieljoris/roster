@@ -30,7 +30,8 @@ define
         
     };
     
-    function formChanged() {
+    function formChanged(item) {
+        log.d('CHANGE', item);
         log.d('ITEMCHANGED', eventForm.valuesHaveChanged());
         var changed = eventForm.valuesHaveChanged();
         allButtons.Save.setDisabled(!changed);
@@ -48,7 +49,12 @@ define
         };
         var length = Shift.calculateLength(period);
         eventForm.setValue('length', length);
+        
+        if (item.getClassName() === 'TextAreaItem')
+            return;
         eventForm.validate();
+        allButtons.Save.focus();
+        
     }
     
     isc.Validator.addValidator(
@@ -88,9 +94,13 @@ define
     
     function addEvent() {
         var validates = eventForm.validate();
+        //not all errors are show stoppers. Some we warn about but let
+        //through: 
         if (!validates) {
             var errors = eventForm.valuesAreValid(false, true);
             validates = true;
+            //See the isAfter validator. Letting through shift length
+            //errors:
             if (errors.location || errors.person ||
                 errors.startTime.startsWith('Finish')) 
                 validates = false;
@@ -98,8 +108,17 @@ define
         }
         if (validates && eventForm.valuesHaveChanged()) {
             var eventValues = eventForm.getValues();
-            eventValues.personNames = personNames;
-            eventValues.locationNames = locationNames;
+            
+            // var personList = eventForm.getField('person').
+            //     pickList.getSelectedRecords();
+            // personNames = [];
+            // personList.forEach(function(p) {
+            //     personNames.push(p.name);
+            // });
+            // if (personNames.length === 0) personNames = ['Nobody'];
+            
+            // eventValues.personNames = personNames;
+            // eventValues.locationNames = locationNames;
             
             event =Shift.create(eventValues);
             editorManager.save(event, updateForm);
@@ -127,7 +146,7 @@ define
         
     // }
     
-    var personNames = [];
+    // var personNames = [];
     var personPickList = { name: "person",
                            type: 'enum',
                            // type: "select",
@@ -135,12 +154,17 @@ define
                            required: true, 
                           
                            change: function (form, item, value) {
-                               var personList = eventForm.getField('person').pickList.getSelectedRecords();
-                               personNames = [];
+                               //we need to make a list of names to
+                               //display and search through
+                               var personList = eventForm.getField('person').
+                                   pickList.getSelectedRecords();
+                               var personNames = [];
                                personList.forEach(function(p) {
                                    personNames.push(p.name);
                                });
                                if (personNames.length === 0) personNames = ['Nobody'];
+                               // eventForm.setValue('personNames', personNames);
+                               eventForm.setValue('personString', personNames.toString());
                                // personNames = personNames.toString();
                                log.d('PICKLIST', personNames);
                            },
@@ -176,7 +200,10 @@ define
                                  locationList.forEach(function(p) {
                                      locationNames.push(p.name);
                                  });
-                                 if (locationNames.length === 0) locationNames = ['Nobody'];
+                                 if (locationNames.length === 0) locationNames = ['Nowhere?'];
+                                 
+                                 eventForm.setValue('locationString',
+                                                    locationNames[0].toString());
                                  log.d('PICKLIST', locationNames);
                                  // event.locationNames = locationNames.toString();
                              },
@@ -291,12 +318,14 @@ define
                 startRow: true
                 ,canEdit: true
                 ,validators: [{ type:'isAfter'}]
+                ,selectOnFocus: true
                 // ,valueMap: getTimeList(settings.eventSnapGap)
             }, fields.startTime),
             isc.addDefaults({
                 titleOrientation: 'top',
                 startRow: false
                 ,canEdit: true
+                ,selectOnFocus: true
                 ,validators: [{ type:'isAfter'}]
                 // ,valueMap: getTimeList(settings.eventSnapGap)
             }, fields.endTime),
@@ -405,7 +434,7 @@ define
         // log.d('AAAAAAAAAAAAAAAAA', someSettings.isNewRecord);
         // log.d('AAAAAA', someEvent.person);
         event = someEvent;
-        personNames = [];
+        // personNames = [];
         // log.d(event.person);
         // if (event.person && typeof event.person === 'string') event.person = event.person.split(',');
         // else event.person = [];

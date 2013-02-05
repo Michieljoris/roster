@@ -4283,7 +4283,7 @@ IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
 .calendarDisabled,
 .calendarWorkday,
 .calendarDark {
-  background-color: white;
+  background-color: lightgrey;
   border-bottom: 1px solid #ababab;
   border-right: 1px solid #ababab;
   color: black;

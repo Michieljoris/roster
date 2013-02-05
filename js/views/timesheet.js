@@ -17,7 +17,7 @@ define
           ,alwaysSet: true
           ,icon: 'timesheet.png'
           ,defaultState: { person:'guest', location:'',
-                          fortnight: Date.parse('2013-01-01')}
+                           fortnight: Date.parse('2013-01-01')}
           // ,sync: function(state) {
           //     log.d('UPDATING STATE:', state);
           // } 
@@ -35,6 +35,37 @@ define
               }
               state.fortnight = calculateFortnight(state.fortnight);
               setData(state);
+              
+              // console.log('IDIDIDIDIDIDI',document.getElementById('isc_F'));
+              // console.log('IDIDIDIDIDIDI',mybutton.getActiveElement().id);
+              
+              // var clip = new ZeroClipboard( document.getElementById(
+              //     'isc_4G'
+              //     // mybutton.getActiveElement().id
+              //     // "copy-button"
+              // ), {
+              //     moviePath: "lib/ZeroClipboard.swf" });
+              // clip.setText("Ah, it's in the system clipboard");
+              // clip.on( 'mouseover', function(client) {
+              //     alert("mouse over");
+              // } );
+
+              // clip.on( 'mouseout', function(client) {
+              //     alert("mouse out");
+              // } );
+
+              // clip.on( 'mousedown', function(client) {
+
+              //     alert("mouse down");
+              // } );
+
+              // clip.on( 'mouseup', function(client) {
+              //     alert("mouse up");
+              // } );
+              // clip.on( 'load', function(client) {
+              //     log.d('loaded!!!!!!!!!!!!!!!!!!!!!!!!!!');
+              // } );
+              // window.test = clip;    
           }
           
            
@@ -181,7 +212,7 @@ define
               
           ] 
       });
-    //in viewplugin  
+      //in viewplugin  
       
       
       var okButton = isc.Button.create({
@@ -194,7 +225,7 @@ define
               pickFortnightWindow.hide(); 
           }
 
-          });
+      });
       
       var cancelButton = isc.Button.create({
           title: "Cancel",
@@ -202,35 +233,35 @@ define
           click: function() { pickFortnightWindow.hide(); }
       });
 
-       var pickFortnightWindow = isc.Window.create({
-           title: "Choose a fortnight:",
-           autoSize: true,
-           width: 350,
-           // height:370,
-           canDragReposition: true,
-           canDragResize: false ,
-           showMinimizeButton:false, 
-           autoCenter: true,
-           isModal: true,
-           showModalMask: true,
-           autoDraw: false
-           ,items: [
-               pickFortnightForm,
-               // isc.LayoutSpacer.create({ height: 20}),
-               isc.HLayout.create({
-                   layoutMargin: 6,
-                   membersMargin: 6,
-                   // border: "1px dashed blue",
-                   height: 30,
-                   width: '100%',
-                   members: [
-                       cancelButton,
-                       isc.LayoutSpacer.create(),
-                       okButton 
-                   ] 
-               })
-           ]
-       });
+      var pickFortnightWindow = isc.Window.create({
+          title: "Choose a fortnight:",
+          autoSize: true,
+          width: 350,
+          // height:370,
+          canDragReposition: true,
+          canDragResize: false ,
+          showMinimizeButton:false, 
+          autoCenter: true,
+          isModal: true,
+          showModalMask: true,
+          autoDraw: false
+          ,items: [
+              pickFortnightForm,
+              // isc.LayoutSpacer.create({ height: 20}),
+              isc.HLayout.create({
+                  layoutMargin: 6,
+                  membersMargin: 6,
+                  // border: "1px dashed blue",
+                  height: 30,
+                  width: '100%',
+                  members: [
+                      cancelButton,
+                      isc.LayoutSpacer.create(),
+                      okButton 
+                  ] 
+              })
+          ]
+      });
       
       var fortnightLabel = isc.Label.create({
           contents: 'fortnight' ,
@@ -245,6 +276,8 @@ define
           fortnightLabel.setContents(fortnightToString(state.fortnight));
           
       }
+      
+      
       
       var buttonWidth = 10; 
       var layout = isc.VLayout.create({
@@ -263,16 +296,20 @@ define
                           }
                       })
                       ,isc.Button.create({
+                          ID: 'mybutton',
                           width:100,				
                           title: 'Export',
 	                  height: '100%',
-	                  icon:"Excel-icon.png",
-                          click: function() {
+                          'data-clipboard-text': 'my copy text',
+	                  icon:"Excel-icon.png"
+                          ,click: function() {
                               var location = locationForm.getValueMap()[locationForm.getValue('location')];
                               var person = personForm.getValueMap()[personForm.getValue('person')];
                               // var creator = user.get().login;
                               var creator = 'creator';
-                              isc_timesheet.saveAsExcel(creator, '(' +person + ') at ' + location + ' ' + fortnightLabel.getContents());
+                              isc_timesheet.saveAsExcel(creator, '(' +
+                                                        person + ') at ' + location +
+                                                        ' ' + fortnightLabel.getContents());
                           }
                       })
                       ,isc.LayoutSpacer.create({width: 25})
@@ -331,6 +368,7 @@ define
               ,isc_timesheet
           ] 
       });
+      
       
       view.setCmp(layout);
       return view;

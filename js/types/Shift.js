@@ -295,6 +295,7 @@ define
       }
 
       function create(values) {
+          log.d('CREATING SHIFT!!!!', values);
           var startDate = Date.today().set({
               hour: values.startTime.getHours(),
               minute: values.startTime.getMinutes(),
@@ -322,13 +323,15 @@ define
               _id: values._id,
               _rev: values._rev,
               person: values.person, //array of _id's of people doing the shift
-              personstring: values.person &&
-                  values.person.toString(), //for search by human names
-              personNames : values.personNames &&
-                  values.personNames.toString(), //for search by doc _id
+              // personNames : values.personNames,
+                  // &&
+                  // values.personNames.toString(), //array
+              personString: values.personString,
+              // values.personNames &&
+              //     values.personNames.toString(), //for search by human names
               location: values.location,
-              locationNames : values.locationNames &&
-                  values.locationNames.toString(),
+              locationString : values.locationString,
+                  // values.locationNames.toString(),
               startDate: startDate,
               endDate: endDate,
               date: values.date,
@@ -340,22 +343,29 @@ define
               isPublicHolidayWorked: values.isPublicHolidayWorked,
               repeats: values.repeats, //TODO not implemented yet 
               notes: values.notes || '',
-              endTijd: '- ' + isc.Time.toTime(values.endDate, 'toShortPaddedTime', true)
+              // endTijd: '- ' + isc.Time.toTime(values.endDate, 'toShortPaddedTime', true)
+              endTijd: ''
               // description: '<h3>' + (values.personNames && (values.personNames.toString()) + '</h3><p>' + (values.notes || ''))
               // description: makeDescription(values.personNames) + (values.notes || '')
           };
-          function makeDescription(list) {
-              // log.d(typeof listString, listString);
-              // var names = listString.split(',');
-              var result = '';
-              list.forEach(function(n) {
-                  result += n + '<br>';
+          function makeDescription(str) {
+              log.pp('MAKING DESCRIPTION', str);
+              var sTime = isc.Time.toTime(values.startDate, 'toShortPaddedTime', true);
+              var eTime = isc.Time.toTime(values.endDate, 'toShortPaddedTime', true);
+              var people = '';
+              // if (typeof list === 'string') {
+              str = str.split(',');
+              // }
+              str.forEach(function(n) {
+                  people += n + '<br>';
               });
-               
-              return '<h3>' + result + '</h3>';
+              return "<div style= 'font-size:small;'>" +
+                  sTime + "&nbsp;-&nbsp;" + eTime + '</div><h3>' + people + '</h3>';
           }
-          if (typeof values.personNames === 'string') shift.description = values.description;
-          else shift.description = makeDescription(values.personNames) + (values.notes || '');
+          // if (typeof values.personNames === 'string') shift.description = values.description;
+          // else shift.description = makeDescription(values.personNames) + (values.notes || '');
+          shift.description = makeDescription(values.personString) + (values.notes || '');
+          
           if (values.endTime.getHours() === 0 &&
               values.endTime.getMinutes() === 0) {
               shift.endTime.setDate(shift.startTime.getDate() + 1);   

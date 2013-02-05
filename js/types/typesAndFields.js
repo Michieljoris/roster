@@ -83,54 +83,54 @@ define
         //                      };
         
         
-        function formatTime(hour, minute) {
-            // var hourPrefix = hour<10 ? '0' : '';
-            var hourPrefix = hour<10 ? '' : '';
-            var minutePrefix = minute<10 ? '0' : '';
-            return hourPrefix + hour + ':' + minutePrefix + minute;
-        }
+        // function formatTime(hour, minute) {
+        //     // var hourPrefix = hour<10 ? '0' : '';
+        //     var hourPrefix = hour<10 ? '' : '';
+        //     var minutePrefix = minute<10 ? '0' : '';
+        //     return hourPrefix + hour + ':' + minutePrefix + minute;
+        // }
     
-        function getTimeList(step, startTime, endTime, endHour, endMinute) {
-            step = step || 30;
-            startTime = startTime || 0;
-            endTime = endTime || 0;
-            endMinute = endMinute || 0;
+        // function getTimeList(step, startTime, endTime, endHour, endMinute) {
+        //     step = step || 30;
+        //     startTime = startTime || 0;
+        //     endTime = endTime || 0;
+        //     endMinute = endMinute || 0;
              
-            var hour, minute;
-            if (typeof startTime === 'object') {
-                if (startTime) {
-                    hour = startTime.getHours();
-                    minute = startTime.getMinutes();
-                } else { hour = 0; minute = 0; }
-                if (endTime) {
-                    endHour = endTime.getHours();
-                    endMinute = endTime.getMinutes();
-                } else { endHour = 24; endMinute = 0; }
-            }
-            else {
-                hour = startTime, minute = endTime;  
+        //     var hour, minute;
+        //     if (typeof startTime === 'object') {
+        //         if (startTime) {
+        //             hour = startTime.getHours();
+        //             minute = startTime.getMinutes();
+        //         } else { hour = 0; minute = 0; }
+        //         if (endTime) {
+        //             endHour = endTime.getHours();
+        //             endMinute = endTime.getMinutes();
+        //         } else { endHour = 24; endMinute = 0; }
+        //     }
+        //     else {
+        //         hour = startTime, minute = endTime;  
                 
-            } 
-            endHour = endHour || 24;
-            // log.d(hour, minute, endHour, endMinute);
-            if (endHour > 24) endHour = 24;
-            var uniqueList = formatTime(hour,minute) + '-' + 
-                formatTime(endHour, endMinute) + step;
-            if (timeLists[uniqueList]) return timeLists[uniqueList] ;
-            var list = [];
-            while (hour < endHour || (hour === endHour && minute <= endMinute)) {
-                // list.push(formatTime(hour,minute));
-                list.push(isc.Time.createLogicalTime(hour, minute, 0));
-                minute+=step; 
-                // log.d(minute,hour);
-                if ((minute/60) >= 1) hour++;
-                minute %= 60;
-            }
-            // if (list.last() === '24:00') list[list.length-1] = '0.00';
-            timeLists[uniqueList] = list;
+        //     } 
+        //     endHour = endHour || 24;
+        //     // log.d(hour, minute, endHour, endMinute);
+        //     if (endHour > 24) endHour = 24;
+        //     var uniqueList = formatTime(hour,minute) + '-' + 
+        //         formatTime(endHour, endMinute) + step;
+        //     if (timeLists[uniqueList]) return timeLists[uniqueList] ;
+        //     var list = [];
+        //     while (hour < endHour || (hour === endHour && minute <= endMinute)) {
+        //         // list.push(formatTime(hour,minute));
+        //         list.push(isc.Time.createLogicalTime(hour, minute, 0));
+        //         minute+=step; 
+        //         // log.d(minute,hour);
+        //         if ((minute/60) >= 1) hour++;
+        //         minute %= 60;
+        //     }
+        //     // if (list.last() === '24:00') list[list.length-1] = '0.00';
+        //     timeLists[uniqueList] = list;
 
-            return list;
-        }
+        //     return list;
+        // }
         
         //add fields here and they will appear in dropdown boxes and when claimed will create
         //a field in the shift record with the value of the shift's length
@@ -178,12 +178,11 @@ define
                         // ,validators: [{ type:'isAfter'}],
                         // valueMap: getTimeList(eventSnapGap)
                       }
-            ,person: { type: 'enum', canEdit: false }
-            ,personstring: { type: 'text', canEdit: false }
-            ,personNames: { type: 'text', canEdit: false, title: 'Employee(s)', validOperators: ['iContains', 'iNotContains']}
+            ,person: { type: 'enum', canEdit: false, title: 'Person Ids' }
+            ,personString: { type: 'text', canEdit: false, title: 'Employee(s)', validOperators: ['iContains', 'iNotContains']}
             // ,person: personPickList
-            ,location: { type: "text", canEdit: false} 
-            ,locationNames: { type: 'text', title: 'Location', validOperators: ['iContains', 'iNotContains']}
+            ,location: { type: "text", canEdit: false, title: 'Location Id'} 
+            ,locationString: { type: 'text', title: 'Location', validOperators: ['iContains', 'iNotContains']}
             ,description: { hide:true, type: "text", length: 500}
             ,notes: { type: "textarea", length: 5000}
             ,ad: { title: 'All day', type: 'boolean'} //allday
@@ -256,10 +255,10 @@ define
         };
         
         var types = {
-            shift: { fields: ['personstring', 'location', 'person', 'isPublicHolidayWorked',
+            shift: { fields: ['location', 'person', 'isPublicHolidayWorked',
                               'sickLeave', 'annualLeave', 'adminHoursUsed',
                               'startDate', 'endDate', 'date', 'startTime', 'endTime', 'length',
-                              'personNames', 'locationNames', 'notes', 'ad', 'claim', 'sleepOver']
+                              'personString', 'locationString', 'notes', 'ad', 'claim', 'sleepOver']
                      ,icon: 'shift.png'
                    },
             location: {
