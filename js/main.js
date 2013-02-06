@@ -1,3 +1,4 @@
+//hello
 /*global logger:false Pouch:false define:false VOW:false*/
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:7 maxcomplexity:7 maxlen:150 devel:true newcap:false*/ 
