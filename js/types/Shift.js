@@ -320,18 +320,19 @@ define
           
           var shift = {
               type: 'shift',
+              eventWindowStyle: values.className + ' eventWindow',
               _id: values._id,
               _rev: values._rev,
               person: values.person, //array of _id's of people doing the shift
               personNames : values.personNames, //string of person names
-                  // &&
-                  // values.personNames.toString(), //array
+              // &&
+              // values.personNames.toString(), //array
               personIdsString: values.personIdsString, //string of person ids
               // values.personNames &&
               //     values.personNames.toString(), //for search by human names
               location: values.location,
               locationName : values.locationName,
-                  // values.locationNames.toString(),
+              // values.locationNames.toString(),
               startDate: startDate,
               endDate: endDate,
               date: values.date,
@@ -362,6 +363,7 @@ define
               return "<div style= 'font-size:small;'>" +
                   sTime + "&nbsp;-&nbsp;" + eTime + '</div><h3>' + people + '</h3>';
           }
+          
           // if (typeof values.personNames === 'string') shift.description = values.description;
           // else shift.description = makeDescription(values.personNames) + (values.notes || '');
           shift.description = makeDescription(values.personNames) + (values.notes || '');
@@ -389,8 +391,8 @@ define
           //check for limits and rules and policies..  min length of
           //shift, max length of shift, max overtime, working during
           //sleepover time, but it's not disturbed sleep etc
-           //if it's an error return it as such so that the editor has
-           //a chance to cancel the save
+          //if it's an error return it as such so that the editor has
+          //a chance to cancel the save
           return shift;
           
       }

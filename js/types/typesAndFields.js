@@ -198,6 +198,8 @@ define
             ,sleepOver: { type: 'boolean'}
             ,adminHoursUsed: { type: 'float' , canEdit: false }
             ,name: { type: 'text', title: 'Id', canEdit: false} //should be unique within its type..
+            ,colorFg: { type: 'text' }
+            ,colorBg: { type: 'text' }
             ,address: { type: 'text'}
             ,suburb: { type: 'text'}
             ,state: { type: "comboBox",
@@ -272,7 +274,7 @@ define
             ,person: {
                 fields: ['name', 'pwd', 'firstName', 'lastName', 'dswCALevel',
                          'payrollNumber', 'status', 'address', 'suburb','postalCode',
-                         'state', 'phone', 'mob', 'email', 'notes']
+                         'state', 'phone', 'mob', 'email', 'notes', 'colorFg', 'colorBg']
                 ,icon: 'person.png'
 
             }};

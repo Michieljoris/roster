@@ -170,6 +170,10 @@ define
                                eventForm.setValue('personIdsString', personIds.toString());
                                // personNames = personNames.toString();
                                log.d('PICKLIST', personNames);
+                               var className;
+                               if (personList.length !== 1) className = '';
+                               else className = 'eventColor' + personList[0].name;
+                               eventForm.setValue('className', className);
                            },
                            // ID: 'personPickList' ,
                            showTitle: false,

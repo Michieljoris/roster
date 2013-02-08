@@ -5,8 +5,8 @@
 //This kind of module does not produce an injectable, but registers itself with the editorManager
 //to use this editor, both load the editorLoader module and inject the editorManager
 define
-({inject: ['Editor', 'types/typesAndFields', 'editorUtils', 'editorManager', 'lib/sha1' ],
-  factory: function(Editor, typesAndFields, editorUtils, editorManager, hash) {
+({inject: ['Editor', 'types/typesAndFields', 'editorUtils', 'editorManager', 'lib/sha1' , 'lib/utils'],
+  factory: function(Editor, typesAndFields, editorUtils, editorManager, hash, utils) {
       "use strict";
       var log = logger('typesAndFields') ;
       var editor = { type: 'person'};
@@ -45,29 +45,23 @@ define
                   // title: 'Id',
                   colSpn:2,
                   required: false
-                  ,showIf: 'true'
                   ,canEdit: true
               }, fields.name),
               isc.addDefaults({
-                  showIf: 'true'
+             
               }, fields.firstName),
               isc.addDefaults({
-                  showIf: 'true'
+              
               }, fields.lastName),
               isc.addDefaults({
-                  showIf: 'true'
               }, fields.dswCALevel),
               isc.addDefaults({
-                  showIf: 'true'
               }, fields.payrollNumber),
               isc.addDefaults({
-                  showIf: 'true'
               }, fields.status),
               isc.addDefaults({
-                  // showIf: 'true'
               }, fields.inheritable),
               isc.addDefaults({
-                  // showIf: 'true'
               }, fields.inheritingFrom)
           ]
       };
@@ -93,20 +87,16 @@ define
                   },
                   colSpan: 2,
                   startRow: true
-                  ,showIf: 'true'
               }, fields.address),
               
               isc.addDefaults({
                   align: 'left'
-                  ,showIf: 'true'
               }, fields.suburb),
               isc.addDefaults({
                   align: 'left'
-                  ,showIf: 'true'
               }, fields.postalCode),
               isc.addDefaults({
                   align: 'left'
-                  ,showIf: 'true'
               }, fields.state)
           ] 
       };
@@ -127,15 +117,12 @@ define
           fields: [
               isc.addDefaults({
                   align: 'left'
-                  ,showIf: 'true'
               }, fields.phone),
               isc.addDefaults({
                   align: 'left'
-                  ,showIf: 'true'
               }, fields.mob),
               isc.addDefaults({
                   align: 'left'
-                  ,showIf: 'true'
               }, fields.email)
               
           ]
@@ -146,7 +133,8 @@ define
           autoDraw: false,
           // width:300,
           // height: 48,
-          // colWidths: [90, "*"],
+          colWidths: [90, "*"],
+          numCols: 2,
           cellPadding: 4,
           // numCols: 2,
           // itemKeyPress: function(item,keyName) {
@@ -157,13 +145,22 @@ define
               isc.addDefaults({
                   align: 'left',
                   showTitle: true,
-                  titleOrientation: 'top',
+                  // titleOrientation: 'top',
                   width: 250,
                   height: 150,
                   // colSpan: 2,
                   startRow: true
-                  ,showIf: 'true'
               }, fields.notes)
+              ,isc.addDefaults({
+                  startRow: true,
+                  // titleOrientation: 'top',
+                  align: 'left'
+              }, fields.colorBg)
+              ,isc.addDefaults({
+                  startRow: true,
+                  // titleOrientation: 'top',
+                  align: 'left'
+              }, fields.colorFg)
               
           ]
       };
@@ -187,52 +184,16 @@ define
               var person = vm.getValues();
         
               if (!person.notes) person.notes = '';
-              //TODO? set all booleans to default off value?
-              //     console.log(startDate, endDate);
-	      // // calendar.addPerson(startDate, endDate,
-              // var otherFields = { group: 'shift',
-              //                     claim: person.claim,
-              //                     repeats: person.repeats,
-              //                     sleepOver: person.sleepOver,
-              //                     person: person.person,
-              //                     ad: false,
-              //                     displayPerson: []};
-              // console.log('changed:', personForm.valuesHaveChanged(), personForm.getChangedValues());
-            
-              // var personList = personForm.getField('person').pickList.getSelectedRecords();
-              // personList.forEach(function(p) {
-              // otherFields.displayPerson.push(p.name);
-              // });
-            
-              //************ 
-              // person.startDate = startDate;
-              // person.endDate = endDate;
-              // isc.addProperties(person, otherFields);
+              
+              var fg = person.colorFg ? person.colorFg : 'black';
+                  var bg = person.colorBg ? person.colorBg : 'f0f8ff';
+              log.d('setting css classes' , person.name, fg, bg);
+              utils.createCSSClass('.eventColor' + person.name,
+                             'background-color:' + bg +
+                             '; color:' + fg);
             
               typesAndFields.removeUnderscoreFields(person);
               editorManager.save(person, updateVm);           
-              // if (person._rev) {
-              //     if (vm.valuesHaveChanged())
-              //         database.updateData(person);
-              // }
-              // else database.addData(person);
-            
-              // console.log('***********', person.person)    ;
-              // if (person._rev) {
-              //     if (personForm.valuesHaveChanged())
-              //         pouchDS.updatePerson(person,
-              //                              startDate, endDate,
-              //                              // isc.JSON.encode(person.person),
-              //                              person.person,
-              //                              person.notes,
-              //                              otherFields);
-              // }
-              // else pouchDS.addPerson(startDate, endDate,
-              //                        // isc.JSON.encode(person.person),
-              //                        person.person,
-              //                        person.notes,
-              //                        otherFields);
-              // personEditorWindow.hide(); 
           }
       }
       
@@ -243,19 +204,19 @@ define
       }
                                        
       
-      var parentLabel = isc.Label.create({
-              height: 30,
-          padding: 10,
-          align: "center",
-          valign: "center",
-          wrap: false,
-          // icon: "icons/16/approved.png",
-          // showEdges: true,
-          contents: "Mamre house, Southside",
-          click: "console.log('hello')",
-          prompt: 'click to edit'
+      // var parentLabel = isc.Label.create({
+      //         height: 30,
+      //     padding: 10,
+      //     align: "center",
+      //     valign: "center",
+      //     wrap: false,
+      //     // icon: "icons/16/approved.png",
+      //     // showEdges: true,
+      //     contents: "Mamre house, Southside",
+      //     click: "console.log('hello')",
+      //     prompt: 'click to edit'
           
-      });
+      // });
       
       
       var allButtons = {};

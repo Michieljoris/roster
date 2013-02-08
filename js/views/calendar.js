@@ -1,11 +1,11 @@
 /*global logger:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
-/*jshint maxparams:5 maxcomplexity:7 maxlen:190 devel:true*/
+/*jshint maxparams:5 maxcomplexity:30 maxlen:190 devel:true*/
 
 define
 ({ load: ['loaders/editor'],
-   inject: ['View', 'editorManager', 'types/Shift'],
-   factory: function(View, editors, Shift) 
+   inject: ['View', 'editorManager', 'types/Shift', 'loaders/backend', 'lib/utils'],
+   factory: function(View, editors, Shift, backend, utils) 
    { "use strict";
      var log = logger('calendar');
      
@@ -24,6 +24,7 @@ define
          ,init: function() {
              var dataSource = View.getBackend().getDS(); 
              calendar.setDataSource(dataSource);
+             setCssClasses();
          }
          ,sync: function(state) {
              state.currentViewName = calendar.getCurrentViewName();
@@ -35,13 +36,49 @@ define
              log.d('fetching data for calendar:');
              calendar.fetchData({  }, function() {
                  calendar.setCriteria({ type: 'shift' });
+                 setCssClasses();
                  log.d('in callback!!'); });
          }
      }); 
-    
+
+     
+     function setCssClasses() {
+         var personCriterion = {
+             fieldName: 'type',
+             operator:'equals',
+             value:'person'
+         };  
+     
+         backend.get().getDS().fetchData(null,
+                                         function (dsResponse, data) {
+                                             if (dsResponse.status < 0) alert("Can't get data from the database!!!");
+                                             else {
+                                                 // log.d('GOT a response from pouchDS', data);
+                                                 var resultSet = isc.ResultSet.create({
+                                                     dataSource:backend.get().getDS(),
+                                                     criteria: personCriterion,
+                                                     allRows:data
+                                                 });
+                                                 // log.d('and the result set is:', resultSet);
+                                                 // log.d('and the visible rows are:', resultSet.getAllVisibleRows());
+                                                 var persons = resultSet.getAllVisibleRows();
+                                                 persons.forEach(function(p) {
+                                                     var fg = p.colorFg ? p.colorFg : 'black';
+                                                     var bg = p.colorBg ? p.colorBg : 'f0f8ff';
+                                                     log.d('setting css classes' , p.name, fg, bg);
+                                                     utils.createCSSClass('.eventColor' + p.name,
+                                                                    'background-color:' + bg +
+                                                                    '; color:' + fg);
+                                                 }); 
+                                                 
+                                             }
+                                         }
+                                        );
+     }
+     
      function getShiftDescription(event) {
-        log.d('in shiftdesc', event);
-         var sDate = event.startDate.toShortDate();
+         log.d('in shiftdesc', event);
+             var sDate = event.startDate.toShortDate();
          var sTime = isc.Time.toTime(event.startDate, 'toShortPaddedTime', true);
          var eTime = isc.Time.toTime(event.endDate, 'toShortPaddedTime', true);
 
@@ -49,164 +86,165 @@ define
      }
     
      var calendar = isc.Calendar.create(
-             {   ID: "isc_ShiftCalendar" 
-	         // ,dataSource: database, 
-	         // autoFetchData: true
-	         // ,descriptionField: 'notes'
-	         // ,nameField: 'endTijd'
-                 ,eventOverlapIdenticalStartTimes: true
-                 ,eventOverlap:false
-                 ,firstDayOfWeek: 6
-                 ,disableWeekends: false
-                 ,showWorkday: true
-                 // ,showTimelineView:true
-                 ,workdays: [0,1,2,3,4,5,6]
-                 ,workdayStart: view.getState().workdayStart
-                 ,workdayEnd: view.getState().workdayEnd
-                 // ,workdayBaseStyle: "element.style { background-color:oldlace }"
-                 ,scrollToWorkday: true
-                 // ,initialCriteria: { adminHoursUsed: 1 }
-                 // ,criteria: { adminHoursUsed: 1 }
-                 ,eventSnapGap: view.getState().eventSnapGap
-                 ,eventResized: function(newDate, event) {
-                     log.d('NEWDATE', newDate);
-                     // var length = event.endDate.getTime() - event.startDate.getTime();
-                     // var endTime = newDate.getTime() + length;
-                     // event.startDate = newDate;
-                     // event.date = newDate;
-                     event.endDate = newDate;
-                     event.endTime = isc.Time.createLogicalTime(event.endDate.getHours(),
-                                                              event.endDate.getMinutes(),0),
-                     event.startTime = isc.Time.createLogicalTime(event.startDate.getHours(),
-                                                                event.startDate.getMinutes(),0);
-                     var resizedEvent = Shift.create(event);
-                     calendar.updateEvent(resizedEvent, resizedEvent.startDate,
-                                          resizedEvent.endDate,
-                                          resizedEvent[calendar.nameField],
-                                          resizedEvent.description);
-                     return false;
-                 }
-                 ,eventMoved: function(newDate, event) {
-                     log.d('NEWDATE', newDate);
-                     var length = event.endDate.getTime() - event.startDate.getTime();
-                     var endTime = newDate.getTime() + length;
-                     event.startDate = newDate;
-                     event.date = newDate;
-                     event.endDate = Date.create(endTime);
-                     event.endTime = isc.Time.createLogicalTime(event.endDate.getHours(),
-                                                              event.endDate.getMinutes(),0),
-                     event.startTime = isc.Time.createLogicalTime(event.startDate.getHours(),
-                                                                event.startDate.getMinutes(),0);
-                     log.d('EVENT',event);
-                     var movedEvent = Shift.create(event);
-                     log.d('moved event:', movedEvent);
+         {   ID: "isc_ShiftCalendar" 
+	     // ,dataSource: database, 
+	     // autoFetchData: true
+	     // ,descriptionField: 'notes'
+	     // ,nameField: 'endTijd'
+             // ,eventWindowStyle: 'eventWindow'
+             ,eventOverlapIdenticalStartTimes: true
+             ,eventOverlap:false
+             ,firstDayOfWeek: 6
+             ,disableWeekends: false
+             ,showWorkday: true
+             // ,showTimelineView:true
+             ,workdays: [0,1,2,3,4,5,6]
+             ,workdayStart: view.getState().workdayStart
+             ,workdayEnd: view.getState().workdayEnd
+             // ,workdayBaseStyle: "element.style { background-color:oldlace }"
+             ,scrollToWorkday: true
+             // ,initialCriteria: { adminHoursUsed: 1 }
+             // ,criteria: { adminHoursUsed: 1 }
+             ,eventSnapGap: view.getState().eventSnapGap
+             ,eventResized: function(newDate, event) {
+                 log.d('NEWDATE', newDate);
+                 // var length = event.endDate.getTime() - event.startDate.getTime();
+                 // var endTime = newDate.getTime() + length;
+                 // event.startDate = newDate;
+                 // event.date = newDate;
+                 event.endDate = newDate;
+                 event.endTime = isc.Time.createLogicalTime(event.endDate.getHours(),
+                                                            event.endDate.getMinutes(),0),
+                 event.startTime = isc.Time.createLogicalTime(event.startDate.getHours(),
+                                                              event.startDate.getMinutes(),0);
+                 var resizedEvent = Shift.create(event);
+                 calendar.updateEvent(resizedEvent, resizedEvent.startDate,
+                                      resizedEvent.endDate,
+                                      resizedEvent[calendar.nameField],
+                                      resizedEvent.description);
+                 return false;
+             }
+             ,eventMoved: function(newDate, event) {
+                 log.d('NEWDATE', newDate);
+                 var length = event.endDate.getTime() - event.startDate.getTime();
+                 var endTime = newDate.getTime() + length;
+                 event.startDate = newDate;
+                 event.date = newDate;
+                 event.endDate = Date.create(endTime);
+                 event.endTime = isc.Time.createLogicalTime(event.endDate.getHours(),
+                                                            event.endDate.getMinutes(),0),
+                 event.startTime = isc.Time.createLogicalTime(event.startDate.getHours(),
+                                                              event.startDate.getMinutes(),0);
+                 log.d('EVENT',event);
+                 var movedEvent = Shift.create(event);
+                 log.d('moved event:', movedEvent);
                      
-                     calendar.updateEvent(movedEvent, newDate,
-                                          Date.create(endTime),
-                                          movedEvent[calendar.nameField],
-                                          movedEvent.description);
-                     return false;
+                 calendar.updateEvent(movedEvent, newDate,
+                                      Date.create(endTime),
+                                      movedEvent[calendar.nameField],
+                                      movedEvent.description);
+                 return false;
                      
                      
-                 }
-                 ,dateChanged: function() {
-                     var state = view.getState();
-                     log.d('change of current date', calendar.chosenDate);
-                     state.chosenDate = calendar.chosenDate.toString();
-                     view.modified();
-                 }
-                 ,getDayBodyHTML: function(date, events, calendar, rowNum, colNum) {
-                     // return 'hello';
-                         // var day = date.getDay();
-                         var persons;  
+             }
+             ,dateChanged: function() {
+                 var state = view.getState();
+                 log.d('change of current date', calendar.chosenDate);
+                 state.chosenDate = calendar.chosenDate.toString();
+                 view.modified();
+             }
+             ,getDayBodyHTML: function(date, events, calendar, rowNum, colNum) {
+                 // return 'hello';
+                 // var day = date.getDay();
+                 var persons;  
                      var evtArr = events, lineHeight = 15,
-                     record = this.monthView.data ? this.monthView.data[1] : null,
-                         rHeight = this.monthView.getRowHeight(record, 1);
-                     var retVal = "";
-                     for (var i = 0; i < evtArr.length; i++) {
-                         var eTime = isc.Time.toTime(evtArr[i][this.startDateField], this.timeFormatter, true) + " ";
+                 record = this.monthView.data ? this.monthView.data[1] : null,
+                 rHeight = this.monthView.getRowHeight(record, 1);
+                 var retVal = "";
+                 for (var i = 0; i < evtArr.length; i++) {
+                     var eTime = isc.Time.toTime(evtArr[i][this.startDateField], this.timeFormatter, true) + " ";
                          var eeTime = isc.Time.toTime(evtArr[i][this.endDateField], this.timeFormatter, true) + " ";
-                         if (this.canEditEvent(evtArr[i])) {
-                             // when clicked, call the the editEvent method of this calendar, passing the
-                             // row, column, and position of the event in this cell's event array
-                             var template  = "<a href='javascript:" + this.ID + ".monthViewEventClick(" + 
-                                 rowNum + "," + colNum + "," + i + ");' class='" +
-                                 this.calMonthEventLinkStyle + "'>";
-                             persons = evtArr[i].personString; //TODO format persons
-                             // retVal += template + eTime + evtArr[i][this.nameField] + ' ' + persons + "</a><br/>";
-                             retVal += template + eTime + eeTime + ' ' + persons + "</a><br/>";
-                             log.d('TEMPLATE' , retVal);
-                         } else {
-                             // retVal += eTime + evtArr[i][this.nameField] + "<br/>";      
-                             retVal += eTime + eeTime + "<br/>";      
-                         }
-                         if ((i + 3) * lineHeight > rHeight) break; 
+                     if (this.canEditEvent(evtArr[i])) {
+                         // when clicked, call the the editEvent method of this calendar, passing the
+                         // row, column, and position of the event in this cell's event array
+                         var template  = "<a href='javascript:" + this.ID + ".monthViewEventClick(" + 
+                             rowNum + "," + colNum + "," + i + ");' class='" +
+                             this.calMonthEventLinkStyle + "'>";
+                         persons = evtArr[i].personString; //TODO format persons
+                         // retVal += template + eTime + evtArr[i][this.nameField] + ' ' + persons + "</a><br/>";
+                         retVal += template + eTime + eeTime + ' ' + persons + "</a><br/>";
+                         log.d('TEMPLATE' , retVal);
+                     } else {
+                         // retVal += eTime + evtArr[i][this.nameField] + "<br/>";      
+                         retVal += eTime + eeTime + "<br/>";      
                      }
-                     if (i < evtArr.length - 1) {
-                         retVal += "+ " + (evtArr.length - 1 - i) + " more...";
-                     }
-                     return retVal;
+                     if ((i + 3) * lineHeight > rHeight) break; 
                  }
-                 ,getEventHoverHTML : function (event, eventWindow) {
-                     // log.d(event, eventWindow);
-                     var cal = this;                     // format date & times
-                     // var sDate = event[cal.startDateField].toShortDate(this.dateFormatter);
-                     // var sTime = isc.Time.toTime(event[cal.startDateField], this.timeFormatter, true);
-                     // var eTime = isc.Time.toTime(event[cal.endDateField], this.timeFormatter, true);
-
-                     // return sDate + "&nbsp;" + sTime + "&nbsp;-&nbsp;" + eTime +
-                     //     "<p>" + 
-                     //     // event.displayPerson + "</br></br>"  +
-                     //     '<h3>' + event[cal.descriptionField] + '</h3>';       
-                     return event[cal.descriptionField];
-
+                 if (i < evtArr.length - 1) {
+                     retVal += "+ " + (evtArr.length - 1 - i) + " more...";
                  }
-                 // ,selectTab:function(tabNum) {
-                 //     // TODO   
-                 //     log.d('selectTab', tabNum);
-                 // }
-	         ,eventClick: function(event, viewName) {
-	             log.d("Update event", event, viewName);
-                     var state = view.getState();
+                 return retVal;
+             }
+             ,getEventHoverHTML : function (event, eventWindow) {
+                 // log.d(event, eventWindow);
+                 var cal = this;                     // format date & times
+                 // var sDate = event[cal.startDateField].toShortDate(this.dateFormatter);
+                 // var sTime = isc.Time.toTime(event[cal.startDateField], this.timeFormatter, true);
+                 // var eTime = isc.Time.toTime(event[cal.endDateField], this.timeFormatter, true);
+
+                 // return sDate + "&nbsp;" + sTime + "&nbsp;-&nbsp;" + eTime +
+                 //     "<p>" + 
+                 //     // event.displayPerson + "</br></br>"  +
+                 //     '<h3>' + event[cal.descriptionField] + '</h3>';       
+                 return event[cal.descriptionField];
+
+             }
+             // ,selectTab:function(tabNum) {
+             //     // TODO   
+             //     log.d('selectTab', tabNum);
+             // }
+	     ,eventClick: function(event, viewName) {
+	         log.d("Update event", event, viewName);
+                 var state = view.getState();
                  
-                     state.title = getShiftDescription(event);
-                     state.cancelButton = true;
-                     state.saveButton = true;
-                     state.removeButton = true;
-                     state.isNewRecord = false;
+                 state.title = getShiftDescription(event);
+                 state.cancelButton = true;
+                 state.saveButton = true;
+                 state.removeButton = true;
+                 state.isNewRecord = false;
                  
-                     editors.show(event, state);
+                 editors.show(event, state);
                  
-	                 return false;
-	         }
-	         ,backgroundClick: function(startDate, endDate) {
-	             log.d('New event',startDate, endDate);
-                     var date =  new Date(startDate);
-                     // var event = typesAndFields.newRecord('shift');
-                     var event = {
-                         type: 'shift',
-                         startDate: startDate,
-                         endDate: endDate,
-                         date: date,
-                         endTime : isc.Time.createLogicalTime(endDate.getHours(),
-                                                              endDate.getMinutes(),0),
-                         startTime : isc.Time.createLogicalTime(startDate.getHours(),
-                                                                startDate.getMinutes(),0)
+	         return false;
+	     }
+	     ,backgroundClick: function(startDate, endDate) {
+	         log.d('New event',startDate, endDate);
+                 var date =  new Date(startDate);
+                 // var event = typesAndFields.newRecord('shift');
+                 var event = {
+                     type: 'shift',
+                     startDate: startDate,
+                     endDate: endDate,
+                     date: date,
+                     endTime : isc.Time.createLogicalTime(endDate.getHours(),
+                                                          endDate.getMinutes(),0),
+                     startTime : isc.Time.createLogicalTime(startDate.getHours(),
+                                                            startDate.getMinutes(),0)
                      
-                     };
+                 };
                 
-                     var state = view.getState();
-                     state.title = getShiftDescription(event);
-                     state.cancelButton = true;
-                     state.saveButton = true;
-                     state.removeButton = false;
-                     state.isNewRecord = true;
+                 var state = view.getState();
+                 state.title = getShiftDescription(event);
+                 state.cancelButton = true;
+                 state.saveButton = true;
+                 state.removeButton = false;
+                 state.isNewRecord = true;
                  
-                     editors.show(event, state);
+                 editors.show(event, state);
                  
-	             return false;
-	         }
-             }); 
+	         return false;
+	     }
+         }); 
     
      calendar.addEventButton.click = function () {
          log.d('TODO');
