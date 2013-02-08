@@ -3,17 +3,17 @@
 /*jshint maxparams:4 maxcomplexity:7 maxlen:130 devel:true newcap:false*/
 
 define
-({inject: ['lib/cookie', 'types/typesAndFields'],
-  factory: function(cookie, typesAndFields) {
+({inject: ['lib/cookie', 'types/typesAndFields', 'lib/sha1'],
+  factory: function(cookie, typesAndFields, hash) {
       "use strict";
       
       var log = logger('pouchDB', 'debug');
       
       var pouchDbHandle;
       var pouchDS;
-      var dbviews;
+      // var dbviews;
       // var authenticatedUser;
-      var settingsCache;
+      // var settingsCache;
       
       var rootUser = {
           _id:'root',
@@ -24,11 +24,11 @@ define
       };
       
       
-      var defaultSettings = {
-          type: 'settings'
-          ,fortnightStart: true   
-          ,dataSource: 'pouchDS'
-      };
+      // var defaultSettings = {
+      //     type: 'settings'
+      //     ,fortnightStart: true   
+      //     ,dataSource: 'pouchDS'
+      // };
       
       var defaultUserId = 'root';
       
@@ -40,15 +40,29 @@ define
 	      if (!err) {
                   log.d('pouchDB is ready');
                   pouchDbHandle = aDb;
-                  VOW.first([
-                      getDoc('root'),
-                      putDoc(rootUser)]).when()
-                      .when(
-                          function() {
-                              vow.keep(self);
-                          },
-                          vow['break']
-                      );
+                  getDoc('root').when(
+                      function() {
+                          vow.keep(self);
+                      },
+                      function() {
+                          putDoc(rootUser).when(
+                              function() {
+                                  log.d('Created root user..');
+                                  vow.keep(self);
+                              },
+                              vow['break']
+                          );
+                  }
+                  );
+                  // VOW.first([
+                  //     getDoc('root'),
+                  //     putDoc(rootUser)]).when()
+                  //     .when(
+                  //         function() {
+                  //             vow.keep(self);
+                  //         },
+                  //         vow['break']
+                  //     );
               }
               else { var msg = "Error opening idb database for pouchDS" + idbname +
 		     "err: "+ err.error + ' reason:' + err.reason;
@@ -92,7 +106,7 @@ define
       function putDoc( record ){
           // console.log('putDoc ', record);
           var vow = VOW.make();
-          pouchDbHandle.put(record, function(err, response) {
+          pouchDbHandle.post(record, function(err, response) {
               if (!err) {
                   // log.d('keeping put vow');
                   record._id = response.id;
@@ -113,23 +127,23 @@ define
       //#DataSource
       //This implements a smartclient datasource against pouchdb
       
-      dbviews = {
-          all: {   map : function(doc) { emit(doc,null); }
-	           ,reduce: false}
-          ,shift: { map : function(doc) {
-	      if (doc.type === 'shift') emit(doc,null);}
-		    ,reduce: false}
-          ,location: { map : function(doc) {
-	      if (doc.type === 'location') emit(doc,null);}
-		       ,reduce: false}
+      // dbviews = {
+      //     all: {   map : function(doc) { emit(doc,null); }
+      //              ,reduce: false}
+      //     ,shift: { map : function(doc) {
+      //         if (doc.type === 'shift') emit(doc,null);}
+      //   	    ,reduce: false}
+      //     ,location: { map : function(doc) {
+      //         if (doc.type === 'location') emit(doc,null);}
+      //   	       ,reduce: false}
           
-          ,person: { map : function(doc) {
-	      if (doc.type === 'person') emit(doc,null);}
-		     ,reduce: false}
-          ,settingsCache: { map : function(doc) {
-	      if (doc.type === 'settings') emit(doc,null);}
-		       ,reduce: false}
-      };
+      //     ,person: { map : function(doc) {
+      //         if (doc.type === 'person') emit(doc,null);}
+      //   	     ,reduce: false}
+      //     ,settingsCache: { map : function(doc) {
+      //         if (doc.type === 'settings') emit(doc,null);}
+      //   	       ,reduce: false}
+      // };
       
       function typefyProps(obj) {
           Object.keys(obj).forEach(
@@ -204,7 +218,7 @@ define
       function add(data, dsResponse, requestId) {
           doPouch(function(db) {
               delete data._id;
-              db.put(data,
+              db.post(data,
                      function (err,response){
                          if (err) log.d("Error from pouch put in add:", err,
                                         "resp:", response);
@@ -236,7 +250,7 @@ define
 
       
       pouchDS = isc.DataSource.create(
-          {   ID : "pouchDS2",
+          {   ID : "pouchDS",
 	      fields: typesAndFields.allFields,
 	      autoDeriveTitles:true,
 	      dataProtocol: "clientCustom",
@@ -248,15 +262,16 @@ define
 	          var dsResponse;
 	          switch (dsRequest.operationType) {
 	            case "fetch":
-	              var fetchView = dbviews.all;
+	              var fetchView = {   map : function(doc) { emit(doc,null); }
+                   ,reduce: false};
                       // log.d('about to switch......', dsRequest);
-                      if (dsRequest.componentId === 'isc_ShiftCalendar') {
-                          fetchView = dbviews.shift;  
-	                  log.d('in shiftCalendar', fetchView); 
-                      } 
-                      if (dsRequest.view) {
-                          fetchView = dbviews[dsRequest.view];   
-                      }
+                      // if (dsRequest.componentId === 'isc_ShiftCalendar') {
+                      //     fetchView = dbviews.shift;  
+	              //     log.d('in shiftCalendar', fetchView); 
+                      // } 
+                      // if (dsRequest.view) {
+                      //     fetchView = dbviews[dsRequest.view];   
+                      // }
 	              log.d('fetch', fetchView); 
 	              dsResponse = {
 	                  clientContext: dsRequest.clientContext,
@@ -315,7 +330,7 @@ define
       };
           
       var loginCriterion = {
-          fieldName: 'login',
+          fieldName: 'name',
           operator:'equals'
       };
         
@@ -349,12 +364,10 @@ define
                                        login);
                       else {
                           if (rows.length > 1)
-                              log.w('There are two persons with the same login name!!! ' +
+                              alert('There are two persons with the same login name!!! ' +
                                     'Using the first one' , rows[0], 'from ', rows); 
-                          log.d('pwd',rows[0].pwd, 'given', credentials.password);
-                          
                           if (!rows[0].pwd ||
-                              rows[0].pwd === credentials.password) vow.keep(rows[0]);
+                              rows[0].pwd === hash.calc(credentials.password)) vow.keep(rows[0]);
                           else vow['break']('Wrong password');
                       }
                   }
@@ -363,14 +376,14 @@ define
           return vow.promise;
       } 
       
-      function createLoginDialog(aVow, userId) {
+      function createLoginDialog(aVow, user) {
           var vow = aVow;
           function checkCredentials(credentials, reportToLoginDialog) {
               getUser(credentials).when(
                   function(anAuthenticatedUser) {
                       var authenticatedUser = anAuthenticatedUser;
-                      cookie.set('lastLogin', authenticatedUser.login, 3650);
-                      log.i(authenticatedUser.login + ' logged in.');
+                      cookie.set('lastLogin', authenticatedUser._id, 3650);
+                      log.i(authenticatedUser.username + ' logged in.');
                       vow.keep(authenticatedUser);
                       reportToLoginDialog(true);
                   },
@@ -383,7 +396,7 @@ define
       
           function showLoginDialog() {
 	      isc.showLoginDialog(checkCredentials,
-			          {username: userId, password: '',
+			          {username: user.name, password: '',
 			           dismissable:true});
           } 
           
@@ -395,14 +408,14 @@ define
       function set(vow, userId) {
           getDoc(userId).when(
               function(user) {
-                  if (!user.pwd) {
-                      log.i(user.login + ' logged in (no pwd).');
+                  if (!user.pwd || user.pwd.length === 0) {
+                      log.i(user.name + ' logged in (no pwd).');
                       vow.keep(user);
                   }
-                  else  createLoginDialog(vow, userId).show();
+                  else  createLoginDialog(vow, user).show();
               },
               function() {
-                  createLoginDialog(vow, userId).show();
+                  createLoginDialog(vow, defaultUserId).show();
               }
           ); 
       }
@@ -452,13 +465,34 @@ define
        security consists of letting people have access to databases
        based on id and role, assigned by an admin.
        */
+
+      var dbDescriptions = [
+          {
+              name: 'pouchDB',
+              shortDescr: 'Browser local storage (idb)',
+              description: 'Data is stored locally in the browser. This is persisted across refreshes of the page, and across restarts of the browser. <p>If you use a standalone Chrome browser you can start this app from where ever you are storing the browser. Your could store the standalone browser on a USB stick for instance and take the app and its data anywhere. If you delete the cookies (for instance by executing reset() in the console, you will see this dialog again and you can choose a different database or name)',
+              urlPrefix: 'idb://',
+              prompt: 'db'
+          }, 
+          {
+              name: 'couchDB',
+              shortDescr: 'Standalone database (couchDB)',
+              description: 'The data is stored in a standalone database server called CouchDb. This server can run on your local machine or on the internet somewhere. <p>You will have to specify an url such as 127.0.0.1:1234/dbname or localhost:1234/dbname or www.somewhere.com:1234/dbname, where 1234 is the port. Whoever sets up your couchdb should be able to give you these details.',
+              urlPrefix: 'http://',
+              prompt: 'localhost:1234/dbname'
+          }
+      ];
+      
+      function getDbDescriptions() {
+          return dbDescriptions;
+      }
       
       var self = {
-          name: 'pouchDB'
-          ,shortName: 'Browser local storage (idb)'
-          ,description: 'The data will be stored in the browser local storage. This is persisted across refreshes of the browser you are using now. If you use a standalone version you will be able to carry the data with you on a usb stick for instance. '
-          ,getDS: function() { return pouchDS; }
-          ,urlPrefix: 'idb://' 
+          // name: 'pouchDB'
+          // ,shortName: 'Browser local storage (idb)'
+          // ,description: 'The data will '
+          getDS: function() { return pouchDS; }
+          // ,urlPrefix: 'idb://' 
           
           ,init: init
           
@@ -467,6 +501,7 @@ define
           
           ,login: login
           ,changeUser: changeUser
+          ,getDbDescriptions: getDbDescriptions
       };
       return self;
   }});

@@ -5,8 +5,8 @@
 //This kind of module does not produce an injectable, but registers itself with the editorManager
 //to use this editor, both load the editorLoader module and inject the editorManager
 define
-({inject: ['Editor', 'types/typesAndFields', 'editorUtils', 'editorManager' ],
-  factory: function(Editor, typesAndFields, editorUtils, editorManager) {
+({inject: ['Editor', 'types/typesAndFields', 'editorUtils', 'editorManager', 'lib/sha1' ],
+  factory: function(Editor, typesAndFields, editorUtils, editorManager, hash) {
       "use strict";
       var log = logger('typesAndFields') ;
       var editor = { type: 'person'};
@@ -42,30 +42,32 @@ define
           fields: [
               isc.addDefaults({
                   align: 'left',
-                  title: 'Nick Name',
-                  colSpan:2,
+                  // title: 'Id',
+                  colSpn:2,
                   required: false
+                  ,showIf: 'true'
+                  ,canEdit: true
               }, fields.name),
               isc.addDefaults({
-                  
+                  showIf: 'true'
               }, fields.firstName),
               isc.addDefaults({
-                  
+                  showIf: 'true'
               }, fields.lastName),
               isc.addDefaults({
-                  
+                  showIf: 'true'
               }, fields.dswCALevel),
               isc.addDefaults({
-                  
+                  showIf: 'true'
               }, fields.payrollNumber),
               isc.addDefaults({
-                  
+                  showIf: 'true'
               }, fields.status),
               isc.addDefaults({
-                  
+                  // showIf: 'true'
               }, fields.inheritable),
               isc.addDefaults({
-                  
+                  // showIf: 'true'
               }, fields.inheritingFrom)
           ]
       };
@@ -91,16 +93,20 @@ define
                   },
                   colSpan: 2,
                   startRow: true
+                  ,showIf: 'true'
               }, fields.address),
               
               isc.addDefaults({
                   align: 'left'
+                  ,showIf: 'true'
               }, fields.suburb),
               isc.addDefaults({
                   align: 'left'
+                  ,showIf: 'true'
               }, fields.postalCode),
               isc.addDefaults({
                   align: 'left'
+                  ,showIf: 'true'
               }, fields.state)
           ] 
       };
@@ -121,12 +127,15 @@ define
           fields: [
               isc.addDefaults({
                   align: 'left'
+                  ,showIf: 'true'
               }, fields.phone),
               isc.addDefaults({
                   align: 'left'
+                  ,showIf: 'true'
               }, fields.mob),
               isc.addDefaults({
                   align: 'left'
+                  ,showIf: 'true'
               }, fields.email)
               
           ]
@@ -153,6 +162,7 @@ define
                   height: 150,
                   // colSpan: 2,
                   startRow: true
+                  ,showIf: 'true'
               }, fields.notes)
               
           ]
@@ -199,6 +209,7 @@ define
               // person.endDate = endDate;
               // isc.addProperties(person, otherFields);
             
+              typesAndFields.removeUnderscoreFields(person);
               editorManager.save(person, updateVm);           
               // if (person._rev) {
               //     if (vm.valuesHaveChanged())
@@ -233,7 +244,7 @@ define
                                        
       
       var parentLabel = isc.Label.create({
-          height: 30,
+              height: 30,
           padding: 10,
           align: "center",
           valign: "center",
@@ -248,46 +259,6 @@ define
       
       
       var allButtons = {};
-      // function buttonBar(orientation, height, width,  entries, buttonProps, action) {
-      //     var members = [];
-          
-      //     entries.forEach(function(e) {
-      //         if (e === '|') {
-      //             members.push(isc.LayoutSpacer.create());
-      //             return;
-      //         }
-      //         var button;
-      //         buttonProps.title = e;
-      //         buttonProps.click = function() {
-      //             action(e);
-      //         };
-      //         button = isc.Button.create(buttonProps);
-      //         allButtons[e] = button;
-      //         members.push(button);
-              
-      //     });
-          
-      //     // members.push(isc.LayoutSpacer.create()); // Note the use of the LayoutSpacer
-      //     // buttonProps.title = 'bla';
-      //     // var button = isc.Button.create(buttonProps);
-          
-      //     // members.push(button);
-      //     var layout = orientation === 'vertical' ? isc.VLayout : isc.HLayout;
-      //     return layout.create({
-      //         // contents: "Navigation",
-      //         // align: "center",
-      //         // overflow: "hidden",
-      //         // border: "1px solid blue",
-      //         height: height,
-      //         width: width,
-      //         members: members
-      //         //,showResizeBar: true,
-      //         // ,border: "1px solid blue"
-      //     });
-          
-      // }
-      
-      
       
       var formLayout = isc.HLayout.create({
           members: [ mainForm
@@ -306,7 +277,7 @@ define
                   width: "70%",
                   members: [
                       buttonBar(allButtons, 'vertical', 180, 50,
-                                ['Main', 'Address', 'Contact', 'Notes'],
+                                ['Main', 'Address', 'Contact', 'Notes', 'Password'],
                                 { // baseStyle: "cssButton",
                                     left: 200,
                                     showRollOver: true,
@@ -325,6 +296,92 @@ define
                          }, action)
           ]
       });
+
+      
+      /** Pick a password */
+      function pickPwd(){
+          
+          var pwdForm = isc.DynamicForm.create({
+              columns: 1
+              ,fields: [
+                  { type: 'password', name: 'pwd1', title: 'Password:', 
+                    titleOrientation: 'top', startRow: true}
+                  ,{ type: 'password', name: 'pwd2', title: 'Repeat:', 
+                     titleOrientation: 'top', startRow: true}
+              ]
+              });
+            
+          var helpLabel = isc.Label.create({
+              // ID:'test',
+              // width: 300,
+              height: '100%',
+              margin: 10
+              ,contents: 'Enter your new password.'
+          });
+            
+          var window = isc.Window.create({
+              title: "Set a password"
+              ,autoSize: true
+              // ,height:200
+              // ,width:300
+              // ,autoSize: true
+              ,canDragReposition: true
+              ,canDragResize: false
+              ,showMinimizeButton:false
+              ,showCloseButton:false
+              ,autoCenter: true
+              ,isModal: true
+              ,showModalMask: true
+              ,autoDraw: false
+              ,items: [
+                  pwdForm
+                  ,helpLabel
+                  ,isc.HLayout.create({
+                      layoutMargin: 6,
+                      membersMargin: 6,
+                      // border: "1px dashed blue",
+                      height: 20,
+                      width:'100%',
+                      members: [
+                          isc.LayoutSpacer.create()
+                          ,isc.Button.create({
+                              title: 'Cancel'
+                              // ,visibility: cancellable ? 'inherit' : 'hidden'
+                              // ,startRow: false
+                              ,click: function() {
+                                  window.hide();
+                              }  
+                              
+                          })
+                          ,isc.Button.create({
+                              title: 'Ok'
+                              ,startRow: true
+                              ,click: function() {
+                                  var pwd1 = pwdForm.getValue('pwd1'); 
+                                  var pwd2 = pwdForm.getValue('pwd2');
+                                  log.d('passwords are: ',pwd1, pwd2);
+                                  pwd1 = pwd1 ? pwd1 : '';
+                                  pwd2 = pwd2 ? pwd2 : '';
+                                  if (hash.calc(pwd1) === hash.calc(pwd2)) {
+                                      vm.setValue('pwd', hash.calc(pwd1));
+                                      pwdForm.setValue('pwd1', '');
+                                      pwdForm.setValue('pwd2', '');
+                                      formChanged();
+                                      window.hide();
+                                  }
+                                  else {
+                                      helpLabel.setContents("Passwords don't match. Try again.");
+                                  }
+                              }  
+                          })
+                          ,isc.LayoutSpacer.create()
+                      ]
+                  })
+              ] 
+          });
+          window.show();
+      }
+        
        
       
       function action(e) {
@@ -333,6 +390,8 @@ define
             case 'Address': formLayout.setVisibleMember(addressForm); break;
             case 'Contact': formLayout.setVisibleMember(contactForm); break;
             case 'Notes': formLayout.setVisibleMember(notesForm); break; 
+            case 'Password': pickPwd();
+              break;
               
             case 'Save': addPerson(); break; 
             case 'Discard': editorManager.cancel(person); break; 
@@ -348,6 +407,7 @@ define
           // width:"100%",
           // margin:"25",
           emptyMessage:"Select an item to view its details",
+          //TODO: This only shows the fields with showIf: 'true'
           fields: typesAndFields.getFieldsCloner('person')()
       });
       

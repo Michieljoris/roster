@@ -323,14 +323,14 @@ define
               _id: values._id,
               _rev: values._rev,
               person: values.person, //array of _id's of people doing the shift
-              // personNames : values.personNames,
+              personNames : values.personNames, //string of person names
                   // &&
                   // values.personNames.toString(), //array
-              personString: values.personString,
+              personIdsString: values.personIdsString, //string of person ids
               // values.personNames &&
               //     values.personNames.toString(), //for search by human names
               location: values.location,
-              locationString : values.locationString,
+              locationName : values.locationName,
                   // values.locationNames.toString(),
               startDate: startDate,
               endDate: endDate,
@@ -364,7 +364,7 @@ define
           }
           // if (typeof values.personNames === 'string') shift.description = values.description;
           // else shift.description = makeDescription(values.personNames) + (values.notes || '');
-          shift.description = makeDescription(values.personString) + (values.notes || '');
+          shift.description = makeDescription(values.personNames) + (values.notes || '');
           
           if (values.endTime.getHours() === 0 &&
               values.endTime.getMinutes() === 0) {

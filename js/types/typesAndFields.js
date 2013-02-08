@@ -9,14 +9,14 @@ define
         var log = logger('typesAndFields');
         var typesAndFields = {};
         // var dataSource;
-        var timeLists = {};
-        var eventSnapGap = 30;
+        // var timeLists = {};
+        // var eventSnapGap = 30;
         // database.setViews(views);
         
         var genericFields = {
             type: { type: 'text', required: true, canFilter: false }
-            ,_id: { primaryKey: true }
-            ,_rev: { type: 'text'}
+            ,_id: { primaryKey: true , title: 'dbId'}
+            ,_rev: { type: 'text', title: 'dbRev'}
             ,inheritable: { type: 'boolean' }
             ,inheritingFrom: { type: 'text', title: 'Inheriting values from:' }
         };
@@ -89,7 +89,7 @@ define
         //     var minutePrefix = minute<10 ? '0' : '';
         //     return hourPrefix + hour + ':' + minutePrefix + minute;
         // }
-    
+   
         // function getTimeList(step, startTime, endTime, endHour, endMinute) {
         //     step = step || 30;
         //     startTime = startTime || 0;
@@ -135,12 +135,12 @@ define
         //add fields here and they will appear in dropdown boxes and when claimed will create
         //a field in the shift record with the value of the shift's length
         var claimFields =  {
-            sickLeave: { type: 'float' , canEdit: false, showIf: 'false'}
-            ,annualLeave: { type: 'float' , canEdit: false, showIf: 'false'}
-            ,longServiceLeave: { type: 'float' , canEdit: false, showIf: 'false'}
-            ,otherLeave: { type: 'float' , canEdit: false, showIf: 'false'}
-            // ,admin: { type: 'float' , canEdit: false, showIf: 'false'}
-            // ,disturbedSleep: { title: 'Disturbed Sleep',  type: 'float' , canEdit: false, showIf: 'false'}
+            sickLeave: { type: 'float' , canEdit: false}
+            ,annualLeave: { type: 'float' , canEdit: false}
+            ,longServiceLeave: { type: 'float' , canEdit: false}
+            ,otherLeave: { type: 'float' , canEdit: false}
+            // ,admin: { type: 'float' , canEdit: false}
+            // ,disturbedSleep: { title: 'Disturbed Sleep',  type: 'float' , canEdit: false}
         };           
         
         // var claimTypes = ['Normal shift', 'Sick leave', 'Annual leave',
@@ -161,17 +161,17 @@ define
             startDate: {  type: "datetime"}
             ,endDate: {  type: "datetime"}
             ,date: { type: 'date'
-                     ,canEdit:false 
+                     ,canEdit:false
                    }
             ,startTime: { type: 'time',
                           // editorType: 'select',
                           required: true,
                           title:'From'
-                          // ,canEdit:false,
+                          ,canEdit:false
                           // ,valueMap: getTimeList(eventSnapGap)
                         }
             ,endTime: { type: 'time',
-                        // canEdit:false,
+                        canEdit:false,
                         // editorType: 'select',
                         required: true,
                         title:'To'
@@ -179,12 +179,12 @@ define
                         // valueMap: getTimeList(eventSnapGap)
                       }
             ,person: { type: 'enum', canEdit: false, title: 'Person Ids' }
-            ,personString: { type: 'text', canEdit: false, title: 'Employee(s)', validOperators: ['iContains', 'iNotContains']}
-            // ,person: personPickList
+            ,personNames: { type: 'text', canEdit: false, title: 'Employee(s)', validOperators: ['iContains', 'iNotContains']}
+            ,personIdsString: { type: 'text', canEdit: false}
             ,location: { type: "text", canEdit: false, title: 'Location Id'} 
-            ,locationString: { type: 'text', title: 'Location', validOperators: ['iContains', 'iNotContains']}
+            ,locationString: { type: 'text', title: 'Location'}
             ,description: { hide:true, type: "text", length: 500}
-            ,notes: { type: "textarea", length: 5000}
+            ,notes: { type: "textarea", length: 5000 }
             ,ad: { title: 'All day', type: 'boolean'} //allday
             // ,claim: { type: 'text'} 
             ,claim:  {type: "select",
@@ -196,11 +196,12 @@ define
                      }
             ,isPublicHolidayWorked: { type: 'boolean'}
             ,sleepOver: { type: 'boolean'}
-            ,adminHoursUsed: { type: 'float' , canEdit: false, showIf: 'true'}
-            ,name: { type: 'text', title: 'Name'} //should be unique within its type..
+            ,adminHoursUsed: { type: 'float' , canEdit: false }
+            ,name: { type: 'text', title: 'Id', canEdit: false} //should be unique within its type..
             ,address: { type: 'text'}
             ,suburb: { type: 'text'}
             ,state: { type: "comboBox",
+                      
                       valueMap: {
                           "QLD" : "QLD",
                           "NSW" : "NSW",
@@ -218,8 +219,8 @@ define
             // ,shortName: { title: 'Short Name', type: 'text'}
             ,sex: { type: 'text'}
             ,award: { type: 'text'}
-            ,login: { type: 'text'}
-            ,pwd: { type: 'text'}
+            // ,username: { type: 'text' }
+            ,pwd: { type: 'text', canEdit: false}
             ,role: { type: 'text'}
             ,permissions: { type: 'text'}
             ,dswCALevel:  { type: 'text' }
@@ -230,44 +231,46 @@ define
             ,costCentre: { type: 'text'}
             
             //calculated fields for a shift:
-            ,length: { type: 'float' , canEdit: false, showIf: 'false'}
+            ,length: { type: 'float' , canEdit: false}
             
-            ,early: { type: 'float' , canEdit: false, showIf: 'false'}
-            ,ord: { type: 'float' , canEdit: false, showIf: 'false'}
-            ,late: { type: 'float' , canEdit: false, showIf: 'false'}
-            ,weekend: { type: 'float' , canEdit: false, showIf: 'false'}
+            ,early: { type: 'float' , canEdit: false}
+            ,ord: { type: 'float' , canEdit: false}
+            ,late: { type: 'float' , canEdit: false}
+            ,weekend: { type: 'float' , canEdit: false}
             
-            ,publicHolidayOrdinary: { type: 'float' , canEdit: false, showIf: 'false'}
-            ,publicHolWorkPerm1p5: { type: 'float' , canEdit: false, showIf: 'false'}
-            ,publicHolWork2p5: { type: 'float' , canEdit: false, showIf: 'false'}
+            ,publicHolidayOrdinary: { type: 'float' , canEdit: false}
+            ,publicHolWorkPerm1p5: { type: 'float' , canEdit: false}
+            ,publicHolWork2p5: { type: 'float' , canEdit: false}
             
             
-            ,awayFromBase: { type: 'boolean' , canEdit: false, showIf: 'false'}
+            ,awayFromBase: { type: 'boolean' , canEdit: false}
             
-            ,overtimeT1p5: { type: 'float' , canEdit: false, showIf: 'false'}
-            ,overtimeT2: { type: 'float' , canEdit: false, showIf: 'false'}
+            ,overtimeT1p5: { type: 'float' , canEdit: false}
+            ,overtimeT2: { type: 'float' , canEdit: false}
             
-            ,toilAccrued: { type: 'float' , canEdit: false, showIf: 'false'}
-            ,toilTaken: { type: 'float' , canEdit: false, showIf: 'false'}
+            ,toilAccrued: { type: 'float' , canEdit: false}
+            ,toilTaken: { type: 'float' , canEdit: false}
             
-            ,dayName: { type: 'text' , showIf: 'false'}
+            ,dayName: { type: 'text' }
             
         };
         
         var types = {
-            shift: { fields: ['location', 'person', 'isPublicHolidayWorked',
-                              'sickLeave', 'annualLeave', 'adminHoursUsed',
-                              'startDate', 'endDate', 'date', 'startTime', 'endTime', 'length',
-                              'personString', 'locationString', 'notes', 'ad', 'claim', 'sleepOver']
+            shift: { fields: ['location', 'person', 'personString', 'locationString', 'claim', 'sleepOver',
+                              'startDate',
+                              'endDate', 'date',
+                              'startTime', 'endTime', 'length',
+                              'sickLeave', 'annualLeave', 'adminHoursUsed','isPublicHolidayWorked',
+                              'notes', 'ad' ]
                      ,icon: 'shift.png'
                    },
             location: {
-                fields: ['costCentre', 'name', 'address', 'suburb','postalCode', 'state',
+                fields: ['name', 'costCentre', 'address', 'suburb','postalCode', 'state',
                          'phone', 'mob', 'email', 'region', 'notes']
                 ,icon: 'home.png'
             }
             ,person: {
-                fields: ['login', 'pwd', 'name', 'firstName', 'lastName', 'dswCALevel',
+                fields: ['name', 'pwd', 'firstName', 'lastName', 'dswCALevel',
                          'payrollNumber', 'status', 'address', 'suburb','postalCode',
                          'state', 'phone', 'mob', 'email', 'notes']
                 ,icon: 'person.png'
@@ -414,10 +417,22 @@ define
             return record;
         };
         
-        // //TODO: messy...
-        // database.setGetField(function(fieldName) {
-        //   return fields[fieldName];  
-        // });
+        //idb doesn't mind, but couchdb doesn't like fields starting
+        //with underscores. So we remove all of them except for _id
+        //and _rev. I don't use underscore fields, but smartclient
+        //does. And they get added to my records when retrieved from a
+        //form
+        function removeUnderscoreFields(record) {
+            log.d('removing underscore fields');
+            Object.keys(record).forEach(function(k) {
+                if (k !== '_id' &&
+                    k !== '_rev' &&
+                    k[0]==='_') {
+                    delete record[k];   
+                    log.d('removed underscore field', k);
+                }
+            });
+        }
         
         typesAndFields = {
             // views: dbviews,
@@ -435,6 +450,7 @@ define
             // setDataSource: function(ds) {
             //     dataSource = ds;
             // }
+            ,removeUnderscoreFields: removeUnderscoreFields
         };
         
         return typesAndFields; 

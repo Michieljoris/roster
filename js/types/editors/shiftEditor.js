@@ -159,12 +159,15 @@ define
                                var personList = eventForm.getField('person').
                                    pickList.getSelectedRecords();
                                var personNames = [];
+                               var personIds = [];
                                personList.forEach(function(p) {
                                    personNames.push(p.name);
+                                   personIds.push(p._id);
                                });
                                if (personNames.length === 0) personNames = ['Nobody'];
                                // eventForm.setValue('personNames', personNames);
-                               eventForm.setValue('personString', personNames.toString());
+                               eventForm.setValue('personNames', personNames.toString());
+                               eventForm.setValue('personIdsString', personIds.toString());
                                // personNames = personNames.toString();
                                log.d('PICKLIST', personNames);
                            },
@@ -202,7 +205,7 @@ define
                                  });
                                  if (locationNames.length === 0) locationNames = ['Nowhere?'];
                                  
-                                 eventForm.setValue('locationString',
+                                 eventForm.setValue('locationName',
                                                     locationNames[0].toString());
                                  log.d('PICKLIST', locationNames);
                                  // event.locationNames = locationNames.toString();

@@ -19,7 +19,7 @@ define
       };  
       
       var personCriterion = {
-          fieldName: 'personstring',
+          fieldName: 'personIdsString',
           operator:'contains'
           // value: person._id
       };

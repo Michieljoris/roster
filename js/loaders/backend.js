@@ -12,17 +12,24 @@ define
         var database;
         
         var args = Array.prototype.slice.apply(arguments);
-        var dbNames = [];
+        // var dbNames = [];
         var dbs = {};
         var valueMap = {};
+        var dbDescriptions = {};
         
-        args.forEach(function(a) {
-            dbNames.push(a.name);
-            dbs[a.name] = a;
-            valueMap[a.name] = a.shortName;
+        args.forEach(function(db) {
+            var descriptions = db.getDbDescriptions();
+            descriptions.forEach(function(d) {
+                // dbNames.push(d.name);
+                dbs[d.name] = db;
+                dbDescriptions[d.name] = d;
+                valueMap[d.name] = d.shortDescr;
+            });
         });
         
-        log.d('Loaded database backends: ' + dbNames);
+        log.d('Loaded database backends: ' + Object.keys(dbDescriptions).map(function (d) {
+            return d.name;
+        }));
         //return list of names of the databases available
         // function ls() {
         //     return dbNames;
@@ -47,23 +54,27 @@ define
         
         
         /** Pick a database */
-        function pick(callback){
+        function pick(callback, cancellable){
             var pickDbForm = isc.DynamicForm.create({
                 columns: 1
                 ,fields: [
-                    {  type: 'radioGroup', name: "databaseName",  showTitle: true, 
+                    {  type: 'radioGroup', name: "databaseName",  showTitle: false, 
                        valueMap: valueMap, titleOrientation: 'top', value: 'pouchDB'
                        ,width: 300
                        ,change: function() {
                            var databaseName = arguments[2];
                            log.d('change', databaseName);
-                           helpLabel.setContents(dbs[databaseName].description);
-                           pickDbForm.getField('dbname').title=dbs[databaseName].urlPrefix;
-                           pickDbForm.getField('dbname').redraw();
+                           // log.d(dbDescriptions);
+                           
+                           helpLabel.setContents(dbDescriptions[databaseName].description);
+                           pickDbForm.getField('url').setValue(dbDescriptions[databaseName].prompt);
+                           // console.log('setting prompt', dbDescriptions[databaseName].prompt);
+                           // pickDbForm.getField('dbname').title=dbDescriptions[databaseName].urlPrefix;
+                           // pickDbForm.getField('dbname').redraw();
                        }
                     }
                     ,{ type: 'text', name: 'url', title: 'Url or name', 
-                       titleOrientation: 'top', startRow: true, width: 300, value: 'pouchDB'}
+                       titleOrientation: 'top', startRow: true, width: 300, value: 'db' }
                 ]
             });
             
@@ -72,14 +83,14 @@ define
                 width: 300,
                 height: '100%',
                 margin: 10
-                ,contents: dbs.pouchDB.description
+                ,contents: dbDescriptions.pouchDB.description
             });
             
             var editorWindow = isc.Window.create({
                 title: "Select a database backend."
                 // ,autoSize: true
-                ,height:300
-                ,width:320
+                ,height:400
+                ,width:400
                 ,canDragReposition: false
                 ,canDragResize: false
                 ,showMinimizeButton:false
@@ -100,18 +111,30 @@ define
                         members: [
                             isc.LayoutSpacer.create()
                             ,isc.Button.create({
+                                title: 'Cancel'
+                                ,visibility: cancellable ? 'inherit' : 'hidden'
+                                // ,startRow: false
+                                ,click: function() {
+                                    editorWindow.hide();
+                                }  
+                            })
+                            ,isc.Button.create({
                                 title: 'Ok'
                                 ,startRow: false
                                 ,click: function() {
                                     var databaseName = pickDbForm.getValue('databaseName'); 
-                                    var url = dbs[databaseName].urlPrefix +
-                                        pickDbForm.getValue('url');
+                                    var url = pickDbForm.getValue('url');
+                                    var urlPrefix = dbDescriptions[databaseName].urlPrefix;
+                                    if (url.startsWith(urlPrefix)) urlPrefix = '';
+                                    log.d('hello',urlPrefix, databaseName);
+                                    url = urlPrefix + url;
                                     set(databaseName);
-                                    // database = dbs[databaseName];
+                                    database = dbs[databaseName];
                                     editorWindow.hide();
-                                    callback(database, url);
+                                    callback(database, databaseName, url);
                                 }  
                             })
+                            
                             ,isc.LayoutSpacer.create()
                         ]
                     })

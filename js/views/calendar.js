@@ -31,10 +31,11 @@ define
          ,set: function(state) {
              calendar.setChosenDate(new Date(state.chosenDate));
              calendar.setCurrentViewName(state.currentViewName);
-             calendar.fetchData();
-             // calendar.fetchData({  }, function() {
-             //     calendar.setCriteria({ adminHoursUsed: 1 });
-             //     log.d('in callback!!'); });
+             // calendar.fetchData();
+             log.d('fetching data for calendar:');
+             calendar.fetchData({  }, function() {
+                 calendar.setCriteria({ type: 'shift' });
+                 log.d('in callback!!'); });
          }
      }); 
     

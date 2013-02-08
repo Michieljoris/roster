@@ -63,8 +63,8 @@ define(
            * to the choice made.
            */
           function pickBackend(vow) {
-              backend.pick(function(aBackend, url){
-                  var name = aBackend.name;
+              backend.pick(function(aBackend, name, url){
+                  // var name = aBackend.name;
                   vow.keep(aBackend);
                   VOW.every([
                       cookie.set('backendName', name, 3650)
