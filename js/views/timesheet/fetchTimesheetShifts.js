@@ -112,6 +112,7 @@ define
       
   
       function fetch(person, location, fortnight, callback) {
+          log.d(person, location, fortnight);
           var db = backend.get();
           
           VOW.every([

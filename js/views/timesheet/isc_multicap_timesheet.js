@@ -1,18 +1,22 @@
 /*global logger:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
-/*jshint maxparams:6 maxcomplexity:7 maxlen:190 devel:true*/
+/*jshint maxparams:6 maxcomplexity:20 maxlen:190 devel:true*/
 
 
 define
-({ inject: ['views/timesheet/multicap_ww_timesheet_raphael'
-            // ,'views/timesheet/multicap_2_timesheet_raphael',
+({ inject: ['views/timesheet/multicap_timesheet_casual_raphael'
+            ,'views/timesheet/multicap_timesheet_contract_raphael'
             ,'views/timesheet/fetchTimesheetShifts'
             ,'views/timesheet/calculateTimesheet'],
-   factory: function(timesheet, fetchShifts, calc) {
+   factory: function(casualTimesheet, contractTimesheet , fetchShifts, calc) {
        "use strict";
        var log = logger('timesheet component');
        
+       
+       var  timesheet;
+       
        function setData(state) {
+           log.d('WHAT IS STATE?', state);
            fetchShifts(state.person, state.location, state.fortnight, process);
        }
        
@@ -21,44 +25,38 @@ define
            var location = data.location;
            var shifts = data.shifts;
            var fortnight = data.fortnight;
-           timesheet.clear();
-           log.pp('setting data:::::', person, location, shifts);
-           timesheet.setData({
-               name: person.firstName + ' ' + person.lastName
-               ,payrollNumber: person.payrollNumber
-               ,phone: person.phone
-               ,dswCALevel: person.dswCALevel
-               ,ending: fortnight.clone().addDays(13).toEuropeanShortDate()
-           }); 
            
-           try {
-               switch(person.status) {
-                 case 'permanent' : timesheet.setData({ permanent: 'X'}); break;
-                 case 'part time' : timesheet.setData({ parttime: 'X'}); break;
-                 case 'casual' : timesheet.setData({ casual: 'X'}); break;
-               default: throw new Error("Alert:Person's status is not set (permanent, part time or casual): " + person.name);
+           
+           switch (person.status) {
+             case 'casual':
+               if (timesheet !== sheets.casual)  {
+                   if (timesheet) timesheet.hide();   
+                   timesheet = sheets.casual;
+                   timesheet.setData(data);
+                   timesheet.show();
                }
-               calc.init(fortnight, person, location, shifts);
-               for (var i=0; i<14; i++) {
-                   log.pp(calc.getColumn(i));
-                   timesheet.setColumn( i, calc.getColumn(i));
+               
+               break;
+             case 'part time': 
+             case 'permanent':
+               if (timesheet !== sheets.contract)  {
+                   if (timesheet) timesheet.hide();   
+                   timesheet = sheets.contract;
+                   timesheet.setData(data);
+                   timesheet.show();
                }
-               timesheet.setColumn(14, calc.getTotals());
+               break;
+           default:
+               console.log('Person does not have status', person);
+               return;
            }
-           catch (e) {
-               var message = e.message;
-               if (message.substr(0,5) === 'Alert')
-                  {  message = message.substr(6, message.length);
-                     alert(message);
-                  }
-               log.d(e, e.stack);
-           }
+               
        }
        
        
-       function printDiv()
+       function printDiv(type)
        {
-           var divToPrint=document.getElementById('timesheet1');
+           var divToPrint=document.getElementById('timesheet' + type);
            var newWin= window.open("");
            newWin.document.write(divToPrint.outerHTML);
            newWin.print();
@@ -66,34 +64,85 @@ define
        }
        
         
-       var component = isc.defineClass("Multicap_Timesheet", "Canvas");
+       isc.defineClass("Multicap_Timesheet", "Canvas");
        isc.Multicap_Timesheet.addProperties({
            // write out a div with a known ID
            getInnerHTML : function () {
                // return "<div style='width:100%;height:100%' ID='" + 
                return "<div  ID='" + 
-                   "timesheet1" + "'></div>";
+                   "timesheet" + this.timesheet.type +  "'></div>";
+                   // "timesheet" + '' +  "'></div>";
            },
            // call superclass method to draw, then have
-           // timesheet_canvas replace the textarea we wrote out with
-           // the CKEditor widget
+           // timesheet canvas draw itself
            draw : function () {
                if (!this.readyToDraw()) return this;
                this.Super("draw", arguments);
-               timesheet.draw("timesheet1");
+               this.timesheet.draw("timesheet" + this.timesheet.type);
+               // this.timesheet.draw("timesheet" );
                return this;
            }
            ,redrawOnResize:false // see next section
            // ,setCell: timesheet.setCell
-           ,setData: setData
-           // ,setColumn: timesheet.setColumn
+           ,setData: function() {
+               this.timesheet.setData.apply(this, arguments);   
+           }
+           ,remove: function() {
+               this.timesheet.remove() ;
+           }
+           ,setColumn: function () {
+               this.timesheet.setColumn.apply(this, arguments);
+           }
            // ,clear: timesheet.clear
-           // ,remove: timesheet.remove
            ,canFocus: false
-           ,print: printDiv
-           ,saveAsExcel: timesheet.exportToExcel
+           ,print: function() {
+               printDiv(this.timesheet.type);
+           }
+           ,saveAsExcel: function () {
+               this.timesheet.exportToExcel();   
+           }
            
        });
+       
+       var sheets = {};
+       
+       function createComponent(ts) {
+           var component = isc.Multicap_Timesheet.create({
+               ID: 'timesheet' + ts.type,
+               timesheet: ts,
+               overflow:'auto',
+               showResizeBar: false,
+               padding: 35,
+               visibility: 'hidden'
+           });
+           sheets[ts.type] = component;
+       }
+       
+       createComponent(casualTimesheet);
+       createComponent(contractTimesheet);
 
-       return component;
+       function createTimesheets() {
+           return {
+               setData: setData
+               ,print: function() {
+                   printDiv(timesheet);
+               }
+               ,saveAsExcel: function() {
+                   timesheet.saveAsExcel();
+               }
+               ,getSheets: function() {
+                   var sheetsLayout = isc.VLayout.create({
+                       members: Object.keys(sheets).map(function(s) {
+                           return sheets[s];
+                       })
+                   });
+                   return sheetsLayout;
+               }
+           };
+       }
+
+       return {
+           create: createTimesheets
+       };
+       
    }});

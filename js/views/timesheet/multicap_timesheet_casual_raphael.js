@@ -73,7 +73,7 @@ define
             ,{ title: '*SLEEP OVER 8 HRS', name: 'sleepOver' }
             ,{ title: '*AWAY FROM BASE ALLOW', name: 'awayFromBase' }
             ,{ title: '*ADMIN HOURS USED', name: 'adminHoursUsed' }
-            ,{ title: '*DISTURBED SLEEP HRS', name: 'disturbedSleepHours' }
+            ,{ title: '*CASUAL SLEEP HRS', name: 'disturbedSleepHours' }
         ]
         ,fields = (function() { var obj = {};
                                 rowMap.forEach(function(r,i) { r.row = i; obj[r.name] = r;});
@@ -179,7 +179,7 @@ define
 
         //#API
         function setData(props) {
-            // log.d('in setData in raphael', props);
+            log.d('in setData in raphael', props);
             Object.keys(props).forEach(function(p) {
                 setDataField(p, props[p]);
             });
@@ -290,11 +290,14 @@ define
                 dataCells[c].remove(); 
             });
         }
-       
+        
         //##draw
         //Draw the timesheet, set element to DOM element or its
         //ID which is going to be a parent for drawing surface.
         function draw(anElement) {
+            
+            console.log('DRAWING CASUAL' , anElement);
+            // return;
             element = anElement;
             if (element) paper = new Raphael(element,portWidth, portHeight);
             else paper = new Raphael(0, 0 ,portWidth, portHeight);
@@ -440,7 +443,7 @@ define
             clear: clear,
             resize: resize,
             remove: function() { paper.remove(); },
-            exportToExcel: exportToExcel
-           
+            exportToExcel: exportToExcel,
+            type: 'casual',
         };
     }});

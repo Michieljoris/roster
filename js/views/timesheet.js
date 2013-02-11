@@ -7,10 +7,13 @@ define
     inject: ['View', 
              'views/timesheet/isc_multicap_timesheet'
             ],
-   factory: function(View, TimesheetWW)
+   factory: function(View, isc_Timesheet)
     
     { "use strict";
       var log = logger('timesheet');
+      
+      
+      var isc_timesheet = isc_Timesheet.create(); 
       
       var view = View.create({
           type: 'Timesheet'
@@ -82,19 +85,13 @@ define
           //separate smartclient component for each, and add them all.
           //Have a field in location that lets you pick the timesheet to use.
           isc_timesheet.setData(state);
-          
+       
       }
       
       var fortnightStart = Date.parse('2000, 1 Jan').getTime();
-      var fortnightLength = 14 *  24 * 60 * 60 *1000;
+          var fortnightLength = 14 *  24 * 60 * 60 *1000;
       
       
-      var isc_timesheet = TimesheetWW.create({
-          ID: 'timesheet',
-          overflow:'auto',
-          showResizeBar: false,
-          padding: 35
-      });
       
       var personPickList = { name: "person",
                              type: 'enum',
@@ -179,7 +176,7 @@ define
       
       function fortnightToString(date) {
           var endFortnight = date.clone().addDays(13);
-          return getDateStr(date) + ' - ' + getDateStr(endFortnight);
+              return getDateStr(date) + ' - ' + getDateStr(endFortnight);
       }
       
       function calculateFortnight(date) {
@@ -190,7 +187,7 @@ define
       
       
       var pickFortnightForm = isc.DynamicForm.create({
-          autoDraw: false,
+              autoDraw: false,
           // cellBorder: 1,
           numCols: 3,
           // height: 48,
@@ -216,7 +213,7 @@ define
       
       
       var okButton = isc.Button.create({
-          title: "Ok",
+              title: "Ok",
           width: 40,
           click: function fortnightPicked() {
               var state = view.getState();
@@ -273,7 +270,7 @@ define
           // observer('timesheet');
           view.modified();
           var state = view.getState();
-          fortnightLabel.setContents(fortnightToString(state.fortnight));
+              fortnightLabel.setContents(fortnightToString(state.fortnight));
           
       }
       
@@ -365,10 +362,11 @@ define
                       ,locationForm
                   ]
               })
-              ,isc_timesheet
+              ,isc_timesheet.getSheets()
           ] 
       });
       
+      // isc_timesheet_casual.hide();
       
       view.setCmp(layout);
       return view;
