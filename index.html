@@ -2,6 +2,19 @@
 <!-- <html manifest="./manifest.appcache"> -->
 <html>
   <HEAD>
+  <script>
+    
+    window.mydb = 'extdb';
+  </script>
+    <!-- EXTJS -->
+    <script type="text/javascript" src="lib/ext/extjs/ext-all.js"></script>  
+    <link rel="stylesheet" type="text/css" href="lib/ext/extjs/resources/css/ext-all-debug.css">
+    
+    <script type="text/javascript" src="lib/ext/extensible/src/Extensible.js"></script>       
+    <link rel="stylesheet" type="text/css" href="lib/ext/extensible/resources/css/extensible-all.css">
+    
+    
+    
   </HEAD>
   <BODY>
     <!-- setup bootstrap -->
@@ -112,11 +125,12 @@
     <!-- <script src=lib/sugar.js></script> -->
     
     
+    
     <!-- basic console logger -->
     <script src=lib/logger.js></script>    
     <script> logger.setLevel('debug');</script>
     
-    <!-- development libs ************************************************-->
+   
     <!-- execute in console manifestR.makeManifest to create a manifest for -->
     <!-- the app. Put it in roster.appcache Also set the topline of the index.html file to : -->
     <!-- html manifest="/roster.appcache"> -\-> -->
@@ -132,7 +146,9 @@
     
     <!-- load and start ************************************-->
     <script src=lib/bootstrap.js></script>
+    <!-- <script type="text/javascript" src="js/views/extcalendar/app.js"></script>  -->
     
+    <!-- <div id="myid"></div>  -->
   </BODY> 
 </HTML>
 
