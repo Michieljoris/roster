@@ -136,6 +136,9 @@ define
       }
       
       function open(viewInstance) {
+          //If we have disabled the view don't open it!!
+          if (!views[viewInstance.type]) return;
+          
           log.d('**************************---------------open view');
           //opening same view with same data, do nothing
           if (viewInstanceShowing && viewInstance === viewInstanceShowing) {

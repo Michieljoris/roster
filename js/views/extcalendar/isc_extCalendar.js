@@ -28,7 +28,21 @@ define
            draw : function () {
                if (!this.readyToDraw()) return this;
                this.Super("draw", arguments);
-               // timesheet.draw("timesheet1");
+               //call render on the panel of the calendar...  not
+               //wired up. Also is it the script injecting of extjs a
+               //good thing? Maybe we shold put the scripts directly
+               //in index.html. We're just loading app.js here. But at
+               //the moment if you render doing
+               //mycal.render('extCalenderId') in the console after
+               //opening tthe extcalendar view the dialogs are hiding
+               //behind the calendar... But it -is- showing up!! Also
+               //the css is interfering. In the ext-all-debug.css you
+               //need to comment out some of the resets in the
+               //beginning of the file. But then the calendar gets
+               //messed up a little bit. Can't win can we..
+               
+               //extCalendar.render("extCalendarId")
+               
                return this;
            }
            ,redrawOnResize:false // see next section
