@@ -344,8 +344,9 @@ define
               isPublicHolidayWorked: values.isPublicHolidayWorked,
               repeats: values.repeats, //TODO not implemented yet 
               notes: values.notes || '',
+              // name: values.name,
               // endTijd: '- ' + isc.Time.toTime(values.endDate, 'toShortPaddedTime', true)
-              endTijd: ''
+              endTijd: values.personNames.toString()
               // description: '<h3>' + (values.personNames && (values.personNames.toString()) + '</h3><p>' + (values.notes || ''))
               // description: makeDescription(values.personNames) + (values.notes || '')
           };

@@ -90,7 +90,7 @@ define
 	     // ,dataSource: database, 
 	     // autoFetchData: true
 	     // ,descriptionField: 'notes'
-	     // ,nameField: 'endTijd'
+	     ,nameField: 'endTijd'
              // ,eventWindowStyle: 'eventWindow'
              ,eventOverlapIdenticalStartTimes: true
              ,eventOverlap:false
@@ -170,8 +170,8 @@ define
                          var template  = "<a href='javascript:" + this.ID + ".monthViewEventClick(" + 
                              rowNum + "," + colNum + "," + i + ");' class='" +
                              this.calMonthEventLinkStyle + "'>";
-                         persons = evtArr[i].personString; //TODO format persons
-                         // retVal += template + eTime + evtArr[i][this.nameField] + ' ' + persons + "</a><br/>";
+                         persons = evtArr[i].personNames; //TODO format persons
+                         // retVal += template + eTime Names evtArr[i][this.nameField] + ' ' + persons + "</a><br/>";
                          retVal += template + eTime + eeTime + ' ' + persons + "</a><br/>";
                          log.d('TEMPLATE' , retVal);
                      } else {
