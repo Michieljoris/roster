@@ -318,9 +318,16 @@ define
           }
           
           
+          var className = 'eventColor';
+          if (typeof values.personNames === 'string') {
+              var names = values.personNames.split(',');
+              if (names.length > 1) className = '';
+              else className += names[0];
+          }
+          
           var shift = {
               type: 'shift',
-              eventWindowStyle: values.className + ' eventWindow',
+              eventWindowStyle: className + ' eventWindow',
               _id: values._id,
               _rev: values._rev,
               person: values.person, //array of _id's of people doing the shift
@@ -353,10 +360,10 @@ define
           function makeDescription(str) {
               log.pp('MAKING DESCRIPTION', str);
               var sTime = isc.Time.toTime(values.startDate, 'toShortPaddedTime', true);
-              var eTime = isc.Time.toTime(values.endDate, 'toShortPaddedTime', true);
-              var people = '';
+                  var eTime = isc.Time.toTime(values.endDate, 'toShortPaddedTime', true);
+                  var people = '';
               // if (typeof list === 'string') {
-              str = str.split(',');
+                  str = str.split(',');
               // }
               str.forEach(function(n) {
                   people += n + '<br>';

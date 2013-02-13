@@ -1,5 +1,6 @@
 <!-- <!Doctype HTML> -->
-<html manifest="./manifest.appcache">
+<!-- <html manifest="./manifest.appcache"> -->
+<html>
   <HEAD>
   <script>
     
@@ -22,9 +23,8 @@
       namespace: 'roster',
       <!-- livepage loads main. Livepage reloads the page on save of any resource -->
       <!-- replace with main for production use -->
-      <!-- main: 'lib/livepage', -->
-      main: 'main',
-      
+      main: 'lib/livepage',
+      <!-- main: 'main', -->
       
       pathPrefix: './js',   
       <!-- verbosity: 'info',  -->
@@ -36,7 +36,7 @@
        
       },
       scriptInsertionLocation : 'body',
-      timeOut: 30,
+      timeOut: 15,
       testing: false
       };
       
