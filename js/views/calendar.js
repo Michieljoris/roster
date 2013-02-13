@@ -41,7 +41,15 @@ define
          }
      }); 
 
+     //Whenever the calendar is shown css classes are set that bind a
+     //person to a bg and fg color (as set in person fields). Shifts
+     //on the calendar are then assigned a class according to who does
+     //the shift. The className is set whenever the shift is edited
+     //and a person is picked. (See personPickList.change in
+     //shiftEditor.js)
      
+     //TODO: mayby this should be only at startup and when a new user
+     //is added
      function setCssClasses() {
          var personCriterion = {
              fieldName: 'type',
