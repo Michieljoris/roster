@@ -197,7 +197,7 @@ define
             ,isPublicHolidayWorked: { type: 'boolean'}
             ,sleepOver: { type: 'boolean'}
             ,adminHoursUsed: { type: 'float' , canEdit: false }
-            ,name: { type: 'text', title: 'Id', canEdit: false} //should be unique within its type..
+            ,name: { type: 'text', title: 'Unique name', canEdit: false} //should be unique within its type..
             ,colorFg: { type: 'text' }
             ,colorBg: { type: 'text' }
             ,address: { type: 'text'}
