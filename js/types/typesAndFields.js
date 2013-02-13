@@ -183,6 +183,7 @@ define
             ,personIdsString: { type: 'text', canEdit: false}
             ,location: { type: "text", canEdit: false, title: 'Location Id'} 
             ,locationString: { type: 'text', title: 'Location'}
+            ,eventWindowStyle: { type: 'text'}
             ,description: { hide:true, type: "text", length: 500}
             ,notes: { type: "textarea", length: 5000 }
             ,ad: { title: 'All day', type: 'boolean'} //allday

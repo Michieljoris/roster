@@ -337,14 +337,14 @@ define
        var newRecord = function(aType) {
            if (dataTable.selectionType === 'none') return;
            // addUpdateData('addData', { group: 'group'});
-               var record = typesAndFields.newRecord(aType);
+           var record = typesAndFields.newRecord(aType);
            dataSource.addData( record,
-                             function(resp, data, req) 
-		             {   dataTable.deselectAllRecords();
-                                 dataTable.selectRecord(data);
-                                 editRecord(data);
-                                 // editForm.setValues(data);
-                                 log.d(resp,data,req);});
+                               function(resp, data, req) 
+		               {   dataTable.deselectAllRecords();
+                                   dataTable.selectRecord(data);
+                                   editRecord(data);
+                                   // editForm.setValues(data);
+                                   log.d(resp,data,req);});
        };
       
       
