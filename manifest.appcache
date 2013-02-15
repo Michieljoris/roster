@@ -1,7 +1,7 @@
 CACHE MANIFEST
 
 #version 1.0 2-5-2013
-#version 0.1.1
+#version 0.1.4
 
 CACHE:
 
@@ -80,6 +80,7 @@ http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Menu/
 http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/ToolStrip/background_vertical.png
 
 #javascript files
+http://michieljoris.dyndns.org:8000/lib/browserDetect.js
 http://michieljoris.dyndns.org:8000/lib/isomorphic/system/modules/ISC_Core.js
 http://michieljoris.dyndns.org:8000/lib/isomorphic/system/modules/ISC_Foundation.js
 http://michieljoris.dyndns.org:8000/lib/isomorphic/system/modules/ISC_Containers.js

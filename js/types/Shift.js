@@ -321,7 +321,8 @@ define
           var className = 'eventColor';
           if (typeof values.personNames === 'string') {
               var names = values.personNames.split(',');
-              if (names.length > 1) className = '';
+              //eventColor class is set in skin_styles.css
+              if (names.length > 1) className = 'eventColor';
               else className += names[0];
           }
           

@@ -17,8 +17,8 @@ define
             type: { type: 'text', required: true, canFilter: false }
             ,_id: { primaryKey: true , title: 'dbId'}
             ,_rev: { type: 'text', title: 'dbRev'}
-            ,inheritable: { type: 'boolean' }
-            ,inheritingFrom: { type: 'text', title: 'Inheriting values from:' }
+            ,inheritable: { type: 'boolean', showIf: 'false' }
+            ,inheritingFrom: { type: 'text', title: 'Inheriting values from:', showIf: 'false' }
         };
     
         for (var f in genericFields) if (!genericFields[f].title)
@@ -228,7 +228,7 @@ define
             ,permissions: { type: 'text'}
             ,dswCALevel:  { type: 'text' }
             ,payrollNumber: { type: 'text'}
-            ,status: { type: 'text ',
+            ,status: { type: 'text ', required: true,
                        valueMap: ['permanent', 'part time', 'casual']
                      }
             ,costCentre: { type: 'text'}

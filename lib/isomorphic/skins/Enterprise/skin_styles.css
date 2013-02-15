@@ -4487,16 +4487,20 @@ a.calMonthEventLink:active {
 
 /* ----event window---- */
 .eventWindow {
-  background-color: #f0f8ff;
-  border: 1px solid #d0dff6;
+  /* background-color: #f0f8ff; */
+  /* border: 1px solid #d0dff6; */
   font-family: Arial, Verdana, sans-serif;
   font-size: 9px;
   color: black;
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  border-radius: 8px;
 }
 
 .eventWindowHeader {
-  background-color: #d0dff6;
-  color: #4d4d4d;
+  /* background-color: #d0dff6; */
+  /* color: #4d4d4d; */
+  color: black;
   font-family: Arial, Verdana, sans-serif;
   font-size: 9px;
 }
