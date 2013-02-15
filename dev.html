@@ -3,7 +3,7 @@
 <html>
   <HEAD>
      <!-- Try to detect the browser the user is using -->
-    <script src=lib/browserDetect.js></script>
+    <!-- <script src=lib/browserDetect.js></script> -->
   <script>
     
     window.mydb = 'extdb';
@@ -19,19 +19,20 @@
     
   </HEAD>
   <BODY>
+    <div id='statusUpdate' ></div>
     <div id='appFail' style='visibility:hidden;'> 
-      Please use
-      Chrome: <a href="http://www.google.com/chrome">install</a> or <a href="http://portableapps.com/apps/internet/google_chrome_portable">standalone</a>.<p>
-      Contact me at <a href= 'mailto:michieljoris@gmail.com'>michieljoris@gmail.com</a>
+      <!-- Please use -->
+      <!-- Chrome: <a href="http://www.google.com/chrome">install</a> or <a href="http://portableapps.com/apps/internet/google_chrome_portable">standalone</a>.<p> -->
+      <!-- Contact me at <a href= 'mailto:michieljoris@gmail.com'>michieljoris@gmail.com</a> -->
       </div>
 
   <script>
-    if (BrowserDetect.browser !== 'Chrome') {
-     document.getElementById('appFail').style.visibility = 'visible';
-                  alert('This app has been tested in Chrome only and will very likely not work in any other browser, though you might try Firefox. IE will fail. Let me know how you go with Safari. Pressing Ok will give it a shot anyway. Good luck... :-)');
+    <!-- if (BrowserDetect.browser !== 'Chrome') { -->
+    <!--  document.getElementById('appFail').style.visibility = 'visible'; -->
+    <!--               alert('This app has been tested in Chrome only and will very likely not work in any other browser, though you might try Firefox. IE will fail. Let me know how you go with Safari. Pressing Ok will give it a shot anyway. Good luck... :-)'); -->
     
-              }
-    else document.getElementById('appFail').style.display = 'none';
+    <!--           } -->
+    <!-- else document.getElementById('appFail').style.display = 'none'; -->
   </script>
 <!-- setup bootstrap -->
 <script>
@@ -88,7 +89,7 @@
     <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Calendar.js></SCRIPT>
     <!-- using the source version since i modified it.  -->
     <!-- <SCRIPT SRC=lib/isomorphic/client/modules/ISC_Calendar.js></SCRIPT> -->
-    
+   
     <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC.js></SCRIPT>   -->
     
     <!-- set the skin of the ui -
@@ -162,7 +163,7 @@
     <script src=test/quickpouch.js></script>    
     
     <!-- load and start ************************************-->
-    <script src=lib/bootstrap.js></script>
+    <script src=lib/bootstrap.js></script> --
     <!-- <script type="text/javascript" src="js/views/extcalendar/app.js"></script>  -->
     
     <!-- <div id="myid"></div>  -->

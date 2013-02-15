@@ -3,6 +3,7 @@
   <HEAD>
      <!-- Try to detect the browser the user is using -->
     <script src=lib/browserDetect.js></script>
+    <script src=lib/appCache.js></script>
   <script>
     
     window.mydb = 'extdb';
@@ -17,8 +18,12 @@
     
     
   </HEAD>
+  
   <BODY>
-    
+    <div id='statusUpdate' >
+      Starting app:<p>
+      <progress id='progressBar' value="0" max="100">
+    </div>
     <div id='appFail' style='visibility:hidden;'> 
       Please use
       Chrome: <a href="http://www.google.com/chrome">install</a> or <a href="http://portableapps.com/apps/internet/google_chrome_portable">standalone</a>.<p>
@@ -69,17 +74,7 @@
       window.isc_useSimpleNames = false;
     </script> 
     
-  <!-- //this debug version of the isc files gets me a spinner for -->
-  <!--   datasource access..   -->
-    <!-- <SCRIPT SRC=lib/isomorphic/system/modules-debug/ISC_Core.js></SCRIPT>    -->
-    <!-- <SCRIPT SRC=lib/isomorphic/system/modules-debug/ISC_Foundation.js></SCRIPT>    -->
-    <!-- <SCRIPT SRC=lib/isomorphic/system/modules-debug/ISC_Containers.js></SCRIPT>    -->
-    <!-- <SCRIPT SRC=lib/isomorphic/system/modules-debug/ISC_Grids.js></SCRIPT>    -->
-    <!-- <SCRIPT SRC=lib/isomorphic/system/modules-debug/ISC_Forms.js></SCRIPT>    -->
-    <!-- <SCRIPT SRC=lib/isomorphic/system/modules-debug/ISC_DataBinding.js></SCRIPT>    -->
-    <!-- <SCRIPT SRC=lib/isomorphic/system/modules-debug/ISC_Calendar.js></SCRIPT> -->
  <!-- TODO: you should use chrome source maps to ease debugging..    -->
-    <!-- concatenated all these files into the ISC.js below-->
     <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Core.js></SCRIPT>   
     <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Foundation.js></SCRIPT>   
     <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Containers.js></SCRIPT>   
@@ -87,14 +82,9 @@
     <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Forms.js></SCRIPT>   
     <SCRIPT SRC=lib/isomorphic/system/modules/ISC_DataBinding.js></SCRIPT>   
     <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Calendar.js></SCRIPT>
-    <!-- using the source version since i modified it.  -->
-    <!-- <SCRIPT SRC=lib/isomorphic/client/modules/ISC_Calendar.js></SCRIPT> -->
-    
-    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC.js></SCRIPT>   -->
     
     <!-- set the skin of the ui -
-    <!-- <SCRIPT SRC=lib/isomorphic/skins/Simplicity/load_skin.js></SCRIPTfyProps(obj) {
-       Object.key>   -->
+    <!-- <SCRIPT SRC=lib/isomorphic/skins/Simplicity/load_skin.js>-->
     <!-- <SCRIPT SRC=lib/isomorphic/skins/standard/load_skin.js></SCRIPT>   -->
     <!-- <SCRIPT SRC=lib/isomorphic/skins/Mobile/load_skin.js></SCRIPT>   -->
     <!-- <SCRIPT SRC=lib/isomorphic/skins/Cupertino/load_skin.js></SCRIPT>   -->
