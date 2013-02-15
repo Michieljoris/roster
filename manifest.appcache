@@ -1,7 +1,6 @@
 CACHE MANIFEST
 
-#version 1.0 2-5-2013
-#version 0.1.5
+#version 1.0 2-15-2013 
 
 CACHE:
 
@@ -17,7 +16,6 @@ http://localhost:8000/mysrc/javascript/roster/images/home.png
 http://localhost:8000/mysrc/javascript/roster/images/person.png
 http://localhost:8000/mysrc/javascript/roster/images/print.png
 http://localhost:8000/mysrc/javascript/roster/images/saveui.png
-http://localhost:8000/mysrc/javascript/roster/images/shift.png
 http://localhost:8000/mysrc/javascript/roster/images/table.png
 http://localhost:8000/mysrc/javascript/roster/images/timesheet.png
 http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/DynamicForm/checked.png
@@ -76,10 +74,7 @@ http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/im
 http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/ToolStrip/background_vertical.png
 
 #javascript files
-<<<<<<< HEAD
-=======
 http://localhost:8000/mysrc/javascript/roster/lib/browserDetect.js
->>>>>>> release/v0.1.4
 http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/system/modules/ISC_Core.js
 http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/system/modules/ISC_Foundation.js
 http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/system/modules/ISC_Containers.js
@@ -98,16 +93,11 @@ http://localhost:8000/mysrc/javascript/roster/lib/jszip/jszip-load.js
 http://localhost:8000/mysrc/javascript/roster/lib/jszip/jszip-inflate.js
 http://localhost:8000/mysrc/javascript/roster/lib/jszip/jszip-deflate.js
 http://localhost:8000/mysrc/javascript/roster/lib/xlsx.js
-<<<<<<< HEAD
-http://localhost:8000/mysrc/javascript/roster/lib/logger.js
-http://localhost:8000/mysrc/javascript/roster/lib/bootstrap.js
-=======
 http://localhost:8000/mysrc/javascript/roster/lib/ZeroClipboard.js
 http://localhost:8000/mysrc/javascript/roster/lib/logger.js
 http://localhost:8000/mysrc/javascript/roster/test/quickpouch.js
 http://localhost:8000/mysrc/javascript/roster/lib/bootstrap.js
 http://localhost:8000/mysrc/javascript/roster/lib/livepage.js
->>>>>>> release/v0.1.4
 http://localhost:8000/mysrc/javascript/roster/js/main.js
 http://localhost:8000/mysrc/javascript/roster/lib/cookie.js
 http://localhost:8000/mysrc/javascript/roster/js/loaders/backend.js
@@ -115,11 +105,12 @@ http://localhost:8000/mysrc/javascript/roster/js/user.js
 http://localhost:8000/mysrc/javascript/roster/js/layout.js
 http://localhost:8000/mysrc/javascript/roster/js/View.js
 http://localhost:8000/mysrc/javascript/roster/js/Editor.js
-<<<<<<< HEAD
-http://localhost:8000/mysrc/javascript/roster/js/databases/pouchDB.js
 http://localhost:8000/mysrc/javascript/roster/js/viewTree.js
 http://localhost:8000/mysrc/javascript/roster/js/loaders/view.js
 http://localhost:8000/mysrc/javascript/roster/js/loaders/editor.js
+http://localhost:8000/mysrc/javascript/roster/js/databases/pouchDB.js
+http://localhost:8000/mysrc/javascript/roster/js/types/typesAndFields.js
+http://localhost:8000/mysrc/javascript/roster/lib/sha1.js
 http://localhost:8000/mysrc/javascript/roster/js/types/editors/locationEditor.js
 http://localhost:8000/mysrc/javascript/roster/js/types/editors/shiftEditor.js
 http://localhost:8000/mysrc/javascript/roster/js/types/editors/personEditor.js
@@ -129,32 +120,10 @@ http://localhost:8000/mysrc/javascript/roster/js/views/timesheet.js
 http://localhost:8000/mysrc/javascript/roster/js/types/Shift.js
 http://localhost:8000/mysrc/javascript/roster/js/editorUtils.js
 http://localhost:8000/mysrc/javascript/roster/js/editorManager.js
-http://localhost:8000/mysrc/javascript/roster/lib/utils.js
-http://localhost:8000/mysrc/javascript/roster/js/types/typesAndFields.js
 http://localhost:8000/mysrc/javascript/roster/js/views/table/tableFilter.js
-http://localhost:8000/mysrc/javascript/roster/js/views/timesheet/isc_multicap_timesheet.js
-http://localhost:8000/mysrc/javascript/roster/lib/sha1.js
-=======
-http://localhost:8000/mysrc/javascript/roster/js/viewTree.js
-http://localhost:8000/mysrc/javascript/roster/js/loaders/view.js
-http://localhost:8000/mysrc/javascript/roster/js/loaders/editor.js
-http://localhost:8000/mysrc/javascript/roster/js/databases/pouchDB.js
-http://localhost:8000/mysrc/javascript/roster/js/types/typesAndFields.js
-http://localhost:8000/mysrc/javascript/roster/lib/sha1.js
-http://localhost:8000/mysrc/javascript/roster/js/views/table.js
-http://localhost:8000/mysrc/javascript/roster/js/views/calendar.js
-http://localhost:8000/mysrc/javascript/roster/js/views/timesheet.js
-http://localhost:8000/mysrc/javascript/roster/js/types/editors/locationEditor.js
-http://localhost:8000/mysrc/javascript/roster/js/types/editors/shiftEditor.js
-http://localhost:8000/mysrc/javascript/roster/js/types/editors/personEditor.js
-http://localhost:8000/mysrc/javascript/roster/js/types/Shift.js
-http://localhost:8000/mysrc/javascript/roster/js/editorUtils.js
-http://localhost:8000/mysrc/javascript/roster/js/editorManager.js
-http://localhost:8000/mysrc/javascript/roster/js/views/table/tableFilter.js
-http://localhost:8000/mysrc/javascript/roster/lib/utils.js
-http://localhost:8000/mysrc/javascript/roster/js/views/timesheet/isc_multicap_timesheet.js
->>>>>>> release/v0.1.4
 http://localhost:8000/mysrc/javascript/roster/js/parentListEditor.js
+http://localhost:8000/mysrc/javascript/roster/lib/utils.js
+http://localhost:8000/mysrc/javascript/roster/js/views/timesheet/isc_multicap_timesheet.js
 http://localhost:8000/mysrc/javascript/roster/js/views/timesheet/multicap_timesheet_casual_raphael.js
 http://localhost:8000/mysrc/javascript/roster/js/views/timesheet/multicap_timesheet_contract_raphael.js
 http://localhost:8000/mysrc/javascript/roster/js/views/timesheet/fetchTimesheetShifts.js
@@ -162,7 +131,3 @@ http://localhost:8000/mysrc/javascript/roster/js/views/timesheet/calculateTimesh
 
 NETWORK:
 *
-<<<<<<< HEAD
-=======
-
->>>>>>> release/v0.1.4
