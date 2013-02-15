@@ -1,20 +1,13 @@
 CACHE MANIFEST
 
-#version 1.0 2-15-2013 
+#version 1.0 2-16-2013
 
 CACHE:
 
 #images
-images/Excel-icon.png
-images/arrow_left.png
-images/arrow_right.png
 images/calendar.png
 images/clear.png
 images/database.png
-images/date_control.png
-images/home.png
-images/person.png
-images/print.png
 images/saveui.png
 images/table.png
 images/timesheet.png
@@ -24,16 +17,11 @@ lib/isomorphic/skins/Enterprise/images/DynamicForm/unchecked.png
 lib/isomorphic/skins/Enterprise/images/DynamicForm/unsetcheck.png
 lib/isomorphic/skins/Enterprise/images/FileBrowser/createNewFolder.png
 lib/isomorphic/skins/Enterprise/images/ListGrid/sort_descending.png
-lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_end.png
-lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_start.png
-lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_track.png
-lib/isomorphic/skins/Enterprise/images/Scrollbar/hthumb_grip.png
 lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_end.png
 lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_start.png
 lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_track.png
 lib/isomorphic/skins/Enterprise/images/Scrollbar/vthumb_grip.png
 lib/isomorphic/skins/Enterprise/images/SectionHeader/opener_closed.png
-lib/isomorphic/skins/Enterprise/images/SectionHeader/opener_opened.png
 lib/isomorphic/skins/Enterprise/images/Splitbar/vsplit_snap.png
 lib/isomorphic/skins/Enterprise/images/Window/headerIcon.png
 lib/isomorphic/skins/Enterprise/images/Window/v_resizer.png
@@ -48,13 +36,14 @@ lib/isomorphic/skins/Enterprise/images/pickers/comboBoxPicker.png
 lib/isomorphic/skins/Enterprise/images/pickers/comboBoxPicker_Disabled.png
 
 #internal HTML documents
-dev.html
+index.html
 
 #style sheets
 lib/isomorphic/skins/Enterprise/skin_styles.css
 
 #style sheet images
 lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeader.gif
+lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeaderDown.gif
 lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeaderLabel.gif
 lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeaderLabelDown.gif
 lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeaderOver.gif
@@ -64,6 +53,7 @@ lib/isomorphic/skins/Enterprise/images/CubeGrid/innerHeader.gif
 lib/isomorphic/skins/Enterprise/images/CubeGrid/innerHeaderSelected.gif
 lib/isomorphic/skins/Enterprise/images/CubeGrid/innerHeaderSelectedOver.gif
 lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeader.gif
+lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeaderDown.gif
 lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeaderLabel.gif
 lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeaderLabelDown.gif
 lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeaderOver.gif
@@ -73,9 +63,9 @@ lib/isomorphic/skins/Enterprise/images/Menu/menu_background.png
 lib/isomorphic/skins/Enterprise/images/Menu/menu_background_rtl.png
 lib/isomorphic/skins/Enterprise/images/ToolStrip/background_vertical.png
 
-
 #javascript files
 lib/browserDetect.js
+lib/appCache.js
 lib/isomorphic/system/modules/ISC_Core.js
 lib/isomorphic/system/modules/ISC_Foundation.js
 lib/isomorphic/system/modules/ISC_Containers.js
@@ -94,11 +84,9 @@ lib/jszip/jszip-load.js
 lib/jszip/jszip-inflate.js
 lib/jszip/jszip-deflate.js
 lib/xlsx.js
-lib/ZeroClipboard.js
+lib/browserDetect.js
 lib/logger.js
-test/quickpouch.js
 lib/bootstrap.js
-lib/livepage.js
 js/main.js
 lib/cookie.js
 js/loaders/backend.js
@@ -106,25 +94,25 @@ js/user.js
 js/layout.js
 js/View.js
 js/Editor.js
+js/databases/pouchDB.js
 js/viewTree.js
 js/loaders/view.js
 js/loaders/editor.js
-js/databases/pouchDB.js
 js/types/typesAndFields.js
 lib/sha1.js
-js/types/editors/locationEditor.js
-js/types/editors/shiftEditor.js
-js/types/editors/personEditor.js
 js/views/table.js
 js/views/calendar.js
 js/views/timesheet.js
-js/types/Shift.js
-js/editorUtils.js
+js/types/editors/locationEditor.js
+js/types/editors/shiftEditor.js
+js/types/editors/personEditor.js
 js/editorManager.js
 js/views/table/tableFilter.js
-js/parentListEditor.js
+js/types/Shift.js
 lib/utils.js
 js/views/timesheet/isc_multicap_timesheet.js
+js/editorUtils.js
+js/parentListEditor.js
 js/views/timesheet/multicap_timesheet_casual_raphael.js
 js/views/timesheet/multicap_timesheet_contract_raphael.js
 js/views/timesheet/fetchTimesheetShifts.js
@@ -132,3 +120,24 @@ js/views/timesheet/calculateTimesheet.js
 
 NETWORK:
 *
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
