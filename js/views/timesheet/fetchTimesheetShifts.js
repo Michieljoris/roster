@@ -134,6 +134,8 @@ define
               // callback,
               function (msg) {
                   log.e('ERROR: could not get some of the data needed to build this timesheet', msg);
+                  alert('Could not get some of the data to build calculate this timesheet. Have you selected a person and/or location?');
+                  
               }
           );
       }

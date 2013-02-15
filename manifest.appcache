@@ -1,85 +1,85 @@
 CACHE MANIFEST
 
 #version 1.0 2-5-2013
-#version 0.1.2
+#version 0.1.5
 
 CACHE:
 
 #images
-http://michieljoris.dyndns.org:8000/images/Excel-icon.png
-http://michieljoris.dyndns.org:8000/images/arrow_left.png
-http://michieljoris.dyndns.org:8000/images/arrow_right.png
-http://michieljoris.dyndns.org:8000/images/calendar.png
-http://michieljoris.dyndns.org:8000/images/clear.png
-http://michieljoris.dyndns.org:8000/images/date_control.png
-http://michieljoris.dyndns.org:8000/images/home.png
-http://michieljoris.dyndns.org:8000/images/person.png
-http://michieljoris.dyndns.org:8000/images/print.png
-http://michieljoris.dyndns.org:8000/images/table.png
-http://michieljoris.dyndns.org:8000/images/timesheet.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/DynamicForm/date_control.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/DynamicForm/unchecked.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/DynamicForm/unsetcheck.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/FileBrowser/createNewFolder.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/ListGrid/sort_ascending.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_end.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_start.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_track.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Scrollbar/hthumb_grip.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_Disabled_corner.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_Disabled_end.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_Disabled_start.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_Disabled_track.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_corner.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_end.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_start.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_track.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Scrollbar/vthumb_grip.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/SectionHeader/opener_closed.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/SectionHeader/opener_opened.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Splitbar/vsplit_snap.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Window/headerIcon.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Window/v_resizer.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/actions/add.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/actions/back.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/actions/edit.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/actions/filter.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/actions/forward.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/actions/save.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/blank.gif
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/headerIcons/close.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/pickers/comboBoxPicker.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/pickers/comboBoxPicker_Disabled.png
+http://localhost:8000/mysrc/javascript/roster/images/Excel-icon.png
+http://localhost:8000/mysrc/javascript/roster/images/arrow_left.png
+http://localhost:8000/mysrc/javascript/roster/images/arrow_right.png
+http://localhost:8000/mysrc/javascript/roster/images/calendar.png
+http://localhost:8000/mysrc/javascript/roster/images/clear.png
+http://localhost:8000/mysrc/javascript/roster/images/database.png
+http://localhost:8000/mysrc/javascript/roster/images/date_control.png
+http://localhost:8000/mysrc/javascript/roster/images/home.png
+http://localhost:8000/mysrc/javascript/roster/images/person.png
+http://localhost:8000/mysrc/javascript/roster/images/print.png
+http://localhost:8000/mysrc/javascript/roster/images/saveui.png
+http://localhost:8000/mysrc/javascript/roster/images/shift.png
+http://localhost:8000/mysrc/javascript/roster/images/table.png
+http://localhost:8000/mysrc/javascript/roster/images/timesheet.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/DynamicForm/checked.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/DynamicForm/date_control.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/DynamicForm/unchecked.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/DynamicForm/unsetcheck.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/FileBrowser/createNewFolder.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/ListGrid/sort_descending.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_end.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_start.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_track.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/Scrollbar/hthumb_grip.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_end.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_start.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_track.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/Scrollbar/vthumb_grip.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/SectionHeader/opener_closed.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/SectionHeader/opener_opened.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/Splitbar/vsplit_snap.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/Window/headerIcon.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/Window/v_resizer.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/actions/add.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/actions/back.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/actions/edit.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/actions/filter.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/actions/forward.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/blank.gif
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/headerIcons/close.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/pickers/comboBoxPicker.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/pickers/comboBoxPicker_Disabled.png
 
 #internal HTML documents
-http://michieljoris.dyndns.org:8000/index.html
+http://localhost:8000/mysrc/javascript/roster/dev.html
 
 #style sheets
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/skin_styles.css
-
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/skin_styles.css
 
 #style sheet images
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeader.gif
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeaderLabel.gif
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeaderLabelDown.gif
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeaderOver.gif
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeaderSelected.gif
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeaderSelectedOver.gif
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/CubeGrid/innerHeader.gif
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/CubeGrid/innerHeaderSelected.gif
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/CubeGrid/innerHeaderSelectedOver.gif
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeader.gif
-#http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeaderDown.gif
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeaderLabel.gif
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeaderLabelDown.gif
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeaderOver.gif
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeaderSelected.gif
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeaderSelectedOver.gif
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Menu/menu_background.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/Menu/menu_background_rtl.png
-http://michieljoris.dyndns.org:8000/lib/isomorphic/skins/Enterprise/images/ToolStrip/background_vertical.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeader.gif
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeaderLabel.gif
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeaderLabelDown.gif
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeaderOver.gif
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeaderSelected.gif
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/CubeGrid/colHeaderSelectedOver.gif
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/CubeGrid/innerHeader.gif
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/CubeGrid/innerHeaderSelected.gif
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/CubeGrid/innerHeaderSelectedOver.gif
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeader.gif
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeaderLabel.gif
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeaderLabelDown.gif
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeaderOver.gif
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeaderSelected.gif
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/CubeGrid/rowHeaderSelectedOver.gif
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/Menu/menu_background.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/Menu/menu_background_rtl.png
+http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/skins/Enterprise/images/ToolStrip/background_vertical.png
 
 #javascript files
+<<<<<<< HEAD
+=======
+http://localhost:8000/mysrc/javascript/roster/lib/browserDetect.js
+>>>>>>> release/v0.1.4
 http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/system/modules/ISC_Core.js
 http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/system/modules/ISC_Foundation.js
 http://localhost:8000/mysrc/javascript/roster/lib/isomorphic/system/modules/ISC_Containers.js
@@ -98,8 +98,16 @@ http://localhost:8000/mysrc/javascript/roster/lib/jszip/jszip-load.js
 http://localhost:8000/mysrc/javascript/roster/lib/jszip/jszip-inflate.js
 http://localhost:8000/mysrc/javascript/roster/lib/jszip/jszip-deflate.js
 http://localhost:8000/mysrc/javascript/roster/lib/xlsx.js
+<<<<<<< HEAD
 http://localhost:8000/mysrc/javascript/roster/lib/logger.js
 http://localhost:8000/mysrc/javascript/roster/lib/bootstrap.js
+=======
+http://localhost:8000/mysrc/javascript/roster/lib/ZeroClipboard.js
+http://localhost:8000/mysrc/javascript/roster/lib/logger.js
+http://localhost:8000/mysrc/javascript/roster/test/quickpouch.js
+http://localhost:8000/mysrc/javascript/roster/lib/bootstrap.js
+http://localhost:8000/mysrc/javascript/roster/lib/livepage.js
+>>>>>>> release/v0.1.4
 http://localhost:8000/mysrc/javascript/roster/js/main.js
 http://localhost:8000/mysrc/javascript/roster/lib/cookie.js
 http://localhost:8000/mysrc/javascript/roster/js/loaders/backend.js
@@ -107,6 +115,7 @@ http://localhost:8000/mysrc/javascript/roster/js/user.js
 http://localhost:8000/mysrc/javascript/roster/js/layout.js
 http://localhost:8000/mysrc/javascript/roster/js/View.js
 http://localhost:8000/mysrc/javascript/roster/js/Editor.js
+<<<<<<< HEAD
 http://localhost:8000/mysrc/javascript/roster/js/databases/pouchDB.js
 http://localhost:8000/mysrc/javascript/roster/js/viewTree.js
 http://localhost:8000/mysrc/javascript/roster/js/loaders/view.js
@@ -125,6 +134,26 @@ http://localhost:8000/mysrc/javascript/roster/js/types/typesAndFields.js
 http://localhost:8000/mysrc/javascript/roster/js/views/table/tableFilter.js
 http://localhost:8000/mysrc/javascript/roster/js/views/timesheet/isc_multicap_timesheet.js
 http://localhost:8000/mysrc/javascript/roster/lib/sha1.js
+=======
+http://localhost:8000/mysrc/javascript/roster/js/viewTree.js
+http://localhost:8000/mysrc/javascript/roster/js/loaders/view.js
+http://localhost:8000/mysrc/javascript/roster/js/loaders/editor.js
+http://localhost:8000/mysrc/javascript/roster/js/databases/pouchDB.js
+http://localhost:8000/mysrc/javascript/roster/js/types/typesAndFields.js
+http://localhost:8000/mysrc/javascript/roster/lib/sha1.js
+http://localhost:8000/mysrc/javascript/roster/js/views/table.js
+http://localhost:8000/mysrc/javascript/roster/js/views/calendar.js
+http://localhost:8000/mysrc/javascript/roster/js/views/timesheet.js
+http://localhost:8000/mysrc/javascript/roster/js/types/editors/locationEditor.js
+http://localhost:8000/mysrc/javascript/roster/js/types/editors/shiftEditor.js
+http://localhost:8000/mysrc/javascript/roster/js/types/editors/personEditor.js
+http://localhost:8000/mysrc/javascript/roster/js/types/Shift.js
+http://localhost:8000/mysrc/javascript/roster/js/editorUtils.js
+http://localhost:8000/mysrc/javascript/roster/js/editorManager.js
+http://localhost:8000/mysrc/javascript/roster/js/views/table/tableFilter.js
+http://localhost:8000/mysrc/javascript/roster/lib/utils.js
+http://localhost:8000/mysrc/javascript/roster/js/views/timesheet/isc_multicap_timesheet.js
+>>>>>>> release/v0.1.4
 http://localhost:8000/mysrc/javascript/roster/js/parentListEditor.js
 http://localhost:8000/mysrc/javascript/roster/js/views/timesheet/multicap_timesheet_casual_raphael.js
 http://localhost:8000/mysrc/javascript/roster/js/views/timesheet/multicap_timesheet_contract_raphael.js
@@ -133,3 +162,7 @@ http://localhost:8000/mysrc/javascript/roster/js/views/timesheet/calculateTimesh
 
 NETWORK:
 *
+<<<<<<< HEAD
+=======
+
+>>>>>>> release/v0.1.4

@@ -21,7 +21,7 @@ define
     var helpCanvas = isc.HTMLPane.
     create({
 	height:'25%',
-	contentsURL:'helptext.html'
+	contentsURL:'version.html'
 	,overflow:"auto",
 	styleName:"defaultBorder",
 	padding:10

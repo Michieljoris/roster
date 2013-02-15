@@ -47,6 +47,7 @@ define
      //the shift.  A property called eventWindowStyle is set in
      //Shift.js when the shift is created. It is set to a classname
      //derived from personNames
+     //skin_styles.css has been edited to give shifts proper colors
      
      //TODO: maybe this should be only at startup and when a new user
      //is added
@@ -56,6 +57,10 @@ define
              operator:'equals',
              value:'person'
          };  
+         
+         // utils.createCSSClass('.eventColorMultiple',
+         //                      'background-color:' + 'aliceBlue' +
+         //                      '; color:' + 'black');
      
          backend.get().getDS().fetchData(null,
                                          function (dsResponse, data) {
@@ -75,8 +80,8 @@ define
                                                      var bg = p.colorBg ? p.colorBg : 'f0f8ff';
                                                      log.d('setting css classes' , p.name, fg, bg);
                                                      utils.createCSSClass('.eventColor' + p.name,
-                                                                    'background-color:' + bg +
-                                                                    '; color:' + fg);
+                                                                          'background-color:' + bg +
+                                                                          '; color:' + fg);
                                                  }); 
                                                  
                                              }

@@ -22,11 +22,10 @@ define
        
        function process(data) {
            var person = data.person;
-           var location = data.location;
-           var shifts = data.shifts;
-           var fortnight = data.fortnight;
-           
-           
+           // var location = data.location;
+           // var shifts = data.shifts;
+           // var fortnight = data.fortnight;
+               // alert('Select a person and/or location to show a calculated timesheet.')
            switch (person.status) {
              case 'casual':
                if (timesheet !== sheets.casual)  {
@@ -47,7 +46,11 @@ define
                }
                break;
            default:
-               console.log('Person does not have status', person);
+               console.error('Person does not have status', person);
+               
+               // timesheet.hide();
+               // TODO: show a canvas that asks to set the status
+               // alert('Please assign a status (permanent, part time or casual) to: ' + person.name);
                return;
            }
                

@@ -1,6 +1,8 @@
 <!-- <!Doctype HTML> -->
 <html manifest="./manifest.appcache">
   <HEAD>
+     <!-- Try to detect the browser the user is using -->
+    <script src=lib/browserDetect.js></script>
   <script>
     
     window.mydb = 'extdb';
@@ -16,6 +18,21 @@
     
   </HEAD>
   <BODY>
+    
+    <div id='appFail' style='visibility:hidden;'> 
+      Please use
+      Chrome: <a href="http://www.google.com/chrome">install</a> or <a href="http://portableapps.com/apps/internet/google_chrome_portable">standalone</a>.<p>
+      Contact me at <a href= 'mailto:michieljoris@gmail.com'>michieljoris@gmail.com</a>
+      </div>
+
+  <script>
+    if (BrowserDetect.browser !== 'Chrome') {
+     document.getElementById('appFail').style.visibility = 'visible';
+                  alert('This app has been tested in Chrome only and will very likely not work in any other browser, though you might try Firefox. IE will fail. Let me know how you go with Safari. Pressing Ok will give it a shot anyway. Good luck... :-)');
+    
+              }
+    else document.getElementById('appFail').style.display = 'none';
+  </script>
     <!-- setup bootstrap -->
     <script>
       window.bootstrap = { 
@@ -124,7 +141,8 @@
     <!-- Don't need everything, but quite handy, but it messes with smartclient -->
     <!-- <script src=lib/sugar.js></script> -->
     
-    
+    <!-- Try to detect the browser the user is using -->
+    <script src=lib/browserDetect.js></script>
     
     <!-- basic console logger -->
     <script src=lib/logger.js></script>    
