@@ -53,9 +53,13 @@ lib/isomorphic/skins/Enterprise/images/blank.gif
 lib/isomorphic/skins/Enterprise/images/headerIcons/close.png
 lib/isomorphic/skins/Enterprise/images/pickers/comboBoxPicker.png
 lib/isomorphic/skins/Enterprise/images/pickers/comboBoxPicker_Disabled.png
+lib/isomorphic/skins/Enterprise/images/SectionHeader/opener_closed.png
+lib/isomorphic/skins/Enterprise/images/loadingSmall.gif
+
 
 #internal HTML documents
 index.html
+version.html
 
 #style sheets
 lib/isomorphic/skins/Enterprise/skin_styles.css
