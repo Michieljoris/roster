@@ -267,6 +267,7 @@ define
 
       function update(data, dsResponse, requestId) {
           // log.d('data', data);
+          var receivedData = isc.clone(data);
           data = subtractTimezoneOffset(data);
           doPouch(function(db) {
               db.put(data,
@@ -274,8 +275,8 @@ define
 			 if (err) log.d("Error from pouch put in update:", err,
 					"resp:", response);
 			 else {
-			     data._rev = response.rev; 
-			     dsResponse.data = data;
+                             receivedData._rev = response.rev; 
+                             dsResponse.data = receivedData;
 			     pouchDS.processResponse(requestId, dsResponse);}});});} 
       //TODO get rid of this function, it is useless and have a module wide var called db
       function doPouch(f) {

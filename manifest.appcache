@@ -1,7 +1,7 @@
 CACHE MANIFEST
 
 #version 1.0 2-16-2013
-#version 0.1.1b
+#version 0.1.1c
 
 CACHE:
 
@@ -50,6 +50,7 @@ lib/isomorphic/skins/Enterprise/images/actions/back.png
 lib/isomorphic/skins/Enterprise/images/actions/edit.png
 lib/isomorphic/skins/Enterprise/images/actions/filter.png
 lib/isomorphic/skins/Enterprise/images/actions/forward.png
+lib/isomorphic/skins/Enterprise/images/actions/remove.png
 lib/isomorphic/skins/Enterprise/images/blank.gif
 lib/isomorphic/skins/Enterprise/images/headerIcons/close.png
 lib/isomorphic/skins/Enterprise/images/pickers/comboBoxPicker.png
@@ -89,6 +90,7 @@ lib/isomorphic/skins/Enterprise/images/ToolStrip/background_vertical.png
 
 #javascript files
 lib/appCache.js
+lib/manifestR.js
 lib/browserDetect.js
 lib/isomorphic/system/modules/ISC_Core.js
 lib/isomorphic/system/modules/ISC_Foundation.js
