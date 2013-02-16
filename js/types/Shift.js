@@ -49,13 +49,13 @@ define
                     unit: 'day'
                     // rank: 100
                   },
-          early: { type: 'early',
-                   date: Date.parse('2000 6am').monday(),
-                   length: 1.5,
-                   pattern: [1,1,1,1,3],
-                   unit: 'day',
-                   rank: 100
-                 },
+          // early: { type: 'early',
+          //          date: Date.parse('2000 6am').monday(),
+          //          length: 1.5,
+          //          pattern: [1,1,1,1,3],
+          //          unit: 'day',
+          //          rank: 100
+          //        },
           ord: { type: 'ord',
                  date: Date.parse('2000 7:30am').monday(),
                  length: 12,
@@ -130,21 +130,21 @@ define
                     unit: 'year',
                     length: 16,
                     rank: 300
-                  },
-          oneoff: { type: 'publicHoliday', //one off public holiday
-                    date: Date.parse('5 March 2013 6am'),
-                    pattern: [], //doesn't pattern...
-                    // unit: 'year',
-                    length: 16,
-                    rank: 300
-                  },
-          monthly: { type: 'monthly event', 
-                     date: Date.parse('5 March 2000 6am'),
-                     pattern: [1],
-                     unit: 'month',
-                     length: 16,
-                     rank:100 
-                   }
+                  }
+          // ,oneoff: { type: 'publicHoliday', //one off public holiday
+          //           date: Date.parse('5 March 2013 6am'),
+          //           pattern: [], //doesn't pattern...
+          //           // unit: 'year',
+          //           length: 16,
+          //           rank: 300
+          //         },
+          // monthly: { type: 'monthly event', 
+          //            date: Date.parse('5 March 2000 6am'),
+          //            pattern: [1],
+          //            unit: 'month',
+          //            length: 16,
+          //            rank:100 
+          //          }
       };
       
       function setPatternsObject(patternsObject) {
