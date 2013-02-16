@@ -5,10 +5,18 @@ CACHE MANIFEST
 CACHE:
 
 #images
+images/Excel-icon.png
+images/arrow_left.png
+images/arrow_right.png
 images/calendar.png
 images/clear.png
 images/database.png
+images/date_control.png
+images/home.png
+images/person.png
+images/print.png
 images/saveui.png
+images/shift.png
 images/table.png
 images/timesheet.png
 lib/isomorphic/skins/Enterprise/images/DynamicForm/checked.png
@@ -17,11 +25,22 @@ lib/isomorphic/skins/Enterprise/images/DynamicForm/unchecked.png
 lib/isomorphic/skins/Enterprise/images/DynamicForm/unsetcheck.png
 lib/isomorphic/skins/Enterprise/images/FileBrowser/createNewFolder.png
 lib/isomorphic/skins/Enterprise/images/ListGrid/sort_descending.png
+lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_Disabled_end.png
+lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_Disabled_start.png
+lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_Disabled_track.png
+lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_end.png
+lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_start.png
+lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_track.png
+lib/isomorphic/skins/Enterprise/images/Scrollbar/hthumb_grip.png
+lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_Disabled_end.png
+lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_Disabled_start.png
+lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_Disabled_track.png
+lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_corner.png
 lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_end.png
 lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_start.png
 lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_track.png
 lib/isomorphic/skins/Enterprise/images/Scrollbar/vthumb_grip.png
-lib/isomorphic/skins/Enterprise/images/SectionHeader/opener_closed.png
+lib/isomorphic/skins/Enterprise/images/SectionHeader/opener_opened.png
 lib/isomorphic/skins/Enterprise/images/Splitbar/vsplit_snap.png
 lib/isomorphic/skins/Enterprise/images/Window/headerIcon.png
 lib/isomorphic/skins/Enterprise/images/Window/v_resizer.png
@@ -64,8 +83,8 @@ lib/isomorphic/skins/Enterprise/images/Menu/menu_background_rtl.png
 lib/isomorphic/skins/Enterprise/images/ToolStrip/background_vertical.png
 
 #javascript files
-lib/browserDetect.js
 lib/appCache.js
+lib/browserDetect.js
 lib/isomorphic/system/modules/ISC_Core.js
 lib/isomorphic/system/modules/ISC_Foundation.js
 lib/isomorphic/system/modules/ISC_Containers.js
@@ -86,7 +105,6 @@ lib/jszip/jszip-deflate.js
 lib/xlsx.js
 lib/browserDetect.js
 lib/logger.js
-lib/manifestR.js
 lib/bootstrap.js
 js/main.js
 lib/cookie.js
