@@ -145,6 +145,38 @@ define
       //   	       ,reduce: false}
       // };
       
+      var timezoneOffset = Date.today().getTimezoneOffset();
+      
+      function addTimezoneOffset(obj) {
+          Object.keys(obj).forEach(
+	      function(k) {
+                  var field = typesAndFields.getField(k);
+	          if (field) {
+	              var type = field.type;
+                      if (type === 'datetime' ||
+                          type === 'time' ||
+                          type === 'date') {
+                          var d = Date.parseSchemaDate(obj[k]);
+                          obj[k]= d.addMinutes(timezoneOffset);
+	              }
+                  }
+              });
+      } 
+      
+      function subtractTimezoneOffset(obj) {
+          log.d('ADDING OBJECT', obj);
+          Object.keys(obj).forEach(
+              function(k) {
+                  var value = obj[k];
+                  if (value && value.Class && value.Class === 'Date') {
+                      // log.d('FOUND DATE', value.clone().addMinutes(-timezoneOffset).toSchemaDate());
+                      obj[k].addMinutes(-timezoneOffset);
+                  }
+              }
+          );
+          return obj;
+      }
+      
       function typefyProps(obj) {
           Object.keys(obj).forEach(
 	      function(k) {
@@ -209,6 +241,7 @@ define
 				    var key=response.rows[i].key;
                                     // log.d('calling typefy');
 				    typefyProps(key); 
+                                    addTimezoneOffset(key);
 				    // dsResponse.data.push({ _id:key._id, _rev:key._rev, text:key.text});
 				
 				    dsResponse.data.push(key);
@@ -218,22 +251,23 @@ define
       function add(data, dsResponse, requestId) {
           doPouch(function(db) {
               delete data._id;
+              var receivedData = isc.clone(data);
+              data = subtractTimezoneOffset(data);
               db.post(data,
                      function (err,response){
                          if (err) log.d("Error from pouch put in add:", err,
                                         "resp:", response);
                          else {
-                             data._id = response.id; 
-                             data._rev = response.rev; 
-                             dsResponse.data = data;
-                             // log.d("hello",  data.endDate);
-                             // module.temp= data;
+                             receivedData._id = response.id; 
+                             receivedData._rev = response.rev; 
+                             dsResponse.data = receivedData;
                              pouchDS.processResponse(requestId, dsResponse);}});
 	  });
       }
 
       function update(data, dsResponse, requestId) {
           // log.d('data', data);
+          data = subtractTimezoneOffset(data);
           doPouch(function(db) {
               db.put(data,
                      function (err,response){

@@ -58,7 +58,7 @@
       };
       
       <!-- for test purposes in quickpouch-->
-      window.dbname= 'idb://db4';
+      window.dbname= 'idb://db';
       
       <!-- get rid of annoying msg when testing licensed version -->
       window.isc_expirationOff=true;  
@@ -112,7 +112,7 @@
       Date.setInputFormat('DMY');
       Date.setNormalDateDisplayFormat('toEuropeanShortDateTime');  
       Date.setShortDatetimeDisplayFormat('toEuropeanShortDateTime');  
-      <!-- isc.Time.setDefaultDisplayTimezone(0); -->
+      isc.Time.setDefaultDisplayTimezone(1);
     </script>
     
     <!-- database adapter -->
@@ -163,7 +163,7 @@
     <script src=test/quickpouch.js></script>    
     
     <!-- load and start ************************************-->
-    <script src=lib/bootstrap.js></script> --
+    <script src=lib/bootstrap.js></script> 
     <!-- <script type="text/javascript" src="js/views/extcalendar/app.js"></script>  -->
     
     <!-- <div id="myid"></div>  -->
