@@ -25,21 +25,194 @@ define
              var dataSource = View.getBackend().getDS(); 
              calendar.setDataSource(dataSource);
              setCssClasses();
+             personForm.getField('person').setOptionDataSource(dataSource);
+             locationForm.getField('location').setOptionDataSource(dataSource);
+             
+             calendar.addEventButton.hide();
          }
          ,sync: function(state) {
              state.currentViewName = calendar.getCurrentViewName();
          }
          ,set: function(state) {
+             var person = state.person, location = state.location;
              calendar.setChosenDate(new Date(state.chosenDate));
              calendar.setCurrentViewName(state.currentViewName);
+             personForm.setValue('person', person);
+             locationForm.setValue('location', location);
              // calendar.fetchData();
              log.d('fetching data for calendar:');
              calendar.fetchData({  }, function() {
-                 calendar.setCriteria({ type: 'shift' });
+                 // calendar.setCriteria({ type: 'shift' });
                  setCssClasses();
-                 log.d('in callback!!'); });
+                 log.d('in callback!!');
+                 setData(state);
+             });
          }
      }); 
+     
+     var personPickList = { name: "person",
+                            type: 'enum',
+                            // type: "select",
+                            editorType: 'comboBox',
+                            required: true, 
+                            change: function (form) {
+                                var state = view.getState();
+                                state.person = form.getField('person')
+                                    .pickList.getSelectedRecord();
+                                state.person = state.person._id;
+                                setData(state);
+                                view.modified();
+                                log.d('PICKLIST', state.person);
+                            },
+                            // ID: 'personPickList' ,
+                            showTitle: false,
+                            // startRow: true,
+                            // multiple: true,
+                            multipleAppearance: 'picklist',
+                            // optionDataSource: dataSource,
+                            filterLocally: true, 
+                            pickListCriteria: { type: 'person'},
+                            displayField: 'name',
+                            valueField: '_id',
+                            width:180
+                            ,top: 0
+                            ,height: 20
+                            // colSpan:2
+                            // ,icons: [{
+                            //     // src: isc.Page.getSkinDir() +"images/actions/edit.png",
+                            //     src: 'home.png'
+                            //     // click: "isc.say(item.helpText)"
+                            //     //TODO: make drag drop shift worker editor
+                            // }]
+                          };
+ 
+     var locationPickList = { name: "location",
+                              type: 'enum',
+                              // ID:'testpick',
+                              // type: "select",
+                              editorType: 'comboBox',
+                              required: true, 
+                              change: function (form) {
+                                  var state = view.getState();
+                                  state.location = form.getField('location')
+                                      .pickList.getSelectedRecord();
+                                  state.location = state.location._id;
+                                  setData(state);
+                                  view.modified();
+                                  log.d('PICKLIST', state.location);
+                              },
+                          
+                              // ID: 'locationPickList' ,
+                              showTitle: false,
+                              startRow: false,
+                              // multiple: true,
+                              // multipleAppearance: 'picklist',
+                              align: 'left',
+                              // optionDataSource: dataSource,
+                              filterLocally: true, 
+                              pickListCriteria: { type: 'location'},
+                              displayField: 'name',
+                              valueField: '_id'
+                              ,width:180
+                              ,top: 0
+                              ,height:20
+                              // width:340,
+                              // colSpan:1
+                              // icons: [{
+                              //     src: isc.Page.getSkinDir() +"images/actions/edit.png",
+                              //     click: "isc.say(item.helpText)"
+                              //     //TODO: make drag drop shift worker editor
+                              // }]
+                            };
+     
+     var personIcon = isc.Label.create({
+         // width:buttonWidth,				
+         title: '',
+	 icon:"person.png",
+         // top:0,
+         height: 20, 
+         left:170
+         ,click: function() { //var f = personForm.getField('person');
+             // if (f.disabled) f.enable(); else f.disable();
+             personIcon.active = !personIcon.active;
+             setData(view.getState());
+         }
+         
+     });
+     
+     var personForm = isc.DynamicForm.create({numCols: 2
+                                               ,fields: [
+                                                   // {width: 10, showTitle: false, type:"checkbox"},
+                                                        personPickList
+
+                                               ]
+                                              ,top: 0
+                                              ,height: 20
+                                              ,left: 190 });
+      
+     var locationIcon = isc.Label.create({
+         // width:buttonWidth,				
+         title: '',
+	 icon:"home.png",
+         top: 0,
+         height: 20,
+         left:375 
+         ,click: function() { //var f = locationForm.getField('location');
+             // if (f.disabled) f.enable(); else f.disable();
+             locationIcon.active = !locationIcon.active;
+             setData(view.getState());
+         }
+     });
+     window.test2 = locationIcon;
+      
+     var locationForm = isc.DynamicForm.create({fields: [locationPickList]
+                                                ,top: 0
+                                                ,height: 20
+                                                ,left: 395 });
+
+      var shiftCriterion = {
+          fieldName: 'type',
+          operator:'equals',
+          value:'shift'
+      };  
+      
+      var personCriterion = {
+          fieldName: 'personIdsString',
+          operator:'contains'
+      };
+          
+      var locationCriterion = {
+          fieldName: 'location',
+          operator:'contains'
+      };
+     
+     
+      var timesheetCriteria = {
+          _constructor:"AdvancedCriteria",
+          operator:"and",
+          criteria: [shiftCriterion
+                     ,locationCriterion
+                     ,personCriterion
+                    ]
+               
+      };
+     function setData(state) {
+         var person = state.person, location = state.location;
+         // if (personIcon.active) {
+         //     personIcon.setIcon('personoff.png');
+         //     personCriterion.value = person;
+         // }
+         // else {
+         //     personIcon.setIcon('person.png');
+         //   personCriterion.value = undefined;  
+         // } 
+         
+         // if (locationIcon.active)
+         //     locationCriterion.value = location;
+         // else locationCriterion.value = undefined;
+         // log.d('setting criteria', timesheetCriteria);
+         calendar.setCriteria(timesheetCriteria);
+     }
 
      //Whenever the calendar is shown css classes are set that bind a
      //person to a bg and fg color (as set in person fields). Shifts
@@ -91,7 +264,7 @@ define
      
      function getShiftDescription(event) {
          log.d('in shiftdesc', event);
-             var sDate = event.startDate.toShortDate();
+         var sDate = event.startDate.toShortDate();
          var sTime = isc.Time.toTime(event.startDate, 'toShortPaddedTime', true);
          var eTime = isc.Time.toTime(event.endDate, 'toShortPaddedTime', true);
 
@@ -99,170 +272,173 @@ define
      }
     
      var calendar = isc.Calendar.create(
-         {   ID: "isc_ShiftCalendar" 
-	     // ,dataSource: database, 
-	     // autoFetchData: true
-	     // ,descriptionField: 'notes'
-	     ,nameField: 'endTijd'
-             // ,eventWindowStyle: 'eventWindow'
-             ,eventOverlapIdenticalStartTimes: true
-             ,eventOverlap:false
-             ,firstDayOfWeek: 6
-             ,disableWeekends: false
-             ,showWorkday: true
-             // ,showTimelineView:true
-             ,workdays: [0,1,2,3,4,5,6]
-             ,workdayStart: view.getState().workdayStart
-             ,workdayEnd: view.getState().workdayEnd
-             // ,workdayBaseStyle: "element.style { background-color:oldlace }"
-             ,scrollToWorkday: true
-             // ,initialCriteria: { adminHoursUsed: 1 }
-             // ,criteria: { adminHoursUsed: 1 }
-             ,eventSnapGap: view.getState().eventSnapGap
-             ,eventResized: function(newDate, event) {
-                 log.d('NEWDATE', newDate);
-                 // var length = event.endDate.getTime() - event.startDate.getTime();
-                 // var endTime = newDate.getTime() + length;
-                 // event.startDate = newDate;
-                 // event.date = newDate;
-                 event.endDate = newDate;
-                 event.endTime = isc.Time.createLogicalTime(event.endDate.getHours(),
-                                                            event.endDate.getMinutes(),0),
-                 event.startTime = isc.Time.createLogicalTime(event.startDate.getHours(),
-                                                              event.startDate.getMinutes(),0);
-                 var resizedEvent = Shift.create(event);
-                 calendar.updateEvent(resizedEvent, resizedEvent.startDate,
-                                      resizedEvent.endDate,
-                                      resizedEvent[calendar.nameField],
-                                      resizedEvent.description);
-                 return false;
-             }
-             ,eventMoved: function(newDate, event) {
-                 log.d('NEWDATE', newDate);
-                 var length = event.endDate.getTime() - event.startDate.getTime();
-                 var endTime = newDate.getTime() + length;
-                 event.startDate = newDate;
-                 event.date = newDate;
-                 event.endDate = Date.create(endTime);
-                 event.endTime = isc.Time.createLogicalTime(event.endDate.getHours(),
-                                                            event.endDate.getMinutes(),0),
-                 event.startTime = isc.Time.createLogicalTime(event.startDate.getHours(),
-                                                              event.startDate.getMinutes(),0);
-                 log.d('EVENT',event);
-                 var movedEvent = Shift.create(event);
-                 log.d('moved event:', movedEvent);
+             {   ID: "isc_ShiftCalendar" 
+	         // ,dataSource: database, 
+	         // autoFetchData: true
+	         // ,descriptionField: 'notes'
+	         ,nameField: 'endTijd'
+                 // ,showControlsBar : false
+                 // ,eventWindowStyle: 'eventWindow'
+                 ,eventOverlapIdenticalStartTimes: true
+                 ,eventOverlap:false
+                 ,firstDayOfWeek: 6
+                 ,disableWeekends: false
+                 ,showWorkday: true
+                 // ,showTimelineView:true
+                 ,workdays: [0,1,2,3,4,5,6]
+                 ,workdayStart: view.getState().workdayStart
+                 ,workdayEnd: view.getState().workdayEnd
+                 // ,workdayBaseStyle: "element.style { background-color:oldlace }"
+                 ,scrollToWorkday: true
+                 // ,initialCriteria: { adminHoursUsed: 1 }
+                 // ,criteria: { adminHoursUsed: 1 }
+                 ,eventSnapGap: view.getState().eventSnapGap
+                 ,eventResized: function(newDate, event) {
+                     log.d('NEWDATE', newDate);
+                     // var length = event.endDate.getTime() - event.startDate.getTime();
+                     // var endTime = newDate.getTime() + length;
+                     // event.startDate = newDate;
+                     // event.date = newDate;
+                     event.endDate = newDate;
+                     event.endTime = isc.Time.createLogicalTime(event.endDate.getHours(),
+                                                                event.endDate.getMinutes(),0),
+                     event.startTime = isc.Time.createLogicalTime(event.startDate.getHours(),
+                                                                  event.startDate.getMinutes(),0);
+                     var resizedEvent = Shift.create(event);
+                     calendar.updateEvent(resizedEvent, resizedEvent.startDate,
+                                          resizedEvent.endDate,
+                                          resizedEvent[calendar.nameField],
+                                          resizedEvent.description);
+                     return false;
+                 }
+                 ,eventMoved: function(newDate, event) {
+                     log.d('NEWDATE', newDate);
+                     var length = event.endDate.getTime() - event.startDate.getTime();
+                     var endTime = newDate.getTime() + length;
+                     event.startDate = newDate;
+                     event.date = newDate;
+                     event.endDate = Date.create(endTime);
+                     event.endTime = isc.Time.createLogicalTime(event.endDate.getHours(),
+                                                                event.endDate.getMinutes(),0),
+                     event.startTime = isc.Time.createLogicalTime(event.startDate.getHours(),
+                                                                  event.startDate.getMinutes(),0);
+                     log.d('EVENT',event);
+                     var movedEvent = Shift.create(event);
+                     log.d('moved event:', movedEvent);
                      
-                 calendar.updateEvent(movedEvent, newDate,
-                                      Date.create(endTime),
-                                      movedEvent[calendar.nameField],
-                                      movedEvent.description);
-                 return false;
+                     calendar.updateEvent(movedEvent, newDate,
+                                          Date.create(endTime),
+                                          movedEvent[calendar.nameField],
+                                          movedEvent.description);
+                     return false;
                      
                      
-             }
-             ,dateChanged: function() {
-                 var state = view.getState();
-                 log.d('change of current date', calendar.chosenDate);
-                 state.chosenDate = calendar.chosenDate.toString();
-                 view.modified();
-             }
-             ,getDayBodyHTML: function(date, events, calendar, rowNum, colNum) {
-                 // return 'hello';
-                 // var day = date.getDay();
-                 var persons;  
-                     var evtArr = events, lineHeight = 15,
-                 record = this.monthView.data ? this.monthView.data[1] : null,
-                 rHeight = this.monthView.getRowHeight(record, 1);
-                 var retVal = "";
-                 for (var i = 0; i < evtArr.length; i++) {
-                     var eTime = isc.Time.toTime(evtArr[i][this.startDateField], this.timeFormatter, true) + " ";
-                         var eeTime = isc.Time.toTime(evtArr[i][this.endDateField], this.timeFormatter, true) + " ";
-                     if (this.canEditEvent(evtArr[i])) {
-                         // when clicked, call the the editEvent method of this calendar, passing the
-                         // row, column, and position of the event in this cell's event array
-                         var template  = "<a href='javascript:" + this.ID + ".monthViewEventClick(" + 
-                             rowNum + "," + colNum + "," + i + ");' class='" +
-                             this.calMonthEventLinkStyle + "'>";
-                         persons = evtArr[i].personNames; //TODO format persons
-                         // retVal += template + eTime Names evtArr[i][this.nameField] + ' ' + persons + "</a><br/>";
-                         retVal += template + eTime + eeTime + ' ' + persons + "</a><br/>";
-                         log.d('TEMPLATE' , retVal);
-                     } else {
-                         // retVal += eTime + evtArr[i][this.nameField] + "<br/>";      
-                         retVal += eTime + eeTime + "<br/>";      
+                 }
+                 ,dateChanged: function() {
+                     var state = view.getState();
+                     log.d('change of current date', calendar.chosenDate);
+                     state.chosenDate = calendar.chosenDate.toString();
+                         view.modified();
+                 }
+                     ,getDayBodyHTML: function(date, events, calendar, rowNum, colNum) {
+                         // return 'hello';
+                         // var day = date.getDay();
+                         var persons;  
+                         var evtArr = events, lineHeight = 15,
+                         record = this.monthView.data ? this.monthView.data[1] : null,
+                         rHeight = this.monthView.getRowHeight(record, 1);
+                         var retVal = "";
+                         for (var i = 0; i < evtArr.length; i++) {
+                             var eTime = isc.Time.toTime(evtArr[i][this.startDateField], this.timeFormatter, true) + " ";
+                             var eeTime = isc.Time.toTime(evtArr[i][this.endDateField], this.timeFormatter, true) + " ";
+                             if (this.canEditEvent(evtArr[i])) {
+                                 // when clicked, call the the editEvent method of this calendar, passing the
+                                 // row, column, and position of the event in this cell's event array
+                                 var template  = "<a href='javascript:" + this.ID + ".monthViewEventClick(" + 
+                                     rowNum + "," + colNum + "," + i + ");' class='" +
+                                     this.calMonthEventLinkStyle + "'>";
+                                 persons = evtArr[i].personNames; //TODO format persons
+                                 // retVal += template + eTime Names evtArr[i][this.nameField] + ' ' + persons + "</a><br/>";
+                                 retVal += template + eTime + eeTime + ' ' + persons + "</a><br/>";
+                                 log.d('TEMPLATE' , retVal);
+                             } else {
+                                 // retVal += eTime + evtArr[i][this.nameField] + "<br/>";      
+                                 retVal += eTime + eeTime + "<br/>";      
+                             }
+                             if ((i + 3) * lineHeight > rHeight) break; 
+                         }
+                         if (i < evtArr.length - 1) {
+                             retVal += "+ " + (evtArr.length - 1 - i) + " more...";
+                         }
+                         return retVal;
                      }
-                     if ((i + 3) * lineHeight > rHeight) break; 
-                 }
-                 if (i < evtArr.length - 1) {
-                     retVal += "+ " + (evtArr.length - 1 - i) + " more...";
-                 }
-                 return retVal;
-             }
-             ,getEventHoverHTML : function (event, eventWindow) {
-                 // log.d(event, eventWindow);
-                 var cal = this;                     // format date & times
-                 // var sDate = event[cal.startDateField].toShortDate(this.dateFormatter);
-                 // var sTime = isc.Time.toTime(event[cal.startDateField], this.timeFormatter, true);
-                 // var eTime = isc.Time.toTime(event[cal.endDateField], this.timeFormatter, true);
+                 ,getEventHoverHTML : function (event, eventWindow) {
+                     // log.d(event, eventWindow);
+                     var cal = this;                     // format date & times
+                     // var sDate = event[cal.startDateField].toShortDate(this.dateFormatter);
+                     // var sTime = isc.Time.toTime(event[cal.startDateField], this.timeFormatter, true);
+                     // var eTime = isc.Time.toTime(event[cal.endDateField], this.timeFormatter, true);
 
-                 // return sDate + "&nbsp;" + sTime + "&nbsp;-&nbsp;" + eTime +
-                 //     "<p>" + 
-                 //     // event.displayPerson + "</br></br>"  +
-                 //     '<h3>' + event[cal.descriptionField] + '</h3>';       
-                 return event[cal.descriptionField];
+                     // return sDate + "&nbsp;" + sTime + "&nbsp;-&nbsp;" + eTime +
+                     //     "<p>" + 
+                     //     // event.displayPerson + "</br></br>"  +
+                     //     '<h3>' + event[cal.descriptionField] + '</h3>';       
+                     return event[cal.descriptionField];
 
-             }
-             // ,selectTab:function(tabNum) {
-             //     // TODO   
-             //     log.d('selectTab', tabNum);
-             // }
-	     ,eventClick: function(event, viewName) {
-	         log.d("Update event", event, viewName);
-                 var state = view.getState();
+                 }
+                 // ,selectTab:function(tabNum) {
+                 //     // TODO   
+                 //     log.d('selectTab', tabNum);
+                 // }
+	         ,eventClick: function(event, viewName) {
+	             log.d("Update event", event, viewName);
+                     var state = view.getState();
                  
-                 state.title = getShiftDescription(event);
-                 state.cancelButton = true;
-                 state.saveButton = true;
-                 state.removeButton = true;
-                 state.isNewRecord = false;
+                     state.title = getShiftDescription(event);
+                     state.cancelButton = true;
+                     state.saveButton = true;
+                     state.removeButton = true;
+                     state.isNewRecord = false;
                  
-                 editors.show(event, state);
+                     editors.show(event, state);
                  
-	         return false;
-	     }
-	     ,backgroundClick: function(startDate, endDate) {
-	         log.d('New event',startDate, endDate);
-                 var date =  new Date(startDate);
-                 // var event = typesAndFields.newRecord('shift');
-                 var event = {
-                     type: 'shift',
-                     startDate: startDate,
-                     endDate: endDate,
-                     date: date,
-                     endTime : isc.Time.createLogicalTime(endDate.getHours(),
-                                                          endDate.getMinutes(),0),
-                     startTime : isc.Time.createLogicalTime(startDate.getHours(),
-                                                            startDate.getMinutes(),0)
+	             return false;
+	         }
+	         ,backgroundClick: function(startDate, endDate) {
+	             log.d('New event',startDate, endDate);
+                     var date =  new Date(startDate);
+                     // var event = typesAndFields.newRecord('shift');
+                     var event = {
+                         type: 'shift'
+                         ,location : view.getState().location
+                         ,person : view.getState().person
+                         ,startDate: startDate,
+                         endDate: endDate,
+                         date: date,
+                         endTime : isc.Time.createLogicalTime(endDate.getHours(),
+                                                              endDate.getMinutes(),0),
+                         startTime : isc.Time.createLogicalTime(startDate.getHours(),
+                                                                startDate.getMinutes(),0)
                      
-                 };
+                     };
                 
-                 var state = view.getState();
-                 state.title = getShiftDescription(event);
-                 state.cancelButton = true;
-                 state.saveButton = true;
-                 state.removeButton = false;
-                 state.isNewRecord = true;
+                     var state = view.getState();
+                     state.title = getShiftDescription(event);
+                     state.cancelButton = true;
+                     state.saveButton = true;
+                     state.removeButton = false;
+                     state.isNewRecord = true;
+                     log.d("NEW SHIFT", event);
+                     editors.show(event, state);
                  
-                 editors.show(event, state);
-                 
-	         return false;
-	     }
-         }); 
-    
-     calendar.addEventButton.click = function () {
-         log.d('TODO');
-         //this needs to also open the shift edit window..
-     };
+	             return false;
+	         }
+             }); 
+     
+     calendar.controlsBar.addChild(locationIcon);
+     calendar.controlsBar.addChild(locationForm);
+     calendar.controlsBar.addChild(personIcon);
+     calendar.controlsBar.addChild(personForm);
 
      view.setCmp(calendar);
      return view; 

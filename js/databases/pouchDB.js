@@ -20,6 +20,7 @@ define
           name: 'root',
           type: 'person',
           login: 'root'
+          ,status: 'permanent'
           // ,pwd:'root'
       };
       
