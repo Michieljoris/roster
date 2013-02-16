@@ -65,7 +65,7 @@ lib/isomorphic/skins/Enterprise/images/ToolStrip/background_vertical.png
 
 #javascript files
 lib/browserDetect.js
-#lib/appCache.js
+lib/appCache.js
 lib/isomorphic/system/modules/ISC_Core.js
 lib/isomorphic/system/modules/ISC_Foundation.js
 lib/isomorphic/system/modules/ISC_Containers.js
@@ -86,6 +86,7 @@ lib/jszip/jszip-deflate.js
 lib/xlsx.js
 lib/browserDetect.js
 lib/logger.js
+lib/manifestR.js
 lib/bootstrap.js
 js/main.js
 lib/cookie.js
