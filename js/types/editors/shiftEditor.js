@@ -96,6 +96,7 @@ define
         var validates = eventForm.validate();
         //not all errors are show stoppers. Some we warn about but let
         //through: 
+        log.d('VALIDATES', validates);
         if (!validates) {
             var errors = eventForm.valuesAreValid(false, true);
             validates = true;
@@ -106,7 +107,10 @@ define
                 validates = false;
             log.d(errors);
         }
-        if (validates && eventForm.valuesHaveChanged()) {
+        // var valuesHaveChanged = eventForm.valuesHaveChanged();
+        // log.d('VALUESHAVECHANGED', valuesHaveChanged);
+        // if (validates && valuesHaveChanged) {
+        else {
             var eventValues = eventForm.getValues();
             
             // var personList = eventForm.getField('person').

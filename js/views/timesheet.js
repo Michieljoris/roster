@@ -19,7 +19,7 @@ define
           type: 'Timesheet'
           ,alwaysSet: true
           ,icon: 'timesheet.png'
-          ,defaultState: { person:'guest', location:'',
+          ,defaultState: { person:'root', location:'',
                            fortnight: Date.parse('2013-01-01')}
           // ,sync: function(state) {
           //     log.d('UPDATING STATE:', state);

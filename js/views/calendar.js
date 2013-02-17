@@ -19,7 +19,9 @@ define
              workdayStart: '6:00am',
              workdayEnd: '10:00pm',
              currentViewName: 'day', //day, week or month
-             chosenDate: new Date()
+             chosenDate: new Date(),
+             person: { ids: [], idsString: '', names: '' },
+             location: { ids: [], name: ''}
          }
          ,init: function() {
              var dataSource = View.getBackend().getDS(); 
@@ -37,37 +39,57 @@ define
              var person = state.person, location = state.location;
              calendar.setChosenDate(new Date(state.chosenDate));
              calendar.setCurrentViewName(state.currentViewName);
-             personForm.setValue('person', person);
-             locationForm.setValue('location', location);
+             personForm.setValue('person', person.ids);
+             locationForm.setValue('location', location.ids);
              // calendar.fetchData();
              log.d('fetching data for calendar:');
-             calendar.fetchData({  }, function() {
-                 // calendar.setCriteria({ type: 'shift' });
-                 setCssClasses();
-                 log.d('in callback!!');
-                 setData(state);
-             });
+             var criteria = createCriteria(state);
+             if (calendar.willFetchData(criteria)) {
+                 calendar.fetchData({  }, function() {
+                     calendar.setCriteria(criteria);
+                     setCssClasses();
+                     log.d('in callback!!');
+                 });
+             }
+             else calendar.setCriteria(criteria);
          }
      }); 
      
      var personPickList = { name: "person",
                             type: 'enum',
                             // type: "select",
-                            editorType: 'comboBox',
+                            editorType: 'select',
                             required: true, 
                             change: function (form) {
+                                
+                               var personList = form.getField('person').
+                                   pickList.getSelectedRecords();
+                               var personNames = [];
+                               var personIds = [];
+                               personList.forEach(function(p) {
+                                   personNames.push(p.name);
+                                   personIds.push(p._id);
+                               });
+                               if (personNames.length === 0) personNames = ['Nobody'];
+                               // eventForm.setValue('personNames', personNames);
+                               // eventForm.setValue('personNames', personNames.toString());
+                               // eventForm.setValue('personIdsString', personIds.toString());
+                               
+                               log.d('PICKLIST', personNames);
                                 var state = view.getState();
-                                state.person = form.getField('person')
-                                    .pickList.getSelectedRecord();
-                                state.person = state.person._id;
-                                setData(state);
+                                state.person = {
+                                    ids: personIds,
+                                    names: personNames.toString(),
+                                    idsString: personIds.toString()
+                                };
+                                applyCriteria(state);
                                 view.modified();
                                 log.d('PICKLIST', state.person);
                             },
                             // ID: 'personPickList' ,
                             showTitle: false,
                             // startRow: true,
-                            // multiple: true,
+                            multiple: true,
                             multipleAppearance: 'picklist',
                             // optionDataSource: dataSource,
                             filterLocally: true, 
@@ -77,35 +99,51 @@ define
                             width:180
                             ,top: 0
                             ,height: 20
-                            // colSpan:2
-                            // ,icons: [{
-                            //     // src: isc.Page.getSkinDir() +"images/actions/edit.png",
-                            //     src: 'home.png'
-                            //     // click: "isc.say(item.helpText)"
-                            //     //TODO: make drag drop shift worker editor
-                            // }]
                           };
  
      var locationPickList = { name: "location",
                               type: 'enum',
                               // ID:'testpick',
                               // type: "select",
-                              editorType: 'comboBox',
+                              editorType: 'select',
                               required: true, 
                               change: function (form) {
+                                  
+                                  var locationList = form.getField('location').
+                                      pickList.getSelectedRecords();
+                                      var locationNames = [];
+                                      var locationIds = [];
+                                  locationList.forEach(function(p) {
+                                      locationNames.push(p.name);
+                                      locationIds.push(p._id);
+                                  });
+                                  if (locationNames.length === 0) locationNames = ['Nowhere'];
+                               
+                                  log.d('PICKLIST', locationNames);
                                   var state = view.getState();
-                                  state.location = form.getField('location')
-                                      .pickList.getSelectedRecord();
-                                  state.location = state.location._id;
-                                  setData(state);
+                                  state.location = {
+                                      ids: locationIds
+                                      // ,nameString: locationNames[0]
+                                      // idsString: locationIds.toString()
+                                  };
+                                  if (locationNames[0]) state.location.name = locationNames[0];
+                                  applyCriteria(state);
                                   view.modified();
                                   log.d('PICKLIST', state.location);
+                                  
+                                  // var state = view.getState();
+                                  // state.location = form.getField('location')
+                                  //     .pickList.getSelectedRecord();
+                                  // state.location = state.location._id;
+                                  // setData(state);
+                                  // view.modified();
+                                  // log.d('PICKLIST', state.location);
                               },
                           
                               // ID: 'locationPickList' ,
                               showTitle: false,
                               startRow: false,
-                              // multiple: true,
+                              multiple: true,
                               // multipleAppearance: 'picklist',
                               align: 'left',
                               // optionDataSource: dataSource,
@@ -116,13 +154,6 @@ define
                               ,width:180
                               ,top: 0
                               ,height:20
-                              // width:340,
-                              // colSpan:1
-                              // icons: [{
-                              //     src: isc.Page.getSkinDir() +"images/actions/edit.png",
-                              //     click: "isc.say(item.helpText)"
-                              //     //TODO: make drag drop shift worker editor
-                              // }]
                             };
      
      var personIcon = isc.Label.create({
@@ -134,8 +165,11 @@ define
          left:170
          ,click: function() { //var f = personForm.getField('person');
              // if (f.disabled) f.enable(); else f.disable();
-             personIcon.active = !personIcon.active;
-             setData(view.getState());
+             // personIcon.active = !personIcon.active;
+             var state = view.getState();
+             state.personActive = !state.personActive;
+             applyCriteria(state);
+             view.modified();
          }
          
      });
@@ -157,61 +191,74 @@ define
          top: 0,
          height: 20,
          left:375 
-         ,click: function() { //var f = locationForm.getField('location');
-             // if (f.disabled) f.enable(); else f.disable();
-             locationIcon.active = !locationIcon.active;
-             setData(view.getState());
+         ,click: function() {
+             var state = view.getState();
+             state.locationActive = !state.locationActive;
+             applyCriteria(state);
+             view.modified();
          }
      });
-     window.test2 = locationIcon;
       
      var locationForm = isc.DynamicForm.create({fields: [locationPickList]
                                                 ,top: 0
                                                 ,height: 20
                                                 ,left: 395 });
-
-      var shiftCriterion = {
-          fieldName: 'type',
-          operator:'equals',
-          value:'shift'
-      };  
+     
+     function applyCriteria(state) {
+         calendar.setCriteria(createCriteria(state));
+     }
       
-      var personCriterion = {
-          fieldName: 'personIdsString',
-          operator:'contains'
-      };
-          
-      var locationCriterion = {
-          fieldName: 'location',
-          operator:'contains'
-      };
+     function createOrCriteria(aFieldName, values) {
+         function createPersonCriterion(aValue) {
+             return { 
+                 fieldName: aFieldName,
+                 operator:'contains',
+                 value: aValue
+             };
+         }
+         var criteria = {
+             _constructor:"AdvancedCriteria",
+             operator:"or",
+             criteria: []
+         };
+         // values.push('impossible dummy value..');
+         values.forEach(function(v){
+             criteria.criteria.push(createPersonCriterion(v));
+         });
+         criteria.criteria.push(createPersonCriterion('impossible dummy value..'));
+         return criteria;
+     }
      
-     
-      var timesheetCriteria = {
-          _constructor:"AdvancedCriteria",
-          operator:"and",
-          criteria: [shiftCriterion
-                     ,locationCriterion
-                     ,personCriterion
-                    ]
-               
-      };
-     function setData(state) {
+     function createCriteria(state) {
          var person = state.person, location = state.location;
-         // if (personIcon.active) {
-         //     personIcon.setIcon('personoff.png');
-         //     personCriterion.value = person;
-         // }
-         // else {
-         //     personIcon.setIcon('person.png');
-         //   personCriterion.value = undefined;  
-         // } 
+         var shiftCriterion = {
+             fieldName: 'type',
+             operator:'equals',
+             value:'shift' };  
+         var criteria = {
+             _constructor:"AdvancedCriteria",
+             operator:"and",
+             criteria: [shiftCriterion
+                       ] };
+         criteria.criteria = [shiftCriterion];
+         if (state.personActive) {
+             personIcon.setIcon('person.png');
+             criteria.criteria.push(createOrCriteria('personIdsString', person.ids));
+         }
+         else {
+             personIcon.setIcon('personoff.png');
+         } 
          
-         // if (locationIcon.active)
-         //     locationCriterion.value = location;
-         // else locationCriterion.value = undefined;
-         // log.d('setting criteria', timesheetCriteria);
-         calendar.setCriteria(timesheetCriteria);
+         if (state.locationActive)
+         {   locationIcon.setIcon('home.png');
+             // locationCriterion.value = location;
+             criteria.criteria.push(createOrCriteria('location', location.ids));
+         } 
+         else
+         {  locationIcon.setIcon('homeoff.png');
+             }
+         log.d('setting criteria', criteria);
+         return criteria;
      }
 
      //Whenever the calendar is shown css classes are set that bind a
@@ -274,7 +321,7 @@ define
      var calendar = isc.Calendar.create(
              {   ID: "isc_ShiftCalendar" 
 	         // ,dataSource: database, 
-	         // autoFetchData: true
+	         // ,autoFetchData: true
 	         // ,descriptionField: 'notes'
 	         ,nameField: 'endTijd'
                  // ,showControlsBar : false
@@ -290,8 +337,8 @@ define
                  ,workdayEnd: view.getState().workdayEnd
                  // ,workdayBaseStyle: "element.style { background-color:oldlace }"
                  ,scrollToWorkday: true
-                 // ,initialCriteria: { adminHoursUsed: 1 }
-                 // ,criteria: { adminHoursUsed: 1 }
+                 // ,initialCriteria: { type: 'shift' }
+                 // ,criteria: { type: 'shift' }
                  ,eventSnapGap: view.getState().eventSnapGap
                  ,eventResized: function(newDate, event) {
                      log.d('NEWDATE', newDate);
@@ -408,10 +455,16 @@ define
 	             log.d('New event',startDate, endDate);
                      var date =  new Date(startDate);
                      // var event = typesAndFields.newRecord('shift');
+                     var person = view.getState().person;
                      var event = {
                          type: 'shift'
-                         ,location : view.getState().location
-                         ,person : view.getState().person
+                         // ,location : view.getState().location.ids[0]
+                         // ,locationName: view.getState().location.name
+                         ,person : person.ids
+                         ,personIdsString : person.idsString
+                         ,personNames: person.names
+                         // ,location: location.ids[0]
+                         // ,locationName: location.name
                          ,startDate: startDate,
                          endDate: endDate,
                          date: date,
@@ -421,6 +474,11 @@ define
                                                                 startDate.getMinutes(),0)
                      
                      };
+                     var location = view.getState().location;
+                     var locationId = location.ids[0];
+                     if (locationId) event.location = locationId;
+                     var locationName = location.name;
+                     if (locationName) event.locationName = locationName;
                 
                      var state = view.getState();
                      state.title = getShiftDescription(event);

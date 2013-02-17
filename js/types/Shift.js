@@ -354,7 +354,7 @@ define
               notes: values.notes || '',
               // name: values.name,
               // endTijd: '- ' + isc.Time.toTime(values.endDate, 'toShortPaddedTime', true)
-              endTijd: values.personNames.toString()
+              endTijd: values.locationName
               // description: '<h3>' + (values.personNames && (values.personNames.toString()) + '</h3><p>' + (values.notes || ''))
               // description: makeDescription(values.personNames) + (values.notes || '')
           };
