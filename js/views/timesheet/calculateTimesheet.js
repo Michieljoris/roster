@@ -88,7 +88,6 @@ define
           if (fields.night) { fields.disturbedSleepHours = disturbedSleepHours = fields.night; }
           fields.totalHoursWorked = dayHours + disturbedSleepHours;
           var overtime = 0;
-          // debugger
           if (!ph) {
               overtime = Math.max(dayHours - SHIFT_MAXLEN, 0);
               adjustFields(fields, ['weekend', 'late', 'ord', 'early'], overtime);
@@ -96,9 +95,9 @@ define
           overtime += disturbedSleepHours;
           if (overtime > 0) {
               fields.overtime = overtime;
-              var over3 = overtime -3;
-              fields.overtimeT1p5 = over3 > 0 ? 3 : overtime; 
-              if (over3 > 0) fields.overtimeT2 = over3;
+              var over2 = overtime -2;
+              fields.overtimeT1p5 = over2 > 0 ? 2 : overtime; 
+              if (over2 > 0) fields.overtimeT2 = over2;
           }
           
           //toil fields?

@@ -7,8 +7,9 @@ define
 ({ inject: ['views/timesheet/multicap_timesheet_casual_raphael'
             ,'views/timesheet/multicap_timesheet_contract_raphael'
             ,'views/timesheet/fetchTimesheetShifts'
-            ,'views/timesheet/calculateTimesheet'],
-   factory: function(casualTimesheet, contractTimesheet , fetchShifts, calc) {
+            // ,'views/timesheet/calculateTimesheet',
+           ],
+   factory: function(casualTimesheet, contractTimesheet , fetchShifts) {
        "use strict";
        var log = logger('timesheet component');
        
@@ -21,44 +22,49 @@ define
        }
        
        function process(data) {
+           log.d('IN PROCESS');
            var person = data.person;
-           // var location = data.location;
-           // var shifts = data.shifts;
-           // var fortnight = data.fortnight;
-               // alert('Select a person and/or location to show a calculated timesheet.')
+           function showSheet(aTimesheet) {
+               timesheet = aTimesheet;
+               if (!timesheet.isDrawn())
+                   timesheet.draw();
+               timesheet.setData(data);
+               timesheet.setVisibility('visible');
+           }
+           
            switch (person.status) {
              case 'casual':
                if (timesheet !== sheets.casual)  {
-                   if (timesheet) timesheet.hide();   
-                   timesheet = sheets.casual;
-                   timesheet.setData(data);
-                   timesheet.show();
+                   if (timesheet) timesheet.setVisibility('hidden');   
+               }
+               try {
+                   
+               showSheet(sheets.casual);
+               } catch (e) {
+                   console.log(e, e.stack);
                }
                
                break;
              case 'part time': 
              case 'permanent':
                if (timesheet !== sheets.contract)  {
-                   if (timesheet) timesheet.hide();   
-                   timesheet = sheets.contract;
-                   timesheet.setData(data);
-                   timesheet.show();
+                   if (timesheet) timesheet.setVisibility('hidden');   
                }
+               showSheet(sheets.contract);
                break;
            default:
                console.error('Person does not have status', person);
-               
-               // timesheet.hide();
-               // TODO: show a canvas that asks to set the status
-               // alert('Please assign a status (permanent, part time or casual) to: ' + person.name);
+               alert('Is this person casual or on contract? ' + person.name);
                return;
            }
+           log.d("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
                
        }
        
        
        function printDiv(type)
        {
+           log.d('TYPE',type);
            var divToPrint=document.getElementById('timesheet' + type);
            var newWin= window.open("");
            newWin.document.write(divToPrint.outerHTML);
@@ -79,6 +85,7 @@ define
            // call superclass method to draw, then have
            // timesheet canvas draw itself
            draw : function () {
+               log.d('drawing............................');
                if (!this.readyToDraw()) return this;
                this.Super("draw", arguments);
                this.timesheet.draw("timesheet" + this.timesheet.type);
@@ -115,8 +122,8 @@ define
                timesheet: ts,
                overflow:'auto',
                showResizeBar: false,
-               padding: 35,
-               visibility: 'hidden'
+               padding: 35
+               ,visibility: 'hidden'
            });
            sheets[ts.type] = component;
        }
@@ -128,7 +135,7 @@ define
            return {
                setData: setData
                ,print: function() {
-                   printDiv(timesheet);
+                   if (timesheet) timesheet.print();
                }
                ,saveAsExcel: function() {
                    timesheet.saveAsExcel();

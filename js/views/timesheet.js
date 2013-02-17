@@ -41,14 +41,23 @@ define
               
               // console.log('IDIDIDIDIDIDI',document.getElementById('isc_F'));
               // console.log('IDIDIDIDIDIDI',mybutton.getActiveElement().id);
-              
-              // var clip = new ZeroClipboard( document.getElementById(
-              //     'isc_4G'
-              //     // mybutton.getActiveElement().id
-              //     // "copy-button"
-              // ), {
-              //     moviePath: "lib/ZeroClipboard.swf" });
+              // var el = mybutton.getActiveElement();
+              // var el = document.getElementById('test');
+              // console.log('DEFINING CLIP', el);
+              // var clip = new ZeroClipboard(
+              //     el,
+              //     { moviePath: "lib/ZeroClipboard.swf" }
+              // );
+              // console.log(clip);
               // clip.setText("Ah, it's in the system clipboard");
+              // clip.on( 'mousedown', function(client) {
+
+              //     alert("mouse down");
+              // } );
+              // clip.on( 'load', function(client) {
+              //     log.d('loaded!!!!!!!!!!!!!!!!!!!!!!!!!!');
+              // } );
+
               // clip.on( 'mouseover', function(client) {
               //     alert("mouse over");
               // } );
@@ -57,16 +66,9 @@ define
               //     alert("mouse out");
               // } );
 
-              // clip.on( 'mousedown', function(client) {
-
-              //     alert("mouse down");
-              // } );
 
               // clip.on( 'mouseup', function(client) {
               //     alert("mouse up");
-              // } );
-              // clip.on( 'load', function(client) {
-              //     log.d('loaded!!!!!!!!!!!!!!!!!!!!!!!!!!');
               // } );
               // window.test = clip;    
           }
@@ -276,6 +278,15 @@ define
       
       
       
+      var html = isc.HTMLFlow.create({
+          width:'80px',				
+          height:'25px',
+          // styleName:"exampleTextBlock",
+          contents: "<button  type='button' href='#' id='swcopy' class style='font-size:11px;width:80px;height:25px'>Copy</button>"
+
+          // "<a id='swcopy' href='#'>Copy</a> "
+      });
+      
       var buttonWidth = 10; 
       var layout = isc.VLayout.create({
           members: [
@@ -283,8 +294,10 @@ define
                   align: 'left',
                   height: 25,
                   members: [
+                      // mybutton,
+                      html,
                       isc.Button.create({
-                          width:100,				
+                          width:'80px',				
                           title: 'Print',
 	                  height: '100%',
 	                  icon:"print.png",
@@ -293,8 +306,7 @@ define
                           }
                       })
                       ,isc.Button.create({
-                          ID: 'mybutton',
-                          width:100,				
+                          width:'80px',				
                           title: 'Export',
 	                  height: '100%',
                           'data-clipboard-text': 'my copy text',

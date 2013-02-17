@@ -8,9 +8,12 @@
 
 define
 ({ //load: ['js!lib/raphael-min.js'],
-    factory: function() {
+    inject: [
+            'views/timesheet/calculateTimesheet'
+    ],
+    factory: function(calc) {
         "use strict";
-        var log = logger('raphael');
+        var log = logger('raphaelcasual');
        
         var data = {
             props: {},
@@ -20,15 +23,15 @@ define
         window.test = function() { return data; };
        
         //Dimensions:
-            var portWidth = 950
+        var portWidth = 950
         ,portHeight = 640
         ,aspectRatio = Math.sqrt(2)
         ,fontSize = 11
-        ,labelBoxWidth = 175
-        ,totalBoxWidth = 85 
+        ,labelBoxWidth = 200
+        ,totalBoxWidth = 120 
         ,topRows = 4
         ,gridColumns =14 
-        ,gridRows = 27
+        ,gridRows = 17
         ,bottomRows = 4
         ,rows = topRows + gridRows + bottomRows
         ,gxs = Math.floor((portWidth-labelBoxWidth-totalBoxWidth)/gridColumns)
@@ -36,7 +39,7 @@ define
         ,topBox = {
             x:portWidth/2 - 200,
             y:0,
-            w:400,
+            w:450,
             h:2*ys
         }
        
@@ -45,7 +48,7 @@ define
         ,paper
         ,element
         //Data to fill the timesheet with:
-        ,title = 'EMPLOYEE TIMESHEET - DISABILITY EMPLOYEE'
+        ,title = 'TIMESHEET CASUAL EMPLOYEE - DISABILITY EMPLOYEE'
         ,rowMap = [
             { title: '*DAY', name: 'dayname' }
             ,{ title: '*DATE', name: 'date' }
@@ -57,43 +60,46 @@ define
             ,{ title: 'START', name: 'start3'  }
             ,{ title: 'FINISH', name: 'finish3' }
             ,{ title: '*TOTAL HOURS WORKED', name: 'totalHoursWorked' }
-            ,{ title: 'EARLY (6-7.30)', name: 'early' }
-            ,{ title: 'ORD (7.30-19.30)', name: 'ord' }
-            ,{ title: 'LATE (19.30-22.00)', name: 'late' }
-            ,{ title: 'WEEKEND T1.5', name: 'weekend' }
-            ,{ title: 'SICK LEAVE', name: 'sickLeave' }
-            ,{ title: 'ANNUAL LEAVE', name: 'annualLeave' }
-            ,{ title: 'LONG SERVICE LEAVE', name: 'longServiceLeave' }
-            ,{ title: 'OTHER LEAVE (specify)', name: 'otherLeave' }
-            ,{ title: 'PUBLIC HOLIDAY ORD', name: 'publicHolidayOrdinary' }
-            ,{ title: 'OVERTIME T1.5', name: 'overtimeT1p5' }
-            ,{ title: 'OVERTIME T2', name: 'overtimeT2' }
-            ,{ title: 'PUBLIC HOL WORK PERM 1.5', name: 'publicHolWorkPerm1p5' }
-            ,{ title: 'PUBLIC HOL WORK 2.5', name: 'publicHolWork2p5' }
+            // ,{ title: 'EARLY (6-7.30)', name: 'early' }
+            ,{ title: 'ORDINARY (6.00-20.00) T1', name: 'ord' }
+            // ,{ title: 'PENALTY (20.00-6.00) T1.15', name: 'late' }
+            // ,{ title: 'WEEKEND (PERM) T1.6', name: 'weekend' }
+            // ,{ title: 'SICK LEAVE', name: 'sickLeave' }
+            // ,{ title: 'ANNUAL LEAVE', name: 'annualLeave' }
+            // ,{ title: 'LONG SERVICE LEAVE', name: 'longServiceLeave' }
+            // ,{ title: 'OTHER LEAVE (Please specify)', name: 'otherLeave' }
+            ,{ title: 'PUBLIC HOLIDAY ORD T1', name: 'publicHolidayOrdinary' }
+            ,{ title: 'PUBLIC HOLIDAY WORK T1.5', name: 'publicHolWorkPerm1p5' }
+            // ,{ title: 'OVERTIME (<=2 hrs) T1.5', name: 'overtimeT1p5' }
+            // ,{ title: 'OVERTIME (>2 hrs) T2', name: 'overtimeT2' }
+            ,{ title: 'DISTURBED SLEEP (CASUAL) T1', name: 'disturbedSleepHoursT1' }
+            // ,{ title: 'DISTURBED SLEEP (PERM) T2', name: 'disturbedSleepHoursT2' }
+            // ,{ title: 'PUBLIC HOL WORK 2.5', name: 'publicHolWork2p5' }
             ,{ title: '*SLEEP OVER 8 HRS', name: 'sleepOver' }
-            ,{ title: '*AWAY FROM BASE ALLOW', name: 'awayFromBase' }
-            ,{ title: '*ADMIN HOURS USED', name: 'adminHoursUsed' }
-            ,{ title: '*CASUAL SLEEP HRS', name: 'disturbedSleepHours' }
+            ,{ title: '*EXCURSION ALLOWANCE', name: 'awayFromBase' }
+            // ,{ title: '*ADMIN HOURS USED', name: 'adminHoursUsed' }
+            ,{ title: '*DISTURBED SLEEP HOURS', name: 'disturbedSleepHours' }
         ]
         ,fields = (function() { var obj = {};
                                 rowMap.forEach(function(r,i) { r.row = i; obj[r.name] = r;});
                                 return obj;
                               })()
         ,line1 = ['EMPLOYEE NAME:', '', 'EMPLOYEE PAYROLL NUMBER:', '', 'CONTACT PHONE:', '' ]
-            ,data1 = {name : 10, payrollNumber : 57, phone: 80 }
-        ,data2 = {permanent:6.5, 'parttime':15, casual:21, dswCALevel: 35, dsw2:58, ending:75}
-        ,line1Pos = [0,data1.name, 40, data1.number, 70, data1.phone, 100] 
-        ,line2 = [ 'FULLTIME:', '', 'PART TIME:','', 'CASUAL:','', 'DSW CA LEVEL:','', 'ALTERNATIVE DSW CA LEVEL:','', 'PERIOD ENDING:','']
-        ,line2Pos = [0,data2.fulltime, 8, data2.parttime, 16, data2.casual, 25, data2.dsw, 40, data2.dsw2, 65, data2.ending, 100] 
+        ,data1 = {name : 10, payrollNumber : 52, phone: 77 }
+        ,line1Pos = [0,data1.name, 35, data1.payrollNumber, 67, data1.phone, 100] 
+        
+        ,line2 = [ 'DSW EA LEVEL:','', 'HIGHER DUTIES LEVEL:','', 'PERIOD ENDING:','']
+        ,data2 = { dswCALevel: 44.5, dsw2:62.3, ending:77}
+        ,line2Pos = [ 35, data2.dsw, 48, data2.dsw2, 67, data2.ending, 102] 
         ,employeeSign = ['EMPLOYEE"S SIGNATURE:_____________________________________________________  DATE:_____________']
         ,managerSign =  ['MANAGER"S SIGNATURE:______________________________________________________  DATE:_____________']
         // ,line5 = 'PLEASE NOTE ALL HOURS TO BE IN 24 HOUR TIME'
-            ,days = ['SAT', 'SUN', 'MON', 'TUES', 'WED', 'THURS', 'FRI' ]
-            ,totalHours = 'TOTAL HOURS'
-        // ,enteredBy = 'ENTERED BY:'
-        ,enteredBy = ''
-        // ,enteredByDate = 'DATE:'
-         ,enteredByDate = ''
+        ,days = ['SAT', 'SUN', 'MON', 'TUES', 'WED', 'THURS', 'FRI' ]
+        ,totalHours = 'TOTAL HOURS'
+        ,enteredBy = 'ENTERED BY:'
+        // ,enteredBy = ''
+            ,enteredByDate = 'DATE:'
+        // ,enteredByDate = ''
         ,dataCells = {}
         ,unit = Math.round(portWidth / 100);
        
@@ -110,7 +116,7 @@ define
             }
             for (i = 0; i< line2.length; i++) {
                 text(line2[i], {x: line2Pos[i] * unit, y : ys *3, h: ys*1, w: line2Pos[i+1]* unit },
-                     {align: 'start'}, {weight: 'normal'});
+                     {align: 'start'}, {weight: 'bold'});
             }
         }
 
@@ -143,7 +149,7 @@ define
             //attr sets font, size (relative to fontSize), weight:
             //normal | bold | bolder | lighter | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | inherit 
             var x,y; 
-                al = al ? al : {};  
+            al = al ? al : {};  
             attr = attr ? attr : {};  
             var padding = al.padding ? al.padding : 2;
             var size = attr.size ? attr.size : 0;
@@ -178,8 +184,8 @@ define
         }
 
         //#API
-        function setData(props) {
-            log.d('in setData in raphael', props);
+        function setFields(props) {
+            log.d('in setFields in raphael contract', props);
             Object.keys(props).forEach(function(p) {
                 setDataField(p, props[p]);
             });
@@ -191,8 +197,8 @@ define
          * Set a data field (name, phone etc) to a value
          *
          * @param {string} data The name of the data field
-             * @param {string} value The value to set the data field to
-             */
+         * @param {string} value The value to set the data field to
+         */
         function setDataField(key, value) {
             data.props[key] = value;
             if (!value) value = '';
@@ -291,17 +297,16 @@ define
             });
         }
         
+       
         //##draw
         //Draw the timesheet, set element to DOM element or its
         //ID which is going to be a parent for drawing surface.
         function draw(anElement) {
-            
-            console.log('DRAWING CASUAL' , anElement);
-            // return;
+            log.d('DRAWING CONTRACT');
             element = anElement;
             if (element) paper = new Raphael(element,portWidth, portHeight);
             else paper = new Raphael(0, 0 ,portWidth, portHeight);
-
+            // window.mypaper = paper;
             // paper = new Raphael(0,0,portWidth, portHeight, function() {
             //     console.log('hello', arguments);
             // });
@@ -328,13 +333,13 @@ define
             paper.rect(1, (topRows + 26) * ys  , labelBoxWidth + totalBoxWidth + gxs * gridColumns ,  ys ).attr({'stroke-width':2});
             //grey out some boxes
             paper.rect(labelBoxWidth + gxs * gridColumns, topRows * ys  , totalBoxWidth, 8 * ys ).attr('fill', 'grey');
-            paper.rect(labelBoxWidth + gxs * 2, (topRows + 13) * ys  , 5 * gxs,  ys ).attr('fill', 'grey');
-            paper.rect(labelBoxWidth + gxs * 9, (topRows + 13) * ys  , 5 * gxs,  ys ).attr('fill', 'grey');
+            // paper.rect(labelBoxWidth + gxs * 2, (topRows + 13) * ys  , 5 * gxs,  ys ).attr('fill', 'grey');
+            // paper.rect(labelBoxWidth + gxs * 9, (topRows + 13) * ys  , 5 * gxs,  ys ).attr('fill', 'grey');
 
             text(totalHours,{x:labelBoxWidth + gxs * gridColumns,y:(topRows + 8)* ys ,w:totalBoxWidth,h:ys},
                  {align: 'middle'}, {weight:'bold'});
             text(enteredBy ,{x:labelBoxWidth + gxs * gridColumns,y:(topRows + 24)* ys ,w:totalBoxWidth,h:ys},
-                     {align: 'start'}, {weight:'bold'});
+                 {align: 'start'}, {weight:'bold'});
             text(enteredByDate,{x:labelBoxWidth + gxs * gridColumns,y:(topRows + 26)* ys ,w:totalBoxWidth,h:ys},
                  {align: 'start'}, {weight:'bold'});
             //lefthand labels
@@ -367,8 +372,53 @@ define
                  {x:0, y: (topRows + gridRows + 2)*ys,
                   w: labelBoxWidth + totalBoxWidth + gridColumns * gxs, h: ys*2},
                  { align: 'start' } , {weight: 'normal'});
+            // cont();
+            // setFields({name: 'hello'});
             return paper;
         }       
+        
+        function setData(someData) {
+            // log.d('SETDATA', someData);
+            var fillData = someData;
+            var person = fillData.person;
+            var location = fillData.location;
+            var shifts = fillData.shifts;
+            var fortnight = fillData.fortnight;
+            clear();
+            log.pp('filling timesheet with data:', person, location, shifts);
+            // log.d(timesheet);
+            setFields({
+                name: person.firstName + ' ' + person.lastName
+                ,payrollNumber: person.payrollNumber
+                ,phone: person.phone
+                ,dswCALevel: person.dswCALevel
+                ,dsw2: person.higherDutiesLevel
+                ,ending: fortnight.clone().addDays(13).toEuropeanShortDate()
+            }); 
+           
+            try {
+                switch(person.status) {
+                  case 'permanent' : setFields({ permanent: 'X'}); break;
+                  case 'part time' : setFields({ parttime: 'X'}); break;
+                  case 'casual' : setFields({ casual: 'X'}); break;
+                    // default: throw new Error("Alert:Person's status is not set (permanent, part time or casual): " + person.name);
+                }
+                calc.init(fortnight, person, location, shifts);
+                for (var i=0; i<14; i++) {
+                    log.pp(calc.getColumn(i));
+                    setColumn( i, calc.getColumn(i));
+                }
+                setColumn(14, calc.getTotals());
+            }
+            catch (e) {
+                var message = e.message;
+                if (message.substr(0,5) === 'Alert')
+                {  message = message.substr(6, message.length);
+                   alert(message);
+                }
+                log.d(e, e.stack);
+            }
+        }               
        
         //#resize
         //Resize the timesheet using either width or height or both.
@@ -435,6 +485,7 @@ define
             a.download = data.props.name + ' ' + fileName + '.xlsx';
             a.click();
         } 
+        
         return {
             draw: draw,
             setCell: setCell,
@@ -444,6 +495,6 @@ define
             resize: resize,
             remove: function() { paper.remove(); },
             exportToExcel: exportToExcel,
-            type: 'casual',
+            type: 'casual'
         };
     }});

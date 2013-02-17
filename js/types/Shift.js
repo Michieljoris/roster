@@ -57,15 +57,22 @@ define
           //          rank: 100
           //        },
           ord: { type: 'ord',
-                 date: Date.parse('2000 7:30am').monday(),
-                 length: 12,
+                 date: Date.parse('2000 6am').monday(),
+                 length: 14,
                  pattern: [1,1,1,1,3],
                  unit: 'day',
                  rank: 100
                },
           late: { type: 'late',
-                  date: Date.parse('2000 7:30pm').monday(),
-                  length: 2.5,
+                  date: Date.parse('2000 8pm').monday(),
+                  length: 2,
+                  pattern: [1,1,1,1,3],
+                  unit: 'day',
+                  rank: 100
+                },
+          late2: { type: 'late',
+                  date: Date.parse('2000 0am').monday(),
+                  length: 6,
                   pattern: [1,1,1,1,3],
                   unit: 'day',
                   rank: 100
