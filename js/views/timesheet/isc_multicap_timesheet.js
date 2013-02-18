@@ -1,4 +1,4 @@
-/*global logger:false isc:false define:false */
+/*global SheetClip:false $:false logger:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:6 maxcomplexity:20 maxlen:190 devel:true*/
 
@@ -13,12 +13,39 @@ define
        "use strict";
        var log = logger('timesheet component');
        
+       var clipped;
        
        var  timesheet;
        
        function setData(state) {
            log.d('WHAT IS STATE?', state);
            fetchShifts(state.person, state.location, state.fortnight, process);
+       }
+       
+       function zclip() {
+           
+           var text;
+           function getCopy() {
+              return text;
+           }
+           var el = $('#swcopy');
+           var clip = {
+               path:'lib/ZeroClipboard.swf',
+               copy: getCopy
+               ,afterCopy: function() {
+                   alert('Dummy timesheet data copied to system clipboard which you can paste into excel (not implemented yet).');
+               }
+           };
+          el.zclip(clip);
+           
+           var arr = [
+               ['A', 'B', 'C'],
+               ['D', 'Some long text', 'F'],
+               ['G', 'H', 'I']
+           ];
+           text = SheetClip.stringify(arr);
+           clipped = true;
+           
        }
        
        function process(data) {
@@ -32,6 +59,8 @@ define
                timesheet.setVisibility('visible');
            }
            
+           if (!clipped) zclip();
+           
            switch (person.status) {
              case 'casual':
                if (timesheet !== sheets.casual)  {
@@ -39,7 +68,7 @@ define
                }
                try {
                    
-               showSheet(sheets.casual);
+                   showSheet(sheets.casual);
                } catch (e) {
                    console.log(e, e.stack);
                }
@@ -109,7 +138,7 @@ define
                printDiv(this.timesheet.type);
            }
            ,saveAsExcel: function () {
-               this.timesheet.exportToExcel();   
+               this.timesheet.exportToExcel.apply(this, arguments);   
            }
            
        });
@@ -138,7 +167,7 @@ define
                    if (timesheet) timesheet.print();
                }
                ,saveAsExcel: function() {
-                   timesheet.saveAsExcel();
+                   timesheet.saveAsExcel.apply(timesheet, arguments);
                }
                ,getSheets: function() {
                    var sheetsLayout = isc.VLayout.create({

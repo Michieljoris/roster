@@ -459,7 +459,7 @@ define
         }
        
         function exportToExcel(creator, fileName) {
-            log.d('In export');
+            log.d('In export',creator, fileName);
             // log.pp(data.grid);
             data.grid.forEach(function(r) {
                 // log.pp(data.grid[r]);

@@ -28,6 +28,7 @@ define
               var dataSource = View.getBackend().getDS();
               personForm.getField('person').setOptionDataSource(dataSource);
               locationForm.getField('location').setOptionDataSource(dataSource);
+              
           }
           ,set: function(state) {
               log.d('SETTING STATE:', state);
@@ -278,13 +279,11 @@ define
       
       
       
-      var html = isc.HTMLFlow.create({
+      var htmlButton = isc.HTMLFlow.create({
           width:'80px',				
           height:'25px',
-          // styleName:"exampleTextBlock",
           contents: "<button  type='button' href='#' id='swcopy' class style='font-size:11px;width:80px;height:25px'>Copy</button>"
 
-          // "<a id='swcopy' href='#'>Copy</a> "
       });
       
       var buttonWidth = 10; 
@@ -294,8 +293,6 @@ define
                   align: 'left',
                   height: 25,
                   members: [
-                      // mybutton,
-                      html,
                       isc.Button.create({
                           width:'80px',				
                           title: 'Print',
@@ -313,7 +310,9 @@ define
 	                  icon:"Excel-icon.png"
                           ,click: function() {
                               var location = locationForm.getValueMap()[locationForm.getValue('location')];
+                              // log.d(location);
                               var person = personForm.getValueMap()[personForm.getValue('person')];
+                              // log.d(person);
                               // var creator = user.get().login;
                               var creator = 'creator';
                               isc_timesheet.saveAsExcel(creator, '(' +
@@ -321,6 +320,7 @@ define
                                                         ' ' + fortnightLabel.getContents());
                           }
                       })
+                      ,htmlButton
                       ,isc.LayoutSpacer.create({width: 25})
                       ,isc.Button.create({
                           width: 22,				

@@ -60,15 +60,18 @@ define
           // set public holiday fields:
           var ph = fields.publicHoliday;
           if (ph) {
-              if (person.status === 'casual') fields.publicHolWork2p5 =  ph;
+              if (person.status === 'casual') {
+               fields.publicHoldayOrdinary =  ph;   
+               fields.publicHolWorkPerm1p5 =  ph;   
+              }
               else {
                   var phw = fields.publicHolidayWorked;
                   if (phw) {
-                      var over76 = Math.floor((phw - 7.6) * 100)/100;
-                      phw = over76 > 0 ? 7.6 : phw;
+                      // var over76 = Math.floor((phw - 7.6) * 100)/100;
+                      // phw = over76 > 0 ? 7.6 : phw;
                       fields.publicHolidayOrdinary = phw;
                       fields.publicHolWorkPerm1p5 = phw;
-                      if (over76 > 0) fields.publicHolWork2p5 = over76;
+                      // if (over76 > 0) fields.publicHolWork2p5 = over76;
                   }
                   var phnw = fields.publicHolidayNotWorked;
                   if (phnw) {
