@@ -28,6 +28,7 @@ define
           //           // rank: 100
           //         },
           day: { type: 'day', 
+                 //from 6am - 10pm daily
                     date: Date.parse('2000 6am').monday(),
                     length: 16, //in hours
                     pattern: [1], //repeated daily 
@@ -35,44 +36,56 @@ define
                     // rank: 100
                   },
           night1: { type: 'night', 
+                    //from 10pm to 0am
                     date: Date.parse('2000 10pm').monday(),
-                    to: Date.parse('2014 10pm').monday(), //undefined is indefinitely TODO, not implemented
+                    // to: Date.parse('2014 10pm').monday(), //undefined is indefinitely TODO, not implemented
                     length: 2, //in hours
                     pattern: [1], //repeated daily 
                     unit: 'day'
                     // rank: 100
                   },
           night2: { type: 'night',
+                    //from 0am to 6am
                     date: Date.parse('2000 0am').monday(),
                     length: 6,
                     pattern: [1],
                     unit: 'day'
                     // rank: 100
                   },
-          early: { type: 'early',
-                   date: Date.parse('2000 6am').monday(),
-                   length: 1.5,
-                   pattern: [1,1,1,1,3],
-                   unit: 'day',
-                   rank: 100
-                 },
+          // early: { type: 'early',
+          //          date: Date.parse('2000 6am').monday(),
+          //          length: 1.5,
+          //          pattern: [1,1,1,1,3],
+          //          unit: 'day',
+          //          rank: 100
+          //        },
           ord: { type: 'ord',
-                 date: Date.parse('2000 7:30am').monday(),
-                 length: 12,
+                 //from 6am till 8pm weekdays
+                 date: Date.parse('2000 6am').monday(),
+                 length: 14,
                  pattern: [1,1,1,1,3],
                  unit: 'day',
                  rank: 100
                },
           late: { type: 'late',
-                  date: Date.parse('2000 7:30pm').monday(),
-                  length: 2.5,
+                  //from 8pm till 10pm weekdays
+                  date: Date.parse('2000 8pm').monday(),
+                  length: 2,
                   pattern: [1,1,1,1,3],
                   unit: 'day',
                   rank: 100
                 },
+          // late2: { type: 'late',
+          //         date: Date.parse('2000 0am').monday(),
+          //         length: 6,
+          //         pattern: [1,1,1,1,3],
+          //         unit: 'day',
+          //         rank: 100
+          //       },
           //3 ways to describe weekends:
           //this one finds both days in one pattern though:
           weekend: { type: 'weekend',
+                     //from 6am till 10pm Sat and Sun
                      date: Date.parse('2000 6:00am').saturday(),
                      length: 16,
                      pattern: [1,6],
@@ -130,21 +143,28 @@ define
                     unit: 'year',
                     length: 16,
                     rank: 300
-                  },
-          oneoff: { type: 'publicHoliday', //one off public holiday
-                    date: Date.parse('5 March 2013 6am'),
-                    pattern: [], //doesn't pattern...
-                    // unit: 'year',
+                  }
+          ,test: { type: 'publicHoliday', //Boxing day
+                    date: Date.parse('19 feb  2000 6am'),
+                    pattern: [1],
+                    unit: 'year',
                     length: 16,
                     rank: 300
-                  },
-          monthly: { type: 'monthly event', 
-                     date: Date.parse('5 March 2000 6am'),
-                     pattern: [1],
-                     unit: 'month',
-                     length: 16,
-                     rank:100 
-                   }
+                  }
+          // ,oneoff: { type: 'publicHoliday', //one off public holiday
+          //           date: Date.parse('5 March 2013 6am'),
+          //           pattern: [], //doesn't pattern...
+          //           // unit: 'year',
+          //           length: 16,
+          //           rank: 300
+          //         },
+          // monthly: { type: 'monthly event', 
+          //            date: Date.parse('5 March 2000 6am'),
+          //            pattern: [1],
+          //            unit: 'month',
+          //            length: 16,
+          //            rank:100 
+          //          }
       };
       
       function setPatternsObject(patternsObject) {
@@ -354,7 +374,7 @@ define
               notes: values.notes || '',
               // name: values.name,
               // endTijd: '- ' + isc.Time.toTime(values.endDate, 'toShortPaddedTime', true)
-              endTijd: values.personNames.toString()
+              endTijd: values.locationName
               // description: '<h3>' + (values.personNames && (values.personNames.toString()) + '</h3><p>' + (values.notes || ''))
               // description: makeDescription(values.personNames) + (values.notes || '')
           };

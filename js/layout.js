@@ -35,7 +35,7 @@ define
 	width:200,
 	sections:[
 	    {showHeader:false, items:[viewTree]},
-	    {title:"Help", expanded:false,  items:[helpCanvas]}
+	    {title:"Release notes", expanded:false,  items:[helpCanvas]}
 	]
     });
     

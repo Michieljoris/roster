@@ -19,8 +19,8 @@ define
           type: 'Timesheet'
           ,alwaysSet: true
           ,icon: 'timesheet.png'
-          ,defaultState: { person:'guest', location:'',
-                           fortnight: Date.parse('2013-01-01')}
+          ,defaultState: { person:'root', location:'',
+                           fortnight: calculateFortnight(Date.today())} 
           // ,sync: function(state) {
           //     log.d('UPDATING STATE:', state);
           // } 
@@ -28,6 +28,7 @@ define
               var dataSource = View.getBackend().getDS();
               personForm.getField('person').setOptionDataSource(dataSource);
               locationForm.getField('location').setOptionDataSource(dataSource);
+              
           }
           ,set: function(state) {
               log.d('SETTING STATE:', state);
@@ -41,14 +42,23 @@ define
               
               // console.log('IDIDIDIDIDIDI',document.getElementById('isc_F'));
               // console.log('IDIDIDIDIDIDI',mybutton.getActiveElement().id);
-              
-              // var clip = new ZeroClipboard( document.getElementById(
-              //     'isc_4G'
-              //     // mybutton.getActiveElement().id
-              //     // "copy-button"
-              // ), {
-              //     moviePath: "lib/ZeroClipboard.swf" });
+              // var el = mybutton.getActiveElement();
+              // var el = document.getElementById('test');
+              // console.log('DEFINING CLIP', el);
+              // var clip = new ZeroClipboard(
+              //     el,
+              //     { moviePath: "lib/ZeroClipboard.swf" }
+              // );
+              // console.log(clip);
               // clip.setText("Ah, it's in the system clipboard");
+              // clip.on( 'mousedown', function(client) {
+
+              //     alert("mouse down");
+              // } );
+              // clip.on( 'load', function(client) {
+              //     log.d('loaded!!!!!!!!!!!!!!!!!!!!!!!!!!');
+              // } );
+
               // clip.on( 'mouseover', function(client) {
               //     alert("mouse over");
               // } );
@@ -57,16 +67,9 @@ define
               //     alert("mouse out");
               // } );
 
-              // clip.on( 'mousedown', function(client) {
-
-              //     alert("mouse down");
-              // } );
 
               // clip.on( 'mouseup', function(client) {
               //     alert("mouse up");
-              // } );
-              // clip.on( 'load', function(client) {
-              //     log.d('loaded!!!!!!!!!!!!!!!!!!!!!!!!!!');
               // } );
               // window.test = clip;    
           }
@@ -276,6 +279,13 @@ define
       
       
       
+      var htmlButton = isc.HTMLFlow.create({
+          width:'80px',				
+          height:'25px',
+          contents: "<button  type='button' href='#' id='swcopy' class style='font-size:11px;width:80px;height:25px'>Copy</button>"
+
+      });
+      
       var buttonWidth = 10; 
       var layout = isc.VLayout.create({
           members: [
@@ -284,7 +294,7 @@ define
                   height: 25,
                   members: [
                       isc.Button.create({
-                          width:100,				
+                          width:'80px',				
                           title: 'Print',
 	                  height: '100%',
 	                  icon:"print.png",
@@ -293,15 +303,16 @@ define
                           }
                       })
                       ,isc.Button.create({
-                          ID: 'mybutton',
-                          width:100,				
+                          width:'80px',				
                           title: 'Export',
 	                  height: '100%',
                           'data-clipboard-text': 'my copy text',
 	                  icon:"Excel-icon.png"
                           ,click: function() {
                               var location = locationForm.getValueMap()[locationForm.getValue('location')];
+                              // log.d(location);
                               var person = personForm.getValueMap()[personForm.getValue('person')];
+                              // log.d(person);
                               // var creator = user.get().login;
                               var creator = 'creator';
                               isc_timesheet.saveAsExcel(creator, '(' +
@@ -309,6 +320,7 @@ define
                                                         ' ' + fortnightLabel.getContents());
                           }
                       })
+                      ,htmlButton
                       ,isc.LayoutSpacer.create({width: 25})
                       ,isc.Button.create({
                           width: 22,				

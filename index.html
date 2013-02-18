@@ -1,77 +1,11 @@
-<!-- <!Doctype HTML> -->
+<!Doctype HTML> 
 <html manifest="./manifest.appcache">
   <HEAD>
   <script>
-    
-var appCache = window.applicationCache;
-function handleCacheEvent(e) {
-    var bar;
-    switch (e.type) {
-      case  'updateready':
-        if (appCache.status === appCache.UPDATEREADY) {
-            // Browser downloaded a new app cache.
-            // Swap it in and reload the page to get the new hotness.
-            window.applicationCache.swapCache();
-            if (confirm('A new version of this web application is available. If you select Ok, the browser will refresh the page and load the new version. If you select Cancel you can continue using the app as it is, and the browser will load the new version next time the page is refreshed (by F5, Control-r or a restart of the browser).')) {
-                window.location.reload();
-            }
-        } 
-        break;
-      case 'noupdate':
-        
-        // console.log('my appcache event:', e);
-        bar = document.getElementById('progressBar');
-        bar.value = 100;
-        // bar.style = 'visibility:hidden';
-        break; 
-      case 'progress' : 
-        
-        // text = document.getElementById('statusUpdate');
-        bar = document.getElementById('progressBar');
-        bar.value =  Math.floor(e.loaded/e.total * 100);
-        // text.innerHTML = 'Loading app into cache ' + Math.floor(e.loaded/e.total * 100) + '%';
-        // console.log(e);
-        break;
-    default:   
-        // Manifest didn't change. Nothing new to server.
-        //...
-    }
-} 
-
-function handleCacheError(e) {
-    alert('Error: Cache failed to update!');
-    console.log('what',e);
-}
-
-// Fired after the first cache of the manifest.
-appCache.addEventListener('cached', handleCacheEvent, false);
-
-// Checking for an update. Always the first event fired in the sequence.
-appCache.addEventListener('checking', handleCacheEvent, false);
-
-// An update was found. The browser is fetching resources.
-appCache.addEventListener('downloading', handleCacheEvent, false);
-
-// The manifest returns 404 or 410, the download failed,
-// or the manifest changed while the download was in progress.
-appCache.addEventListener('error', handleCacheError, false);
-
-// Fired after the first download of the manifest.
-appCache.addEventListener('noupdate', handleCacheEvent, false);
-
-// Fired if the manifest file returns a 404 or 410.
-// This results in the application cache being deleted.
-appCache.addEventListener('obsolete', handleCacheEvent, false);
-
-// Fired for each resource listed in the manifest as it is being fetched.
-appCache.addEventListener('progress', handleCacheEvent, false);
-
-// Fired when the manifest resources have been newly redownloaded.
-appCache.addEventListener('updateready', handleCacheEvent, false);
-    
     window.mydb = 'extdb';
   </script>
      <!-- Try to detect the browser the user is using -->
+    <script src=lib/appCache.js></script>
     <script src=lib/browserDetect.js></script>
     <!-- <script src=lib/appCache.js></script> -->
     <!-- EXTJS -->
@@ -86,9 +20,8 @@ appCache.addEventListener('updateready', handleCacheEvent, false);
   </HEAD>
   
   <BODY>
-    <div id='statusUpdate' >
-      Starting app:<p>
-      <progress id='progressBar' value="0" max="100">
+    <div id='statusUpdate' >Starting app...<p>
+      <!-- <progress id='progressBar' value="0" max="100"> -- -->
     </div>
     <div id='appFail' style='visibility:hidden;'> 
       Please use
@@ -100,7 +33,7 @@ appCache.addEventListener('updateready', handleCacheEvent, false);
     if (BrowserDetect.browser !== 'Chrome') {
      document.getElementById('appFail').style.visibility = 'visible';
                   alert('This app has been tested in Chrome only and will very likely not work in any other browser, though you might try Firefox. IE will fail. Let me know how you go with Safari. Pressing Ok will give it a shot anyway. Good luck... :-)');
-    
+    G
               }
     else document.getElementById('appFail').style.display = 'none';
   </script>
@@ -129,7 +62,7 @@ appCache.addEventListener('updateready', handleCacheEvent, false);
       };
       
       <!-- for test purposes in quickpouch-->
-      window.dbname= 'idb://db4';
+      window.dbname= 'idb://db';
       
       <!-- get rid of annoying msg when testing licensed version -->
       window.isc_expirationOff=true;  
@@ -166,8 +99,9 @@ appCache.addEventListener('updateready', handleCacheEvent, false);
       isc.Offline.goOnline();
       
       Date.setInputFormat('DMY');
-      Date.setNormalDateDisplayFormat('toEuropeanShortDateTime');  
-      Date.setShortDatetimeDisplayFormat('toEuropeanShortDateTime');  
+      Date.setNormalDateDisplayFormat('toLocaleDateString');  
+      Date.setShortDatetimeDisplayFormat('toLocaleDateString');  
+      Date.setShortDisplayFormat('toLocaleDateString'); 
       <!-- isc.Time.setDefaultDisplayTimezone(0); -->
     </script>
     
@@ -189,6 +123,7 @@ appCache.addEventListener('updateready', handleCacheEvent, false);
     <script src=lib/xlsx.js></script>
     <!-- copy stuff to the system clipboard -->
     <!-- <script src=lib/ZeroClipboard.js></script> -->
+    <script type="text/javascript" src="lib/jquery.zclip.min.js"></script>
     
     <!-- necessary for postal.js -->
     <!-- <script src=lib/underscore.js></script>     -->
@@ -208,7 +143,7 @@ appCache.addEventListener('updateready', handleCacheEvent, false);
     <!-- execute in console manifestR.makeManifest to create a manifest for -->
     <!-- the app. Put it in roster.appcache Also set the topline of the index.html file to : -->
     <!-- html manifest="/manifest.appcache"> -\-> -->
-    <script src=lib/manifestR.js></script>
+    <script src=lib/manifestR.js></script> 
     
     <!-- connect with the page via slime -->
     <!-- <script> window.swank_server ='http://localhost:8009/' </script>  -->
@@ -219,7 +154,7 @@ appCache.addEventListener('updateready', handleCacheEvent, false);
     <!-- <script src=test/quickpouch.js></script>     -->
     
     <!-- load and start ************************************-->
-    <script src=lib/bootstrap.js></script>
+    <script src=lib/bootstrap.js></script> 
     <!-- <script type="text/javascript" src="js/views/extcalendar/app.js"></script>  -->
     
     <!-- <div id="myid"></div>  -->
