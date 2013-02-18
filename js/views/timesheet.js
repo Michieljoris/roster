@@ -12,6 +12,14 @@ define
     { "use strict";
       var log = logger('timesheet');
       
+      var fortnightStart = Date.parse('2000, 1 Jan').getTime();
+      var fortnightLength = 14 *  24 * 60 * 60 *1000;
+      
+      function calculateFortnight(date) {
+          var time = date.getTime();
+          var n = Math.floor((time - fortnightStart)/fortnightLength);
+          return new Date(fortnightStart + n * fortnightLength);
+      }
       
       var isc_timesheet = isc_Timesheet.create(); 
       
@@ -91,8 +99,6 @@ define
        
       }
       
-      var fortnightStart = Date.parse('2000, 1 Jan').getTime();
-          var fortnightLength = 14 *  24 * 60 * 60 *1000;
       
       
       
@@ -179,18 +185,13 @@ define
       
       function fortnightToString(date) {
           var endFortnight = date.clone().addDays(13);
-              return getDateStr(date) + ' - ' + getDateStr(endFortnight);
+          return getDateStr(date) + ' - ' + getDateStr(endFortnight);
       }
       
-      function calculateFortnight(date) {
-          var time = date.getTime();
-          var n = Math.floor((time - fortnightStart)/fortnightLength);
-          return new Date(fortnightStart + n * fortnightLength);
-      }
       
       
       var pickFortnightForm = isc.DynamicForm.create({
-              autoDraw: false,
+          autoDraw: false,
           // cellBorder: 1,
           numCols: 3,
           // height: 48,
@@ -216,7 +217,7 @@ define
       
       
       var okButton = isc.Button.create({
-              title: "Ok",
+          title: "Ok",
           width: 40,
           click: function fortnightPicked() {
               var state = view.getState();
@@ -273,7 +274,7 @@ define
           // observer('timesheet');
           view.modified();
           var state = view.getState();
-              fortnightLabel.setContents(fortnightToString(state.fortnight));
+          fortnightLabel.setContents(fortnightToString(state.fortnight));
           
       }
       
@@ -287,96 +288,96 @@ define
       });
       
       var buttonWidth = 10; 
-      var layout = isc.VLayout.create({
-          members: [
-              isc.HLayout.create({
-                  align: 'left',
-                  height: 25,
-                  members: [
-                      isc.Button.create({
-                          width:'80px',				
-                          title: 'Print',
-	                  height: '100%',
-	                  icon:"print.png",
-                          click: function() {
-                              isc_timesheet.print();
-                          }
-                      })
-                      ,isc.Button.create({
-                          width:'80px',				
-                          title: 'Export',
-	                  height: '100%',
-                          'data-clipboard-text': 'my copy text',
-	                  icon:"Excel-icon.png"
-                          ,click: function() {
-                              var location = locationForm.getValueMap()[locationForm.getValue('location')];
-                              // log.d(location);
-                              var person = personForm.getValueMap()[personForm.getValue('person')];
-                              // log.d(person);
-                              // var creator = user.get().login;
-                              var creator = 'creator';
-                              isc_timesheet.saveAsExcel(creator, '(' +
-                                                        person + ') at ' + location +
-                                                        ' ' + fortnightLabel.getContents());
-                          }
-                      })
-                      ,htmlButton
-                      ,isc.LayoutSpacer.create({width: 25})
-                      ,isc.Button.create({
-                          width: 22,				
-                          title: '',
-	                  icon:"date_control.png"
-                          ,click: function() {
-                              var state = view.getState();
-                              pickFortnightForm.setValue('fortnightLabel',
-                                                         fortnightToString(state.fortnight));
-                              pickFortnightForm.setValue('date', state.fortnight);
-                              pickFortnightWindow.show();
-                          }
-                      })
-                      ,isc.LayoutSpacer.create({width: 5})
-                      ,isc.Button.create({
-                          width: 22,				
-                          title: '',
-	                  icon:"arrow_left.png"
-                          ,click: function() {
-                              var state = view.getState();
-                              state.fortnight.addWeeks(-2);
-                              setFortnightLabel();
-                              setData(state);
-                          }
-                      })
-                      ,fortnightLabel
-                      ,isc.Button.create({
-                          width: 22,				
-                          title: '',
-	                  icon:"arrow_right.png"
-                          ,click: function() {
-                              var state = view.getState();
-                              state.fortnight.addWeeks(2);
-                              setFortnightLabel();
-                              setData(state);
-                          }
-                      })
-                      ,isc.LayoutSpacer.create({width: 25})
-                      ,isc.Label.create({
-                          width:buttonWidth,				
-                          title: '',
-	                  icon:"person.png"
-                      })
-                      ,personForm
-                      ,isc.LayoutSpacer.create({width: 25})
-                      ,isc.Label.create({
-                          width:buttonWidth,				
-                          title: '',
-	                  icon:"home.png"
-                      })
-                      ,locationForm
-                  ]
-              })
-              ,isc_timesheet.getSheets()
-          ] 
-      });
+          var layout = isc.VLayout.create({
+              members: [
+                  isc.HLayout.create({
+                      align: 'left',
+                      height: 25,
+                      members: [
+                          isc.Button.create({
+                              width:'80px',				
+                              title: 'Print',
+	                      height: '100%',
+	                      icon:"print.png",
+                              click: function() {
+                                  isc_timesheet.print();
+                              }
+                          })
+                          ,isc.Button.create({
+                              width:'80px',				
+                              title: 'Export',
+	                      height: '100%',
+                              'data-clipboard-text': 'my copy text',
+	                      icon:"Excel-icon.png"
+                              ,click: function() {
+                                  var location = locationForm.getValueMap()[locationForm.getValue('location')];
+                                  // log.d(location);
+                                  var person = personForm.getValueMap()[personForm.getValue('person')];
+                                  // log.d(person);
+                                  // var creator = user.get().login;
+                                  var creator = 'creator';
+                                  isc_timesheet.saveAsExcel(creator, '(' +
+                                                            person + ') at ' + location +
+                                                            ' ' + fortnightLabel.getContents());
+                              }
+                          })
+                          ,htmlButton
+                          ,isc.LayoutSpacer.create({width: 25})
+                          ,isc.Button.create({
+                              width: 22,				
+                              title: '',
+	                      icon:"date_control.png"
+                              ,click: function() {
+                                  var state = view.getState();
+                                  pickFortnightForm.setValue('fortnightLabel',
+                                                             fortnightToString(state.fortnight));
+                                  pickFortnightForm.setValue('date', state.fortnight);
+                                  pickFortnightWindow.show();
+                              }
+                          })
+                          ,isc.LayoutSpacer.create({width: 5})
+                          ,isc.Button.create({
+                                  width: 22,				
+                              title: '',
+	                      icon:"arrow_left.png"
+                              ,click: function() {
+                                  var state = view.getState();
+                                  state.fortnight.addWeeks(-2);
+                                  setFortnightLabel();
+                                  setData(state);
+                              }
+                          })
+                          ,fortnightLabel
+                              ,isc.Button.create({
+                                  width: 22,				
+                                  title: '',
+	                          icon:"arrow_right.png"
+                                  ,click: function() {
+                                      var state = view.getState();
+                                      state.fortnight.addWeeks(2);
+                                      setFortnightLabel();
+                                      setData(state);
+                                  }
+                              })
+                          ,isc.LayoutSpacer.create({width: 25})
+                          ,isc.Label.create({
+                              width:buttonWidth,				
+                              title: '',
+	                      icon:"person.png"
+                          })
+                          ,personForm
+                          ,isc.LayoutSpacer.create({width: 25})
+                          ,isc.Label.create({
+                              width:buttonWidth,				
+                              title: '',
+	                      icon:"home.png"
+                          })
+                          ,locationForm
+                      ]
+                  })
+                  ,isc_timesheet.getSheets()
+              ] 
+          });
       
       // isc_timesheet_casual.hide();
       
