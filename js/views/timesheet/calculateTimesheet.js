@@ -50,7 +50,7 @@ define
           if (overlap(shifts)) {
               log.d('overlapping!!');
               throw new Error("Alert:Can't calculate timesheet. Shifts overlap on " +
-                              shifts[0].date.toEuropeanShortDate());
+                              shifts[0].date.toLocaleDate());
           }
           var fields = utils.addFieldValues(shifts);
           fields.awayFromBase = fields.awayFromBase ? 1 : '';
@@ -61,7 +61,7 @@ define
           var ph = fields.publicHoliday;
           if (ph) {
               if (person.status === 'casual') {
-               fields.publicHoldayOrdinary =  ph;   
+               fields.publicHolidayOrdinary =  ph;   
                fields.publicHolWorkPerm1p5 =  ph;   
               }
               else {
@@ -84,24 +84,38 @@ define
               
           }
           
-          //set overtime fields:
-          var SHIFT_MAXLEN = 10;
-          var dayHours = fields.day ? fields.day : 0;
+          //set overtime and disturbed sleep fields:
+          var over2;
+          
           var disturbedSleepHours = 0;
-          if (fields.night) { fields.disturbedSleepHours = disturbedSleepHours = fields.night; }
+          if (fields.night) {
+              fields.disturbedSleepHoursT1 = fields.disturbedSleepHours = disturbedSleepHours = fields.night;
+              over2 = fields.night -2;
+              fields.disturbedSleepHoursT1p5 = over2 > 0 ? 2 : fields.night; 
+              if (over2 > 0) fields.disturbedSleepHoursT2 = over2;
+              
+          }
+          
+          var dayHours = fields.day ? fields.day : 0;
           fields.totalHoursWorked = dayHours + disturbedSleepHours;
+          
+          var SHIFT_MAXLEN = 10;
           var overtime = 0;
           if (!ph) {
               overtime = Math.max(dayHours - SHIFT_MAXLEN, 0);
-              adjustFields(fields, ['weekend', 'late', 'ord', 'early'], overtime);
+              if (overtime > 0) {
+                  if (person.status !== 'casual')
+                      adjustFields(fields, ['weekend', 'late', 'ord', 'early'], overtime);
+                  fields.overtime = overtime;
+                  over2 = overtime -2;
+                  fields.overtimeT1p5 = over2 > 0 ? 2 : overtime; 
+                  if (over2 > 0) fields.overtimeT2 = over2;
+              }
           }
-          overtime += disturbedSleepHours;
-          if (overtime > 0) {
-              fields.overtime = overtime;
-              var over2 = overtime -2;
-              fields.overtimeT1p5 = over2 > 0 ? 2 : overtime; 
-              if (over2 > 0) fields.overtimeT2 = over2;
+          if (person.status === 'casual' && fields.ord) {
+              fields.ord += fields.late ? fields.late: 0;
           }
+          // overtime += disturbedSleepHours;
           
           //toil fields?
           
@@ -132,7 +146,6 @@ define
           var location = aLocation;
           var person = aPerson;
           var shifts = utils.sortBy(someShifts, 'startDate', 'asc');
-          // log.d('AAAAAAAAAAAAAAAAAAAAAAAAAAAAA', shifts);
           columns = [];
           var startDay = fortnight.getTime();
           shifts.forEach(function(s) {
@@ -147,7 +160,8 @@ define
                   person, location, c);
               fields.shifts = c;
               fields.costCentre = location.costCentre ? location.costCentre : '??';
-              fields.date = fortnight.clone().addDays(i).toEuropeanShortDate().slice(0,5);
+              var temp = fortnight.clone().addDays(i);
+              fields.date = temp.getDate() + '/' + (temp.getMonth() + 1);
               return fields;
           });
           totals = utils.addFieldValues(columns);

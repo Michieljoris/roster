@@ -80,10 +80,10 @@ define
             }
             //TODO should this be enforced or reminded?
             //TODO should we check shifts are in worktime?
-            else if (length < settings.minimumShiftLength * 60000) 
-                errorMessage = 'Smaller than ' + settings.minimumShiftLength/60 + ' hours.';
-            else if (length > settings.maximumShiftLength * 60000) 
-                errorMessage = 'Bigger than ' + settings.maximumShiftLength/60 + ' hours';
+            // else if (length < settings.minimumShiftLength * 60000) 
+            //     errorMessage = 'Smaller than ' + settings.minimumShiftLength/60 + ' hours.';
+            // else if (length > settings.maximumShiftLength * 60000) 
+            //     errorMessage = 'Bigger than ' + settings.maximumShiftLength/60 + ' hours';
             // log.d('XXXXXXXXXX',validator.errorMessage, startTime, endTime);
             validator.errorMessage = errorMessage;
             return !errorMessage;

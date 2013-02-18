@@ -89,6 +89,7 @@ lib/isomorphic/skins/Enterprise/images/Menu/menu_background_rtl.png
 lib/isomorphic/skins/Enterprise/images/ToolStrip/background_vertical.png
 
 #javascript files
+lib/clip.js
 lib/jquery.zclip.min.js
 lib/appCache.js
 lib/manifestR.js

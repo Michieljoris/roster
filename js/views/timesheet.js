@@ -20,7 +20,7 @@ define
           ,alwaysSet: true
           ,icon: 'timesheet.png'
           ,defaultState: { person:'root', location:'',
-                           fortnight: Date.parse('2013-01-01')}
+                           fortnight: calculateFortnight(Date.today())} 
           // ,sync: function(state) {
           //     log.d('UPDATING STATE:', state);
           // } 

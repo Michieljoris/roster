@@ -1,6 +1,6 @@
 /*global  xlsx:false logger:false Raphael:false  define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
-/*jshint maxparams:6 maxcomplexity:7 maxlen:1190 devel:true*/
+/*jshint maxparams:6 maxcomplexity:70 maxlen:1190 devel:true*/
 
 //This module basically draws a Multicap timesheet using raphael.js It
 //has an API to set individual cells and data fields, set a column in
@@ -8,10 +8,10 @@
 
 define
 ({ //load: ['js!lib/raphael-min.js'],
-    inject: [
+    inject: ['lib/clip', 
             'views/timesheet/calculateTimesheet'
     ],
-    factory: function(calc) {
+    factory: function(clip, calc) {
         "use strict";
         var log = logger('raphaelcasual');
        
@@ -98,7 +98,7 @@ define
         ,totalHours = 'TOTAL HOURS'
         ,enteredBy = 'ENTERED BY:'
         // ,enteredBy = ''
-            ,enteredByDate = 'DATE:'
+        ,enteredByDate = 'DATE:'
         // ,enteredByDate = ''
         ,dataCells = {}
         ,unit = Math.round(portWidth / 100);
@@ -274,14 +274,18 @@ define
             }); 
             var shifts = column.shifts;
             // var total = 0;
+            
             if (shifts) {
                 if (shifts.length > 3) {
                     log.e('Only room for 3 shifts per day!!!');   
-                    throw new Error('Only room for 3 shifts per day on this timesheet!!! Fix: ' +
-                                    shifts[0].date.toEuropeanShortDate());
+                    alert('Warning: Can only display 3 shifts per day!!! Not all shifts have been listed for ' +
+                          shifts[0].date.toLocaleDateString());
+                    
+                    // throw new Error('Only room for 3 shifts per day on this timesheet!!! Fix: ' +
+                    //                 shifts[0].date.toLocaleDateString());
                 }
                 shifts.forEach(function (s, i) {
-                    setShiftTimes(s, i, day);
+                    if (i<3) setShiftTimes(s, i, day);
                 });
             }
            
@@ -377,8 +381,16 @@ define
             return paper;
         }       
         
+        
+        function returnSheetClip() {
+            return SheetClip.stringify(data.grid);   
+            // return data.grid;   
+        }
+        
         function setData(someData) {
-            // log.d('SETDATA', someData);
+            clip('swcopy', returnSheetClip, function() {
+               alert('Copied to system clipboard') ;
+            });
             var fillData = someData;
             var person = fillData.person;
             var location = fillData.location;
@@ -387,13 +399,16 @@ define
             clear();
             log.pp('filling timesheet with data:', person, location, shifts);
             // log.d(timesheet);
+            var fullName = '';
+            if (person.firstName) fullName+= person.firstName;
+            if (person.lastName) fullName+= ' ' + person.lastName;
             setFields({
-                name: person.firstName + ' ' + person.lastName
+                name: fullName
                 ,payrollNumber: person.payrollNumber
                 ,phone: person.phone
                 ,dswCALevel: person.dswCALevel
                 ,dsw2: person.higherDutiesLevel
-                ,ending: fortnight.clone().addDays(13).toEuropeanShortDate()
+                ,ending: fortnight.clone().addDays(13).toLocaleDateString()
             }); 
            
             try {
@@ -418,6 +433,15 @@ define
                 }
                 log.d(e, e.stack);
             }
+            
+            data.grid.forEach(function(r) {
+                // log.pp(data.grid[r]);
+                for (var i = 1; i < r.length; i++) {
+                    if (!r[i]) r[i] = { value: '' };
+                    else r[i] = { value: r[i] };
+                }
+               
+            });
         }               
        
         //#resize
@@ -461,14 +485,6 @@ define
         function exportToExcel(creator, fileName) {
             log.d('In export',creator, fileName);
             // log.pp(data.grid);
-            data.grid.forEach(function(r) {
-                // log.pp(data.grid[r]);
-                for (var i = 1; i < r.length; i++) {
-                    if (!r[i]) r[i] = { value: '' };
-                    else r[i] = { value: r[i] };
-                }
-               
-            });
            
             var file = {
                 worksheets: [], // worksheets has one empty worksheet (array)

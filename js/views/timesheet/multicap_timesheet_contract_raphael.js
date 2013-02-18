@@ -1,6 +1,6 @@
 /*global  xlsx:false logger:false Raphael:false  define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
-/*jshint maxparams:6 maxcomplexity:7 maxlen:1190 devel:true*/
+/*jshint maxparams:6 maxcomplexity:70 maxlen:1190 devel:true*/
 
 //This module basically draws a Multicap timesheet using raphael.js It
 //has an API to set individual cells and data fields, set a column in
@@ -8,10 +8,10 @@
 
 define
 ({ //load: ['js!lib/raphael-min.js'],
-    inject: [
+    inject: ['lib/clip',
             'views/timesheet/calculateTimesheet'
     ],
-    factory: function(calc) {
+    factory: function(clip, calc) {
         "use strict";
         var log = logger('raphaelcontract');
        
@@ -19,8 +19,7 @@ define
             props: {},
             grid: []
         };
-       
-        window.test = function() { return data; };
+        
        
         //Dimensions:
         var portWidth = 950
@@ -200,6 +199,7 @@ define
          * @param {string} value The value to set the data field to
          */
         function setDataField(key, value) {
+            log.d('SETDATAFIELD', key, value);
             data.props[key] = value;
             if (!value) value = '';
             var element;
@@ -277,11 +277,14 @@ define
             if (shifts) {
                 if (shifts.length > 3) {
                     log.e('Only room for 3 shifts per day!!!');   
-                    throw new Error('Only room for 3 shifts per day on this timesheet!!! Fix: ' +
-                                    shifts[0].date.toEuropeanShortDate());
+                    alert('Warning: Can only display 3 shifts per day!!! Not all shifts have been listed for ' +
+                                    shifts[0].date.toLocaleDateString());
+                    
+                    // throw new Error('Only room for 3 shifts per day on this timesheet!!! Fix: ' +
+                    //                 shifts[0].date.toLocaleDateString());
                 }
                 shifts.forEach(function (s, i) {
-                    setShiftTimes(s, i, day);
+                    if (i<3) setShiftTimes(s, i, day);
                 });
             }
            
@@ -377,7 +380,26 @@ define
             return paper;
         }       
         
+        function returnSheetClip() {
+            var grid = [];
+            var row;
+            data.grid.forEach(function(r) {
+                row = [];
+                row.push(r[0]);
+                for (var i=1; i<16; i++) {
+                    row.push(r[i] ? r[i].value : '');
+                }
+                grid.push(row);
+            });
+            
+            log.d(grid);
+            return SheetClip.stringify(grid);   
+        }
+        
         function setData(someData) {
+            clip('swcopy', returnSheetClip, function() {
+               alert('Copied to system clipboard') ;
+            });
             log.d('SETDATA', someData);
             var fillData = someData;
             var person = fillData.person;
@@ -387,13 +409,16 @@ define
             clear();
             log.pp('filling timesheet with data:', person, location, shifts);
             // log.d(timesheet);
+            var fullName = '';
+            if (person.firstName) fullName+= person.firstName;
+            if (person.lastName) fullName+= ' ' + person.lastName;
             setFields({
-                name: person.firstName + ' ' + person.lastName
+                name: fullName
                 ,payrollNumber: person.payrollNumber
                 ,phone: person.phone
                 ,dswCALevel: person.dswCALevel
                 ,dsw2: person.higherDutiesLevel
-                ,ending: fortnight.clone().addDays(13).toEuropeanShortDate()
+                ,ending: fortnight.clone().addDays(13).toLocaleDateString()
             }); 
            
             try {
@@ -418,6 +443,16 @@ define
                 }
                 log.d(e, e.stack);
             }
+            //for export to excel
+            data.grid.forEach(function(r) {
+                // log.pp(data.grid[r]);
+                for (var i = 1; i < r.length; i++) {
+                    if (!r[i]) r[i] = { value: '' };
+                    else r[i] = { value: r[i] };
+                }
+               
+            });
+            
         }               
        
         //#resize
@@ -461,14 +496,14 @@ define
         function exportToExcel(creator, fileName) {
             log.d('In export');
             // log.pp(data.grid);
-            data.grid.forEach(function(r) {
-                // log.pp(data.grid[r]);
-                for (var i = 1; i < r.length; i++) {
-                    if (!r[i]) r[i] = { value: '' };
-                    else r[i] = { value: r[i] };
-                }
+            // data.grid.forEach(function(r) {
+            //     // log.pp(data.grid[r]);
+            //     for (var i = 1; i < r.length; i++) {
+            //         if (!r[i]) r[i] = { value: '' };
+            //         else r[i] = { value: r[i] };
+            //     }
                
-            });
+            // });
            
             var file = {
                 worksheets: [], // worksheets has one empty worksheet (array)

@@ -396,8 +396,35 @@ define
                  rHeight = this.monthView.getRowHeight(record, 1);
                  var retVal = "";
                  for (var i = 0; i < evtArr.length; i++) {
-                     var eTime = isc.Time.toTime(evtArr[i][this.startDateField], this.timeFormatter, true) + " ";
-                     var eeTime = isc.Time.toTime(evtArr[i][this.endDateField], this.timeFormatter, true) + " ";
+                     var startTime = evtArr[i].startTime;
+                     var endTime = evtArr[i].endTime;
+                     
+                     var startHour = startTime.getHours();
+                     var startMinutes = startTime.getMinutes();
+                     startMinutes = startMinutes ? ':' + startMinutes : '';
+                     var endHour = endTime.getHours();
+                     var endMinutes = endTime.getMinutes();
+                     endMinutes = endMinutes ? ':' + endMinutes : '';
+                     var sm = '', em = '';
+                     if (startHour<12 && endHour<12) em = 'am';
+                     else if (startHour>=12 && endHour>=12) em = 'pm';
+                     else {
+                         sm = startHour < 12 ? 'am' : 'pm';
+                         em = endHour < 12 ? 'am' : 'pm';
+                     }
+                     startHour = startHour === 12 ? 12 : startHour%12;
+                     endHour = endHour === 12 ? 12 : endHour%12;
+                     var eTime = startHour + startMinutes + sm + '-';
+                     var eeTime = endHour + endMinutes + em;
+                     // var minutes = startTime.getMinutes();
+                     
+                     // var eTime = startTime.getHours() + (minutes ? ':' + startTime.getMinutes() : '') + '-';
+                     // minutes = endTime.getMinutes();
+                     // var eeTime = endTime.getHours() + (minutes ? ':' + endTime.getMinutes() : '') ;
+                     
+                     // var eTime = isc.Time.toTime(startTime, this.timeFormatter, true) + "-";
+                     
+                     // var eeTime = isc.Time.toTime(evtArr[i][this.endDateField], this.timeFormatter, true) + " ";
                      if (this.canEditEvent(evtArr[i])) {
                          // when clicked, call the the editEvent method of this calendar, passing the
                          // row, column, and position of the event in this cell's event array
@@ -406,8 +433,9 @@ define
                              this.calMonthEventLinkStyle + "'>";
                          persons = evtArr[i].personNames; //TODO format persons
                          // retVal += template + eTime Names evtArr[i][this.nameField] + ' ' + persons + "</a><br/>";
-                         retVal += template + eTime + eeTime + ' ' + persons + "</a><br/>";
-                         log.d('TEMPLATE' , retVal);
+                         retVal += template + "<b>" + persons + '</b>' +':  ' + '<i>' + eTime +
+                             eeTime + "</i></a><br/>";
+                         // log.d('TEMPLATE' , retVal);
                      } else {
                          // retVal += eTime + evtArr[i][this.nameField] + "<br/>";      
                          retVal += eTime + eeTime + "<br/>";      
@@ -496,10 +524,32 @@ define
 	     }
              }); 
      
+     //little trick to catch the view change event:
+     var setDateLabel = calendar.setDateLabel;
+     calendar.setDateLabel = function() {
+         view.modified();
+         var viewName = this.getCurrentViewName();
+         console.log(viewName);
+         if (viewName === 'month') printButton.show();
+         else printButton.hide();
+         setDateLabel.apply(calendar); };
+     
+     var printButton = isc.Button.create({
+         title: "Print",
+         width: 70,
+         click: function() {
+             calendar.showPrintPreview();
+         }
+         ,top: 2
+         ,height: 20
+         ,left: 580 
+     });
+     
      calendar.controlsBar.addChild(locationIcon);
      calendar.controlsBar.addChild(locationForm);
      calendar.controlsBar.addChild(personIcon);
      calendar.controlsBar.addChild(personForm);
+     calendar.controlsBar.addChild(printButton);
 
      view.setCmp(calendar);
      return view; 

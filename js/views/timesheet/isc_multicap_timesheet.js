@@ -13,7 +13,6 @@ define
        "use strict";
        var log = logger('timesheet component');
        
-       var clipped;
        
        var  timesheet;
        
@@ -22,31 +21,6 @@ define
            fetchShifts(state.person, state.location, state.fortnight, process);
        }
        
-       function zclip() {
-           
-           var text;
-           function getCopy() {
-              return text;
-           }
-           var el = $('#swcopy');
-           var clip = {
-               path:'lib/ZeroClipboard.swf',
-               copy: getCopy
-               ,afterCopy: function() {
-                   alert('Dummy timesheet data copied to system clipboard which you can paste into excel (not implemented yet).');
-               }
-           };
-          el.zclip(clip);
-           
-           var arr = [
-               ['A', 'B', 'C'],
-               ['D', 'Some long text', 'F'],
-               ['G', 'H', 'I']
-           ];
-           text = SheetClip.stringify(arr);
-           clipped = true;
-           
-       }
        
        function process(data) {
            log.d('IN PROCESS');
@@ -56,29 +30,21 @@ define
                if (!timesheet.isDrawn())
                    timesheet.draw();
                timesheet.setData(data);
-               timesheet.setVisibility('visible');
+               timesheet.setVisibility('inherit');
            }
            
-           if (!clipped) zclip();
+           // if (!clipped) zclip();
            
            switch (person.status) {
              case 'casual':
-               if (timesheet !== sheets.casual)  {
+               if (timesheet !== sheets.casual)  
                    if (timesheet) timesheet.setVisibility('hidden');   
-               }
-               try {
-                   
-                   showSheet(sheets.casual);
-               } catch (e) {
-                   console.log(e, e.stack);
-               }
-               
+               showSheet(sheets.casual);
                break;
              case 'part time': 
              case 'permanent':
-               if (timesheet !== sheets.contract)  {
+               if (timesheet !== sheets.contract)   
                    if (timesheet) timesheet.setVisibility('hidden');   
-               }
                showSheet(sheets.contract);
                break;
            default:

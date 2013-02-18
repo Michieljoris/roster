@@ -99,8 +99,9 @@
       isc.Offline.goOnline();
       
       Date.setInputFormat('DMY');
-      Date.setNormalDateDisplayFormat('toEuropeanShortDateTime');  
-      Date.setShortDatetimeDisplayFormat('toEuropeanShortDateTime');  
+      Date.setNormalDateDisplayFormat('toLocaleDateString');  
+      Date.setShortDatetimeDisplayFormat('toLocaleDateString');  
+      Date.setShortDisplayFormat('toLocaleDateString'); 
       <!-- isc.Time.setDefaultDisplayTimezone(0); -->
     </script>
     
