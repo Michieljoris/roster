@@ -144,13 +144,13 @@ define
                     length: 16,
                     rank: 300
                   }
-          ,test: { type: 'publicHoliday', //Boxing day
-                    date: Date.parse('19 feb  2000 6am'),
-                    pattern: [1],
-                    unit: 'year',
-                    length: 16,
-                    rank: 300
-                  }
+          // ,test: { type: 'publicHoliday', //Boxing day
+          //           date: Date.parse('19 feb  2000 6am'),
+          //           pattern: [1],
+          //           unit: 'year',
+          //           length: 16,
+          //           rank: 300
+          //         }
           // ,oneoff: { type: 'publicHoliday', //one off public holiday
           //           date: Date.parse('5 March 2013 6am'),
           //           pattern: [], //doesn't pattern...
@@ -334,7 +334,7 @@ define
           });
           if (values.endTime.getHours() === 0 &&
               values.endTime.getMinutes() === 0) {
-              endDate.setDate(startDate.getDate() + 1);   
+              endDae.setDate(startDate.getDate() + 1);   
           }
           
           
@@ -380,8 +380,8 @@ define
           };
           function makeDescription(str) {
               log.pp('MAKING DESCRIPTION', str);
-              var sTime = isc.Time.toTime(values.startDate, 'toShortPaddedTime', true);
-                  var eTime = isc.Time.toTime(values.endDate, 'toShortPaddedTime', true);
+              var sTime = isc.Time.toTime(startDate, 'toShortPaddedTime', true);
+                  var eTime = isc.Time.toTime(endDate, 'toShortPaddedTime', true);
                   var people = '';
               // if (typeof list === 'string') {
                   str = str.split(',');

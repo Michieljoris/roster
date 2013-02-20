@@ -63,6 +63,7 @@ define
               }, fields.inheritable),
               isc.addDefaults({
               }, fields.inheritingFrom)
+              
           ]
       };
       
@@ -151,16 +152,16 @@ define
                   // colSpan: 2,
                   startRow: true
               }, fields.notes)
-              ,isc.addDefaults({
-                  startRow: true,
-                  // titleOrientation: 'top',
-                  align: 'left'
-              }, fields.colorBg)
-              ,isc.addDefaults({
-                  startRow: true,
-                  // titleOrientation: 'top',
-                  align: 'left'
-              }, fields.colorFg)
+              // ,isc.addDefaults({
+              //     startRow: true,
+              //     // titleOrientation: 'top',
+              //     align: 'left'
+              // }, fields.colorBg)
+              // ,isc.addDefaults({
+              //     startRow: true,
+              //     // titleOrientation: 'top',
+              //     align: 'left'
+              // }, fields.colorFg)
               
           ]
       };
@@ -169,6 +170,122 @@ define
       var addressForm = isc.DynamicForm.create(addressFormConfig);
       var contactForm = isc.DynamicForm.create(contactFormConfig);
       var notesForm = isc.DynamicForm.create(notesFormConfig);
+
+      var pickerBgLabel = isc.Label.create({
+          border: "1px grey solid",
+          contents: 'background',
+          align: 'center',
+          width: 100, height: 20,
+          click: function() {
+              isc.ColorPicker.getSharedColorPicker({
+                  colorSelected: function(color, opacity) {
+                      // pickerFgLabel.setBackgroundColor(color);
+                      // pickerFgLabel.setOpacity(opacity);
+                      pickerBgLabel.setBackgroundColor(color);
+                      // pickerBgLabel.setOpacity(opacity);
+                      // pickerBgLabel.setContents(color);
+                      bgColorPicker.setBg(color);
+                  }
+                  
+              }).show();
+          }
+      });
+      
+      var pickerFgLabel = isc.Label.create({
+          border: "1px grey solid",
+          contents: 'text',
+          align: 'center',
+          width: 100, height: 20,
+          click: function() {
+              isc.ColorPicker.getSharedColorPicker({
+                  colorSelected: function(color, opacity) {
+                      pickerFgLabel.setBackgroundColor (color);
+                      bgColorPicker.setFg(color);
+                      // pickerBgLabel.setBackgroundColor (color);
+                      // pickerFgLabel.setContents(color);
+                  }
+                  
+              }).show();
+          }
+      });
+      
+      var fgColorPicker = isc.HTMLFlow.create({
+          setHtml: function(bg,fg) {
+              this.setContents("<div style='border:1px grey solid; text-align:center;" +
+                               " min-height:20px; line-height:20px; color:" +
+                               fg + ";background-color:" + bg +
+                                ";'>Text</div>");
+          },
+          setBg: function(bg) {
+              this.bg = bg;
+              this.setHtml(this.bg, this.fg);
+          },
+          setFg: function(fg) {
+              this.fg = fg;
+              this.setHtml(this.bg, this.fg);
+          },
+          align: 'center',
+          width: 30, height: 30
+          ,click: function() {
+              isc.ColorPicker.getSharedColorPicker({
+                  colorSelected: function(color) {
+                      vm.setValue('colorFg', color);
+                      formChanged();
+                      fgColorPicker.setFg(color);
+                      bgColorPicker.setFg(color);
+                  }
+                  
+              }).show();
+          }
+      });
+      
+      var bgColorPicker = isc.HTMLFlow.create({
+          setHtml: function(bg,fg) {
+              this.setContents("<div style='border:1px grey solid; text-align:center;" +
+                               " min-height:20px; line-height:20px; color:" +
+                               fg + ";background-color:" + bg +
+                                ";'>Calendar color</div>");
+          },
+          setBg: function(bg) {
+              this.bg = bg;
+              this.setHtml(this.bg, this.fg);
+          },
+          setFg: function(fg) {
+              this.fg = fg;
+              this.setHtml(this.bg, this.fg);
+          },
+          align: 'center',
+          width: 172, height: 30
+          ,click: function() {
+              isc.ColorPicker.getSharedColorPicker({
+                  colorSelected: function(color) {
+                      vm.setValue('colorBg', color);
+                      formChanged();
+                      bgColorPicker.setBg(color);
+                      fgColorPicker.setBg(color);
+                  }
+                  
+              }).show();
+          }
+      });
+
+      
+      var mainLayout = isc.VLayout.create({
+          align:'top',
+          members: [
+              mainForm,
+              isc.HLayout.create({
+                  height:'22',
+                  members: [
+                      bgColorPicker
+                      ,fgColorPicker
+                  ]
+              })
+              ,isc.LayoutSpacer.create({ height: 10 })
+          ]
+          
+      }); 
+      
       
       
       var vm = isc.ValuesManager.create({
@@ -186,11 +303,11 @@ define
               if (!person.notes) person.notes = '';
               
               var fg = person.colorFg ? person.colorFg : 'black';
-                  var bg = person.colorBg ? person.colorBg : 'f0f8ff';
+              var bg = person.colorBg ? person.colorBg : 'f0f8ff';
               log.d('setting css classes' , person.name, fg, bg);
               utils.createCSSClass('.eventColor' + person.name,
-                             'background-color:' + bg +
-                             '; color:' + fg);
+                                   'background-color:' + bg +
+                                   '; color:' + fg);
             
               typesAndFields.removeUnderscoreFields(person);
               editorManager.save(person, updateVm);           
@@ -222,7 +339,7 @@ define
       var allButtons = {};
       
       var formLayout = isc.HLayout.create({
-          members: [ mainForm
+          members: [ mainLayout
                      ,addressForm
                      ,contactForm
                      ,notesForm
@@ -230,7 +347,7 @@ define
       });
       
       var editLayout = isc.VLayout.create({
-          // autoSize:true,
+              // autoSize:true,
           width: "30%",
           // height: "100%",
           members: [
@@ -270,7 +387,7 @@ define
                   ,{ type: 'password', name: 'pwd2', title: 'Repeat:', 
                      titleOrientation: 'top', startRow: true}
               ]
-              });
+          });
             
           var helpLabel = isc.Label.create({
               // ID:'test',
@@ -347,7 +464,7 @@ define
       
       function action(e) {
           switch (e) {
-            case 'Main': formLayout.setVisibleMember(mainForm); break;
+            case 'Main': formLayout.setVisibleMember(mainLayout); break;
             case 'Address': formLayout.setVisibleMember(addressForm); break;
             case 'Contact': formLayout.setVisibleMember(contactForm); break;
             case 'Notes': formLayout.setVisibleMember(notesForm); break; 
@@ -372,15 +489,6 @@ define
           fields: typesAndFields.getFieldsCloner('person')()
       });
       
-      // var editorMessage = isc.Label.create({
-      //     // ID:"editorMessage",
-      //     autoDraw: false,
-      //     width:"100%",
-      //     height:"100%",
-      //     align:"center",
-      //     contents:"Select a record to edit, or a category to insert a new record into"
-      // });
-
     
       var tabSet = isc.TabSet.
           create({
@@ -412,15 +520,14 @@ define
       
       
       
-      var layout = isc.VLayout.create({
-          
-          height: '100%',
-          width: '100%',
-          members: [
-              tabSet
-              // ,buttons
-          ]  
-      });
+      // var layout = isc.VLayout.create({
+      //     height: '100%',
+      //     width: '100%',
+      //     members: [
+      //         tabSet
+      //         // ,buttons
+      //     ]  
+      // });
       
       // editor.canvas = layout;
       editor.canvas = tabSet;
@@ -447,6 +554,10 @@ define
           // console.log('somePerson', somePerson);
           person = somePerson;
           vm.setValues(person);
+          fgColorPicker.setBg(person.colorBg);
+          bgColorPicker.setBg(person.colorBg);
+          fgColorPicker.setFg(person.colorFg);
+          bgColorPicker.setFg(person.colorFg);
           itemViewer.setData(somePerson);
           
           vm.clearErrors();
@@ -456,7 +567,7 @@ define
           allButtons.Save.setVisibility(settings.saveButton);
           allButtons.Save.setDisabled(true);
           // allButtons.Discard.setDisabled(true);
-          formLayout.setVisibleMember(mainForm);
+          formLayout.setVisibleMember(mainLayout);
           
       };
       
