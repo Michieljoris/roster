@@ -243,13 +243,17 @@ define
             
             ,publicHolidayOrdinary: { type: 'float' , canEdit: false}
             ,publicHolWorkPerm1p5: { type: 'float' , canEdit: false}
-            ,publicHolWork2p5: { type: 'float' , canEdit: false}
-            
+            // ,publicHolWork2p5: { type: 'float' , canEdit: false}
             
             ,awayFromBase: { type: 'boolean' , canEdit: false}
             
             ,overtimeT1p5: { type: 'float' , canEdit: false}
             ,overtimeT2: { type: 'float' , canEdit: false}
+            
+            ,disturbedSleepHoursT1: { type: 'float' , canEdit: false}
+            ,disturbedSleepHours1p5: { type: 'float' , canEdit: false}
+            ,disturbedSleepHoursT2: { type: 'float' , canEdit: false}
+            ,disturbedSleep: { type: 'float' , canEdit: false}
             
             ,toilAccrued: { type: 'float' , canEdit: false}
             ,toilTaken: { type: 'float' , canEdit: false}

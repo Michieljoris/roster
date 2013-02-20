@@ -99,8 +99,9 @@
       isc.Offline.goOnline();
       
       Date.setInputFormat('DMY');
-      Date.setNormalDateDisplayFormat('toEuropeanShortDateTime');  
-      Date.setShortDatetimeDisplayFormat('toEuropeanShortDateTime');  
+      Date.setNormalDateDisplayFormat('toLocaleDateString');  
+      Date.setShortDatetimeDisplayFormat('toLocaleDateString');  
+      Date.setShortDisplayFormat('toLocaleDateString'); 
       <!-- isc.Time.setDefaultDisplayTimezone(0); -->
     </script>
     
@@ -122,6 +123,7 @@
     <script src=lib/xlsx.js></script>
     <!-- copy stuff to the system clipboard -->
     <!-- <script src=lib/ZeroClipboard.js></script> -->
+    <script type="text/javascript" src="lib/jquery.zclip.min.js"></script>
     
     <!-- necessary for postal.js -->
     <!-- <script src=lib/underscore.js></script>     -->
@@ -141,7 +143,7 @@
     <!-- execute in console manifestR.makeManifest to create a manifest for -->
     <!-- the app. Put it in roster.appcache Also set the topline of the index.html file to : -->
     <!-- html manifest="/manifest.appcache"> -\-> -->
-    <script src=lib/manifestR.js></script> --
+    <script src=lib/manifestR.js></script> 
     
     <!-- connect with the page via slime -->
     <!-- <script> window.swank_server ='http://localhost:8009/' </script>  -->

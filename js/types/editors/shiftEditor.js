@@ -80,10 +80,10 @@ define
             }
             //TODO should this be enforced or reminded?
             //TODO should we check shifts are in worktime?
-            else if (length < settings.minimumShiftLength * 60000) 
-                errorMessage = 'Smaller than ' + settings.minimumShiftLength/60 + ' hours.';
-            else if (length > settings.maximumShiftLength * 60000) 
-                errorMessage = 'Bigger than ' + settings.maximumShiftLength/60 + ' hours';
+            // else if (length < settings.minimumShiftLength * 60000) 
+            //     errorMessage = 'Smaller than ' + settings.minimumShiftLength/60 + ' hours.';
+            // else if (length > settings.maximumShiftLength * 60000) 
+            //     errorMessage = 'Bigger than ' + settings.maximumShiftLength/60 + ' hours';
             // log.d('XXXXXXXXXX',validator.errorMessage, startTime, endTime);
             validator.errorMessage = errorMessage;
             return !errorMessage;
@@ -96,6 +96,7 @@ define
         var validates = eventForm.validate();
         //not all errors are show stoppers. Some we warn about but let
         //through: 
+        log.d('VALIDATES', validates);
         if (!validates) {
             var errors = eventForm.valuesAreValid(false, true);
             validates = true;
@@ -106,7 +107,10 @@ define
                 validates = false;
             log.d(errors);
         }
-        if (validates && eventForm.valuesHaveChanged()) {
+        // var valuesHaveChanged = eventForm.valuesHaveChanged();
+        // log.d('VALUESHAVECHANGED', valuesHaveChanged);
+        // if (validates && valuesHaveChanged) {
+        else {
             var eventValues = eventForm.getValues();
             
             // var personList = eventForm.getField('person').

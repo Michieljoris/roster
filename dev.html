@@ -19,6 +19,7 @@
     
   </HEAD>
   <BODY>
+    <!-- <a href='#' id='test'>test copy</div> -->
     <div id='statusUpdate' ></div>
     <div id='appFail' style='visibility:hidden;'> 
       <!-- Please use -->
@@ -110,9 +111,10 @@
       isc.Offline.goOnline();
       
       Date.setInputFormat('DMY');
-      Date.setNormalDateDisplayFormat('toEuropeanShortDateTime');  
-      Date.setShortDatetimeDisplayFormat('toEuropeanShortDateTime');  
-      isc.Time.setDefaultDisplayTimezone(1);
+      Date.setNormalDateDisplayFormat('toLocaleDateString');  
+      Date.setShortDatetimeDisplayFormat('toLocaleDateString');  
+      Date.setShortDisplayFormat('toLocaleDateString'); 
+      <!-- isc.Time.setDefaultDisplayTimezone(1); -->
     </script>
     
     <!-- database adapter -->
@@ -132,17 +134,14 @@
     <script src=lib/jszip/jszip-deflate.js></script>
     <script src=lib/xlsx.js></script>
     <!-- copy stuff to the system clipboard -->
-    <script src=lib/ZeroClipboard.js></script>
-    
+    <!-- <script src=lib/ZeroClipboard.js></script> -->
+    <script type="text/javascript" src="lib/jquery.zclip.min.js"></script>
     <!-- necessary for postal.js -->
     <!-- <script src=lib/underscore.js></script>     -->
     <!-- message bus -->
     <!-- <script src=lib/postal.js></script>     -->
     <!-- Don't need everything, but quite handy, but it messes with smartclient -->
     <!-- <script src=lib/sugar.js></script> -->
-    
-   
-    
     
     <!-- basic console logger -->
     <script src=lib/logger.js></script>    
@@ -163,7 +162,7 @@
     <script src=test/quickpouch.js></script>    
     
     <!-- load and start ************************************-->
-    <script src=lib/bootstrap.js></script> 
+    <script src=lib/bootstrap.js></script>
     <!-- <script type="text/javascript" src="js/views/extcalendar/app.js"></script>  -->
     
     <!-- <div id="myid"></div>  -->

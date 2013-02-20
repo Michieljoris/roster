@@ -11,6 +11,7 @@ define
       var backend;
       
       function create(data) {
+          // log.d(data.type, data.defaultState.fortnight);
           if (!data.defaultState) data.defaultState = {};
           var state = data.defaultState;
           var observer, cmp;

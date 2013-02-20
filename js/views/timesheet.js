@@ -12,6 +12,14 @@ define
     { "use strict";
       var log = logger('timesheet');
       
+      var fortnightStart = Date.parse('2000, 1 Jan').getTime();
+      var fortnightLength = 14 *  24 * 60 * 60 *1000;
+      
+      function calculateFortnight(date) {
+          var time = date.getTime();
+          var n = Math.floor((time - fortnightStart)/fortnightLength);
+          return new Date(fortnightStart + n * fortnightLength);
+      }
       
       var isc_timesheet = isc_Timesheet.create(); 
       
@@ -19,8 +27,8 @@ define
           type: 'Timesheet'
           ,alwaysSet: true
           ,icon: 'timesheet.png'
-          ,defaultState: { person:'guest', location:'',
-                           fortnight: Date.parse('2013-01-01')}
+          ,defaultState: { person:'root', location:'',
+                           fortnight: calculateFortnight(Date.today())} 
           // ,sync: function(state) {
           //     log.d('UPDATING STATE:', state);
           // } 
@@ -28,6 +36,7 @@ define
               var dataSource = View.getBackend().getDS();
               personForm.getField('person').setOptionDataSource(dataSource);
               locationForm.getField('location').setOptionDataSource(dataSource);
+              
           }
           ,set: function(state) {
               log.d('SETTING STATE:', state);
@@ -41,14 +50,23 @@ define
               
               // console.log('IDIDIDIDIDIDI',document.getElementById('isc_F'));
               // console.log('IDIDIDIDIDIDI',mybutton.getActiveElement().id);
-              
-              // var clip = new ZeroClipboard( document.getElementById(
-              //     'isc_4G'
-              //     // mybutton.getActiveElement().id
-              //     // "copy-button"
-              // ), {
-              //     moviePath: "lib/ZeroClipboard.swf" });
+              // var el = mybutton.getActiveElement();
+              // var el = document.getElementById('test');
+              // console.log('DEFINING CLIP', el);
+              // var clip = new ZeroClipboard(
+              //     el,
+              //     { moviePath: "lib/ZeroClipboard.swf" }
+              // );
+              // console.log(clip);
               // clip.setText("Ah, it's in the system clipboard");
+              // clip.on( 'mousedown', function(client) {
+
+              //     alert("mouse down");
+              // } );
+              // clip.on( 'load', function(client) {
+              //     log.d('loaded!!!!!!!!!!!!!!!!!!!!!!!!!!');
+              // } );
+
               // clip.on( 'mouseover', function(client) {
               //     alert("mouse over");
               // } );
@@ -57,16 +75,9 @@ define
               //     alert("mouse out");
               // } );
 
-              // clip.on( 'mousedown', function(client) {
-
-              //     alert("mouse down");
-              // } );
 
               // clip.on( 'mouseup', function(client) {
               //     alert("mouse up");
-              // } );
-              // clip.on( 'load', function(client) {
-              //     log.d('loaded!!!!!!!!!!!!!!!!!!!!!!!!!!');
               // } );
               // window.test = clip;    
           }
@@ -88,8 +99,6 @@ define
        
       }
       
-      var fortnightStart = Date.parse('2000, 1 Jan').getTime();
-          var fortnightLength = 14 *  24 * 60 * 60 *1000;
       
       
       
@@ -176,18 +185,13 @@ define
       
       function fortnightToString(date) {
           var endFortnight = date.clone().addDays(13);
-              return getDateStr(date) + ' - ' + getDateStr(endFortnight);
+          return getDateStr(date) + ' - ' + getDateStr(endFortnight);
       }
       
-      function calculateFortnight(date) {
-          var time = date.getTime();
-          var n = Math.floor((time - fortnightStart)/fortnightLength);
-          return new Date(fortnightStart + n * fortnightLength);
-      }
       
       
       var pickFortnightForm = isc.DynamicForm.create({
-              autoDraw: false,
+          autoDraw: false,
           // cellBorder: 1,
           numCols: 3,
           // height: 48,
@@ -213,7 +217,7 @@ define
       
       
       var okButton = isc.Button.create({
-              title: "Ok",
+          title: "Ok",
           width: 40,
           click: function fortnightPicked() {
               var state = view.getState();
@@ -270,101 +274,110 @@ define
           // observer('timesheet');
           view.modified();
           var state = view.getState();
-              fortnightLabel.setContents(fortnightToString(state.fortnight));
+          fortnightLabel.setContents(fortnightToString(state.fortnight));
           
       }
       
       
       
-      var buttonWidth = 10; 
-      var layout = isc.VLayout.create({
-          members: [
-              isc.HLayout.create({
-                  align: 'left',
-                  height: 25,
-                  members: [
-                      isc.Button.create({
-                          width:100,				
-                          title: 'Print',
-	                  height: '100%',
-	                  icon:"print.png",
-                          click: function() {
-                              isc_timesheet.print();
-                          }
-                      })
-                      ,isc.Button.create({
-                          ID: 'mybutton',
-                          width:100,				
-                          title: 'Export',
-	                  height: '100%',
-                          'data-clipboard-text': 'my copy text',
-	                  icon:"Excel-icon.png"
-                          ,click: function() {
-                              var location = locationForm.getValueMap()[locationForm.getValue('location')];
-                              var person = personForm.getValueMap()[personForm.getValue('person')];
-                              // var creator = user.get().login;
-                              var creator = 'creator';
-                              isc_timesheet.saveAsExcel(creator, '(' +
-                                                        person + ') at ' + location +
-                                                        ' ' + fortnightLabel.getContents());
-                          }
-                      })
-                      ,isc.LayoutSpacer.create({width: 25})
-                      ,isc.Button.create({
-                          width: 22,				
-                          title: '',
-	                  icon:"date_control.png"
-                          ,click: function() {
-                              var state = view.getState();
-                              pickFortnightForm.setValue('fortnightLabel',
-                                                         fortnightToString(state.fortnight));
-                              pickFortnightForm.setValue('date', state.fortnight);
-                              pickFortnightWindow.show();
-                          }
-                      })
-                      ,isc.LayoutSpacer.create({width: 5})
-                      ,isc.Button.create({
-                          width: 22,				
-                          title: '',
-	                  icon:"arrow_left.png"
-                          ,click: function() {
-                              var state = view.getState();
-                              state.fortnight.addWeeks(-2);
-                              setFortnightLabel();
-                              setData(state);
-                          }
-                      })
-                      ,fortnightLabel
-                      ,isc.Button.create({
-                          width: 22,				
-                          title: '',
-	                  icon:"arrow_right.png"
-                          ,click: function() {
-                              var state = view.getState();
-                              state.fortnight.addWeeks(2);
-                              setFortnightLabel();
-                              setData(state);
-                          }
-                      })
-                      ,isc.LayoutSpacer.create({width: 25})
-                      ,isc.Label.create({
-                          width:buttonWidth,				
-                          title: '',
-	                  icon:"person.png"
-                      })
-                      ,personForm
-                      ,isc.LayoutSpacer.create({width: 25})
-                      ,isc.Label.create({
-                          width:buttonWidth,				
-                          title: '',
-	                  icon:"home.png"
-                      })
-                      ,locationForm
-                  ]
-              })
-              ,isc_timesheet.getSheets()
-          ] 
+      var htmlButton = isc.HTMLFlow.create({
+          width:'80px',				
+          height:'25px',
+          contents: "<button  type='button' href='#' id='swcopy' class style='font-size:11px;width:80px;height:25px'>Copy</button>"
+
       });
+      
+      var buttonWidth = 10; 
+          var layout = isc.VLayout.create({
+              members: [
+                  isc.HLayout.create({
+                      align: 'left',
+                      height: 25,
+                      members: [
+                          isc.Button.create({
+                              width:'80px',				
+                              title: 'Print',
+	                      height: '100%',
+	                      icon:"print.png",
+                              click: function() {
+                                  isc_timesheet.print();
+                              }
+                          })
+                          ,isc.Button.create({
+                              width:'80px',				
+                              title: 'Export',
+	                      height: '100%',
+                              'data-clipboard-text': 'my copy text',
+	                      icon:"Excel-icon.png"
+                              ,click: function() {
+                                  var location = locationForm.getValueMap()[locationForm.getValue('location')];
+                                  // log.d(location);
+                                  var person = personForm.getValueMap()[personForm.getValue('person')];
+                                  // log.d(person);
+                                  // var creator = user.get().login;
+                                  var creator = 'creator';
+                                  isc_timesheet.saveAsExcel(creator, '(' +
+                                                            person + ') at ' + location +
+                                                            ' ' + fortnightLabel.getContents());
+                              }
+                          })
+                          ,htmlButton
+                          ,isc.LayoutSpacer.create({width: 25})
+                          ,isc.Button.create({
+                              width: 22,				
+                              title: '',
+	                      icon:"date_control.png"
+                              ,click: function() {
+                                  var state = view.getState();
+                                  pickFortnightForm.setValue('fortnightLabel',
+                                                             fortnightToString(state.fortnight));
+                                  pickFortnightForm.setValue('date', state.fortnight);
+                                  pickFortnightWindow.show();
+                              }
+                          })
+                          ,isc.LayoutSpacer.create({width: 5})
+                          ,isc.Button.create({
+                                  width: 22,				
+                              title: '',
+	                      icon:"arrow_left.png"
+                              ,click: function() {
+                                  var state = view.getState();
+                                  state.fortnight.addWeeks(-2);
+                                  setFortnightLabel();
+                                  setData(state);
+                              }
+                          })
+                          ,fortnightLabel
+                              ,isc.Button.create({
+                                  width: 22,				
+                                  title: '',
+	                          icon:"arrow_right.png"
+                                  ,click: function() {
+                                      var state = view.getState();
+                                      state.fortnight.addWeeks(2);
+                                      setFortnightLabel();
+                                      setData(state);
+                                  }
+                              })
+                          ,isc.LayoutSpacer.create({width: 25})
+                          ,isc.Label.create({
+                              width:buttonWidth,				
+                              title: '',
+	                      icon:"person.png"
+                          })
+                          ,personForm
+                          ,isc.LayoutSpacer.create({width: 25})
+                          ,isc.Label.create({
+                              width:buttonWidth,				
+                              title: '',
+	                      icon:"home.png"
+                          })
+                          ,locationForm
+                      ]
+                  })
+                  ,isc_timesheet.getSheets()
+              ] 
+          });
       
       // isc_timesheet_casual.hide();
       
