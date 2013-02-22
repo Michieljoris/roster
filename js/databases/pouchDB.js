@@ -514,7 +514,8 @@ define
               name: 'couchDB',
               shortDescr: 'Standalone database (couchDB)',
               description: 'The data is stored in a standalone database server called CouchDb. This server can run on your local machine or on the internet somewhere. <p>You will have to specify an url such as 127.0.0.1:1234/dbname or localhost:1234/dbname or www.somewhere.com:1234/dbname, where 1234 is the port. Whoever sets up your couchdb should be able to give you these details.',
-              urlPrefix: 'http://',
+              // urlPrefix: 'http://',
+              urlPrefix: '',
               prompt: 'localhost:1234/dbname'
           }
       ];
