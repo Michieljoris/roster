@@ -125,6 +125,7 @@ define
             // eventValues.locationNames = locationNames;
             
             event =Shift.create(eventValues);
+            window.test = event;
             editorManager.save(event, updateForm);
         }
     }

@@ -186,8 +186,8 @@ define
 	          if (field) {
 	              var type = field.type;
 	              switch (type) {
-                        case 'list':
-                          // obj[k] = isc.JSON.decode(obj[k]);
+                        case 'enum':
+                          // obj[k] = JSON.parse(obj[k]);
                           break;
                         case 'time' : 
                         case 'date' :
@@ -244,6 +244,8 @@ define
                                     // log.d('calling typefy');
 				    typefyProps(key); 
                                     addTimezoneOffset(key);
+                                    if (key.person) key.person = JSON.parse(key.person); 
+                                    
 				    // dsResponse.data.push({ _id:key._id, _rev:key._rev, text:key.text});
 				
 				    dsResponse.data.push(key);
@@ -251,6 +253,7 @@ define
 			        // log.d('data: ', dsResponse.data);
 			        pouchDS.processResponse(requestId, dsResponse);}});});}
       function add(data, dsResponse, requestId) {
+          if (data.person) data.person = JSON.stringify(data.person);
           doPouch(function(db) {
               delete data._id;
               var receivedData = isc.clone(data);
@@ -269,6 +272,7 @@ define
 
       function update(data, dsResponse, requestId) {
           // log.d('data', data);
+          if (data.person) data.person = JSON.stringify(data.person);
           var receivedData = isc.clone(data);
           data = subtractTimezoneOffset(data);
           doPouch(function(db) {
@@ -507,18 +511,18 @@ define
           {
               name: 'pouchDB',
               shortDescr: 'Browser local storage (idb)',
-              description: 'Data is stored locally in the browser. This is persisted across refreshes of the page, and across restarts of the browser. <p>If you use a standalone Chrome browser you can start this app from where ever you are storing the browser. Your could store the standalone browser on a USB stick for instance and take the app and its data anywhere. If you delete the cookies (for instance by executing reset() in the console, you will see this dialog again and you can choose a different database or name)',
+              description: 'Select/create a database. This database is stored locally in the browser. You can have multiple databases per browser. These are persisted across refreshes of the page, and across restarts of the browser. <p>If you use a standalone Chrome browser you can start this app from where ever you are storing the browser. Your could store the standalone browser on a USB stick for instance and take the app and its data anywhere. <p>You can choose a different database by selecting the database symbol left top in the app, you will see this dialog again and you can select/create a different database. Wiping the cookies has the same effect by the way (in Chrome settings, or by executing reset() in the console).',
               urlPrefix: 'idb://',
               prompt: 'db'
-          }, 
-          {
-              name: 'couchDB',
-              shortDescr: 'Standalone database (couchDB)',
-              description: 'The data is stored in a standalone database server called CouchDb. This server can run on your local machine or on the internet somewhere. <p>You will have to specify an url such as 127.0.0.1:1234/dbname or localhost:1234/dbname or www.somewhere.com:1234/dbname, where 1234 is the port. Whoever sets up your couchdb should be able to give you these details.',
-              // urlPrefix: 'http://',
-              urlPrefix: '',
-              prompt: 'localhost:1234/dbname'
           }
+          // ,{
+          //     name: 'couchDB',
+          //     shortDescr: 'Standalone database (couchDB)',
+          //     description: 'The data is stored in a standalone database server called CouchDb. This server can run on your local machine or on the internet somewhere. <p>You will have to specify an url such as 127.0.0.1:1234/dbname or localhost:1234/dbname or www.somewhere.com:1234/dbname, where 1234 is the port. Whoever sets up your couchdb should be able to give you these details.',
+          //     // urlPrefix: 'http://',
+          //     urlPrefix: '',
+          //     prompt: 'localhost:1234/dbname'
+          // }
       ];
       
       function getDbDescriptions() {

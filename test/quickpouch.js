@@ -1,5 +1,5 @@
 /*global module:true pp:true isc:false define:false */
-/*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
+/*jshint strict:false unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:4 maxcomplexity:7 maxlen:150 devel:true*/
 
 var pp = function() {
@@ -265,10 +265,10 @@ pouch.setdb(window.dbname);
 
 
 var localUrl = window.dbname; //'localdb';
-var remoteUrl = 'db/remoteroster';
+var remoteUrl = 'http://p1:p1@localhost:8080/db/remoteroster4';
 
-function openDB(name, callback) {
-  new Pouch(name, function(err, db) {
+function openDB(name, options,callback) {
+  new Pouch(name, options, function(err, db) {
     if (err) {
       console.error(err);
       console.log('failed to open database');
@@ -277,24 +277,32 @@ function openDB(name, callback) {
   });
 }
 
-var localDB2;
-openDB(localUrl, function(err, db) {
-         if (err) { console.log("Can't open local database " + remoteUrl); }
-    else {
-        localDB2 = db; 
-    }
-});
+// var localDB2;
+function initDB() {
+    openDB(localUrl, {adapter:'idb'}, function(err, db) {
+        if (err) { console.log("Can't open local database " + remoteUrl); }
+        else {
+            window.localDB2 = db; 
+        }
+    });
+}
 
 
-function repToRemote() {
-    openDB(remoteUrl, function( err, remoteDB) {
+function repToRemote(url) {
+    if (!url) url = remoteUrl;
+    if (!window.localDB2) initDB();
+    openDB(url, { adapter:'http'}, function( err, remoteDB) {
          if (err) { console.log("Can't open remote database " + remoteUrl); }
         else {
             var options = {};
             // options.complete = function() { console.log('complete', arguments); };
             // options.onChange = function() { console.log('onChange', arguments); };
             // Pouch.replicate('idb://db',  'http://localhost:8082/db/db', function(err, changes) {
-            localDB2.replicate.to(remoteDB,  function(err, changes) {
+            window.localDB2.replicate.to(remoteDB,  function(err, changes) {
+                if (err) {
+                    alert('Replicating to ' + url + 'produced errors: ' + err);
+                }
+                else alert('Replication was successfull.' + changes);
                 console.log('err:',err, 'changes', changes);
             });
             
@@ -305,7 +313,7 @@ function repToRemote() {
 
 
 function repFromRemote() {
-    openDB(remoteUrl, function( err, remoteDB) {
+    openDB(remoteUrl,{adapter:'http'}, function( err, remoteDB) {
         if (err) { console.log("Can't open remote database " + remoteUrl); }
         else {
             var options = {};
