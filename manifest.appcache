@@ -14,7 +14,9 @@ images/clear.png
 images/database.png
 images/date_control.png
 images/home.png
+images/homeoff.png
 images/person.png
+images/personoff.png
 images/print.png
 images/saveui.png
 images/shift.png
@@ -40,6 +42,7 @@ lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_corner.png
 lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_end.png
 lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_start.png
 lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_track.png
+lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_Over_track.png
 lib/isomorphic/skins/Enterprise/images/Scrollbar/vthumb_grip.png
 lib/isomorphic/skins/Enterprise/images/SectionHeader/opener_opened.png
 lib/isomorphic/skins/Enterprise/images/Splitbar/vsplit_snap.png
@@ -55,9 +58,12 @@ lib/isomorphic/skins/Enterprise/images/blank.gif
 lib/isomorphic/skins/Enterprise/images/headerIcons/close.png
 lib/isomorphic/skins/Enterprise/images/pickers/comboBoxPicker.png
 lib/isomorphic/skins/Enterprise/images/pickers/comboBoxPicker_Disabled.png
+lib/isomorphic/skins/Enterprise/images/pickers/comboBoxPicker_Over.png
 lib/isomorphic/skins/Enterprise/images/SectionHeader/opener_closed.png
 lib/isomorphic/skins/Enterprise/images/loadingSmall.gif
-
+lib/isomorphic/skins/Enterprise/images/TabSet/scroll_top_forward.png
+lib/isomorphic/skins/Enterprise/images/TabSet/scroll_top_back.png
+lib/isomorphic/skins/Enterprise/images/TabSet/picker_top.png
 
 #internal HTML documents
 index.html
@@ -89,7 +95,9 @@ lib/isomorphic/skins/Enterprise/images/Menu/menu_background_rtl.png
 lib/isomorphic/skins/Enterprise/images/ToolStrip/background_vertical.png
 
 #javascript files
+lib/pouchdb-nightly.js
 lib/clip.js
+lib/jquery-1.9.1.min.js
 lib/jquery.zclip.min.js
 lib/appCache.js
 lib/manifestR.js
@@ -102,7 +110,6 @@ lib/isomorphic/system/modules/ISC_Forms.js
 lib/isomorphic/system/modules/ISC_DataBinding.js
 lib/isomorphic/system/modules/ISC_Calendar.js
 lib/isomorphic/skins/Enterprise/load_skin.js
-lib/pouch.alpha.js
 lib/vow.js
 lib/date.js
 lib/raphael-min.js
@@ -145,27 +152,9 @@ js/views/timesheet/multicap_timesheet_casual_raphael.js
 js/views/timesheet/multicap_timesheet_contract_raphael.js
 js/views/timesheet/fetchTimesheetShifts.js
 js/views/timesheet/calculateTimesheet.js
+test/quickpouch.js
 
 NETWORK:
 *
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

@@ -244,20 +244,21 @@ define
                                     // log.d('calling typefy');
 				    typefyProps(key); 
                                     addTimezoneOffset(key);
-                                    if (key.person) key.person = JSON.parse(key.person); 
-                                    
+                                    if (key.person) {
+                                        log.d('found person', key.person);
+                                        key.person = JSON.parse(key.person);    
+                                    }
 				    // dsResponse.data.push({ _id:key._id, _rev:key._rev, text:key.text});
-				
 				    dsResponse.data.push(key);
                                 }
 			        // log.d('data: ', dsResponse.data);
 			        pouchDS.processResponse(requestId, dsResponse);}});});}
       function add(data, dsResponse, requestId) {
-          if (data.person) data.person = JSON.stringify(data.person);
           doPouch(function(db) {
               delete data._id;
               var receivedData = isc.clone(data);
               data = subtractTimezoneOffset(data);
+              if (data.person) data.person = JSON.stringify(data.person);
               db.post(data,
                      function (err,response){
                          if (err) log.d("Error from pouch put in add:", err,
@@ -272,9 +273,9 @@ define
 
       function update(data, dsResponse, requestId) {
           // log.d('data', data);
-          if (data.person) data.person = JSON.stringify(data.person);
           var receivedData = isc.clone(data);
           data = subtractTimezoneOffset(data);
+          if (data.person) data.person = JSON.stringify(data.person);
           doPouch(function(db) {
               db.put(data,
                      function (err,response){

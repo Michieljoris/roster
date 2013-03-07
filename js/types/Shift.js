@@ -334,7 +334,7 @@ define
           });
           if (values.endTime.getHours() === 0 &&
               values.endTime.getMinutes() === 0) {
-              endDae.setDate(startDate.getDate() + 1);   
+              endDate.setDate(startDate.getDate() + 1);   
           }
           
           
@@ -379,7 +379,7 @@ define
               // description: makeDescription(values.personNames) + (values.notes || '')
           };
           function makeDescription(str) {
-              log.pp('MAKING DESCRIPTION', str);
+              // log.pp('MAKING DESCRIPTION', str);
               var sTime = isc.Time.toTime(startDate, 'toShortPaddedTime', true);
                   var eTime = isc.Time.toTime(endDate, 'toShortPaddedTime', true);
                   var people = '';
@@ -390,7 +390,8 @@ define
                   people += n + '<br>';
               });
               return "<div style= 'font-size:small;'>" +
-                  sTime + "&nbsp;-&nbsp;" + eTime + '</div><h3>' + people + '</h3>';
+                  sTime + "&nbsp;-&nbsp;" + eTime + '</div><h3>' + people + '</h3>' +
+                  (shift.sleepOver ?  'Sleepover' : '');
           }
           
           // if (typeof values.personNames === 'string') shift.description = values.description;

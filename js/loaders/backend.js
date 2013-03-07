@@ -231,10 +231,10 @@ define
                 // width: 400,
                 // height: 300,
                 tabs: [
-                    {title: "Replicate", 
-                     pane: pickRemoteLayout}
-                    ,{title: "Select/Create", 
+                    {title: "Select/Create", 
                       pane:  pickDatabaseLayout }
+                    // ,{title: "Replicate", 
+                    //  pane: pickRemoteLayout}
                 ]
             });
             

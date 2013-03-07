@@ -230,9 +230,9 @@ define
             if (!data.grid[r]) data.grid[r] = [];
             data.grid[r][c + 1] = value;
             //paint it on the timesheet
-            var cell = dataCells['' + r + c];
+            var cell = dataCells['r' + r +  'c' + c];
             if (cell) cell.remove();
-            dataCells['' + r + c]  =
+            dataCells['r' + r + 'c' + c]  =
                 text(value, 
 	             { x: labelBoxWidth + c * gxs ,
 	               y: (topRows + r) * ys,
@@ -430,6 +430,7 @@ define
                 }
                 calc.init(fortnight, person, location, shifts);
                 for (var i=0; i<14; i++) {
+                    log.d("Setting column", i);
                     log.pp(calc.getColumn(i));
                     setColumn( i, calc.getColumn(i));
                 }

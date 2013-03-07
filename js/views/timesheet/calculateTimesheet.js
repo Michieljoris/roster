@@ -112,8 +112,14 @@ define
                   if (over2 > 0) fields.overtimeT2 = over2;
               }
           }
-          if (person.status === 'casual' && fields.ord) {
-              fields.ord += fields.late ? fields.late: 0;
+          if (person.status === 'casual') {
+              if(fields.ord) {
+                  fields.ord += fields.late ? fields.late: 0;
+              }
+              if(fields.weekend) {
+                  fields.ord = fields.weekend;
+              }
+              
           }
           // overtime += disturbedSleepHours;
           
