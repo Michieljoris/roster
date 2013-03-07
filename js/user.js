@@ -25,6 +25,7 @@ define(
         function createNewSettings(vow) {
             settingsCache = { type: 'settings' };
             modified = true;
+            console.log('CREATING NEW SETTINGS');
             saveSettings().when(
                 function() {
                     user.settingsId = settingsCache._id;
@@ -47,6 +48,8 @@ define(
             backend.getDoc(user.settingsId).when(
                 function(someSettings) {
                     settingsCache = someSettings;
+                    if (settingsCache.look)  
+                        settingsCache.look = JSON.parse(settingsCache.look);
                     vow.keep();
                 }
                 ,function() {
@@ -109,13 +112,20 @@ define(
             log.d('modified', modified);
             if (!modified) { log.d('Settings were not modified, so not saving..');
                              vow.keep(); }
-            else backend.putDoc(settingsCache).when(
-                function() {
-                    // user.settingsId = updatedSettings._id;
-                    modified = false;
-                    vow.keep();
-                }
-            );
+            else {
+                // console.log('keeping vow!!!');
+                // vow.keep();
+                // settingsCache = { type: 'settings', moreinfo: 'moreinfo!!' };
+                if (settingsCache.look)
+                    settingsCache.look = JSON.stringify(settingsCache.look);
+                backend.putDoc(settingsCache).when(
+                    function() {
+                        // user.settingsId = updatedSettings._id;
+                        modified = false;
+                        vow.keep();
+                    }
+                );
+            } 
             return vow.promise;
         }
         

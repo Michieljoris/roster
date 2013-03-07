@@ -107,6 +107,7 @@ define
       function putDoc( record ){
           // console.log('putDoc ', record);
           var vow = VOW.make();
+          console.log('In PUTDOC');
           pouchDbHandle.post(record, function(err, response) {
               if (!err) {
                   // log.d('keeping put vow');
