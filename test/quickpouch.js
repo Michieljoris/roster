@@ -265,14 +265,14 @@ pouch.setdb(window.dbname);
 
 
 var localUrl = window.dbname; //'localdb';
-var remoteUrl = 'http://p1:p1@localhost:8080/db/remoteroster4';
+var remoteUrl = 'http://p1:p1@localhost:8080/db/rr1';
 
 function openDB(name, options,callback) {
   new Pouch(name, options, function(err, db) {
-    if (err) {
-      console.error(err);
-      console.log('failed to open database');
-    }
+    // if (err) {
+    //   console.error(err);
+    //   console.log('failed to open database');
+    // }
     callback.apply(this, arguments);
   });
 }
@@ -292,7 +292,16 @@ function repToRemote(url) {
     if (!url) url = remoteUrl;
     if (!window.localDB2) initDB();
     openDB(url, { adapter:'http'}, function( err, remoteDB) {
-         if (err) { console.log("Can't open remote database " + remoteUrl); }
+        var text;
+        if (err)
+            text =  err.statusText ? err.statusText : err.reason ? err.reason : err.status;
+        // switch (err.status) {
+        //    case '401' : text = err.reason; break;
+        //     case '404' : text = err.statusText; break;
+        //     default: text = '?';
+        // }
+        if (err) { alert("Can't  replicate to " + url + '\n\nReason: ' + text);
+                   console.log("Can't open remote database " + url, err); }
         else {
             var options = {};
             // options.complete = function() { console.log('complete', arguments); };
@@ -300,10 +309,13 @@ function repToRemote(url) {
             // Pouch.replicate('idb://db',  'http://localhost:8082/db/db', function(err, changes) {
             window.localDB2.replicate.to(remoteDB,  function(err, changes) {
                 if (err) {
-                    alert('Replicating to ' + url + 'produced errors: ' + err);
+                    alert('Replicating to ' + url + ' produced errors: ' + err);
+                    console.log('Replicating to ' + url + ' produced errors: ' + err);
                 }
-                else alert('Replication was successfull.' + changes);
-                console.log('err:',err, 'changes', changes);
+                else { alert('Docs written: ' + changes.docs_written +
+                             "\n\nReplication was successful.");
+                       console.log('err:',err, 'changes', changes);
+                     }
             });
             
         }

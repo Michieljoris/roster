@@ -41,8 +41,8 @@
       namespace: 'roster',
       <!-- livepage loads main. Livepage reloads the page on save of any resource -->
       <!-- replace with main for production use -->
-      main: 'lib/livepage',
-      <!-- main: 'main', -->
+      <!-- main: 'lib/livepage', -->
+      main: 'main',
       
       pathPrefix: './js',   
       <!-- verbosity: 'info',  -->
@@ -117,7 +117,10 @@
       <!-- isc.Time.setDefaultDisplayTimezone(1); -->
     </script>
     
-    <script src=lib/jquery-1.9.1.min.js></script>
+    <!-- <script src=lib/couchdb/sha1.js></script> -->
+    <!-- <script src=lib/couchdb/json2.js></script> -->
+    <script src=lib/jquery-1.6.2.js></script>
+    <script src=lib/couchdb/jquery.couch.js></script>
     <!-- database adapter -->
     <!-- <script src=lib/pouch.alpha.js></script> -->
     <script src=lib/pouchdb-nightly.js></script>
@@ -162,7 +165,8 @@
     
     <!--/temp for testing purposes, can be removed  -->
     <script src=test/quickpouch.js></script>
-    
+    <!-- mozilla persona -->
+    <script src="https://login.persona.org/include.js"></script>   
     <!-- load and start ************************************-->
     <script src=lib/bootstrap.js></script>
     <!-- <script type="text/javascript" src="js/views/extcalendar/app.js"></script>  -->

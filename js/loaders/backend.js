@@ -78,7 +78,7 @@ define
                     // }
                     { type: 'text', name: 'url', title: 'Url of Couchdb database:', 
                        titleOrientation: 'top', startRow: true, width: 300,
-                      value: 'http://localhost:8080/db/roster' }
+                      value: 'http://localhost:8080/iris/t2' }
                 ]
             });
             var pickDbForm = isc.DynamicForm.create({
@@ -228,13 +228,14 @@ define
             var tabset = isc.TabSet.create({
                 // ID: "topTabSet",
                 tabBarPosition: "top",
+                selectedTab: 1,
                 // width: 400,
                 // height: 300,
                 tabs: [
                     {title: "Select/Create", 
                       pane:  pickDatabaseLayout }
-                    // ,{title: "Replicate", 
-                    //  pane: pickRemoteLayout}
+                    ,{title: "Replicate", 
+                     pane: pickRemoteLayout}
                 ]
             });
             
