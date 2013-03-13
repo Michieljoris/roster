@@ -53,6 +53,7 @@ define
         }
         
         
+        
         var cancellable;
         var callback;
         function createEditorWindow() {
@@ -78,7 +79,7 @@ define
                     // }
                     { type: 'text', name: 'url', title: 'Url of Couchdb database:', 
                        titleOrientation: 'top', startRow: true, width: 300,
-                      value: 'http://localhost:8080/iris/t2' }
+                      value: 'http://localhost:1234/' }
                 ]
             });
             var pickDbForm = isc.DynamicForm.create({

@@ -265,7 +265,7 @@ pouch.setdb(window.dbname);
 
 
 var localUrl = window.dbname; //'localdb';
-var remoteUrl = 'http://p1:p1@localhost:8080/db/rr1';
+var remoteUrl = 'http://localhost:1234/repto';
 
 function openDB(name, options,callback) {
   new Pouch(name, options, function(err, db) {
