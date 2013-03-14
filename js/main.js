@@ -1,4 +1,4 @@
-/*global logger:false Pouch:false define:false VOW:false*/
+/*global logger:false Cookie:false define:false VOW:false*/
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:7 maxcomplexity:7 maxlen:150 devel:true newcap:false*/ 
 
@@ -17,8 +17,8 @@
 
 define(
     {   
-        inject: ['lib/cookie', 'loaders/backend', 'user', 'layout', 'View', 'Editor'], 
-        factory: function(cookie, backend, user, layout, View, Editor) 
+        inject: ['loaders/backend', 'user', 'layout', 'View', 'Editor'], 
+        factory: function(backend, user, layout, View, Editor) 
         { "use strict";
           var log = logger('main');
           
@@ -43,7 +43,7 @@ define(
                   var msg = 'There is no backend ' + 'named:' + backendName +
                       '.\nAlert the developer!';
                   log.d(msg);
-                  cookie.rm('backendName').when(
+                  Cookie.remove('backendName').when(
                       function() {
                           vow['break']( msg + 
                                         '\nRefresh the browser (f5), choose a different backend');
@@ -67,8 +67,8 @@ define(
                   // var name = aBackend.name;
                   vow.keep(aBackend);
                   VOW.every([
-                      cookie.set('backendName', name, 3650)
-                      ,cookie.set('backendUrl', url, 3650)]
+                      Cookie.set('backendName', name, Date.today().addYears(10))
+                      ,Cookie.set('backendUrl', url, Date.today().addYears(10))]
                            ).when(
                                function() { log.d('Saved backend cookie.'); }
                                ,function() { log.e('Unable to set the backend or url cookie!!'); }
@@ -84,7 +84,7 @@ define(
            */
           function getBackend(){
               var vow = VOW.make();
-              cookie.get('backendName').when(
+              Cookie.get('backendName').when(
                   function(backendName) {
                       
                       setBackend(vow, backendName);   
@@ -102,14 +102,14 @@ define(
            */
           function initBackend(aBackend){
               var vow = VOW.make();
-              cookie.get('backendUrl').when(
+              Cookie.get('backendUrl').when(
                   function(url) {
                       aBackend.init(vow, url);
                   }
                   ,function() {
                       var msg = 'There is no backend url cookie';
                       log.d(msg);
-                      cookie.rm('backendName').when(
+                      Cookie.remove('backendName').when(
                           function() {
                               vow['break'](
                                   msg + '\nRefresh the browser (f5), choose a backend and url');
@@ -158,9 +158,9 @@ define(
           }
           
           window.reset = function() {
-              cookie.rm('backendName');
-              cookie.rm('backendUrl');
-              cookie.rm('lastLogin');
+              Cookie.remove('backendName');
+              Cookie.remove('backendUrl');
+              Cookie.remove('lastLogin');
           };
           
           //Let's do it then!!

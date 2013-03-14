@@ -1,6 +1,9 @@
-/*global module:true pp:true isc:false define:false */
+/*global Cookie:true pp:true isc:false Pouch:false */
 /*jshint strict:false unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:4 maxcomplexity:7 maxlen:150 devel:true*/
+
+
+
 
 var pp = function() {
     "use strict";
@@ -14,12 +17,28 @@ var pp = function() {
 };
 
 // function callback(resp, arg2) { pp(resp); pp(arg2);}
-"use strict";
 
 //////////////////////////pouchdb///////////////////////////
 var pouch = 
     (function() {
-        "use strict";
+        
+        // function readCookie(name) {
+        //     // console.log('reading cookie', name);
+        //     var nameEQ = name + "=";
+        //     var ca = document.cookie.split(';');
+        //     for(var i=0;i < ca.length;i++) {
+	//         var c = ca[i];
+	//         while (c.charAt(0)===' ') c = c.substring(1,c.length);
+	//         if (c.indexOf(nameEQ) === 0)
+        //             return c.substring(nameEQ.length,c.length);
+        //     }
+        //     return false;
+        // }
+        Cookie.useVows = false;
+        db = Cookie.get('backendUrl');
+        Cookie.useVows = true;
+        if (!db) db = 'db';
+        console.log('quickpouch is loaded with url ' + db);
         var db; 
         function setdb(dbname) {
             // console.error('quickpouch');
@@ -93,7 +112,7 @@ var pouch =
 	        if (err) {
 		    console.log(err.error, err.reason); 
 		    return;
-	        }
+	            }
 	        db.query({map: map}, {reduce: false}, callback);
 	    });
         };
@@ -137,18 +156,18 @@ var pouch =
 
         function getBool() {
             
-            var r = Math.floor(Math.random() * 2);
+                var r = Math.floor(Math.random() * 2);
             return r === 0;
         }
         
-        var lmax = 20; //number of locations
+            var lmax = 20; //number of locations
         var pmax = 100; //number of people
         
         var locations = (function(n) {
             var result = [];
             for (var i = 0; i < n; i++) {
-                result.push( 'loc' + i);
-            } 
+                    result.push( 'loc' + i);
+                } 
             return result; 
         })(lmax);
         
@@ -196,7 +215,7 @@ var pouch =
         function bulk(args) {
             var i;
             var shiftsPerDay = args.shiftsPerDay;
-            var newDocs= [];
+                var newDocs= [];
             for (var g in args) {
                 // console.log(args[g]);
                 var amount = args[g];
@@ -260,84 +279,3 @@ var pouch =
         };
      
     })();
-
-pouch.setdb(window.dbname);
-
-
-var localUrl = window.dbname; //'localdb';
-var remoteUrl = 'http://localhost:1234/repto';
-
-function openDB(name, options,callback) {
-  new Pouch(name, options, function(err, db) {
-    // if (err) {
-    //   console.error(err);
-    //   console.log('failed to open database');
-    // }
-    callback.apply(this, arguments);
-  });
-}
-
-// var localDB2;
-function initDB() {
-    openDB(localUrl, {adapter:'idb'}, function(err, db) {
-        if (err) { console.log("Can't open local database " + remoteUrl); }
-        else {
-            window.localDB2 = db; 
-        }
-    });
-}
-
-
-function repToRemote(url) {
-    if (!url) url = remoteUrl;
-    if (!window.localDB2) initDB();
-    openDB(url, { adapter:'http'}, function( err, remoteDB) {
-        var text;
-        if (err)
-            text =  err.statusText ? err.statusText : err.reason ? err.reason : err.status;
-        // switch (err.status) {
-        //    case '401' : text = err.reason; break;
-        //     case '404' : text = err.statusText; break;
-        //     default: text = '?';
-        // }
-        if (err) { alert("Can't  replicate to " + url + '\n\nReason: ' + text);
-                   console.log("Can't open remote database " + url, err); }
-        else {
-            var options = {};
-            // options.complete = function() { console.log('complete', arguments); };
-            // options.onChange = function() { console.log('onChange', arguments); };
-            // Pouch.replicate('idb://db',  'http://localhost:8082/db/db', function(err, changes) {
-            window.localDB2.replicate.to(remoteDB,  function(err, changes) {
-                if (err) {
-                    alert('Replicating to ' + url + ' produced errors: ' + err);
-                    console.log('Replicating to ' + url + ' produced errors: ' + err);
-                }
-                else { alert('Docs written: ' + changes.docs_written +
-                             "\n\nReplication was successful.");
-                       console.log('err:',err, 'changes', changes);
-                     }
-            });
-            
-        }
-        
-    });
-}
-
-
-function repFromRemote() {
-    openDB(remoteUrl,{adapter:'http'}, function( err, remoteDB) {
-        if (err) { console.log("Can't open remote database " + remoteUrl); }
-        else {
-            var options = {};
-            // options.complete = function() { console.log('complete', arguments); };
-            // options.onChange = function() { console.log('onChange', arguments); };
-            // Pouch.replicate('idb://db',  'http://localhost:8082/db/db', function(err, changes) {
-            localDB2.replicate.from(remoteDB,  function(err, changes) {
-                console.log('err:',err, 'changes', changes);
-            });
-            
-        }
-        
-    });
-}
-

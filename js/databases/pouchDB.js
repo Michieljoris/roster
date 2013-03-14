@@ -1,10 +1,12 @@
-/*global VOW:false Pouch:false logger:false isc:false define:false emit:false*/
+/*global Cookie:false VOW:false Pouch:false logger:false isc:false define:false emit:false*/
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:4 maxcomplexity:7 maxlen:130 devel:true newcap:false*/
 
 define
-({inject: ['lib/cookie', 'types/typesAndFields', 'lib/sha1'],
-  factory: function(cookie, typesAndFields, hash) {
+// ({inject: ['lib/cookie', 'types/typesAndFields', 'lib/sha1'],
+({inject: ['types/typesAndFields', 'lib/sha1'],
+  // factory: function(cookie, typesAndFields, hash) {
+  factory: function(typesAndFields, hash) {
       "use strict";
       
       var log = logger('pouchDB', 'debug');
@@ -424,7 +426,8 @@ define
               getUser(credentials).when(
                   function(anAuthenticatedUser) {
                       var authenticatedUser = anAuthenticatedUser;
-                      cookie.set('lastLogin', authenticatedUser._id, 3650);
+                      Cookie.set('lastLogin', authenticatedUser._id,
+                                 Date.today().addYears(10));
                       log.i(authenticatedUser.username + ' logged in.');
                       vow.keep(authenticatedUser);
                       reportToLoginDialog(true);
@@ -471,7 +474,7 @@ define
       function login() {
           //promises a user
           var vow = VOW.make();
-          cookie.get('lastLogin').when(
+          Cookie.get('lastLogin').when(
               function(userId) {
                   set(vow, userId);
               }

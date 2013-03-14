@@ -2,8 +2,33 @@
 <!-- <html manifest="./manifest.appcache"> -->
 <html>
   <HEAD>
+    
+    <!-- basic console logger -->
+    <script src=lib/logger.js></script>    
+    <script> logger.setLevel('debug');</script>
+    
+    <!-- promises, deferred, vows etc -->
+    <script src=lib/vow.js></script>    
+    
+    <!-- easily access cookies -->
+    <script src=lib/Cookie.js></script>    
+    
+    <!-- couchdb in the browser -->
+    <script src=lib/pouchdb-nightly.js></script>
+    
+    <!-- only use when testing -->
+    <script src=test/quickpouch.js></script>
+    
+    <script src=lib/jquery-1.6.2.js></script>
+    <!-- <script src=lib/couchdb/jquery.couch.js></script> -->
+    
   </HEAD>
   <BODY>
+    <div id='sync'></div>
+    <script src=tryout/sync.js></script>
+    <a href="#" onclick="return Cookie.set('sync', 'databases to sync', 5)"
+	>Set cookie</a>
+    <!-- <a href='sync.html' target='_blank'>hello</a> -->
     
     <!-- <a href='#' id='test'>test copy</div> -->
     <div id='statusUpdate' ></div>
@@ -54,6 +79,7 @@
       
     <!-- Don't pollute global namespace -->
       window.isc_useSimpleNames = false;
+    $.couch.urlPrefix = "http://localhost:1234";
     </script> 
     
   <!-- //this debug version of the isc files gets me a spinner for -->
@@ -67,13 +93,13 @@
     <!-- <SCRIPT SRC=lib/isomorphic/system/modules-debug/ISC_Calendar.js></SCRIPT> -->
  <!-- TODO: you should use chrome source maps to ease debugging..    -->
     <!-- concatenated all these files into the ISC.js below-->
-    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Core.js></SCRIPT>   
-    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Foundation.js></SCRIPT>   
-    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Containers.js></SCRIPT>   
-    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Grids.js></SCRIPT>   
-    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Forms.js></SCRIPT>   
-    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_DataBinding.js></SCRIPT>   
-    <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Calendar.js></SCRIPT>
+    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Core.js></SCRIPT>     -->
+    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Foundation.js></SCRIPT>     -->
+    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Containers.js></SCRIPT>     -->
+    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Grids.js></SCRIPT>     -->
+    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Forms.js></SCRIPT>     -->
+    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_DataBinding.js></SCRIPT>     -->
+    <!-- <SCRIPT SRC=lib/isomorphic/system/modules/ISC_Calendar.js></SCRIPT>  -->
     <!-- using the source version since i modified it.  -->
     <!-- <SCRIPT SRC=lib/isomorphic/client/modules/ISC_Calendar.js></SCRIPT> -->
    
@@ -88,13 +114,10 @@
     <!-- <SCRIPT SRC=lib/isomorphic/skins/SmartClient/load_skin.js></SCRIPT>     -->
     <!-- <SCRIPT SRC=lib/isomorphic/skins/SilverWave/load_skin.js></SCRIPT> -- -->
     <!-- <SCRIPT SRC=lib/isomorphic/skins/EnterpriseBlue/load_skin.js></SCRIPT> -->
-    <SCRIPT SRC=lib/isomorphic/skins/Enterprise/load_skin.js></SCRIPT>
+    <!-- <SCRIPT SRC=lib/isomorphic/skins/Enterprise/load_skin.js></SCRIPT> -->
     
     
-    <script> window.dbname = 'db' </script>
-    <!-- <script src=lib/pouch.alpha.js></script> -->
-    <script src=lib/pouchdb-nightly.js></script>
-    <script src=test/quickpouch.js></script>
+    
   </BODY> 
 </HTML>
 

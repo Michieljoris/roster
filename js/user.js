@@ -4,8 +4,10 @@
 
 
 define(
-    { inject: ['lib/cookie', 'loaders/backend'], 
-      factory: function(cookie, backend ) 
+    // { inject: ['lib/cookie', 'loaders/backend'], 
+    //   factory: function(cookie, backend ) 
+    { inject: ['loaders/backend'], 
+      factory: function(backend ) 
       { "use strict";
         var log = logger('user');
         

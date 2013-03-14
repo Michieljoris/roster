@@ -1,10 +1,10 @@
-/*global VOW:false logger:false isc:false define:false */
+/*global Cookie:false VOW:false logger:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:5 maxcomplexity:7 maxlen:200 devel:true*/
 
 define
-({inject: ['View', 'loaders/view', 'loaders/backend', 'user', 'lib/cookie'],
-  factory: function(View, views, backend, user, cookie) {
+({inject: ['View', 'loaders/view', 'loaders/backend', 'user'],
+  factory: function(View, views, backend, user) {
       "use strict";
       var log = logger('viewTree');
       
@@ -407,8 +407,8 @@ define
 	      ,action: function() {
                   backend.pick(function(aBackend, name, url){
                       VOW.every([
-                          cookie.set('backendName', name, 3650)
-                          ,cookie.set('backendUrl', url, 3650)]
+                          Cookie.set('backendName', name, Date.today().addYears(10))
+                          ,Cookie.set('backendUrl', url, Date.today().addYears(10))]
                                ).when(
                                    function() { log.d('Saved backend cookie.');
                                                 location.reload();

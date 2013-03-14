@@ -2,6 +2,8 @@
 <!-- <html manifest="./manifest.appcache"> -->
 <html>
   <HEAD>
+    
+    <script src=lib/Cookie.js></script>
      <!-- Try to detect the browser the user is using -->
     <!-- <script src=lib/browserDetect.js></script> -->
   <script>
@@ -59,7 +61,8 @@
       };
       
       <!-- for test purposes in quickpouch-->
-      window.dbname= 'idb://db';
+      <!-- window.dbname= 'idb://db';  now set in quickpouch itself by
+      <!-- reading backendUrl cookie-\-> -->
       
       <!-- get rid of annoying msg when testing licensed version -->
       window.isc_expirationOff=true;  
