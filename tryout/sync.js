@@ -1,4 +1,4 @@
-/*global logger:false $:false Pouch:false VOW:false Cookie:false*/
+/*global emit:false logger:false $:false Pouch:false VOW:false Cookie:false*/
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:7 maxcomplexity:7 maxlen:150 devel:true newcap:false*/ 
 
@@ -6,39 +6,146 @@
     "use strict";
     var log = logger('sync');
     var testing = true;
-    var result;
+    // var data;
     var localUrl, remoteUrl;
     
-    function openDB(url, options) {
+    function openDB(dbs, aDB) {
         var vow = VOW.make();
-        new Pouch(url, options, function(err, db) {
+        var db = dbs[aDB];
+        new Pouch(db.url, db.adapter, function(err, newDB) {
             if (err) {
                 var text =  err.statusText ?
                     err.statusText : err.reason ?
                     err.reason : err.status;
-                text = ["Can't open database " + url,   'Reason: ' + text];
-                vow['break'](text);
-                
+                dbs.error = ["Can't open database " + db.url ,   'Reason: ' + text];
+                vow['break'](dbs);
             }
-            else vow.keep(db);
+            else {
+                db.handle = newDB;
+                vow.keep();   
+            }
         });
         return vow.promise;
     }
-
-    function replicate(db1, db2) {
+    
+    var queryFun = {
+        map: function(doc) {
+            if (doc._conflicts && doc._conflicts.length > 0) {
+                emit(doc);
+                // emit(doc, (doc._conflicts));
+            }
+        }
+    };
+    
+    
+    function checkConflicts(db) {
         var vow = VOW.make();
-        db1.replicate.to(db2, function(err, changes) {
+        db.handle.query(queryFun, {reduce: false, conflicts: true}, function(err, res) {
             if (err) {
-                log.d('in replicate error');
-                vow['break'](['Replicating from ' + db1.url + ' to ' +
-                              db2.url + ' produced errors: ' + err]) ;
+                err.operation = 'Looking for documents with conflicts';
+                err.url = db.url;
+                err.error = true;
+                vow.keep(err);
+            }
+            
+            else {
+                if (res && res.rows.length > 0) {
+                    db.docsWithConflicts = res.rows.map(
+                        function(d) {
+                            return d.key;
+                        }
+                    );
+                }
+                else db.docsWithConflicts = [];
+                vow.keep(db);
+            }
+        });
+        return vow.promise;
+        
+    }
+    
+    function getOpenRevs(db, id) {
+       var vow = VOW.make(); 
+        if (db.error) {
+            vow.keep(db);
+        }
+        else db.handle.get(id, { open_revs: "all" }, function(err, res) {
+            if (err) {
+                err.error = true;
+                err.operation = 'get open_revs';
+                vow.keep(err) ;
             }
             else {
-                log.d('in replicate ok');
-                result = result.concat(['Replicated ' + db1.url + ' to ' + db2.url,
-                              '\nDocs read: ' + changes.docs_read, 
-                              '\n Docs written: ' + changes.docs_written]);
-                vow.keep();
+                var result = { id:id,
+                               conflictingRevs: res.map(function(r) {
+                                   return r.ok;})
+                             };
+                vow.keep(result);
+            }
+        }); 
+        return vow.promise;
+    }
+    
+    function getConflicts(db) {
+        var vow = VOW.make();
+        if (db.error) vow.keep(db);
+        else {
+            if (!db.docsWithConflicts) db.docsWithConflicts = [];
+                var openRevs = db.docsWithConflicts.map(function(d) {
+                    return getOpenRevs(db, d._id);
+                });
+            VOW.any(openRevs).when(
+                function(arr) {
+                    vow.keep({ db: db.url, docsWithConflicts: arr});
+                    // log.d(arr); 
+                }
+            );
+        }
+        return vow.promise;
+    }
+    
+    function gatherConflicts(dbs) {
+        dbs = dbs.map(function(db) {
+            return checkConflicts(db);
+        });
+        VOW.any(dbs).when(
+            function(arr) {
+                log.d(arr);
+                arr = arr.map(function(db) {
+                    return getConflicts(db);
+                });
+                return VOW.any(arr);
+            }
+        ).when(
+            function(arr) {
+                console.log(arr);
+            },
+            function(err) {
+                pp(err);
+            }
+        );
+        
+    }
+
+
+    function replicate(data, reverse, filter) {
+        var vow = VOW.make();
+        var db1 = reverse ? data.b: data.a;
+        var db2 = reverse ? data.a: data.b;
+        filter = { filter: filter };
+        db1.handle.replicate.to(db2.handle, function(err, changes) {
+            if (err) {
+                data.error = ['Replicating from ' + db1.url + ' to ' +
+                              db2.url + ' produced errors: ' + err];
+                vow['break'](data);
+            }
+            else {
+                db1.to =  db2.url;
+                db2.from =  db1.url;
+                data.log = data.log.concat(['' + db1.url + ' --> ' + db2.url,
+                                            '\nDocs read: ' + changes.docs_read, 
+                                            '\n Docs written: ' + changes.docs_written]);
+                vow.keep(data);
             }
             
         });
@@ -46,48 +153,78 @@
     }
     
     function sync(dbs) {
-        log.d('in sync');
-        dbs[0].url = localUrl;
-        dbs[1].url = remoteUrl;
-        return replicate(dbs[0], dbs[1]).when(
-            function () {
-                return replicate(dbs[1], dbs[0]);
+        var d1 = 'January 10, 2012';
+        var d2 = 'January 10, 2014';
+        
+        var filter = function (doc) {
+            var valid = doc.valid === true;
+            // var date = Date.parse(doc.date);
+            // date = new Date(date);
+            // var isBetween = date.isBetween(d1, d2);
+            // console.log(date, d1, d2, isBetween);
+            if (valid) console.log('Replicating: ' ,doc);
+            return valid;
+        };
+        var vow = VOW.make();
+        replicate(dbs, false, filter).when(
+            function (dbs) {
+                return replicate(dbs, 'reverse', filter);
+            }
+        ).when(
+            function (dbs) {
+                vow.keep(dbs);
+            }
+            ,function(dbs) {
+                vow['break'](dbs);
             }
         );
+        return vow.promise;
     }
 
+    
+    
     function startSyncing() {
-        result = [];
+        var dbs = {
+            a: { url: localUrl, adapter: { adapter: 'idb'}}
+            ,b: { url: remoteUrl, adapter: { adapter: 'http'}}
+            ,log: []
+            ,error: []
+        };
         VOW.every([
-            openDB(localUrl, { adapter:'idb'}),
-            openDB(remoteUrl, { adapter:'http'})
+            openDB(dbs, 'a'),
+            openDB(dbs, 'b')
         ]).when(
-            sync 
-        ).when(
             function() {
-                console.log('dfa',result);
-                $('#sync').html(result.join('<br>'));
+                return sync(dbs);
+            }
+        ).when(
+            function(dbs) {
+                $('#sync').html(dbs.log.join('<br>'));
+                gatherConflicts([dbs.a, dbs.b]);
             },
-            function(err) {
-                $('#sync').html(err.join('<br>'));
-                console.log(err);
+            function(dbs) {
+                console.log(dbs.error);
+                $('#sync').html(dbs.error.join('<br>'));
+                gatherConflicts([dbs.a, dbs.b]);
             }
         );
 
     } 
     
+    
     function parseCookie(cookie) {
-        localUrl = 'db14';
-        remoteUrl = 'http://localhost:8090/local/repto';
+        localUrl = 'db';
+        remoteUrl = 'http://p1:p1@localhost:8090/local/repto';
     }
     
     var cookie = Cookie.get('sync');
     parseCookie(cookie);
     
-    if (cookie || testing) {
-        Cookie.remove('sync');
-        window.stop();
-        startSyncing();
-    }
+        if (cookie || testing) {
+            Cookie.remove('sync');
+            window.stop();
+            startSyncing();
+        }
+    
     
 })();

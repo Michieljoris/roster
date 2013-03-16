@@ -45,24 +45,13 @@ var pouch =
             db = dbname; 
             // console.log(db);
         }
-        // var db= 'idb://' + roster.dbname;
-        // pouch(db, "info", function(response) { console.log(response); });
-        // pouch("idb://testdb", "query", {map:map}, {reduce:false}, 
-        //       function(response) { console.log(response); })
+        
         var pouch = function() {
             var args = Array.prototype.slice.call(arguments)
             ,dbname = args[0]
             ,op = args[1]
             ,opargs= args.slice(2,args.length-1)
             ,callback=args[args.length-1];
-            // ,opcallback = function (err,response){
-            // 	 if (err) {
-            // 	   if (op === 'get') callback(err,null);
-            // 	   else console.log("Error from pouch db." + op + ":", err.error, err.reason);
-            // 	 }
-            // 	 else callback(null, response);		       
-            // };
-            // console.log('POUCH', op,opargs, opcallback);
             Pouch(db, function(err, db) {
 	        if (err) console.log("Error opening database", dbname, "err:", err.error, err.reason, " db:", db);
 	        else db[op].apply(db,opargs.concat(callback));
@@ -99,7 +88,8 @@ var pouch =
 			response.rows.forEach(function(e) {
 						    
 			    console.log(i + '------------------');
-			    console.dir(e.key); 
+			    // console.dir(e.key); 
+			    pp(e.key); 
 			});
 		    }
 		}); 
@@ -117,7 +107,7 @@ var pouch =
 	    });
         };
         var ppost = function(obj, callback) {
-	    pouch(db, "post", obj, callback); //function(resp) { console.log("Response is:", resp); });
+	    pouch(db, "post", obj, function(err, resp) { console.log("Response is:",err, resp); });
         };
 
         var pbulk = function(obj, callback) {
@@ -125,12 +115,44 @@ var pouch =
         };
 
         var pput = function(obj, callback) {
-            pouch(db, "put", obj, callback); //function(resp) { console.log("Response is:", resp); });
+            pouch(db, "put", obj, function(err, resp) { console.log("Response is:", err, resp); });
         };
+        var extend = function(o1, o2) {
+           Object.keys(o2).forEach(function(k) {
+              o1[k] = o2[k]; 
+               });
+            return o1;
+            };
 
+        var mod = function(id, obj) {
+            
+            pouch(db, 'get', id, function(err, res) {
+                extend(res, obj);
+               
+                pouch(db, 'put', res, function(err, res) {
+                    console.log(err, res);
+               
+                });
+            });
+        }; 
         
-        var pget = function(id, callback) {
-            pouch(db, "get", id, callback); //function(resp) { console.log("Response is:", resp); });
+        var pget = function(id, obj) {
+            if (!obj) obj = {};
+            pouch(db, "get", id, function(err, resp) { window.test = obj.doc = resp;  console.log("Response is:", err, resp); });
+        };
+        
+        var pgetrev = function(id, rev) {
+            var options = {
+                rev: rev
+            };
+            Pouch(db, function(err, db) {
+	        if (err) console.log("Error opening database", dbname, "err:", err.error, err.reason, " db:", db);
+	        else {
+                 db.get(id, options, function(err, res) {
+                     console.log(err, res);
+                 });   
+                }
+	    }); 
         };
         
         
@@ -264,7 +286,26 @@ var pouch =
 
         //   }
         // });
+        
+        function revs(id) {
+            var options = {
+                open_revs:"all"
+                // revs: true,
+                // revs_info: true
+            };
+            Pouch(db, function(err, db) {
+	        if (err) console.log("Error opening database", dbname, "err:", err.error, err.reason, " db:", db);
+	        else {
+                 db.get(id, options, function(err, res) {
+                     console.log(err, res);
+                 });   
+                }
+	    }); 
+        }
+        
+        
         return {
+            revs:revs,
             make: makeRandomShift,
             doBulk: doBulk,
             // bulk: bulk,
@@ -275,7 +316,9 @@ var pouch =
             put: pput,
             destroy: pdestroy,
             query: pquery,
-            remove: premove
+            remove: premove,
+            mod:mod,
+            getrev: pgetrev
         };
      
     })();
