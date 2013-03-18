@@ -3,7 +3,7 @@
 /*jshint maxparams:4 maxcomplexity:7 maxlen:90 devel:true*/
 
 define
-({ inject: ['views/table', 'views/calendar', 'views/timesheet'],
+({ inject: ['views/table', 'views/calendar', 'views/timesheet', 'views/db_management'],
 // ({ inject: ['views/table', 'views/calendar', 'views/timesheet', 'views/extCalendar'],
 // ({ inject: ['timesheet', 'calendar'],
 // ({ inject: ['calendar'],

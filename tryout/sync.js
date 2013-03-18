@@ -65,7 +65,7 @@
     }
     
     function getOpenRevs(db, id) {
-       var vow = VOW.make(); 
+        var vow = VOW.make(); 
         if (db.error) {
             vow.keep(db);
         }
@@ -91,9 +91,9 @@
         if (db.error) vow.keep(db);
         else {
             if (!db.docsWithConflicts) db.docsWithConflicts = [];
-                var openRevs = db.docsWithConflicts.map(function(d) {
-                    return getOpenRevs(db, d._id);
-                });
+            var openRevs = db.docsWithConflicts.map(function(d) {
+                return getOpenRevs(db, d._id);
+            });
             VOW.any(openRevs).when(
                 function(arr) {
                     vow.keep({ db: db.url, docsWithConflicts: arr});
@@ -108,22 +108,23 @@
         dbs = dbs.map(function(db) {
             return checkConflicts(db);
         });
-        VOW.any(dbs).when(
+        return VOW.any(dbs).when(
             function(arr) {
-                log.d(arr);
+                // log.d(arr);
                 arr = arr.map(function(db) {
                     return getConflicts(db);
                 });
                 return VOW.any(arr);
             }
-        ).when(
-            function(arr) {
-                console.log(arr);
-            },
-            function(err) {
-                pp(err);
-            }
         );
+        //     .when(
+        //     function(arr) {
+        //         console.log(arr);
+        //     },
+        //     function(err) {
+        //         pp(err);
+        //     }
+        // );
         
     }
 
@@ -133,7 +134,7 @@
         var db1 = reverse ? data.b: data.a;
         var db2 = reverse ? data.a: data.b;
         filter = { filter: filter };
-        db1.handle.replicate.to(db2.handle, function(err, changes) {
+        db1.handle.replicate.to(db2.handle, filter, function(err, changes) {
             if (err) {
                 data.error = ['Replicating from ' + db1.url + ' to ' +
                               db2.url + ' produced errors: ' + err];
@@ -156,14 +157,15 @@
         var d1 = 'January 10, 2012';
         var d2 = 'January 10, 2014';
         
-        var filter = function (doc) {
-            var valid = doc.valid === true;
+        var filter = function (doc, req) {
+            // var valid = doc.valid === true;
             // var date = Date.parse(doc.date);
             // date = new Date(date);
             // var isBetween = date.isBetween(d1, d2);
             // console.log(date, d1, d2, isBetween);
-            if (valid) console.log('Replicating: ' ,doc);
-            return valid;
+            // if (valid) console.log('Replicating: ' ,doc, req);
+            // return valid;
+            return true;
         };
         var vow = VOW.make();
         replicate(dbs, false, filter).when(
@@ -182,14 +184,23 @@
     }
 
     
+    function printConflicts(dbs) {
+        gatherConflicts([dbs.a, dbs.b]).when(
+            function(arr) {
+                console.log(arr);
+            }
+        );
+        
+    }
+    
     
     function startSyncing() {
-        var dbs = {
-            a: { url: localUrl, adapter: { adapter: 'idb'}}
-            ,b: { url: remoteUrl, adapter: { adapter: 'http'}}
-            ,log: []
-            ,error: []
-        };
+    var dbs = {
+        a: { url: localUrl, adapter: { adapter: 'idb'}}
+        ,b: { url: remoteUrl, adapter: { adapter: 'http'}}
+        ,log: []
+        ,error: []
+    };
         VOW.every([
             openDB(dbs, 'a'),
             openDB(dbs, 'b')
@@ -200,31 +211,45 @@
         ).when(
             function(dbs) {
                 $('#sync').html(dbs.log.join('<br>'));
-                gatherConflicts([dbs.a, dbs.b]);
+                printConflicts(dbs);
             },
             function(dbs) {
                 console.log(dbs.error);
                 $('#sync').html(dbs.error.join('<br>'));
-                gatherConflicts([dbs.a, dbs.b]);
+                printConflicts(dbs);
             }
         );
-
     } 
     
     
     function parseCookie(cookie) {
-        localUrl = 'db';
-        remoteUrl = 'http://p1:p1@localhost:8090/local/repto';
+        localUrl = 'idb://db';
+        remoteUrl = 'http://p1:p1@localhost:8090/local/people';
     }
     
     var cookie = Cookie.get('sync');
     parseCookie(cookie);
     
-        if (cookie || testing) {
-            Cookie.remove('sync');
-            window.stop();
-            startSyncing();
-        }
+    if (cookie || testing) {
+        Cookie.remove('sync');
+        window.stop();
+        $.couch.urlPrefix='http://localhost:8090/local';
+        startSyncing();
+    }
     
+    
+    var reps = {
+        rep: [
+            { from: localUrl
+              ,filter: function() {}
+              ,to: remoteUrl
+            } 
+            ,{ from: remoteUrl
+               ,filter: null
+               ,to: localUrl }
+        ] 
+        ,log: []
+        ,error: []
+    };
     
 })();

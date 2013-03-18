@@ -7,10 +7,7 @@ define
   factory: function(View, views, backend, user) {
       "use strict";
       var log = logger('viewTree');
-      
       var newViewMenu = [];
-      
-      
       views = (function() {
           var result = {};
           views.forEach(function(v) {
@@ -401,24 +398,24 @@ define
               ]
           });
       
-      var databaseButton = isc.ToolStripButton.create(
-          {   align:'left' 
-	      ,icon: "database.png"
-	      ,action: function() {
-                  backend.pick(function(aBackend, name, url){
-                      VOW.every([
-                          Cookie.set('backendName', name, Date.today().addYears(10))
-                          ,Cookie.set('backendUrl', url, Date.today().addYears(10))]
-                               ).when(
-                                   function() { log.d('Saved backend cookie.');
-                                                location.reload();
-                                              }
-                                   ,function() {
-                                       log.e('Unable to set the backend or url cookie!!'); }
-                               );
-                  }, 'cancellable');
-              }
-          }); 
+      // var databaseButton = isc.ToolStripButton.create(
+      //     {   align:'left' 
+      //         ,icon: "database.png"
+      //         ,action: function() {
+      //             backend.pick(function(aBackend, name, url){
+      //                 VOW.every([
+      //                     Cookie.set('backendName', name, Date.today().addYears(10))
+      //                     ,Cookie.set('backendUrl', url, Date.today().addYears(10))]
+      //                          ).when(
+      //                              function() { log.d('Saved backend cookie.');
+      //                                           location.reload();
+      //                                         }
+      //                              ,function() {
+      //                                  log.e('Unable to set the backend or url cookie!!'); }
+      //                          );
+      //             }, 'cancellable');
+      //         }
+      //     }); 
       
       var loginButton = isc.ToolStripButton.create(
           {   align:'left' 
@@ -433,8 +430,8 @@ define
 
       var toolStrip = isc.ToolStrip.create(
           {members: [
-              databaseButton
-              ,loginButton
+              // databaseButton,
+              loginButton
 	      ,saveButton     
               ,isc.LayoutSpacer.create({  width:"*" })
               ,isc.IconMenuButton.create({title:''

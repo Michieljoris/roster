@@ -42,7 +42,6 @@ define
             return database;
         }
         
-        //set the database to be used to dbname
         function exists(dbName) {
             return dbs[dbName];
         }
@@ -54,226 +53,24 @@ define
         
         
         
-        var cancellable;
-        var callback;
-        function createEditorWindow() {
-            
-            var pickRemoteForm = isc.DynamicForm.create({
-                // autoDraw: true,
-                columns: 1
-                ,fields: [
-                    // {  type: 'radioGroup', name: "databaseName",  showTitle: false, 
-                    //    valueMap: valueMap, titleOrientation: 'top', value: 'pouchDB'
-                    //    ,width: 300
-                    //    ,change: function() {
-                    //        var databaseName = arguments[2];
-                    //        log.d('change', databaseName);
-                    //        // log.d(dbDescriptions);
-                           
-                    //        helpLabel.setContents(dbDescriptions[databaseName].description);
-                    //        pickDbForm.getField('url').setValue(dbDescriptions[databaseName].prompt);
-                    //        // console.log('setting prompt', dbDescriptions[databaseName].prompt);
-                    //        // pickDbForm.getField('dbname').title=dbDescriptions[databaseName].urlPrefix;
-                    //        // pickDbForm.getField('dbname').redraw();
-                    //    }
-                    // }
-                    { type: 'text', name: 'url', title: 'Url of Couchdb database:', 
-                       titleOrientation: 'top', startRow: true, width: 300,
-                      value: 'http://localhost:1234/' }
-                ]
-            });
-            var pickDbForm = isc.DynamicForm.create({
-                // autoDraw: true,
-                columns: 1
-                ,fields: [
-                    // {  type: 'radioGroup', name: "databaseName",  showTitle: false, 
-                    //    valueMap: valueMap, titleOrientation: 'top', value: 'pouchDB'
-                    //    ,width: 300,
-                    //    visibility: 'hidden'
-                    //    ,change: function() {
-                    //        var databaseName = arguments[2];
-                    //        log.d('change', databaseName);
-                    //        // log.d(dbDescriptions);
-                           
-                    //        helpLabel.setContents(dbDescriptions[databaseName].description);
-                    //        pickDbForm.getField('url').setValue(dbDescriptions[databaseName].prompt);
-                    //        // console.log('setting prompt', dbDescriptions[databaseName].prompt);
-                    //        // pickDbForm.getField('dbname').title=dbDescriptions[databaseName].urlPrefix;
-                    //        // pickDbForm.getField('dbname').redraw();
-                    //    }
-                    // },
-                    { type: 'text', name: 'url', title: 'Name:', 
-                       titleOrientation: 'top', startRow: true, width: 300, value: 'db' }
-                ]
-            });
-            
-            var helpLabel = isc.Label.create({
-                // ID:'test',
-                width: 300,
-                height: '100%',
-                margin: 10
-                // ,border: "1px dashed blue"
-                ,contents: dbDescriptions.pouchDB.description
-            });
+        // /** Pick a database */
+        // function pick(aCallback, isCancellable){
+        //     callback = aCallback;
+        //     cancellable = isCancellable;
+        //     var editorWindow = createEditorWindow();
+        //     editorWindow.show();
+        // }
         
-        
-            var pickDatabaseLayout = isc.VLayout.create({
-                layoutMargin: 6,
-                membersMargin: 6,
-                // border: "1px dashed blue",
-                height: 20,
-                width:'100%',
-                members: [pickDbForm, helpLabel
-                          ,isc.HLayout.create({
-                              layoutMargin: 6,
-                              membersMargin: 6,
-                              // border: "1px dashed blue",
-                              height: 20,
-                              width:'100%',
-                              members: [
-                                  // isc.LayoutSpacer.create()
-                                  isc.Button.create({
-                                      title: 'Cancel'
-                                      ,visibility: cancellable ? 'inherit' : 'hidden'
-                                      // ,startRow: false
-                                      ,click: function() {
-                                          editorWindow.hide();
-                                      }  
-                                  })
-                                  ,isc.LayoutSpacer.create()
-                                  ,isc.Button.create({
-                                      title: 'Open'
-                                      ,startRow: false
-                                      ,click: function() {
-                                          // var databaseName = pickDbForm.getValue('databaseName'); 
-                                          var databaseName = 'pouchDB';
-                                          var url = pickDbForm.getValue('url');
-                                          var urlPrefix = dbDescriptions[databaseName].urlPrefix;
-                                          if (url.startsWith(urlPrefix)) urlPrefix = '';
-                                          log.d('hello',urlPrefix, databaseName);
-                                          url = urlPrefix + url;
-                                          set(databaseName);
-                                          database = dbs[databaseName];
-                                          editorWindow.hide();
-                                          callback(database, databaseName, url);
-                                      }  
-                                  })
-                            
-                              ]
-                          })
-
-                         ]
-            });
-            
-            var pickRemoteLayout = isc.VLayout.create({
-                layoutMargin: 6,
-                membersMargin: 6,
-                // border: "1px dashed blue",
-                height: 20,
-                width:'100%',
-                members: [pickRemoteForm
-                          ,isc.HLayout.create({
-                              layoutMargin: 6,
-                              membersMargin: 6,
-                              // border: "1px dashed blue",
-                              height: 20,
-                              width:'100%',
-                              members: [
-                                  // isc.LayoutSpacer.create()
-                                  isc.Button.create({
-                                      title: 'Export'
-                                      // ,visibility: cancellable ? 'inherit' : 'hidden'
-                                      // ,startRow: false
-                                      ,visibility: cancellable ? 'inherit' : 'hidden'
-                                      ,click: function() {
-                                          editorWindow.hide();
-                                          var url = pickRemoteForm.getValue('url');
-                                          console.log('Replicating to ' + url);
-                                          repToRemote(url);
-                                      }  
-                                  })
-                                  ,isc.LayoutSpacer.create()
-                                  ,isc.Button.create({
-                                      title: 'Import'
-                                      ,startRow: false
-                                      ,click: function() {
-                                          // var databaseName = pickDbForm.getValue('databaseName'); 
-                                          // var url = pickDbForm.getValue('url');
-                                          // var urlPrefix = dbDescriptions[databaseName].urlPrefix;
-                                          // if (url.startsWith(urlPrefix)) urlPrefix = '';
-                                          // log.d('hello',urlPrefix, databaseName);
-                                          // url = urlPrefix + url;
-                                          // set(databaseName);
-                                          // database = dbs[databaseName];
-                                          // editorWindow.hide();
-                                          // callback(database, databaseName, url);
-                                      }  
-                                  })
-                                  ,isc.LayoutSpacer.create()
-                                  ,isc.Button.create({
-                                      title: 'Cancel'
-                                      ,visibility: cancellable ? 'inherit' : 'hidden'
-                                      // ,startRow: false
-                                      ,click: function() {
-                                          editorWindow.hide();
-                                      }  
-                                  })
-                            
-                              ]
-                          })
-                         ]
-            }); 
-            
-        
-        
-            var tabset = isc.TabSet.create({
-                // ID: "topTabSet",
-                tabBarPosition: "top",
-                selectedTab: 1,
-                // width: 400,
-                // height: 300,
-                tabs: [
-                    {title: "Select/Create", 
-                      pane:  pickDatabaseLayout }
-                    ,{title: "Replicate", 
-                     pane: pickRemoteLayout}
-                ]
-            });
-            
-            var editorWindow = isc.Window.create({
-                title: "Database"
-                // ,autoSize: true
-                ,height:500
-                ,width:500
-                ,canDragReposition: false
-                ,canDragResize: false
-                ,showMinimizeButton:false
-                ,showCloseButton:false
-                ,autoCenter: true
-                ,isModal: true
-                ,showModalMask: true
-                ,autoDraw: false
-                ,items: [
-                    tabset
-                    // ,helpLabel
-                ] 
-            });
-            return editorWindow;
-            
-        }
-        /** Pick a database */
-        function pick(aCallback, isCancellable){
-            callback = aCallback;
-            cancellable = isCancellable;
-            var editorWindow = createEditorWindow();
-            editorWindow.show();
+        function getDbDescriptions() {
+            return dbDescriptions;
         }
         
         return {
-            pick: pick
-            ,exists: exists
+            // pick: pick
+            exists: exists
             ,get: get
             ,set: set
+            ,getDbDescriptions: getDbDescriptions
             // ,ls: ls
         };
     }

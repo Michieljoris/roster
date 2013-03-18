@@ -40,31 +40,37 @@ define(
           function setBackend(vow, backendName) {
               if (backend.exists(backendName)) vow.keep(backend.set(backendName));
               else  {
-                  var msg = 'There is no backend ' + 'named:' + backendName +
-                      '.\nAlert the developer!';
-                  log.d(msg);
-                  Cookie.remove('backendName').when(
-                      function() {
-                          vow['break']( msg + 
-                                        '\nRefresh the browser (f5), choose a different backend');
-                      },
-                      function() {
-                          vow['break'](msg + "\nCan't erase the backend cookie!!!" +
-                                       ' \nMaybe ask your browser to delete all cookies' +
-                                       ' and then refresh (f5)!'); 
-                      }
-                  );
+                  backendName = 'pouchDB';
+                  Cookie.set('backendName', backendName, Date.today().addYears(10));
+                  vow.keep(backend.set(backendName));
+                  // var msg = 'There is no backend ' + 'named:' + backendName +
+                  //     '.\nAlert the developer!';
+                  // log.d(msg);
+                  // Cookie.remove('backendName').when(
+                  //     function() {
+                  //         vow['break']( msg + 
+                  //                       '\nRefresh the browser (f5), choose a different backend');
+                  //     },
+                  //     function() {
+                  //         vow['break'](msg + "\nCan't erase the backend cookie!!!" +
+                  //                      ' \nMaybe ask your browser to delete all cookies' +
+                  //                      ' and then refresh (f5)!'); 
+                  //     }
+                  // );
               }             
               return vow.promise;
           }
           
+                  //got rid of db dialog, leaving the code in here for
+                  //now, but not being used: the backend pick function
+                  //now always calls the callback with the parameters
+                  //pouchDB and db
           //##pickBackend
           /**Pick a backend from a list, and set the cookie
            * to the choice made.
            */
           function pickBackend(vow) {
               backend.pick(function(aBackend, name, url){
-                  // var name = aBackend.name;
                   vow.keep(aBackend);
                   VOW.every([
                       Cookie.set('backendName', name, Date.today().addYears(10))
@@ -90,7 +96,13 @@ define(
                       setBackend(vow, backendName);   
                   }
                   ,function() {
-                      pickBackend(vow);
+                      var backendName = 'pouchDB';
+                      Cookie.set('backendName', backendName, Date.today().addYears(10)).when(
+                               function() { log.d('Saved backend name cookie.'); }
+                               ,function() { log.e('Unable to set the backend name cookie!!'); }
+                           );
+                      setBackend(vow, backendName);   
+                      // pickBackend(vow);
                   });
               return vow.promise;
           }
@@ -109,17 +121,23 @@ define(
                   ,function() {
                       var msg = 'There is no backend url cookie';
                       log.d(msg);
-                      Cookie.remove('backendName').when(
-                          function() {
-                              vow['break'](
-                                  msg + '\nRefresh the browser (f5), choose a backend and url');
-                          },
-                          function() {
-                              vow['break'](msg + "\nCan't erase the backend cookie!!!" +
-                                           ' \nMaybe ask your browser to delete all cookies' +
-                                           ' and then refresh (f5)!'); 
-                          }
-                      );
+                      var url = 'db';
+                      Cookie.set('backendUrl', url, Date.today().addYears(10)).when(
+                               function() { log.d('Saved backend url cookie.'); }
+                               ,function() { log.e('Unable to set the backend url cookie!!'); }
+                           );
+                      aBackend.init(vow, url);
+                      // Cookie.remove('backendName').when(
+                      //     function() {
+                      //         vow['break'](
+                      //             msg + '\nRefresh the browser (f5), choose a backend and url');
+                      //     },
+                      //     function() {
+                      //         vow['break'](msg + "\nCan't erase the backend cookie!!!" +
+                      //                      ' \nMaybe ask your browser to delete all cookies' +
+                      //                      ' and then refresh (f5)!'); 
+                      //     }
+                      // );
                   });
               return vow.promise;
           }
