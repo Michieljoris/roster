@@ -17,10 +17,12 @@
                 var text =  err.statusText ?
                     err.statusText : err.reason ?
                     err.reason : err.status;
-                dbs.error = ["Can't open database " + db.url ,   'Reason: ' + text];
+                dbs.error.push("Can't open database " + db.url);
+                dbs.error.push('Reason: ' + text);
                 vow['break'](dbs);
             }
             else {
+                dbs.log.push('Loaded ' + db.url);
                 db.handle = newDB;
                 vow.keep();   
             }

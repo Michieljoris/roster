@@ -10,6 +10,7 @@ define
         var log = logger('backend');
         
         var database;
+        var dbName;
         
         var args = Array.prototype.slice.apply(arguments);
         // var dbNames = [];
@@ -36,10 +37,15 @@ define
         // }
         
         //set the database to be used to dbname
-        function set(dbName) {
+        function set(aDbName) {
+            dbName = aDbName;
             database = dbs[dbName];
             log.d('Backend set to: ' + dbName);
             return database;
+        }
+
+        function getName() {
+            return dbName;
         }
         
         function exists(dbName) {
@@ -65,12 +71,18 @@ define
             return dbDescriptions;
         }
         
+       function getValueMap() {
+           return valueMap;
+       } 
+        
         return {
             // pick: pick
             exists: exists
             ,get: get
+            ,getName: getName
             ,set: set
             ,getDbDescriptions: getDbDescriptions
+            ,getValueMap: getValueMap
             // ,ls: ls
         };
     }

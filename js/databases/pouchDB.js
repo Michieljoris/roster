@@ -13,6 +13,7 @@ define
       
       var pouchDbHandle;
       var pouchDS;
+      var url = '';
       // var dbviews;
       // var authenticatedUser;
       // var settingsCache;
@@ -35,6 +36,10 @@ define
       
       var defaultUserId = 'root';
       
+      function getUrl() {
+          return url;
+      }
+      
       //##init
       /** Make sure there is a handle for pouch, and a root user in
        * the database */
@@ -42,6 +47,7 @@ define
           Pouch(idbname, function(err, aDb) {
 	      if (!err) {
                   log.d('pouchDB is ready');
+                  url= idbname;
                   pouchDbHandle = aDb;
                   getDoc('root').when(
                       function() {
@@ -514,19 +520,21 @@ define
       var dbDescriptions = [
           {
               name: 'pouchDB',
-              shortDescr: 'Browser local storage (idb)',
-              description: 'Select/create a database. This database is stored locally in the browser. You can have multiple databases per browser. These are persisted across refreshes of the page, and across restarts of the browser. <p>If you use a standalone Chrome browser you can start this app from where ever you are storing the browser. Your could store the standalone browser on a USB stick for instance and take the app and its data anywhere. <p>You can choose a different database by selecting the database symbol left top in the app, you will see this dialog again and you can select/create a different database. Wiping the cookies has the same effect by the way (in Chrome settings, or by executing reset() in the console).',
-              urlPrefix: 'idb://',
+              shortDescr: 'PouchDB (Browser local storage)',
+              description: 'Select/create a database. These databases are stored locally in the browser. You can have multiple databases per browser. These are persisted across refreshes of the page, and across restarts of the browser. <p>If you use a standalone Chrome browser you can start this app from wherever you are storing the browser. Your could store the standalone browser on a USB stick for instance and open the app on another computer and work with the same data, even if that computer has no internet access. <p>Clicking the switch button will refresh the page and the app will load the database selected/created.',
+              urlPrefix: '',
+              adapter: 'pouchDB',
               prompt: 'db'
           }
-          // ,{
-          //     name: 'couchDB',
-          //     shortDescr: 'Standalone database (couchDB)',
-          //     description: 'The data is stored in a standalone database server called CouchDb. This server can run on your local machine or on the internet somewhere. <p>You will have to specify an url such as 127.0.0.1:1234/dbname or localhost:1234/dbname or www.somewhere.com:1234/dbname, where 1234 is the port. Whoever sets up your couchdb should be able to give you these details.',
-          //     // urlPrefix: 'http://',
-          //     urlPrefix: '',
-          //     prompt: 'localhost:1234/dbname'
-          // }
+          ,{
+              name: 'couchDB',
+              shortDescr: 'CouchDB (Standalone database)',
+              description: 'The data is stored in a standalone database server called CouchDb. This server can run on your local machine or on the internet somewhere. <p>You will have to specify an url such as http://localhost:1234/dbname or http://www.iriscouch.com/dbname, where 1234 is the port. An internet based database is not recommended because of latency. Note that because of a thing called "Same origin security policy" the database will have to to be served from the same domain as this app is, or served via a CORS-proxy.<p>Clicking the switch button will refresh the page and the app will load the database selected/created.',
+              // urlPrefix: 'http://',
+              urlPrefix: '',
+              adapter: 'pouchDB',
+              prompt: 'http://localhost:1234/db'
+          }
       ];
       
       function getDbDescriptions() {
@@ -548,6 +556,7 @@ define
           ,login: login
           ,changeUser: changeUser
           ,getDbDescriptions: getDbDescriptions
+          ,getUrl: getUrl
       };
       return self;
   }});
