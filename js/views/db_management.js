@@ -24,22 +24,19 @@ define
               url: 'http://localhost:8090/local',
               urlValuemap: [],
               dbName: 'roster',
-              replicate: {
-                  a: {
-                      backendName: 'pouchDB' ,
-                      idbName: 'db',
-                      url: 'http://localhost:8090/local',
-                      urlValuemap: [],
-                      dbName: 'roster'
-                  },
-                  b: {
-                      backendName: 'pouchDB' ,
-                      idbName: 'db',
-                      url: 'http://localhost:8090/local',
-                      urlValuemap: [],
-                      dbName: 'roster'
-                  }
-              },
+              
+              backendNameA: 'pouchDB' ,
+              idbNameA: 'db',
+              urlA: 'http://localhost:8090/local',
+              // urlValuemapA: [],
+              dbNameA: 'roster',
+              
+              backendNameB: 'pouchDB' ,
+              idbNameB: 'db',
+              urlB: 'http://localhost:8090/local',
+              // urlValuemapB: [],
+              dbNameB: 'roster',
+              
               resolve: {
                   
               }
@@ -53,6 +50,8 @@ define
               
               var backendNames = backend.getValueMap(); 
               pickDbForm.getField('backendName').setValueMap(backendNames);
+              pickAForm.getField('backendName').setValueMap(backendNames);
+              pickBForm.getField('backendName').setValueMap(backendNames);
               
               setValuemaps();
               
@@ -64,7 +63,11 @@ define
           ,set: function(state) {
               tabset.selectTab(state.tab);
               setUrlAndName(state);
+              setUrlAndNameA(state);
+              setUrlAndNameB(state);
               pickDbForm.getField('url').setValueMap(state.urlValuemap);
+              pickAForm.getField('url').setValueMap(state.urlValuemap);
+              pickBForm.getField('url').setValueMap(state.urlValuemap);
           }
       });
       
@@ -72,6 +75,8 @@ define
           db_utils.getAllDbs('idb').when(
               function(values) {
                   pickDbForm.getField('idbName').setValueMap(values);
+                  pickAForm.getField('idbName').setValueMap(values);
+                  pickBForm.getField('idbName').setValueMap(values);
               } 
           );
           // db_utils.getAllDbs('idb').when(
@@ -103,45 +108,92 @@ define
           
       }
       
-      // var pickRemoteForm = isc.DynamicForm.create({
-      //     // autoDraw: true,
-      //     columns: 1
-      //     ,fields: [
-      //         { type: 'text', name: 'url', title: 'Url of Couchdb database:', 
-      //           titleOrientation: 'top', startRow: true, width: 300,
-      //           value: 'http://localhost:1234/' }
-      //     ]
-      // });
+      function setUrlAndNameA(state) {
+          if (state.backendNameA === 'pouchDB') {
+              pickAForm.getField('idbName').show(); 
+              pickAForm.getField('dbName').hide(); 
+              pickAForm.getField('url').hide(); 
+              pickAForm.getField('idbName').setValue(state.idbNameA);
+          }
+          else {
+              pickAForm.getField('idbName').hide(); 
+              pickAForm.getField('dbName').show(); 
+              pickAForm.getField('url').show();    
+              pickAForm.getField('dbName').setValue(state.dbNameA);
+          }
+          
+          pickAForm.getField('url').setValue(state.url);
+          pickAForm.getField('backendName').setValue(state.backendNameA);
+          // var description = dbDescriptions[state.backendNameA];
+          // description =  description || {};
+          // helpLabel.setContents(description.description);
+          
+      }
       
-      function checkUrl() {
+      function setUrlAndNameB(state) {
+          if (state.backendNameB === 'pouchDB') {
+              pickBForm.getField('idbName').show(); 
+              pickBForm.getField('dbName').hide(); 
+              pickBForm.getField('url').hide(); 
+              pickBForm.getField('idbName').setValue(state.idbNameB);
+          }
+          else {
+              pickBForm.getField('idbName').hide(); 
+              pickBForm.getField('dbName').show(); 
+              pickBForm.getField('url').show();    
+              pickBForm.getField('dbName').setValue(state.dbNameB);
+          }
+          
+          pickBForm.getField('url').setValue(state.url);
+          pickBForm.getField('backendName').setValue(state.backendNameB);
+          // var description = dbDescriptions[state.backendNameB];
+          // description =  description || {};
+          // helpLabel.setContents(description.description);
+          
+      }
+      
+      function checkUrl(form, url, postFix) {
           var state = view.getState();
-          var url = state.url;
+          if (!state['urlValuemap' + postFix]) state['urlValuemap' + postFix] = [];
+          var index = state['urlValuemap' + postFix].indexOf(url);
+          // var url = state.url;
           db_utils.getAllDbs(url).when(
               function(values) {
-                  pickDbForm.getField('dbName').setValueMap(values);
-                  console.log('set dbnName valuemap');
-                  if (!state.urlValuemap) state.urlValuemap = [];
-                  var index = state.urlValuemap.indexOf(url);
+                  form.getField('dbName').setValueMap(values);
+                  // form.getField('dbName').showPickList();
+                  console.log('dbName valuemap has been set..');
+                  // form.getField('url').setHint('url added');
+                  form.getField('dbName').setHint('updated');
+                  setTimeout(function() {
+                      form.getField('dbName').setHint('');
+                  }, 3000);
                   // log.d(index, url, state.urlValuemap);
                   // log.d('log.d');
                   // console.log('console');
-                  if (index === -1) state.urlValuemap.push(url);
+                  if (index === -1) state['urlValuemap'].push(url);
                   // log.d(index, url, state.urlValuemap);
-                  pickDbForm.getField('url').setValueMap(state.urlValuemap);
-                  isc.say('Database name dropdown box set to found databases.');
+                  form.getField('url').setValueMap(state['urlValuemap']);
+                  // isc.say('Database name dropdown box set to found databases.');
               } 
               ,function() {
-                  if (!state.urlValuemap) state.urlValuemap = [];
-                  var index = state.urlValuemap.indexOf(url);
+                  // if (!state['urlValuemap' + postFix]) state['urlValuemap' + postFix] = [];
+                  // if (!state.urlValuemap) state.urlValuemap = [];
+                  // var index = state.urlValuemap.indexOf(url);
                   if (index !== -1)
                       isc.ask('Not a valid url.<p> Do you want to remove it from the list of urls?',
                               function(yes) {
                                   if (yes) {
-                                      state.urlValuemap.removeAt(index);
-                                      pickDbForm.getField('url').setValueMap(state.urlValuemap);
+                                      state['urlValuemap' + postFix].removeAt(index);
+                                      form.getField('url').setValueMap(state['urlValuemap' + postFix]);
                                   }
                               });
-                  else isc.warn('Not a valid url.');
+                  else {
+                      form.getField('url').setHint('not valid');
+                      setTimeout(function() {
+                          form.getField('url').setHint('');
+                      }, 3000);
+                      // form.getField('dbName').setHint('updated');
+                  }
                   
               }
           );
@@ -149,7 +201,7 @@ define
       }
       
       var pickDbForm = isc.DynamicForm.create({
-          ID: 'pickDB',
+          ID: 'dbform',
           columns: 1
           ,fields: [
               {  type: 'radioGroup', title: 'Select storage location', name: "backendName",  showTitle: true, 
@@ -180,7 +232,12 @@ define
                      view.getState().url = arguments[2]; }
                  ,icons: [{
                      src: "checkUrl.png",
-                     click: checkUrl
+                     click: function() {
+                         var url = pickDbForm.getField('url').getValue();
+                         var state = view.getState();
+                         state.url = url;
+                         checkUrl(pickDbForm, url, '');
+                     }
                  }]
                }
               ,{ editorType: 'comboBox', name: 'dbName', title: 'Database name:',
@@ -194,6 +251,118 @@ define
                  change: function () {
                      view.modified();
                      view.getState().idbName = arguments[2]; }
+               }
+          ]
+      });
+      
+      
+      var pickAForm = isc.DynamicForm.create({
+          columns: 1
+          ,fields: [
+              {  type: 'radioGroup', title: 'Select storage location', name: "backendName",  showTitle: true, 
+                 titleOrientation: 'top' 
+                 ,width: 400
+                 ,visibility: 'visible'
+                 ,change: function() {
+                     // var backendName = arguments[2];
+                     var state = view.getState();
+                     state.backendNameA = arguments[2];
+                     setUrlAndNameA(state);
+                     
+                     // log.d('change', databaseName);
+                     // log.d(dbDescriptions);
+                           
+                     // helpLabel.setContents(dbDescriptions[backendName].description);
+                     // pickDbForm.getField('dbName').setValue(dbDescriptions[backendName].prompt);
+                     // view.getState().backendName = backendName;
+                     view.modified();
+                     // console.log('setting prompt', dbDescriptions[databaseName].prompt);
+                     // pickDbForm.getField('dbname').title=dbDescriptions[databaseName].urlPrefix;
+                     // pickDbForm.getField('dbname').redraw();
+                 }
+              }
+              ,{ editorType: 'comboBox', name: 'url', title: 'Url',
+                 titleOrientation: 'top', startRow: true, width: 300, //height: 30,
+                 change: function () {
+                     view.modified();
+                     view.getState().urlA = arguments[2]; }
+                 ,icons: [{
+                     src: "checkUrl.png",
+                     click: function() {
+                         var url = pickAForm.getField('url').getValue();
+                         var state = view.getState();
+                         state.urlA = url;
+                         // var url = state.urlA || '';
+                         checkUrl(pickAForm, url, 'A');
+                     }
+                 }]
+               }
+              ,{ editorType: 'comboBox', name: 'dbName', title: 'Database name:',
+                titleOrientation: 'top', startRow: true, width: 300,
+               change: function () {
+                   view.modified();
+                   view.getState().dbNameA = arguments[2]; }
+               }
+              ,{ editorType: 'comboBox', name: 'idbName', title: 'Database name:',
+                 titleOrientation: 'top', startRow: true, width: 300,
+                 change: function () {
+                     view.modified();
+                     view.getState().idbNameA = arguments[2]; }
+               }
+          ]
+      });
+      
+      
+      var pickBForm = isc.DynamicForm.create({
+          columns: 1
+          ,fields: [
+              {  type: 'radioGroup', title: 'Select storage location', name: "backendName",  showTitle: true, 
+                 titleOrientation: 'top' 
+                 ,width: 400
+                 ,visibility: 'visible'
+                 ,change: function() {
+                     // var backendName = arguments[2];
+                     var state = view.getState();
+                     state.backendNameB = arguments[2];
+                     setUrlAndNameB(state);
+                     // log.d('change', databaseName);
+                     // log.d(dbDescriptions);
+                           
+                     // helpLabel.setContents(dbDescriptions[backendName].description);
+                     // pickDbForm.getField('dbName').setValue(dbDescriptions[backendName].prompt);
+                     // view.getState().backendName = backendName;
+                     view.modified();
+                     // console.log('setting prompt', dbDescriptions[databaseName].prompt);
+                     // pickDbForm.getField('dbname').title=dbDescriptions[databaseName].urlPrefix;
+                     // pickDbForm.getField('dbname').redraw();
+                 }
+              }
+              ,{ editorType: 'comboBox', name: 'url', title: 'Url',
+                 titleOrientation: 'top', startRow: true, width: 300,
+                 change: function () {
+                     view.modified();
+                     view.getState().urlB = arguments[2]; }
+                 ,icons: [{
+                     src: "checkUrl.png",
+                     click: function() {
+                         var url = pickBForm.getField('url').getValue();
+                         var state = view.getState();
+                         state.urlB = url;
+                         checkUrl(pickBForm, url, 'B');
+                     }
+                 }]
+               }
+              ,{ editorType: 'comboBox', name: 'dbName', title: 'Database name:',
+                titleOrientation: 'top', startRow: true, width: 300,
+               change: function () {
+                   view.modified();
+                   view.getState().dbNameB = arguments[2]; }
+               }
+              ,{ editorType: 'comboBox', name: 'idbName', title: 'Database name:',
+                 titleOrientation: 'top', startRow: true, width: 300,
+                 change: function () {
+                     view.modified();
+                     view.getState().idbNameB = arguments[2]; }
                }
           ]
       });
@@ -295,11 +464,16 @@ define
       });
       
       var layoutA = isc.VLayout.create({
+          layoutMargin: 6,
+          membersMargin: 6,
+          members: [pickAForm]
           
       });
       
       var layoutB = isc.VLayout.create({
-          
+          layoutMargin: 6,
+          membersMargin: 6,
+          members: [pickBForm]
       });
       
       var replicateLayout = isc.HLayout.create({
@@ -309,86 +483,8 @@ define
           height: 20,
           width:'100%',
           members: [layoutA, layoutB ]
-         } 
+      }); 
             
-      // var pickRemoteLayout = isc.VLayout.create({
-      //     layoutMargin: 6,
-      //     membersMargin: 6,
-      //     // border: "1px dashed blue",
-      //     height: 20,
-      //     width:'100%',
-      //     members: [pickRemoteForm
-      //               ,isc.HLayout.create({
-      //                   layoutMargin: 6,
-      //                   membersMargin: 6,
-      //                   // border: "1px dashed blue",
-      //                   height: 20,
-      //                   width:'100%',
-      //                   members: [
-      //                       // isc.LayoutSpacer.create()
-      //                       isc.Button.create({
-      //                           title: 'Export'
-      //                           // ,visibility: cancellable ? 'inherit' : 'hidden'
-      //                           // ,startRow: false
-      //                           // ,visibility: cancellable ? 'inherit' : 'hidden'
-      //                           ,click: function() {
-      //                               // editorWindow.hide();
-      //                               var url = pickRemoteForm.getValue('dbName');
-      //                               // console.log('Replicating to ' + url);
-      //                               // repToRemote(url);
-      //                               db_utils.getAllDbs(url).when(
-      //                                   function(dbsList) {
-      //                                       log.d(dbsList);
-      //                                   }
-      //                                   ,function(err) {
-      //                                       log.d(err);
-      //                                   }
-      //                               );
-      //                           }  
-      //                       })
-      //                       ,isc.LayoutSpacer.create()
-      //                       ,isc.Button.create({
-      //                           title: 'Conflicts'
-      //                           ,startRow: false
-      //                           ,click: function() {
-      //                               var url = pickRemoteForm.getValue('dbName');
-      //                               db_utils.getConflicts(url).when(
-      //                                   function(arr) {
-      //                                       log.d(arr);
-      //                                   }
-      //                                   ,function(err) {
-      //                                       log.d(err);
-      //                                   }
-      //                               );
-      //                               // var databaseName = pickDbForm.getValue('databaseName'); 
-      //                               // var url = pickDbForm.getValue('url');
-      //                               // var urlPrefix = dbDescriptions[databaseName].urlPrefix;
-      //                               // if (url.startsWith(urlPrefix)) urlPrefix = '';
-      //                               // log.d('hello',urlPrefix, databaseName);
-      //                               // url = urlPrefix + url;
-      //                               // set(databaseName);
-      //                               // database = dbs[databaseName];
-      //                               // editorWindow.hide();
-      //                               // callback(database, databaseName, url);
-      //                           }  
-      //                       })
-      //                       ,isc.LayoutSpacer.create()
-      //                       ,isc.Button.create({
-      //                           title: 'Cancel'
-      //                           // ,visibility: cancellable ? 'inherit' : 'hidden'
-      //                           // ,startRow: false
-      //                           ,click: function() {
-      //                               // editorWindow.hide();
-      //                           }  
-      //                       })
-                            
-      //                   ]
-      //               })
-      //              ]
-      // }); 
-            
-        
-        
       var tabset = isc.TabSet.create({
           // ID: "topTabSet",
           tabBarPosition: "top",
@@ -408,23 +504,6 @@ define
                 pane: 'hello'}
           ]
       });
-            
-            
-      
-      // var layout = isc.VLayout.create({
-      //     members: [
-      //         isc.Button.create({
-      //             // width:'80px',				
-      //             title: 'Database management'
-      //             // ,height: '100%'
-      //             // ,icon:"print.png"
-      //             // ,click: function() {
-      //             //     isc_timesheet.print();
-      //             // }
-      //         })
-      //     ]
-          
-      // });
       
       view.setCmp(tabset);
       return view;
