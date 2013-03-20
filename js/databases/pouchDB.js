@@ -4,9 +4,9 @@
 
 define
 // ({inject: ['lib/cookie', 'types/typesAndFields', 'lib/sha1'],
-({inject: ['types/typesAndFields', 'lib/sha1'],
-  // factory: function(cookie, typesAndFields, hash) {
-  factory: function(typesAndFields, hash) {
+({inject: ['types/typesAndFields', 'lib/sha1' ],
+  // factory: function(cookie, typesAndFields,hash) {
+  factory: function(typesAndFields, hash ) {
       "use strict";
       
       var log = logger('pouchDB', 'debug');
@@ -19,10 +19,10 @@ define
       // var settingsCache;
       
       var rootUser = {
-          _id:'root',
-          name: 'root',
-          type: 'person',
-          login: 'root'
+          _id:'root'
+          // name: 'root',
+          ,type: 'person'
+          // login: 'root'
           ,status: 'permanent'
           // ,pwd:'root'
       };
@@ -54,7 +54,7 @@ define
                           vow.keep(self);
                       },
                       function() {
-                          putDoc(rootUser).when(
+                          putDoc(rootUser, rootUser).when(
                               function() {
                                   log.d('Created root user..');
                                   vow.keep(self);
@@ -112,10 +112,12 @@ define
       /**A helper function to easily save a doc to the database. This
        * function return a promise of a save.
        */
-      function putDoc( record ){
+      function putDoc( record , user){
           // console.log('putDoc ', record);
           var vow = VOW.make();
           console.log('In PUTDOC');
+          if (user) record.lastEditedBy = user._id;
+          record.lastEdited = new Date();
           pouchDbHandle.post(record, function(err, response) {
               if (!err) {
                   // log.d('keeping put vow');
@@ -230,7 +232,10 @@ define
 					   err.error, err.reason); 
 				     return; }
                           db.remove(doc, function(err,response) {
-			      if (err) { log.d('ERRROR: can\'t find doc ', 
+                              
+			      if (err) {
+                                  alert('Error removing record from database. Reason: ' + err.reason);
+                                  log.d('ERRROR: can\'t find doc ', 
 					       err.error, err.reason); 
 					 return; }
 			      dsResponse.data = doc;
@@ -241,8 +246,10 @@ define
               db.query( {map:view.map},{reduce: view.reduce},
                         // db.query( 'pouch/alldocs',
                         function (err,response){
-			    if (err) log.d("Error from pouch query in fetch:", err,
-					   "resp:", response);
+                         if (err) {
+                             alert('Error fetching record from database. Reason: ' + err.reason);
+                             log.d("Error from pouch put in fetch:", err,
+                                   "resp:", response); }
 			    else {
 			      
 			        log.d('Response in fetch is: ', response);
@@ -263,14 +270,17 @@ define
 			        pouchDS.processResponse(requestId, dsResponse);}});});}
       function add(data, dsResponse, requestId) {
           doPouch(function(db) {
-              delete data._id;
+              // delete data._id;
               var receivedData = isc.clone(data);
               data = subtractTimezoneOffset(data);
               if (data.person) data.person = JSON.stringify(data.person);
+              
               db.post(data,
                      function (err,response){
-                         if (err) log.d("Error from pouch put in add:", err,
-                                        "resp:", response);
+                         if (err) {
+                             alert('Record not added to database. Reason: ' + err.reason);
+                             log.d("Error from pouch put in add:", err,
+                                   "resp:", response); }
                          else {
                              receivedData._id = response.id; 
                              receivedData._rev = response.rev; 
@@ -287,8 +297,10 @@ define
           doPouch(function(db) {
               db.put(data,
                      function (err,response){
-			 if (err) log.d("Error from pouch put in update:", err,
-					"resp:", response);
+                         if (err) {
+                             alert('Record not updated in database. Reason: ' + err.reason);
+                             log.d("Error from pouch put in update:", err,
+                                   "resp:", response); }
 			 else {
                              receivedData._rev = response.rev; 
                              dsResponse.data = receivedData;
@@ -380,7 +392,7 @@ define
       };
           
       var loginCriterion = {
-          fieldName: 'name',
+          fieldName: '_id',
           operator:'equals'
       };
         
@@ -446,8 +458,9 @@ define
           }
       
           function showLoginDialog() {
+              log.d(user);
 	      isc.showLoginDialog(checkCredentials,
-			          {username: user.name, password: '',
+			          {username: user._id, password: '',
 			           dismissable:true});
           } 
           
@@ -460,7 +473,7 @@ define
           getDoc(userId).when(
               function(user) {
                   if (!user.pwd || user.pwd.length === 0) {
-                      log.i(user.name + ' logged in (no pwd).');
+                      log.i(user._id + ' logged in (no pwd).');
                       vow.keep(user);
                   }
                   else  createLoginDialog(vow, user).show();
@@ -471,9 +484,9 @@ define
           ); 
       }
       
-      function changeUser() {
+      function changeUser(user) {
           var vow = VOW.make();
-          createLoginDialog(vow, '').show();
+          createLoginDialog(vow, user).show();
           return vow.promise;
       }
         
@@ -520,16 +533,16 @@ define
       var dbDescriptions = [
           {
               name: 'pouchDB',
-              shortDescr: 'PouchDB (Browser local storage)',
-              description: 'Select/create a database. These databases are stored locally in the browser. You can have multiple databases per browser. These are persisted across refreshes of the page, and across restarts of the browser. <p>If you use a standalone Chrome browser you can start this app from wherever you are storing the browser. Your could store the standalone browser on a USB stick for instance and open the app on another computer and work with the same data, even if that computer has no internet access. <p>Clicking the switch button will refresh the page and the app will load the database selected/created.',
+              shortDescr: 'Browser',
+              description: 'Select/create a database. These databases are stored locally in the browser. You can have multiple databases per browser. These are persisted across refreshes of the page, and across restarts of the browser. <p>If you use a standalone Chrome browser you can start this app from wherever you are storing the browser. Your could store the standalone browser on a USB stick for instance and open the app on another computer and work with the same data, even if that computer has no internet access. <p>Clicking the OK button will refresh the page and the app will load the database selected/created.',
               urlPrefix: '',
               adapter: 'pouchDB',
               prompt: 'db'
           }
-          ,{
+         ,{
               name: 'couchDB',
-              shortDescr: 'CouchDB (Standalone database)',
-              description: 'The data is stored in a standalone database server called CouchDb. This server can run on your local machine or on the internet somewhere. <p>You will have to specify an url such as http://localhost:1234/dbname or http://www.iriscouch.com/dbname, where 1234 is the port. An internet based database is not recommended because of latency. Note that because of a thing called "Same origin security policy" the database will have to to be served from the same domain as this app is, or served via a CORS-proxy.<p>Clicking the switch button will refresh the page and the app will load the database selected/created.',
+              shortDescr: 'External (CouchDB)',
+              description: 'The data is stored in a standalone database server called CouchDb. This server can run on your local machine or on the internet somewhere. <p>You will have to specify an url such as http://localhost:1234/dbname or http://www.iriscouch.com/dbname, where 1234 is the port. An internet based database is not recommended because of latency. Note that because of a thing called "Same origin security policy" the database will have to to be served from the same domain as this app is, or served via a CORS-proxy.<p>Clicking the OK button will refresh the page and the app will load the database selected/created.',
               // urlPrefix: 'http://',
               urlPrefix: '',
               adapter: 'pouchDB',

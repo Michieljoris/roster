@@ -62,25 +62,25 @@ define
                             required: true, 
                             change: function (form) {
                                 
-                               var personList = form.getField('person').
-                                   pickList.getSelectedRecords();
-                               var personNames = [];
-                               var personIds = [];
-                               personList.forEach(function(p) {
-                                   personNames.push(p.name);
-                                   personIds.push(p._id);
-                               });
-                               if (personNames.length === 0) personNames = ['Nobody'];
-                               // eventForm.setValue('personNames', personNames);
-                               // eventForm.setValue('personNames', personNames.toString());
-                               // eventForm.setValue('personIdsString', personIds.toString());
+                                var personList = form.getField('person').
+                                    pickList.getSelectedRecords();
+                                // var personNames = [];
+                                var personIds = [];
+                                personList.forEach(function(p) {
+                                    // personNames.push(p.name);
+                                    personIds.push(p._id);
+                                });
+                                // if (personNames.length === 0) personNames = ['Nobody'];
+                                // eventForm.setValue('personNames', personNames);
+                                // eventForm.setValue('personNames', personNames.toString());
+                                // eventForm.setValue('personIdsString', personIds.toString());
                                
-                               log.d('PICKLIST', personNames);
+                                log.d('PICKLIST', personIds);
                                 var state = view.getState();
                                 state.person = {
-                                    ids: personIds,
-                                    names: personNames.toString(),
-                                    idsString: personIds.toString()
+                                    ids: personIds
+                                    // names: personNames.toString(),
+                                    ,idsString: personIds.toString()
                                 };
                                 applyCriteria(state);
                                 view.modified();
@@ -94,7 +94,7 @@ define
                             // optionDataSource: dataSource,
                             filterLocally: true, 
                             pickListCriteria: { type: 'person'},
-                            displayField: 'name',
+                            displayField: '_id',
                             valueField: '_id',
                             width:180
                             ,top: 0
@@ -111,22 +111,22 @@ define
                                   
                                   var locationList = form.getField('location').
                                       pickList.getSelectedRecords();
-                                      var locationNames = [];
-                                      var locationIds = [];
+                                  // var locationNames = [];
+                                  var locationIds = [];
                                   locationList.forEach(function(p) {
-                                      locationNames.push(p.name);
+                                      // locationNames.push(p.name);
                                       locationIds.push(p._id);
                                   });
-                                  if (locationNames.length === 0) locationNames = ['Nowhere'];
+                                  // if (locationNames.length === 0) locationNames = ['Nowhere'];
                                
-                                  log.d('PICKLIST', locationNames);
+                                  log.d('PICKLIST', locationIds);
                                   var state = view.getState();
                                   state.location = {
                                       ids: locationIds
                                       // ,nameString: locationNames[0]
-                                      // idsString: locationIds.toString()
+                                      // ,idsString: locationIds.toString()
                                   };
-                                  if (locationNames[0]) state.location.name = locationNames[0];
+                                  // if (locationNames[0]) state.location.name = locationNames[0];
                                   applyCriteria(state);
                                   view.modified();
                                   log.d('PICKLIST', state.location);
@@ -149,7 +149,7 @@ define
                               // optionDataSource: dataSource,
                               filterLocally: true, 
                               pickListCriteria: { type: 'location'},
-                              displayField: 'name',
+                              displayField: '_id',
                               valueField: '_id'
                               ,width:180
                               ,top: 0
@@ -298,8 +298,8 @@ define
                                                  persons.forEach(function(p) {
                                                      var fg = p.colorFg ? p.colorFg : 'black';
                                                      var bg = p.colorBg ? p.colorBg : 'f0f8ff';
-                                                     log.d('setting css classes' , p.name, fg, bg);
-                                                     utils.createCSSClass('.eventColor' + p.name,
+                                                     log.d('setting css classes' , p._id, fg, bg);
+                                                     utils.createCSSClass('.eventColor' + p._id,
                                                                           'background-color:' + bg +
                                                                           '; color:' + fg);
                                                  }); 
@@ -431,7 +431,7 @@ define
                          var template  = "<a href='javascript:" + this.ID + ".monthViewEventClick(" + 
                              rowNum + "," + colNum + "," + i + ");' class='" +
                              this.calMonthEventLinkStyle + "'>";
-                         persons = evtArr[i].personNames; //TODO format persons
+                         persons = evtArr[i].person; //TODO format persons
                          // retVal += template + eTime Names evtArr[i][this.nameField] + ' ' + persons + "</a><br/>";
                          retVal += template + "<b>" + persons + '</b>' +':  ' + '<i>' + eTime +
                              eeTime + "</i></a><br/>";
@@ -493,7 +493,7 @@ define
                      // ,locationName: view.getState().location.name
                      ,person : person.ids
                      ,personIdsString : person.idsString
-                     ,personNames: person.names
+                     // ,personNames: person.names
                      // ,location: location.ids[0]
                      // ,locationName: location.name
                      ,startDate: startDate,
@@ -508,8 +508,8 @@ define
                  var location = view.getState().location;
                  var locationId = location.ids[0];
                  if (locationId) event.location = locationId;
-                 var locationName = location.name;
-                 if (locationName) event.locationName = locationName;
+                 // var locationName = location._id;
+                 // if (locationName) event.locationName = locationName;
                 
                  var state = view.getState();
                  state.title = getShiftDescription(event);

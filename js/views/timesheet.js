@@ -124,7 +124,7 @@ define
                              // optionDataSource: dataSource,
                              filterLocally: true, 
                              pickListCriteria: { type: 'person'},
-                             displayField: 'name',
+                             displayField: '_id',
                              valueField: '_id',
                              width:180
                              // colSpan:2
@@ -160,7 +160,7 @@ define
                                // optionDataSource: dataSource,
                                filterLocally: true, 
                                pickListCriteria: { type: 'location'},
-                               displayField: 'name',
+                               displayField: '_id',
                                valueField: '_id'
                                ,width:180
                                // width:340,

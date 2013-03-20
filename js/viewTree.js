@@ -35,7 +35,7 @@ define
           log.d('viewTree got notified of a change of user!');
           // var viewTreeState = isc.JSON.decode(newState);
           var viewTreeState = user.getLook();
-          loginButton.setTitle(user.get().name);
+          loginButton.setTitle(user.get()._id);
           if (viewTreeState) {
               //width of side bar
               viewTree.setWidth(viewTreeState.width);

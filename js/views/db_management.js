@@ -20,10 +20,12 @@ define
           ,defaultState: {
               tab: 0,
               backendName: 'pouchDB' ,
-              idbName: 'db',
-              url: 'http://localhost:8090/local',
-              urlValuemap: [],
-              dbName: 'roster',
+              idbName: '',
+              url: '',
+              urlValuemap: ['http://localhost:8090/local',
+                            'http://localhost:1234',
+                            'http://multicap.iriscouch.com'],
+              dbName: '',
               
               backendNameA: 'pouchDB' ,
               idbNameA: 'db',
@@ -39,36 +41,37 @@ define
               
               resolve: {
                   
+              } 
+              // ,sync: function(state) {
+              //     log.d('UPDATING STATE:', state);
+              // } 
+             } 
+              ,init: function() {
+                  dbDescriptions = backend.getDbDescriptions();
+              
+                  var backendNames = backend.getValueMap(); 
+                  pickDbForm.getField('backendName').setValueMap(backendNames);
+                  pickAForm.getField('backendName').setValueMap(backendNames);
+                  pickBForm.getField('backendName').setValueMap(backendNames);
+              
+                  setValuemaps();
+              
+                  var backendName = backend.getName();
+                  var url = backend.get().getUrl();
+                  currentDbLabel.setContents('<h2>Current database name: ' + url +
+                                             (backendName === 'pouchDB' ? ' (in the browser)' : '') + 
+                                             '</h2>');
+                  // currentUrlLabel.setContents('<h3>At: ' + backendName + '<h3>');
               }
-                           
-          } 
-          // ,sync: function(state) {
-          //     log.d('UPDATING STATE:', state);
-          // } 
-          ,init: function() {
-              dbDescriptions = backend.getDbDescriptions();
-              
-              var backendNames = backend.getValueMap(); 
-              pickDbForm.getField('backendName').setValueMap(backendNames);
-              pickAForm.getField('backendName').setValueMap(backendNames);
-              pickBForm.getField('backendName').setValueMap(backendNames);
-              
-              setValuemaps();
-              
-              var backendName = backend.getName();
-              var url = backend.get().getUrl();
-              currentDbLabel.setContents('<h2>Current database: ' + url + '</h2>');
-              currentUrlLabel.setContents('<h3>At: ' + backendName + '<h3>');
-          }
-          ,set: function(state) {
-              tabset.selectTab(state.tab);
-              setUrlAndName(state);
-              setUrlAndNameA(state);
-              setUrlAndNameB(state);
-              pickDbForm.getField('url').setValueMap(state.urlValuemap);
-              pickAForm.getField('url').setValueMap(state.urlValuemap);
-              pickBForm.getField('url').setValueMap(state.urlValuemap);
-          }
+              ,set: function(state) {
+                  tabset.selectTab(state.tab);
+                  setUrlAndName(state);
+                  setUrlAndNameA(state);
+                  setUrlAndNameB(state);
+                  pickDbForm.getField('url').setValueMap(state.urlValuemap);
+                  pickAForm.getField('url').setValueMap(state.urlValuemap);
+                  pickBForm.getField('url').setValueMap(state.urlValuemap);
+              }
       });
       
       function setValuemaps() {
@@ -153,6 +156,7 @@ define
       }
       
       function checkUrl(form, url, postFix) {
+          log.d('Looking for dbs in ' + url);
           var state = view.getState();
           if (!state['urlValuemap' + postFix]) state['urlValuemap' + postFix] = [];
           var index = state['urlValuemap' + postFix].indexOf(url);
@@ -170,9 +174,9 @@ define
                   // log.d(index, url, state.urlValuemap);
                   // log.d('log.d');
                   // console.log('console');
-                  if (index === -1) state['urlValuemap'].push(url);
+                  if (index === -1) state.urlValuemap.push(url);
                   // log.d(index, url, state.urlValuemap);
-                  form.getField('url').setValueMap(state['urlValuemap']);
+                  form.getField('url').setValueMap(state.urlValuemap);
                   // isc.say('Database name dropdown box set to found databases.');
               } 
               ,function() {
@@ -241,10 +245,10 @@ define
                  }]
                }
               ,{ editorType: 'comboBox', name: 'dbName', title: 'Database name:',
-                titleOrientation: 'top', startRow: true, width: 300,
-               change: function () {
-                   view.modified();
-                   view.getState().dbName = arguments[2]; }
+                 titleOrientation: 'top', startRow: true, width: 300,
+                 change: function () {
+                     view.modified();
+                     view.getState().dbName = arguments[2]; }
                }
               ,{ editorType: 'comboBox', name: 'idbName', title: 'Database name:',
                  titleOrientation: 'top', startRow: true, width: 300,
@@ -266,7 +270,7 @@ define
                  ,change: function() {
                      // var backendName = arguments[2];
                      var state = view.getState();
-                     state.backendNameA = arguments[2];
+                         state.backendNameA = arguments[2];
                      setUrlAndNameA(state);
                      
                      // log.d('change', databaseName);
@@ -298,10 +302,10 @@ define
                  }]
                }
               ,{ editorType: 'comboBox', name: 'dbName', title: 'Database name:',
-                titleOrientation: 'top', startRow: true, width: 300,
-               change: function () {
-                   view.modified();
-                   view.getState().dbNameA = arguments[2]; }
+                 titleOrientation: 'top', startRow: true, width: 300,
+                 change: function () {
+                     view.modified();
+                     view.getState().dbNameA = arguments[2]; }
                }
               ,{ editorType: 'comboBox', name: 'idbName', title: 'Database name:',
                  titleOrientation: 'top', startRow: true, width: 300,
@@ -353,10 +357,10 @@ define
                  }]
                }
               ,{ editorType: 'comboBox', name: 'dbName', title: 'Database name:',
-                titleOrientation: 'top', startRow: true, width: 300,
-               change: function () {
-                   view.modified();
-                   view.getState().dbNameB = arguments[2]; }
+                 titleOrientation: 'top', startRow: true, width: 300,
+                 change: function () {
+                     view.modified();
+                     view.getState().dbNameB = arguments[2]; }
                }
               ,{ editorType: 'comboBox', name: 'idbName', title: 'Database name:',
                  titleOrientation: 'top', startRow: true, width: 300,
@@ -367,24 +371,33 @@ define
           ]
       });
       
-      var currentUrlLabel = isc.Label.create({
+      var fromLabel = isc.Label.create({
           // ID:'test',
           width: 400
           ,height: 10
           // margin: 10
           // ,border: "1px dashed blue"
-          // ,contents: dbDescriptions.pouchDB.description
+          ,contents: '<h2>From' 
       });
       
-      var currentDbLabel = isc.Label.create({
+          var repLabel = isc.Label.create({
+              // ID:'test',
+              width: 400
+              ,height: 10
+              ,contents: 'Replications' 
+              // margin: 10
+              // ,border: "1px dashed blue"
+          });
+      
+      var toLabel = isc.Label.create({
           // ID:'test',
           width: 400
           ,height: 10
+          ,contents: '<h2>To' 
           // margin: 10
           // ,border: "1px dashed blue"
-          // ,contents: dbDescriptions.pouchDB.description
       });
-        
+      
             
       var helpLabel = isc.Label.create({
           // ID:'test',
@@ -394,95 +407,271 @@ define
           // ,border: "1px dashed blue"
           // ,contents: dbDescriptions.pouchDB.description
       });
+      
+      var currentDbLabel = isc.Label.create({
+          // ID:'test',
+          width: 400,
+          height: 10
+          // margin: 10
+          // ,border: "1px dashed blue"
+          ,contents: 'hello'
+      });
         
         
-      var pickDatabaseLayout = isc.VLayout.create({
-          layoutMargin: 6,
-          membersMargin: 6,
+      var dbChangeLayout = isc.HLayout.create({
+          // layoutMargin: 6,
+          // membersMargin: 6,
           // border: "1px dashed blue",
           height: 20,
-          width: 400,
-          members: [currentDbLabel, currentUrlLabel, pickDbForm, helpLabel
-                    ,isc.HLayout.create({
-                        layoutMargin: 6,
-                        membersMargin: 6,
-                        // border: "1px dashed blue",
-                        height: 20,
-                        width:'100%',
-                        members: [
-                            // isc.LayoutSpacer.create()
-                            // isc.Button.creat({
-                            //     title: 'Cancel'
-                            //     // ,visibility: cancellable ? 'inherit' : 'hidden'
-                            //     // ,startRow: false
-                            //     ,click: function() {
-                            //         // editorWindow.hide();
-                            //     }  
-                            // })
-                            // ,isc.LayoutSpacer.create()
-                            isc.Button.create({
-                                title: 'Switch'
-                                ,startRow: false
-                                ,click: function() {
-                                    // var databaseName = pickDbForm.getValue('databaseName'); 
-                                    // var databaseName = 'pouchDB';
-                                    var url;
-                                    var backendName = pickDbForm.getValue('backendName');
-                                    if (backendName === 'pouchDB') {
-                                        url = pickDbForm.getValue('idbName');
-                                    }
-                                    else {
-                                        url = pickDbForm.getValue('url');
-                                        if (!url.endsWith('/')) url += '/';
-                                        url += pickDbForm.getValue('dbName');
-                                    }
-                                    var urlPrefix = dbDescriptions[backendName].urlPrefix;
-                                    if (url.startsWith(urlPrefix)) urlPrefix = '';
-                                    // log.d('hello',urlPrefix, databaseName);
-                                    url = urlPrefix + url;
-                                    // backend.set(databaseName);
-                                    var adapter = dbDescriptions[backendName].adapter;
-                                    
-                                    VOW.every([
-                                        Cookie.set('backendName', adapter, Date.today().addYears(10))
-                                        ,Cookie.set('backendUrl', url, Date.today().addYears(10))]
-                                             ).when(
-                                   function() { log.d('Saved backend cookie.');
-                                                location.reload();
-                                              }
-                                   ,function() {
-                                       log.e('Unable to set the backend or url cookie!!'); }
-                               );
-                                    
-                                }  
-                            })
-                            
-                        ]
-                    })
-
-                   ]
-      });
-      
-      var layoutA = isc.VLayout.create({
-          layoutMargin: 6,
-          membersMargin: 6,
-          members: [pickAForm]
+          // width: 400,
+          members: [
+              currentDbLabel,
+              isc.Button.create({
+                  title: 'Change'
+                  ,startRow: false
+                  ,click: function() {
+                      editorWindow.show();
+                  }  
+              })
+              ,isc.LayoutSpacer.create()
+              ,isc.Button.create({
+                  title: 'Wipe'
+                  ,startRow: false
+                  ,click: function() {
+                      var url = backend.get().getUrl();
+                      db_utils.destroy(url).when(
+                          function(info) {
+                              alert(info);
+                          }
+                          ,function(err) {
+                              alert(err);
+                          }
+                      );
+                  }  
+              })
+              
+          ]
           
       });
+        
+      // var pickDatabaseLayout = isc.VLayout.create({
+      //     // layoutMargin: 6,
+      //     // membersMargin: 6,
+      //     // border: "1px dashed blue",
+      //     height: 20,
+      //     width: 400,
+      //     members: [dbChange]
+      // });
       
-      var layoutB = isc.VLayout.create({
-          layoutMargin: 6,
-          membersMargin: 6,
-          members: [pickBForm]
+      var editorWindow = isc.Window.create({
+          title: "Select a database backend."
+          // ,autoSize: true
+          ,height:400
+          ,width:450
+          ,canDragReposition: false
+          ,canDragResize: false
+          ,showMinimizeButton:false
+          ,showCloseButton:false
+          ,autoCenter: true
+          ,isModal: true
+          ,showModalMask: true
+          ,autoDraw: false
+          ,items: [
+              pickDbForm
+              ,helpLabel
+              ,isc.HLayout.create({
+                  layoutMargin: 6,
+                  membersMargin: 6,
+                  // border: "1px dashed blue",
+                  height: 20,
+                  width:'100%',
+                  members: [
+                      isc.LayoutSpacer.create()
+                      ,isc.Button.create({
+                          title: 'Cancel'
+                          // ,visibility: cancellable ? 'inherit' : 'hidden'
+                          // ,startRow: false
+                          ,click: function() {
+                              editorWindow.hide();
+                          }  
+                      })
+                      ,isc.Button.create({
+                          title: 'Ok'
+                          ,startRow: false
+                          ,click: function() {
+                              // var databaseName = pickDbForm.getValue('databaseName'); 
+                              // var databaseName = 'pouchDB';
+                              var url;
+                              var backendName = pickDbForm.getValue('backendName');
+                              if (backendName === 'pouchDB') {
+                                      url = pickDbForm.getValue('idbName');
+                              }
+                              else {
+                                  url = pickDbForm.getValue('url');
+                                  if (!url.endsWith('/')) url += '/';
+                                  url += pickDbForm.getValue('dbName');
+                              }
+                              var urlPrefix = dbDescriptions[backendName].urlPrefix;
+                              if (url.startsWith(urlPrefix)) urlPrefix = '';
+                              // log.d('hello',urlPrefix, databaseName);
+                              url = urlPrefix + url;
+                              // backend.set(databaseName);
+                              var adapter = dbDescriptions[backendName].adapter;
+                                    
+                              VOW.every([
+                                  Cookie.set('backendName', adapter, Date.today().addYears(10))
+                                  ,Cookie.set('backendUrl', url, Date.today().addYears(10))]
+                                       ).when(
+                                           function() { log.d('Saved backend cookie.');
+                                                        location.reload();
+                                                      }
+                                           ,function() {
+                                               log.e('Unable to set the backend or url cookie!!'); }
+                                       );
+                          }  
+                      })
+                            
+                      ,isc.LayoutSpacer.create()
+                  ]
+              })
+          ] 
+      });
+      // editorWindow.show();
+      
+      
+      var repTable = isc.ListGrid.create({
+          width:'100%', height:224, alternateRecordStyles:true,
+          fields:[
+              {name:"active", title: 'Active', type: 'boolean', canEdit: true},
+              {name:"from", title: 'From'},
+              {name:"to", title: 'To'},
+              {name:"operation", canEdit: true, title: 'Operation', valueMap: ['sync', 'replicate', 'replace']},
+              {name:"filter", canEdit: true, title: 'Filter', type: 'boolean'}
+          ],
+          canReorderRecords: true
+          ,canSort: false
+          ,canFreezeFields: false
+          ,canGroupBy: false
+          ,canPickFields: false
       });
       
-      var replicateLayout = isc.HLayout.create({
+      repTable.setData([
+          { from: 'from..',
+            to: 'to..',
+            active: true,
+            operation: 'sync',
+            filter: false
+          }
+          ,{ from: 'from2.',
+             to: 'to.2',
+             active: false,
+             operation: 's2nc',
+             filter: true
+           }
+      ]);
+      
+      var pickALayout = isc.VLayout.create({
+          // layoutMargin: 6,
+          // membersMargin: 6,
+          members: [fromLabel, pickAForm]
+          
+          });
+      
+      var pickBLayout = isc.VLayout.create({
+          // layoutMargin: 6,
+          // membersMargin: 6,
+          members: [toLabel, pickBForm]
+          
+          });
+      
+      var replicateButton =isc.Button.create({
+          title: 'Replicate'
+          ,startRow: false
+          ,click: function() {
+              editorWindow.show();
+          }  
+      });
+      var removeButton = isc.Button.create({
+          title: 'Remove'
+          ,startRow: false
+          ,click: function() {
+              editorWindow.show();
+          }  
+      });
+      var newButton = isc.Button.create({
+          title: 'New'
+          ,startRow: false
+          ,click: function() {
+              editorWindow.show();
+          }  
+      });
+      
+      var buttonLayout = isc.HLayout.create({
+          // layoutMargin: 6,
+          membersMargin: 6,
+          members: [replicateButton,
+                    isc.LayoutSpacer.create(),
+                    removeButton, newButton]
+      });
+      
+      var repTableLayout = isc.VLayout.create({
+          layoutMargin: 6,
+          membersMargin: 6,
+          members: [repLabel, repTable, buttonLayout]
+          
+      });
+      var pickLayout = isc.HLayout.create({
+          // layoutMargin: 6,
+          // membersMargin: 6,
+          members: [pickALayout, pickBLayout]
+          });
+      
+      var repEditorTabset = isc.TabSet.create({
+          // ID: "topTabSet",
+          tabBarPosition: "top",
+          selectedTab: 0,
+          height: '100%',
+          // height: 300,
+          tabSelected: function(tabno) {
+              view.modified();
+              view.getState().repTab = tabno;
+          },
+          tabs: [
+              // {title: "Switch", 
+              //  pane:  pickDatabaseLayout }
+              {title: "From/To", 
+               pane: pickLayout}
+              ,{title: "Filter", 
+                pane: 'hello'}
+          ]
+      });
+      
+      var buttonBar = isc.HLayout.create({
+          members: [
+              isc.Button.create({
+                  title: 'Save'
+                  ,startRow: true
+                  ,click: function() {
+                  }  
+              })
+              ,isc.LayoutSpacer.create()
+              ,isc.Button.create({
+                  title: 'Cancel'
+                  ,startRow: false
+                  ,click: function() {
+                  }  
+              })
+          ]
+      });
+          
+      
+      var databaseLayout = isc.VLayout.create({
           layoutMargin: 6,
           membersMargin: 6,
           // border: "1px dashed blue",
-          height: 20,
+              // height: 20,
           width:'100%',
-          members: [layoutA, layoutB ]
+          members: [dbChangeLayout, repTableLayout, repEditorTabset, buttonBar ] 
       }); 
             
       var tabset = isc.TabSet.create({
@@ -496,10 +685,10 @@ define
               view.getState().tab = tabno;
           },
           tabs: [
-              {title: "Switch", 
-               pane:  pickDatabaseLayout }
-              ,{title: "Replicate", 
-                pane: replicateLayout}
+              // {title: "Switch", 
+              //  pane:  pickDatabaseLayout }
+              {title: "Database", 
+               pane: databaseLayout}
               ,{title: "Resolve", 
                 pane: 'hello'}
           ]

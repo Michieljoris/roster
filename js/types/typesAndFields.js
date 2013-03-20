@@ -14,9 +14,9 @@ define
         // database.setViews(views);
         
         var genericFields = {
-            type: { type: 'text', required: true, canFilter: false }
-            ,_id: { primaryKey: true , title: 'dbId'}
-            ,_rev: { type: 'text', title: 'dbRev'}
+            type: { type: 'text', required: true, canFilter: false , canEdit: false}
+            ,_id: { primaryKey: true , title: 'ID', canEdit: false}
+            ,_rev: { type: 'text', title: 'Rev', canEdit: false}
             ,inheritable: { type: 'boolean', showIf: 'false' }
             ,inheritingFrom: { type: 'text', title: 'Inheriting values from:', showIf: 'false' }
         };
@@ -178,11 +178,12 @@ define
                         // ,validators: [{ type:'isAfter'}],
                         // valueMap: getTimeList(eventSnapGap)
                       }
-            ,person: { type: 'enum', canEdit: false, title: 'Person Ids' }
-            ,personNames: { type: 'text', canEdit: false, title: 'Employee(s)', validOperators: ['iContains', 'iNotContains']}
-            ,personIdsString: { type: 'text', canEdit: false}
+            ,person: { type: 'enum', canFilter: false, canEdit: false, title: 'Person Ids' }
+            // ,personNames: { type: 'text', canEdit: false, title: 'Employee(s)', validOperators: ['iContains', 'iNotContains']}
+            ,personIdsString: { title: 'Person IDs', type: 'text', canEdit: false,
+                                validOperators: ['iContains', 'iNotContains']}
             ,location: { type: "text", canEdit: false, title: 'Location Id'} 
-            ,locationString: { type: 'text', title: 'Location'}
+            // ,locationString: { type: 'text', title: 'Location'}
             ,eventWindowStyle: { type: 'text'}
             ,description: { hide:true, type: "text", length: 500}
             ,notes: { type: "textarea", length: 5000 }
@@ -198,7 +199,7 @@ define
             ,isPublicHolidayWorked: { type: 'boolean'}
             ,sleepOver: { type: 'boolean'}
             ,adminHoursUsed: { type: 'float' , canEdit: false }
-            ,name: { type: 'text', title: 'Unique name', canEdit: false} //should be unique within its type..
+            // ,name: { type: 'text', title: 'Unique name', canEdit: false} //should be unique within its type..
             ,colorFg: { type: 'text' }
             ,colorBg: { type: 'text' }
             ,address: { type: 'text'}
@@ -263,7 +264,11 @@ define
         };
         
         var types = {
-            shift: { fields: ['location', 'person', 'personString', 'locationString', 'claim', 'sleepOver',
+            shift: { fields: ['location', //'person',
+                              // 'personString', 'locationString',
+                              'personIdsString',
+                              'claim',
+                              'sleepOver',
                               'startDate',
                               'endDate', 'date',
                               'startTime', 'endTime', 'length',
@@ -272,12 +277,12 @@ define
                      ,icon: 'shift.png'
                    },
             location: {
-                fields: ['name', 'costCentre', 'address', 'suburb','postalCode', 'state',
+                fields: ['costCentre', 'address', 'suburb','postalCode', 'state',
                          'phone', 'mob', 'email', 'region', 'notes']
                 ,icon: 'home.png'
             }
             ,person: {
-                fields: ['name', 'pwd', 'firstName', 'lastName', 'dswCALevel',
+                fields: ['pwd', 'firstName', 'lastName', 'dswCALevel',
                          'payrollNumber', 'status', 'address', 'suburb','postalCode',
                          'state', 'phone', 'mob', 'email', 'notes', 'colorFg', 'colorBg']
                 ,icon: 'person.png'

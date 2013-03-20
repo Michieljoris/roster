@@ -31,7 +31,7 @@ define(
             saveSettings().when(
                 function() {
                     user.settingsId = settingsCache._id;
-                    return backend.putDoc(user);
+                    return backend.putDoc(user, user);
                 }
             ).when(
                 function () {
@@ -73,7 +73,7 @@ define(
          */
         function change() {
             var vow = VOW.make();
-            backend.changeUser().when(
+            backend.changeUser(user).when(
                 function(anAuthenticatedUser) {
                     user = anAuthenticatedUser;
                     return getSettings();
@@ -120,7 +120,7 @@ define(
                 // settingsCache = { type: 'settings', moreinfo: 'moreinfo!!' };
                 if (settingsCache.look)
                     settingsCache.look = JSON.stringify(settingsCache.look);
-                backend.putDoc(settingsCache).when(
+                backend.putDoc(settingsCache, user).when(
                     function() {
                         // user.settingsId = updatedSettings._id;
                         modified = false;

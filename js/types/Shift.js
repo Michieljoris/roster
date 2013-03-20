@@ -1,6 +1,6 @@
-/*global VOW:false logger:false isc:false define:false */
+/*global logger:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
-/*jshint maxparams:5 maxcomplexity:7 maxlen:190 devel:true*/
+/*jshint maxparams:5 maxcomplexity:10 maxlen:190 devel:true*/
 
 define
 ({ 
@@ -337,14 +337,14 @@ define
               endDate.setDate(startDate.getDate() + 1);   
           }
           
-          
           var className = 'eventColor';
-          if (typeof values.personNames === 'string') {
-              var names = values.personNames.split(',');
+          // if (typeof values.personIdsString === 'string') {
+              // var names = values.personIdsString.split(',');
               //eventColor class is set in skin_styles.css
-              if (names.length > 1) className = 'eventColor';
-              else className += names[0];
-          }
+              // if (names.length > 1) className = 'eventColor';
+         if (values.person && values.person.length === 1)
+             className += values.person[0];
+          // }
           
           var shift = {
               type: 'shift',
@@ -352,14 +352,14 @@ define
               _id: values._id,
               _rev: values._rev,
               person: values.person, //array of _id's of people doing the shift
-              personNames : values.personNames, //string of person names
+              location: values.location, //one single location _id
+              // personNames : values.personNames, //string of person names
               // &&
               // values.personNames.toString(), //array
-              personIdsString: values.personIdsString, //string of person ids
+              personIdsString: values.personIdsString, //string of person ids for searching and filtering?
               // values.personNames &&
               //     values.personNames.toString(), //for search by human names
-              location: values.location,
-              locationName : values.locationName,
+              // locationName : values.locationName,
               // values.locationNames.toString(),
               startDate: startDate,
               endDate: endDate,
@@ -374,19 +374,42 @@ define
               notes: values.notes || '',
               // name: values.name,
               // endTijd: '- ' + isc.Time.toTime(values.endDate, 'toShortPaddedTime', true)
-              endTijd: values.locationName
+              endTijd: values.location
               // description: '<h3>' + (values.personNames && (values.personNames.toString()) + '</h3><p>' + (values.notes || ''))
               // description: makeDescription(values.personNames) + (values.notes || '')
           };
-          function makeDescription(str) {
+          function makeDescription(personIds) {
               // log.pp('MAKING DESCRIPTION', str);
-              var sTime = isc.Time.toTime(startDate, 'toShortPaddedTime', true);
-                  var eTime = isc.Time.toTime(endDate, 'toShortPaddedTime', true);
-                  var people = '';
+              // var sTime = isc.Time.toTime(startDate, 'toShortPaddedTime', true);
+              // var eTime = isc.Time.toTime(endDate, 'toShortPaddedTime', true);
+              
+              var startTime = shift.startTime;
+              var endTime = shift.endTime;
+              
+              var startHour = startTime.getHours();
+              var startMinutes = startTime.getMinutes();
+              startMinutes = startMinutes ? ':' + startMinutes : '';
+              var endHour = endTime.getHours();
+                  var endMinutes = endTime.getMinutes();
+                  endMinutes = endMinutes ? ':' + endMinutes : '';
+              var sm = '', em = '';
+              if (startHour<12 && endHour<12) em = 'am';
+              else if (startHour>=12 && endHour>=12) em = 'pm';
+              else {
+                  sm = startHour < 12 ? 'am' : 'pm';
+                  em = endHour < 12 ? 'am' : 'pm';
+              }
+              startHour = startHour === 12 ? 12 : startHour%12;
+              endHour = endHour === 12 ? 12 : endHour%12;
+              var sTime = startHour + startMinutes + sm + '';
+              var eTime = endHour + endMinutes + em;
+              
+              
+              var people = '';
               // if (typeof list === 'string') {
-                  str = str.split(',');
+              // str = str.split(',');
               // }
-              str.forEach(function(n) {
+              personIds.forEach(function(n) {
                   people += n + '<br>';
               });
               return "<div style= 'font-size:small;'>" +
@@ -396,7 +419,7 @@ define
           
           // if (typeof values.personNames === 'string') shift.description = values.description;
           // else shift.description = makeDescription(values.personNames) + (values.notes || '');
-          shift.description = makeDescription(values.personNames) + (values.notes || '');
+          shift.description = makeDescription(values.person) + (values.notes || '');
           
           if (values.endTime.getHours() === 0 &&
               values.endTime.getMinutes() === 0) {

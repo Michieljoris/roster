@@ -44,11 +44,12 @@ define
           fields: [
               isc.addDefaults({
                   align: 'left',
+                  title: 'Unique name',
                   colSpan:2,
                   required: false
-                  ,canEdit: true
+                  ,canEdit: false
                   ,showIf: 'true'
-              }, fields.name),
+              }, fields._id),
               isc.addDefaults({
                   align: 'left',
                   colSpan:2,

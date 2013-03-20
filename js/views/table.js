@@ -4,8 +4,8 @@
 
 define
 ({ load: ['loaders/editor'], 
-   inject: [ 'View', 'types/typesAndFields', 'editorManager', 'views/table/tableFilter'],
-   factory: function (View, typesAndFields, editors, tableFilter) {
+   inject: [ 'View', 'types/typesAndFields', 'editorManager', 'views/table/tableFilter', 'user'],
+   factory: function (View, typesAndFields, editors, tableFilter, user) {
        "use strict";
        var log = logger('table');
        var dataSource;
@@ -121,7 +121,7 @@ define
                // icon: isc.Page.getSkinDir() +"images/actions/add.png",
                icon: typesAndFields.getType(g).icon,
                click: function() {
-                   newRecord(g);
+                  newRecord(g);
                }
            }; 
        });
@@ -333,18 +333,43 @@ define
            }
        }
        
+       function checkId(str) {
+           if (str === null || str.length ===0) return false;
+          // TODO: check for funny chars and spaces etc
+           return true;
+       }
+       
        
        var newRecord = function(aType) {
            if (dataTable.selectionType === 'none') return;
-           // addUpdateData('addData', { group: 'group'});
            var record = typesAndFields.newRecord(aType);
-           dataSource.addData( record,
-                               function(resp, data, req) 
-		               {   dataTable.deselectAllRecords();
-                                   dataTable.selectRecord(data);
-                                   editRecord(data);
-                                   // editForm.setValues(data);
-                                   log.d(resp,data,req);});
+           record.lastEdited = new Date();
+           record.lastEditedBy = user.get()._id;
+           
+           if (record.type === 'location' || record.type === 'person') {
+               isc.askForValue('Set the unique id for this ' + record.type, function(value) {
+                   record._id = value;
+                   if (checkId(value)) {
+                       dataSource.addData( record,
+                                           function(resp, data, req) 
+		                           {   dataTable.deselectAllRecords();
+                                               dataTable.selectRecord(data);
+                                               editRecord(data);
+                                               // editForm.setValues(data);
+                                               log.d('AAAAAAAAAAA',resp,data,req);});
+                       
+                   }
+                   else alert('Bad id');
+               });
+               // record.name = 'mynewname';
+           } else dataSource.addData(
+               record,
+               function(resp, data, req) 
+	       {   dataTable.deselectAllRecords();
+                   dataTable.selectRecord(data);
+                   editRecord(data);
+                   // editForm.setValues(data);
+                   log.d('AAAAAAAAAAA',resp,data,req);});
        };
       
       

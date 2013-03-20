@@ -3,8 +3,8 @@
 /*jshint maxparams:7 maxcomplexity:10 maxlen:150 devel:true*/
 
 define
-({ inject: ['loaders/backend', 'types/typesAndFields'],
-   factory: function(backend, typesAndFields) {
+({ inject: ['loaders/backend', 'types/typesAndFields', 'user'],
+   factory: function(backend, typesAndFields, user) {
        "use strict";
        var log = logger('editorManager');
        var API = {};
@@ -153,6 +153,8 @@ define
            };
            
            var dataSource = backend.get().getDS();
+           record.lastEditedBy = user.get()._id;
+           record.lastEdited = new Date();
            if (record._rev) {
                dataSource.updateData(record, callback);
            }

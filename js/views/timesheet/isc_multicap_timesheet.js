@@ -49,7 +49,8 @@ define
                break;
            default:
                console.error('Person does not have status', person);
-               alert('Is this person casual or on contract? ' + person.name);
+               if (timesheet) timesheet.setVisibility('hidden');   
+               alert('Can\'t create the timesheet. Is ' + person._id + ' casual or on contract? ');
                return;
            }
            log.d("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");

@@ -163,18 +163,18 @@ define
                                //display and search through
                                var personList = eventForm.getField('person').
                                    pickList.getSelectedRecords();
-                               var personNames = [];
+                               // var personNames = [];
                                var personIds = [];
                                personList.forEach(function(p) {
-                                   personNames.push(p.name);
+                                   // personNames.push(p.name);
                                    personIds.push(p._id);
                                });
-                               if (personNames.length === 0) personNames = ['Nobody'];
+                               // if (personNames.length === 0) personNames = ['Nobody'];
                                // eventForm.setValue('personNames', personNames);
-                               eventForm.setValue('personNames', personNames.toString());
+                               // eventForm.setValue('personNames', personNames.toString());
                                eventForm.setValue('personIdsString', personIds.toString());
                                
-                               log.d('PICKLIST', personNames);
+                               log.d('PICKLIST', personIds);
                                // var className;
                                // if (personList.length !== 1) className = '';
                                // else className = 'eventColor' + personList[0].name;
@@ -188,7 +188,7 @@ define
                            // optionDataSource: backend.get().getDS(),
                            filterLocally: true, 
                            pickListCriteria: { type: 'person'},
-                           displayField: 'name',
+                           displayField: '_id',
                            valueField: '_id',
                            width:340,
                            colSpan:2,
@@ -214,8 +214,8 @@ define
                                  });
                                  if (locationNames.length === 0) locationNames = ['Nowhere?'];
                                  
-                                 eventForm.setValue('locationName',
-                                                    locationNames[0].toString());
+                                 // eventForm.setValue('locationName',
+                                 //                    locationNames[0].toString());
                                  log.d('PICKLIST', locationNames);
                                  // event.locationNames = locationNames.toString();
                              },
@@ -229,7 +229,7 @@ define
                              // optionDataSource: backend.get().getDS(),
                              filterLocally: true, 
                              pickListCriteria: { type: 'location'},
-                             displayField: 'name',
+                             displayField: '_id',
                              valueField: '_id',
                              // width:340,
                              colSpan:1

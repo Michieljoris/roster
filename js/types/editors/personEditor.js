@@ -42,11 +42,12 @@ define
           fields: [
               isc.addDefaults({
                   align: 'left',
-                  // title: 'Id',
+                 
+                  title: 'Unique name',
                   colSpn:2,
                   required: false
-                  ,canEdit: true
-              }, fields.name),
+                  ,canEdit: false
+              }, fields._id),
               isc.addDefaults({
              
               }, fields.firstName),
@@ -304,11 +305,11 @@ define
               
               var fg = person.colorFg ? person.colorFg : 'black';
               var bg = person.colorBg ? person.colorBg : 'f0f8ff';
-              log.d('setting css classes' , person.name, fg, bg);
-              utils.createCSSClass('.eventColor' + person.name,
+              log.d('setting css classes' , person._id, fg, bg);
+              utils.createCSSClass('.eventColor' + person._id,
                                    'background-color:' + bg +
                                    '; color:' + fg);
-            
+              
               typesAndFields.removeUnderscoreFields(person);
               editorManager.save(person, updateVm);           
           }
