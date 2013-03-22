@@ -2,6 +2,7 @@
 <!-- <html manifest="./manifest.appcache"> -->
 <html>
   <HEAD>
+    <meta charset="utf-8">
     <!-- basic console logger -->
     <script src=lib/logger.js></script>    
     <script> logger.setLevel('debug');</script>
@@ -19,7 +20,7 @@
     <script src=test/quickpouch.js></script>
     
     <!-- access couchdb using a jquery api -->
-    <script src=lib/jquery-1.6.2.js></script> 
+    <script src=lib/jquery-1.6.2.js></script>  --
     <!-- <script src=lib/jquery-1.9.1.min.js></script> -->
     <!-- <script src=lib/couchdb/jquery.couch.js></script> -->
     
@@ -55,7 +56,8 @@
     </div>
 
     <script>
-      if (BrowserDetect.browser !== 'Chrome') { 
+      console.log(BrowserDetect.browser);
+      if (BrowserDetect.browser !== 'Chrome' && BrowserDetect.browser !== 'Firefox') { 
       document.getElementById('appFail').style.visibility = 'visible'; 
       alert('This app has been tested in Chrome only and will very likely not work in any other browser, though you might try Firefox. IE will fail. Let me know how you go with Safari. Pressing Ok will give it a shot anyway. Good luck... :-)'); 
       
@@ -153,8 +155,8 @@
       namespace: 'roster',
       <!-- livepage loads main. Livepage reloads the page on save of any resource -->
       <!-- replace with main for production use -->
-      main: 'lib/livepage',
-      <!-- main: 'main', -->
+      <!-- main: 'lib/livepage', -->
+      main: 'main',
 
       pathPrefix: './js',   
       <!-- verbosity: 'info',  -->

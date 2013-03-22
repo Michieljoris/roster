@@ -19,6 +19,7 @@ define
           ,icon: 'database.png'
           ,defaultState: {
               tab: 0,
+              repTab: 0,
               backendName: 'pouchDB' ,
               idbName: '',
               url: '',
@@ -45,34 +46,37 @@ define
               // ,sync: function(state) {
               //     log.d('UPDATING STATE:', state);
               // } 
-             } 
-              ,init: function() {
-                  dbDescriptions = backend.getDbDescriptions();
+          } 
+          ,init: function() {
+              dbDescriptions = backend.getDbDescriptions();
               
-                  var backendNames = backend.getValueMap(); 
-                  pickDbForm.getField('backendName').setValueMap(backendNames);
-                  pickAForm.getField('backendName').setValueMap(backendNames);
-                  pickBForm.getField('backendName').setValueMap(backendNames);
+              var backendNames = backend.getValueMap(); 
+              pickDbForm.getField('backendName').setValueMap(backendNames);
+              pickAForm.getField('backendName').setValueMap(backendNames);
+              pickBForm.getField('backendName').setValueMap(backendNames);
               
-                  setValuemaps();
+              setValuemaps();
               
-                  var backendName = backend.getName();
-                  var url = backend.get().getUrl();
-                  currentDbLabel.setContents('<h2>Current database name: ' + url +
-                                             (backendName === 'pouchDB' ? ' (in the browser)' : '') + 
-                                             '</h2>');
-                  // currentUrlLabel.setContents('<h3>At: ' + backendName + '<h3>');
-              }
-              ,set: function(state) {
-                  tabset.selectTab(state.tab);
-                  setUrlAndName(state);
-                  setUrlAndNameA(state);
-                  setUrlAndNameB(state);
-                  pickDbForm.getField('url').setValueMap(state.urlValuemap);
-                  pickAForm.getField('url').setValueMap(state.urlValuemap);
-                  pickBForm.getField('url').setValueMap(state.urlValuemap);
-              }
+              var backendName = backend.getName();
+              var url = backend.get().getUrl();
+              currentDbLabel.setContents('<h2>Current database name: ' + url +
+                                         (backendName === 'pouchDB' ? ' (in the browser)' : '') + 
+                                         '</h2>');
+              // currentUrlLabel.setContents('<h3>At: ' + backendName + '<h3>');
+          }
+          ,set: function(state) {
+              tabset.selectTab(state.tab);
+              repEditorTabset.selectTab(state.repTab);
+              setUrlAndName(state);
+              setUrlAndNameA(state);
+              setUrlAndNameB(state);
+              pickDbForm.getField('url').setValueMap(state.urlValuemap);
+              pickAForm.getField('url').setValueMap(state.urlValuemap);
+              pickBForm.getField('url').setValueMap(state.urlValuemap);
+          }
       });
+      
+      
       
       function setValuemaps() {
           db_utils.getAllDbs('idb').when(
@@ -107,7 +111,7 @@ define
           pickDbForm.getField('backendName').setValue(state.backendName);
           var description = dbDescriptions[state.backendName];
           description =  description || {};
-          helpLabel.setContents(description.description);
+              helpLabel.setContents(description.description);
           
       }
       
@@ -207,56 +211,56 @@ define
       var pickDbForm = isc.DynamicForm.create({
           ID: 'dbform',
           columns: 1
-          ,fields: [
-              {  type: 'radioGroup', title: 'Select storage location', name: "backendName",  showTitle: true, 
-                 titleOrientation: 'top' 
-                 ,width: 400
-                 ,visibility: 'visible'
-                 ,change: function() {
-                     // var backendName = arguments[2];
-                     var state = view.getState();
-                     state.backendName = arguments[2];
-                     setUrlAndName(state);
-                     // log.d('change', databaseName);
-                     // log.d(dbDescriptions);
-                           
-                     // helpLabel.setContents(dbDescriptions[backendName].description);
-                     // pickDbForm.getField('dbName').setValue(dbDescriptions[backendName].prompt);
-                     // view.getState().backendName = backendName;
-                     view.modified();
-                     // console.log('setting prompt', dbDescriptions[databaseName].prompt);
-                     // pickDbForm.getField('dbname').title=dbDescriptions[databaseName].urlPrefix;
-                     // pickDbForm.getField('dbname').redraw();
-                 }
-              }
-              ,{ editorType: 'comboBox', name: 'url', title: 'Url',
-                 titleOrientation: 'top', startRow: true, width: 300,
-                 change: function () {
-                     view.modified();
-                     view.getState().url = arguments[2]; }
-                 ,icons: [{
-                     src: "checkUrl.png",
-                     click: function() {
-                         var url = pickDbForm.getField('url').getValue();
+              ,fields: [
+                  {  type: 'radioGroup', title: 'Select storage location', name: "backendName",  showTitle: true, 
+                     titleOrientation: 'top' 
+                     ,width: 400
+                     ,visibility: 'visible'
+                     ,change: function() {
+                         // var backendName = arguments[2];
                          var state = view.getState();
-                         state.url = url;
-                         checkUrl(pickDbForm, url, '');
+                         state.backendName = arguments[2];
+                         setUrlAndName(state);
+                         // log.d('change', databaseName);
+                         // log.d(dbDescriptions);
+                           
+                         // helpLabel.setContents(dbDescriptions[backendName].description);
+                         // pickDbForm.getField('dbName').setValue(dbDescriptions[backendName].prompt);
+                         // view.getState().backendName = backendName;
+                         view.modified();
+                         // console.log('setting prompt', dbDescriptions[databaseName].prompt);
+                         // pickDbForm.getField('dbname').title=dbDescriptions[databaseName].urlPrefix;
+                         // pickDbForm.getField('dbname').redraw();
                      }
-                 }]
-               }
-              ,{ editorType: 'comboBox', name: 'dbName', title: 'Database name:',
-                 titleOrientation: 'top', startRow: true, width: 300,
-                 change: function () {
-                     view.modified();
-                     view.getState().dbName = arguments[2]; }
-               }
-              ,{ editorType: 'comboBox', name: 'idbName', title: 'Database name:',
-                 titleOrientation: 'top', startRow: true, width: 300,
-                 change: function () {
-                     view.modified();
-                     view.getState().idbName = arguments[2]; }
-               }
-          ]
+                  }
+                  ,{ editorType: 'comboBox', name: 'url', title: 'Url',
+                     titleOrientation: 'top', startRow: true, width: 300,
+                     change: function () {
+                         view.modified();
+                         view.getState().url = arguments[2]; }
+                     ,icons: [{
+                         src: "checkUrl.png",
+                         click: function() {
+                             var url = pickDbForm.getField('url').getValue();
+                             var state = view.getState();
+                             state.url = url;
+                             checkUrl(pickDbForm, url, '');
+                         }
+                     }]
+                   }
+                  ,{ editorType: 'comboBox', name: 'dbName', title: 'Database name:',
+                     titleOrientation: 'top', startRow: true, width: 300,
+                     change: function () {
+                         view.modified();
+                         view.getState().dbName = arguments[2]; }
+                   }
+                  ,{ editorType: 'comboBox', name: 'idbName', title: 'Database name:',
+                     titleOrientation: 'top', startRow: true, width: 300,
+                     change: function () {
+                         view.modified();
+                         view.getState().idbName = arguments[2]; }
+                   }
+              ]
       });
       
       
@@ -265,25 +269,25 @@ define
           ,fields: [
               {  type: 'radioGroup', title: 'Select storage location', name: "backendName",  showTitle: true, 
                  titleOrientation: 'top' 
-                 ,width: 400
+                 ,width: 300
                  ,visibility: 'visible'
-                 ,change: function() {
-                     // var backendName = arguments[2];
-                     var state = view.getState();
+                     ,change: function() {
+                         // var backendName = arguments[2];
+                         var state = view.getState();
                          state.backendNameA = arguments[2];
-                     setUrlAndNameA(state);
+                         setUrlAndNameA(state);
                      
-                     // log.d('change', databaseName);
-                     // log.d(dbDescriptions);
+                         // log.d('change', databaseName);
+                         // log.d(dbDescriptions);
                            
-                     // helpLabel.setContents(dbDescriptions[backendName].description);
-                     // pickDbForm.getField('dbName').setValue(dbDescriptions[backendName].prompt);
-                     // view.getState().backendName = backendName;
-                     view.modified();
-                     // console.log('setting prompt', dbDescriptions[databaseName].prompt);
-                     // pickDbForm.getField('dbname').title=dbDescriptions[databaseName].urlPrefix;
-                     // pickDbForm.getField('dbname').redraw();
-                 }
+                         // helpLabel.setContents(dbDescriptions[backendName].description);
+                         // pickDbForm.getField('dbName').setValue(dbDescriptions[backendName].prompt);
+                         // view.getState().backendName = backendName;
+                         view.modified();
+                         // console.log('setting prompt', dbDescriptions[databaseName].prompt);
+                         // pickDbForm.getField('dbname').title=dbDescriptions[databaseName].urlPrefix;
+                         // pickDbForm.getField('dbname').redraw();
+                     }
               }
               ,{ editorType: 'comboBox', name: 'url', title: 'Url',
                  titleOrientation: 'top', startRow: true, width: 300, //height: 30,
@@ -322,7 +326,7 @@ define
           ,fields: [
               {  type: 'radioGroup', title: 'Select storage location', name: "backendName",  showTitle: true, 
                  titleOrientation: 'top' 
-                 ,width: 400
+                 ,width: 300
                  ,visibility: 'visible'
                  ,change: function() {
                      // var backendName = arguments[2];
@@ -373,27 +377,27 @@ define
       
       var fromLabel = isc.Label.create({
           // ID:'test',
-          width: 400
-          ,height: 10
+              // width: 400
+          height: 10
           // margin: 10
           // ,border: "1px dashed blue"
           ,contents: '<h2>From' 
       });
       
-          var repLabel = isc.Label.create({
-              // ID:'test',
-              width: 400
-              ,height: 10
-              ,contents: 'Replications' 
-              // margin: 10
-              // ,border: "1px dashed blue"
-          });
-      
-      var toLabel = isc.Label.create({
+      var repLabel = isc.Label.create({
           // ID:'test',
           width: 400
           ,height: 10
-          ,contents: '<h2>To' 
+          ,contents: 'Replications' 
+          // margin: 10
+          // ,border: "1px dashed blue"
+      });
+      
+      var toLabel = isc.Label.create({
+          // ID:'test',
+          // width: 400
+         height: 10
+         ,contents: '<h2>To' 
           // margin: 10
           // ,border: "1px dashed blue"
       });
@@ -403,7 +407,7 @@ define
           // ID:'test',
           width: 400,
           height: '100%',
-          margin: 10
+              margin: 10
           // ,border: "1px dashed blue"
           // ,contents: dbDescriptions.pouchDB.description
       });
@@ -414,13 +418,13 @@ define
           height: 10
           // margin: 10
           // ,border: "1px dashed blue"
-          ,contents: 'hello'
+          // ,contents: 'hello'
       });
         
         
       var dbChangeLayout = isc.HLayout.create({
-          // layoutMargin: 6,
-          // membersMargin: 6,
+          layoutMargin: 6,
+          membersMargin: 6,
           // border: "1px dashed blue",
           height: 20,
           // width: 400,
@@ -434,19 +438,20 @@ define
                   }  
               })
               ,isc.LayoutSpacer.create()
+              ,isc.LayoutSpacer.create()
               ,isc.Button.create({
                   title: 'Wipe'
                   ,startRow: false
                   ,click: function() {
                       var url = backend.get().getUrl();
-                      db_utils.destroy(url).when(
-                          function(info) {
-                              alert(info);
-                          }
-                          ,function(err) {
-                              alert(err);
-                          }
-                      );
+                      // db_utils.destroy(url).when(
+                      //     function(info) {
+                      //         alert(info);
+                      //     }
+                      //     ,function(err) {
+                      //         alert(err);
+                      //     }
+                      // );
                   }  
               })
               
@@ -504,7 +509,7 @@ define
                               var url;
                               var backendName = pickDbForm.getValue('backendName');
                               if (backendName === 'pouchDB') {
-                                      url = pickDbForm.getValue('idbName');
+                                  url = pickDbForm.getValue('idbName');
                               }
                               else {
                                   url = pickDbForm.getValue('url');
@@ -571,18 +576,18 @@ define
       ]);
       
       var pickALayout = isc.VLayout.create({
-          // layoutMargin: 6,
+              // layoutMargin: 6,
           // membersMargin: 6,
           members: [fromLabel, pickAForm]
           
-          });
+      });
       
       var pickBLayout = isc.VLayout.create({
-          // layoutMargin: 6,
+              // layoutMargin: 6,
           // membersMargin: 6,
           members: [toLabel, pickBForm]
           
-          });
+      });
       
       var replicateButton =isc.Button.create({
           title: 'Replicate'
@@ -615,16 +620,156 @@ define
       });
       
       var repTableLayout = isc.VLayout.create({
-          layoutMargin: 6,
+              layoutMargin: 6,
           membersMargin: 6,
           members: [repLabel, repTable, buttonLayout]
           
       });
-      var pickLayout = isc.HLayout.create({
-          // layoutMargin: 6,
+      
+      
+      var operationRadio = isc.DynamicForm.create({
+          width: 150,
+          titleWidth: 20,  
+          // border: "1px dashed blue",
+          // itemChange: function() {
+          //     log.d(arguments);
+          // },
+          fields: [
+              { name: 'Operation',
+                valueHoverHTML: function(value) { return value; },
+                vertical: false,  type: 'radioGroup' , valueMap: ['sync', 'replicate', 'replace']}
+              // ,{titleOrientation: 'top',
+              //     title: '_design/filter', type: 'text'}
+          ]
+          
+      });
+      
+      var pickLayout = isc.VLayout.create({
+              // layoutMargin: 6,
           // membersMargin: 6,
-          members: [pickALayout, pickBLayout]
-          });
+          members: [operationRadio,
+                    isc.HLayout.create({
+                        members: [pickALayout, pickBLayout]
+                    }) 
+                   ]
+      });
+      
+      
+      var filterRadio = isc.DynamicForm.create({
+          width: 250,
+         titleWidth: 20,  
+          // border: "1px dashed blue",
+          // itemChange: function() {
+          //     log.d(arguments);
+          // },
+          fields: [
+              { name: 'Filter',
+                change: function() {
+                    var choice = arguments[2];
+                    var name = 'hidden', filter = 'hidden';
+                    if (choice === '_design/filter') name = 'inherit';
+                    else if (choice === 'filter') filter = 'inherit';
+                    filterName.setVisibility(name);
+                    filterForm.setVisibility(filter);
+                    log.d(arguments[2]);
+                },
+                valueHoverHTML: function(value) { return value; },
+                vertical: false,  type: 'radioGroup' , valueMap: ['none', 'filter', '_design/filter']}
+              // ,{titleOrientation: 'top',
+              //     title: '_design/filter', type: 'text'}
+          ]
+          
+      });
+      
+      
+      var filterName = isc.DynamicForm.create({
+          width: 250,
+          // titleWidth: 40,  
+          fields: [
+              {name: 'name', titleOrientation: 'top',
+                  title: 'Filter function name:', type: 'text'}
+          ]
+      });
+                                               
+      var DS = isc.DataSource.create({
+          // testFileName:"/examples/shared/ds/test_data/world.data.xml",
+          recordName:"country",
+          // ID:"filterDS",
+          fields:[
+              {
+                  title:"Type",
+                  valueMap:[
+                      'location',
+                      'person',
+                      'shift',
+                      'settings'
+                  ],
+                  name:"name",
+                  type:"text"
+                  ,validOperators: ['equals', 'inSet', 'notInSet']
+              },
+              { title: 'ID',
+                name:"_id",
+                type:"text",
+                required:true
+                ,validOperators: ['equals', 'notEqual', 'iContains' ]
+              },
+              { title: 'Status',
+                name:"status",
+                valueMap:[
+                    'permanent',
+                    'part time',
+                    'casual'
+                ],
+                type:"text",
+                required:true
+                ,validOperators: ['equals', 'inSet', 'notInSet']
+              },
+              {
+                  name:"date",
+                  type:"date",
+                  required:true
+                  ,validOperators: ['between', 'greaterThan', 'lessThan']
+              },
+              {
+                  name:"availibility",
+                  // valueMap:[
+                  //     'Waterford-west',
+                  //     'Runcorn9',
+                  //     'Runcorn11',
+                  //     'Carindale'
+                  // ],
+                  type:"text",
+                  required:true
+                  ,validOperators: ['equals', 'inSet', 'notInSet']
+              }
+          ],
+          serverType:"sql"
+      });
+      
+      var filterForm = isc.FilterBuilder.create({
+          ID:"advancedFilter"
+          ,dataSource: DS
+          // criteria: { _constructor: "AdvancedCriteria",
+          //             operator: "and", criteria: [
+          //                 {fieldName: "continent", operator: "equals", value: "Europe"},
+          //                 {operator: "or", criteria: [
+          //                     {fieldName: "countryName", operator: "iEndsWith", value: "land"},
+          //                     {fieldName: "population", operator: "lessThan", value: 3000000}
+          //                 ]}
+          //             ]
+          //           }
+      });
+
+      
+      var filterLayout = isc.VLayout.create({
+          layoutMargin: 6,
+          membersMargin: 6,
+          // height: 20,
+          width:'100%',
+          members: [filterRadio, filterName, filterForm] 
+          
+      });
       
       var repEditorTabset = isc.TabSet.create({
           // ID: "topTabSet",
@@ -642,7 +787,7 @@ define
               {title: "From/To", 
                pane: pickLayout}
               ,{title: "Filter", 
-                pane: 'hello'}
+                pane: filterLayout}
           ]
       });
       
@@ -652,6 +797,7 @@ define
                   title: 'Save'
                   ,startRow: true
                   ,click: function() {
+                      saveRep();
                   }  
               })
               ,isc.LayoutSpacer.create()
@@ -663,16 +809,52 @@ define
               })
           ]
       });
-          
       
       var databaseLayout = isc.VLayout.create({
           layoutMargin: 6,
           membersMargin: 6,
           // border: "1px dashed blue",
-              // height: 20,
+          // height: 20,
           width:'100%',
           members: [dbChangeLayout, repTableLayout, repEditorTabset, buttonBar ] 
       }); 
+      
+      function setEditor(rep) {
+          
+      }
+      
+      function getUrl(form) {
+          var url;
+          var backendName = form.getValue('backendName');
+          if (backendName === 'pouchDB') {
+              url = form.getValue('idbName');
+          }
+          else {
+              url = form.getValue('url');
+              if (!url.endsWith('/')) url += '/';
+              url += form.getValue('dbName');
+          }
+          var urlPrefix = dbDescriptions[backendName].urlPrefix;
+          if (url.startsWith(urlPrefix)) urlPrefix = '';
+          url = urlPrefix + url;
+          var adapter = dbDescriptions[backendName].adapter;
+          return {
+              adapter: adapter,
+              url: url
+          };
+      }
+      
+      function saveRep() {
+          var rep = {
+              operation: operationRadio.getValue('Operation'),
+              from: getUrl(pickAForm),
+              to: getUrl(pickBForm),
+              filter: filterRadio.getValue('Filter'),
+              filterName: filterName.getValue('name'),
+              filterDesc: filterForm.getCriteria()
+          };
+          log.d(rep);
+      }
             
       var tabset = isc.TabSet.create({
           // ID: "topTabSet",
