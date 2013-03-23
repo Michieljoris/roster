@@ -218,7 +218,106 @@ define
                 });
             } 
             return vow.promise;
+            
         }
+        
+        function convertToDate(obj) {
+            if (typeof obj === 'string') return new Date(obj);
+            if (typeof obj === 'object' && obj._constructor === 'RelativeDate') {
+                var value = obj.value ? obj.value : '';
+                if (value.startsWith('$'))
+                    switch (value) {
+                      case '$today':  return new Date();
+                      case '$yesterday': return new Date(new Date().getTime() - 24*60*60*1000);
+                      case '$tomorrow': return new Date(new Date().getTime() + 24*60*60*1000);
+                      case '$weekAgo': return new Date(new Date().getTime() - 7 * 24*60*60*1000);
+                      case '$weekFromNow':return new Date(new Date().getTime() + 7 * 24*60*60*1000); 
+                      case '$monthAgo': 
+                      case '$monthFromNow': break;
+                    default: log.e('Unknown date format' , obj.value.value);
+                    }
+                else {
+                    //parse value
+                    var sign = value[0] === '-' ? -1 : 1;
+                    var periodLoc = value.indexOf('d');
+                    if (periodLoc === -1) periodLoc = value.indexOf('w');
+                    if (periodLoc === -1) periodLoc = value.indexOf('m');
+                    var periodType = value[periodLoc];
+                    var number = value.slice(1, periodLoc);
+                    number = Number(number);
+                    return new Date()
+                    
+                    
+                }
+            }
+            return undefined;
+        }
+        
+        function evaluate(doc, clause) {
+            var i, date, field, startDate, endDate;
+            switch(clause.operator) {
+              case 'and':
+                for (i = 0; i < clause.criteria.length; i++) {
+                    if (!evaluate(doc, clause.criteria[i])) return false;
+                }
+                return true;   
+              case 'or':
+                for (i = 0; i < clause.criteria.length; i++) {
+                    if (evaluate(doc, clause.criteria[i])) return true;
+                }
+                return false;   
+              case 'not': 
+                for (i = 0; i < clause.criteria.length; i++) {
+                    if (evaluate(doc, clause.criteria[i])) return false;
+                }
+                return true;
+              case 'equals':
+                if (doc[clause.fieldName] === clause.value) return true;
+                return false;
+              case 'notEqual': 
+                if (doc[clause.fieldName] !== clause.value) return true;
+                return false;
+              case 'inSet': 
+                if (clause.value.indexOf(doc[clause.fieldName]) === -1) return false;
+                return true;
+              case 'notInSet': 
+                if (clause.value.indexOf(doc[clause.fieldName]) === -1) return true;
+                return false;
+              case 'iContains': 
+                if (doc[clause.fieldname] && typeof doc[clause.fieldname] === 'string' && clause.value &&
+                    typeof clause.value === 'string' &&
+                    doc[clause.fieldName].toLowerCase().contains(clause.value.toLowerCase())) {
+                    return true;
+                }
+                return false;
+              case 'greaterThan':
+                date = convertToDate(clause.value);
+                field = doc[clause.fieldname]; //make sure it is a Date object
+                if (date && field && field.getTime() >= date.getTime()) return true;
+                return false;
+              case 'lessThan': 
+                date = convertToDate(clause.value);
+                field = doc[clause.fieldname]; //make sure it is a Date object
+                if (date && field && field.getTime() <= date.getTime()) return true;
+                return false;
+              case 'between':
+                startDate = convertToDate(clause.start);
+                endDate = convertToDate(clause.end);
+                field = doc[clause.fieldname]; //make sure it is a Date object
+                if (startDate && endDate && field &&
+                    field.getTime() >= startDate.getTime() &&
+                    field.getTime() <= endDate.getTime() 
+                   ) return true;
+                return false;
+            default: log.e('Operator not yet implemented', clause.operator);
+            }
+            return false;
+        }
+        
+        // function parseCriteria(doc, operator, key, value) {
+             
+        //     if ()
+        // }
 
         return {
             init: init
