@@ -1,6 +1,6 @@
 /*global $:false Pouch:false emit:false logger:false define:false  VOW:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
-/*jshint maxparams:7 maxcomplexity:7 maxlen:150 devel:true newcap:false*/ 
+/*jshint maxparams:7 maxcomplexity:16 maxlen:150 devel:true newcap:false*/ 
 
 define
 ({  inject : [],
@@ -8,26 +8,69 @@ define
         "use strict";
         var log = logger('db_utils');
         
-        function openDB(dbs) {
-            var vow = VOW.make();
-            var db = dbs.db;
+        
+        function openDB(dbs, aDB, dblog) {
+                var vow = VOW.make();
+            var db = dbs[aDB];
             new Pouch(db.url, function(err, newDB) {
                 if (err) {
                     var text =  err.statusText ?
                         err.statusText : err.reason ?
                         err.reason : err.status;
-                    dbs.error.push("Can't open database " + db.url);
-                    dbs.error.push('Reason: ' + text);
+                    dblog.push("Can't open database " + db.url);
+                    dblog.push('Reason: ' + text);
                     vow['break'](dbs);
                 }
                 else {
-                    dbs.log.push('Loaded ' + db.url);
+                    dblog.push('Opened ' + db.url);
                     db.handle = newDB;
                     vow.keep();   
                 }
             });
             return vow.promise;
         }
+        // function openDB(dbs, aDB) {
+        //         var vow = VOW.make();
+        //     var db = dbs[aDB];
+        //     new Pouch(db.url, db.adapter, function(err, newDB) {
+        //         if (err) {
+        //             var text =  err.statusText ?
+        //                 err.statusText : err.reason ?
+        //                 err.reason : err.status;
+        //             dbs.error.push("Can't open database " + db.url);
+        //             dbs.error.push('Reason: ' + text);
+        //             vow['break'](dbs);
+        //         }
+        //         else {
+        //             dbs.log.push('Loaded ' + db.url);
+        //             db.handle = newDB;
+        //             vow.keep();   
+        //         }
+        //     });
+        //     return vow.promise;
+        // }
+        
+        
+        // function openDB(dbs) {
+        //     var vow = VOW.make();
+        //     var db = dbs.db;
+        //     new Pouch(db.url, function(err, newDB) {
+        //         if (err) {
+        //             var text =  err.statusText ?
+        //                 err.statusText : err.reason ?
+        //                 err.reason : err.status;
+        //             dbs.error.push("Can't open database " + db.url);
+        //             dbs.error.push('Reason: ' + text);
+        //             vow['break'](dbs);
+        //         }
+        //         else {
+        //             dbs.log.push('Loaded ' + db.url);
+        //             db.handle = newDB;
+        //             vow.keep();   
+        //         }
+        //     });
+        //     return vow.promise;
+        // }
 
 
         var queryFun = {
@@ -48,7 +91,7 @@ define
                 if (err) {
                     err.error = true;
                     err.operation = 'get open_revs';
-                    vow.keep(err) ;
+                        vow.keep(err) ;
                 }
                 else {
                     var result = { id:id,
@@ -65,7 +108,7 @@ define
             var vow = VOW.make();
             if (db.error) vow.keep(db);
             else {
-                if (!db.docsWithConflicts) db.docsWithConflicts = [];
+                    if (!db.docsWithConflicts) db.docsWithConflicts = [];
                 var openRevs = db.docsWithConflicts.map(function(d) {
                     return getOpenRevs(db, d._id);
                 });
@@ -126,20 +169,21 @@ define
             //     function(err) {
             //         pp(err);
             //     }
-            // );
+                // );
         
         }
         
-        function get(url) {
-           var vow = VOW.make(); 
+        function conflicts(url) {
+            var vow = VOW.make(); 
             // var url = 'idb://db';
             var dbs = {
                 db: { url: url}
-                ,log: []
-                ,error: []
+                // ,log: []
+                // ,error: []
             };
             
-            openDB(dbs, 'db').when(
+            var dblog = [];
+            openDB(dbs, 'db', dblog).when(
                 function() {
                     return gatherConflicts([dbs.db]);
                 }
@@ -158,14 +202,22 @@ define
             );
             return vow.promise;
         }
+        window.test2 = function(url) {
+            conflicts(url).when(
+                function(arr) {
+                    log.pp(arr);
+                },
+                function(err) {
+                    log.pp(err);
+                }
+            );
+        };
         
-        function init() {
-            
-        }
         
         function destroy(url) {
             var vow = VOW.make();
             Pouch.destroy(url, function(err, info) {
+                log.d('Destroyed!!', arguments);
                 if (err) vow['break'](err);
                 else vow.keep(info);
             });
@@ -221,109 +273,12 @@ define
             
         }
         
-        function convertToDate(obj) {
-            if (typeof obj === 'string') return new Date(obj);
-            if (typeof obj === 'object' && obj._constructor === 'RelativeDate') {
-                var value = obj.value ? obj.value : '';
-                if (value.startsWith('$'))
-                    switch (value) {
-                      case '$today':  return new Date();
-                      case '$yesterday': return new Date(new Date().getTime() - 24*60*60*1000);
-                      case '$tomorrow': return new Date(new Date().getTime() + 24*60*60*1000);
-                      case '$weekAgo': return new Date(new Date().getTime() - 7 * 24*60*60*1000);
-                      case '$weekFromNow':return new Date(new Date().getTime() + 7 * 24*60*60*1000); 
-                      case '$monthAgo': 
-                      case '$monthFromNow': break;
-                    default: log.e('Unknown date format' , obj.value.value);
-                    }
-                else {
-                    //parse value
-                    var sign = value[0] === '-' ? -1 : 1;
-                    var periodLoc = value.indexOf('d');
-                    if (periodLoc === -1) periodLoc = value.indexOf('w');
-                    if (periodLoc === -1) periodLoc = value.indexOf('m');
-                    var periodType = value[periodLoc];
-                    var number = value.slice(1, periodLoc);
-                    number = Number(number);
-                    return new Date()
-                    
-                    
-                }
-            }
-            return undefined;
-        }
         
-        function evaluate(doc, clause) {
-            var i, date, field, startDate, endDate;
-            switch(clause.operator) {
-              case 'and':
-                for (i = 0; i < clause.criteria.length; i++) {
-                    if (!evaluate(doc, clause.criteria[i])) return false;
-                }
-                return true;   
-              case 'or':
-                for (i = 0; i < clause.criteria.length; i++) {
-                    if (evaluate(doc, clause.criteria[i])) return true;
-                }
-                return false;   
-              case 'not': 
-                for (i = 0; i < clause.criteria.length; i++) {
-                    if (evaluate(doc, clause.criteria[i])) return false;
-                }
-                return true;
-              case 'equals':
-                if (doc[clause.fieldName] === clause.value) return true;
-                return false;
-              case 'notEqual': 
-                if (doc[clause.fieldName] !== clause.value) return true;
-                return false;
-              case 'inSet': 
-                if (clause.value.indexOf(doc[clause.fieldName]) === -1) return false;
-                return true;
-              case 'notInSet': 
-                if (clause.value.indexOf(doc[clause.fieldName]) === -1) return true;
-                return false;
-              case 'iContains': 
-                if (doc[clause.fieldname] && typeof doc[clause.fieldname] === 'string' && clause.value &&
-                    typeof clause.value === 'string' &&
-                    doc[clause.fieldName].toLowerCase().contains(clause.value.toLowerCase())) {
-                    return true;
-                }
-                return false;
-              case 'greaterThan':
-                date = convertToDate(clause.value);
-                field = doc[clause.fieldname]; //make sure it is a Date object
-                if (date && field && field.getTime() >= date.getTime()) return true;
-                return false;
-              case 'lessThan': 
-                date = convertToDate(clause.value);
-                field = doc[clause.fieldname]; //make sure it is a Date object
-                if (date && field && field.getTime() <= date.getTime()) return true;
-                return false;
-              case 'between':
-                startDate = convertToDate(clause.start);
-                endDate = convertToDate(clause.end);
-                field = doc[clause.fieldname]; //make sure it is a Date object
-                if (startDate && endDate && field &&
-                    field.getTime() >= startDate.getTime() &&
-                    field.getTime() <= endDate.getTime() 
-                   ) return true;
-                return false;
-            default: log.e('Operator not yet implemented', clause.operator);
-            }
-            return false;
-        }
-        
-        // function parseCriteria(doc, operator, key, value) {
-             
-        //     if ()
-        // }
-
         return {
-            init: init
-            ,getConflicts: getConflicts
-            ,destroy: destroy
+            destroy: destroy
             ,getAllDbs: getAllDbs
+            ,conflicts: conflicts
+            // ,getConflicts: getConflicts
         };
     
     }

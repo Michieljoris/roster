@@ -153,8 +153,12 @@ define
            };
            
            var dataSource = backend.get().getDS();
-           record.lastEditedBy = user.get()._id;
-           record.lastEdited = new Date();
+           record.lastEdited = {
+               id: user.get()._id,
+               time: new Date()
+           };
+           // record.lastEditedBy = user.get()._id;
+           // record.lastEdited = new Date();
            if (record._rev) {
                dataSource.updateData(record, callback);
            }

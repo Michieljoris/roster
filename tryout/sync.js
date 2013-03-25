@@ -1,28 +1,25 @@
-/*global emit:false logger:false $:false Pouch:false VOW:false Cookie:false*/
+/*global logger:false $:false Pouch:false VOW:false Cookie:false*/
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
-/*jshint maxparams:7 maxcomplexity:7 maxlen:150 devel:true newcap:false*/ 
+/*jshint maxparams:7 maxcomplexity:16 maxlen:150 devel:true newcap:false*/ 
 
 (function() {
     "use strict";
     var log = logger('sync');
-    var testing = true;
-    // var data;
-    var localUrl, remoteUrl;
     
-    function openDB(dbs, aDB) {
+    function openDB(dbs, aDB, dblog) {
         var vow = VOW.make();
         var db = dbs[aDB];
-        new Pouch(db.url, db.adapter, function(err, newDB) {
+        new Pouch(db.url, function(err, newDB) {
             if (err) {
                 var text =  err.statusText ?
                     err.statusText : err.reason ?
                     err.reason : err.status;
-                dbs.error.push("Can't open database " + db.url);
-                dbs.error.push('Reason: ' + text);
+                dblog.push("Can't open database " + db.url);
+                dblog.push('Reason: ' + text);
                 vow['break'](dbs);
             }
             else {
-                dbs.log.push('Loaded ' + db.url);
+                dblog.push('Opened ' + db.url);
                 db.handle = newDB;
                 vow.keep();   
             }
@@ -30,149 +27,45 @@
         return vow.promise;
     }
     
-    var queryFun = {
-        map: function(doc) {
-            if (doc._conflicts && doc._conflicts.length > 0) {
-                emit(doc);
-                // emit(doc, (doc._conflicts));
-            }
-        }
-    };
-    
-    
-    function checkConflicts(db) {
-        var vow = VOW.make();
-        db.handle.query(queryFun, {reduce: false, conflicts: true}, function(err, res) {
-            if (err) {
-                err.operation = 'Looking for documents with conflicts';
-                err.url = db.url;
-                err.error = true;
-                vow.keep(err);
-            }
-            
-            else {
-                if (res && res.rows.length > 0) {
-                    db.docsWithConflicts = res.rows.map(
-                        function(d) {
-                            return d.key;
-                        }
-                    );
-                }
-                else db.docsWithConflicts = [];
-                vow.keep(db);
-            }
-        });
-        return vow.promise;
-        
-    }
-    
-    function getOpenRevs(db, id) {
-        var vow = VOW.make(); 
-        if (db.error) {
-            vow.keep(db);
-        }
-        else db.handle.get(id, { open_revs: "all" }, function(err, res) {
-            if (err) {
-                err.error = true;
-                err.operation = 'get open_revs';
-                vow.keep(err) ;
-            }
-            else {
-                var result = { id:id,
-                               conflictingRevs: res.map(function(r) {
-                                   return r.ok;})
-                             };
-                vow.keep(result);
-            }
-        }); 
-        return vow.promise;
-    }
-    
-    function getConflicts(db) {
-        var vow = VOW.make();
-        if (db.error) vow.keep(db);
-        else {
-            if (!db.docsWithConflicts) db.docsWithConflicts = [];
-            var openRevs = db.docsWithConflicts.map(function(d) {
-                return getOpenRevs(db, d._id);
-            });
-            VOW.any(openRevs).when(
-                function(arr) {
-                    vow.keep({ db: db.url, docsWithConflicts: arr});
-                    // log.d(arr); 
-                }
-            );
-        }
-        return vow.promise;
-    }
-    
-    function gatherConflicts(dbs) {
-        dbs = dbs.map(function(db) {
-            return checkConflicts(db);
-        });
-        return VOW.any(dbs).when(
-            function(arr) {
-                // log.d(arr);
-                arr = arr.map(function(db) {
-                    return getConflicts(db);
-                });
-                return VOW.any(arr);
-            }
-        );
-        //     .when(
-        //     function(arr) {
-        //         console.log(arr);
-        //     },
-        //     function(err) {
-        //         pp(err);
-        //     }
-        // );
-        
-    }
 
 
-    function replicate(data, reverse, filter) {
+    function replicate(dbs, direction, filter, dblog) {
+        log.d('Replicating!!!');
         var vow = VOW.make();
-        var db1 = reverse ? data.b: data.a;
-        var db2 = reverse ? data.a: data.b;
+        var db1 = direction === 'BtoA' ? dbs.b: dbs.a;
+        var db2 = direction === 'BtoA' ? dbs.a: dbs.b;
         filter = { filter: filter };
-        db1.handle.replicate.to(db2.handle, filter, function(err, changes) {
-            if (err) {
-                data.error = ['Replicating from ' + db1.url + ' to ' +
-                              db2.url + ' produced errors: ' + err];
-                vow['break'](data);
-            }
-            else {
-                db1.to =  db2.url;
-                db2.from =  db1.url;
-                data.log = data.log.concat(['' + db1.url + ' --> ' + db2.url,
-                                            '\nDocs read: ' + changes.docs_read, 
-                                            '\n Docs written: ' + changes.docs_written]);
-                vow.keep(data);
-            }
+        try {
+            db1.handle.replicate.to(db2.handle, filter, function(err, changes) {
+                log.d('Finished replicating');
+                if (err) {
+                    dblog.push( ['Replicating from ' + db1.url + ' to ' +
+                                 db2.url + ' produced errors: ' + err]);
+                    vow['break'](dbs);
+                }
+                else {
+                    db1.to =  db2.url;
+                    db2.from =  db1.url;
+                    dblog.push(['' + db1.url + ' --> ' + db2.url,
+                                '\nDocs read: ' + changes.docs_read, 
+                                '\n Docs written: ' + changes.docs_written]);
+                    vow.keep(dbs);
+                }
             
-        });
+            });
+        } catch(e) {
+            log.d('hello', e);
+        }
+        
         return vow.promise;
     }
     
-    function sync(dbs) {
-        var d1 = 'January 10, 2012';
-        var d2 = 'January 10, 2014';
-        
-        var filter = function (doc, req) {
-            // var valid = doc.valid === true;
-            // var date = Date.parse(doc.date);
-            // date = new Date(date);
-            // var isBetween = date.isBetween(d1, d2);
-            // console.log(date, d1, d2, isBetween);
-            // if (valid) console.log('Replicating: ' ,doc, req);
-            // return valid;
-            return true;
-        };
+    function sync(dbs, filter, dblog) {
+        log.d('Syncing!!!');
         var vow = VOW.make();
-        replicate(dbs, false, filter).when(
+        replicate(dbs, 'AtoB', filter, dblog).when(
             function (dbs) {
-                return replicate(dbs, 'reverse', filter);
+                return replicate(dbs, 'BtoA', filter, dblog);
             }
         ).when(
             function (dbs) {
@@ -184,74 +77,243 @@
         );
         return vow.promise;
     }
-
     
-    function printConflicts(dbs) {
-        gatherConflicts([dbs.a, dbs.b]).when(
-            function(arr) {
-                console.log(arr);
-            }
-        );
-        
+    
+    function destroy(url) {
+        var vow = VOW.make();
+        Pouch.destroy(url, function(err, info) {
+            log.d('DESTROY', arguments);
+            if (err) vow['break'](err);
+            else vow.keep(info);
+        });
+        return vow.promise;
     }
     
     
-    function startSyncing() {
-    var dbs = {
-        a: { url: localUrl, adapter: { adapter: 'idb'}}
-        ,b: { url: remoteUrl, adapter: { adapter: 'http'}}
-        ,log: []
-        ,error: []
-    };
-        VOW.every([
-            openDB(dbs, 'a'),
-            openDB(dbs, 'b')
+    function convertToDate(obj) {
+        if (typeof obj === 'string') return new Date(obj);
+        if (typeof obj === 'object' && obj._constructor === 'RelativeDate') {
+            var value = obj.value ? obj.value : '';
+            if (value.startsWith('$'))
+                switch (value) {
+                  case '$today':  return Date.today();
+                  case '$yesterday': return Date.today().addDays(-1);
+                  case '$tomorrow': return Date.today().addDays(1);
+                  case '$weekAgo': return Date.today().addWeeks(-1);
+                  case '$weekFromNow':return Date.today().addweeks(1);
+                  case '$monthAgo': return Date.today().addMonths(-1);
+                  case '$monthFromNow': return Date.today.addMonths(1);
+                default: throw("Can't parse date!!!");
+                    // log.e('Unknown date format' , obj.value.value);
+                }
+            else {
+                //parse value
+                var periodLoc = value.indexOf('d');
+                if (periodLoc === -1) periodLoc = value.indexOf('w');
+                if (periodLoc === -1) periodLoc = value.indexOf('m');
+                var periodType = value[periodLoc];
+                var multiplier = value.slice(0, periodLoc);
+                multiplier = Number(multiplier);
+                var resultDate = Date.today();
+                switch (periodType)  {
+                  case 'd':
+                    resultDate = resultDate.addDays(multiplier);
+                    break;
+                  case 'w': 
+                    resultDate = resultDate.addWeeks(multiplier);
+                    break;
+                  case 'm':
+                    resultDate = resultDate.addMonths(multiplier);
+                    break;
+                default : throw("Can't parse date!!!");
+                }
+                return resultDate;
+            }
+        }
+        throw("Can't parse date!!!");
+        // return undefined;
+    }
+        
+        
+    function evaluate(doc, clause) {
+        var i, date, field, startDate, endDate;
+        switch(clause.operator) {
+              case 'and':
+                for (i = 0; i < clause.criteria.length; i++) {
+                    if (!evaluate(doc, clause.criteria[i])) return false;
+                }
+            return true;   
+          case 'or':
+            for (i = 0; i < clause.criteria.length; i++) {
+                if (evaluate(doc, clause.criteria[i])) return true;
+            }
+            return false;   
+          case 'not': 
+            for (i = 0; i < clause.criteria.length; i++) {
+                if (evaluate(doc, clause.criteria[i])) return false;
+            }
+            return true;
+          case 'equals':
+            if (doc[clause.fieldName] === clause.value) return true;
+            return false;
+          case 'notEqual': 
+            if (doc[clause.fieldName] !== clause.value) return true;
+            return false;
+          case 'inSet': 
+            if (clause.value.indexOf(doc[clause.fieldName]) === -1) return false;
+            return true;
+          case 'notInSet': 
+            if (clause.value.indexOf(doc[clause.fieldName]) === -1) return true;
+            return false;
+          case 'iContains': 
+            if (doc[clause.fieldname] && typeof doc[clause.fieldname] === 'string' && clause.value &&
+                typeof clause.value === 'string' &&
+                doc[clause.fieldName].toLowerCase().contains(clause.value.toLowerCase())) {
+                return true;
+            }
+            return false;
+          case 'greaterThan':
+            date = convertToDate(clause.value);
+            field = doc[clause.fieldname]; //make sure it is a Date object
+            if (date && field && field.getTime() >= date.getTime()) return true;
+            return false;
+          case 'lessThan': 
+            date = convertToDate(clause.value);
+            field = doc[clause.fieldname]; //make sure it is a Date object
+            if (date && field && field.getTime() <= date.getTime()) return true;
+            return false;
+          case 'between':
+            startDate = convertToDate(clause.start);
+            endDate = convertToDate(clause.end);
+            field = doc[clause.fieldname]; //make sure it is a Date object
+            if (startDate && endDate && field &&
+                field.getTime() >= startDate.getTime() &&
+                field.getTime() <= endDate.getTime() 
+               ) return true;
+            return false;
+        default: log.e('Operator not yet implemented', clause.operator);
+        }
+        return false;
+    }
+    
+    
+    function execute(repRule, dblog) {
+        // if (repRule.operation === 'replace') {
+        //     return destroy(dbs.b.url).when(
+        //         function() {
+        //             // log.d(info);
+        //             dblog.push('Destroyed: ' + dbs.b.url);
+        //             repRule.operation = 'replicate';
+        //             return  execute(repRule, dblog);
+        //             // return replicate(dbs, 'AtoB', filter, dblog);
+        //         }
+        //         ,function(err) {
+        //             log.d('Failed to destroy!!', err);
+        //             return VOW.broken(err);
+        //         }
+        //     );
+            
+        // }
+        // else {
+        var dbs = {
+            // a: { url: localUrl, adapter: { adapter: 'idb'}}
+            // ,b: { url: remoteUrl, adapter: { adapter: 'http'}}
+            a: { url: repRule.from}
+            ,b: { url: repRule.to}
+        };
+        // var d1 = 'January 10, 2012';
+        // var d2 = 'January 10, 2014';
+        
+        var criteriaFilter = function (doc) {
+            evaluate(doc, repRule.criteria);
+            // var valid = doc.valid === true;
+            // var date = Date.parse(doc.date);
+            // date = new Date(date);
+            // var isBetween = date.isBetween(d1, d2);
+            // console.log(date, d1, d2, isBetween);
+            // if (valid) console.log('Replicating: ' ,doc, req);
+            // return valid;
+            return true;
+        };
+        
+        var filter;
+        switch(repRule.filter) {
+          case 'yes': filter = criteriaFilter; break;
+          case 'function': filter = repRule.filterName; break;
+        default: 
+        }
+        
+        return VOW.every([
+            openDB(dbs, 'a', dblog),
+            openDB(dbs, 'b', dblog)
         ]).when(
             function() {
-                return sync(dbs);
-            }
-        ).when(
-            function(dbs) {
-                $('#sync').html(dbs.log.join('<br>'));
-                printConflicts(dbs);
-            },
-            function(dbs) {
-                console.log(dbs.error);
-                $('#sync').html(dbs.error.join('<br>'));
-                printConflicts(dbs);
+                log.d(dbs);
+                switch (repRule.operation) {
+                  case 'sync': return sync(dbs, filter, dblog);
+                  case 'replicate': return replicate(dbs, 'AtoB', filter, dblog);
+                    // case 'replace' : return replace(dbs, filter, dblog);
+                  case 'inactive': dblog.push('Inactive operation'); return VOW.kept(); 
+                default: dblog.push('Unknown operation: ' + repRule.operation);
+                    return VOW.broken();
+                }
             }
         );
+            
+        // }
     } 
     
     
-    function parseCookie(cookie) {
-        localUrl = 'idb://db';
-        remoteUrl = 'http://p1:p1@localhost:8090/local/people';
-    }
+    // function replace(dbs, filter, dblog) {
+    //     log.d('Replacing!!!');
+    //     destroy(dbs.b.url).when(
+    //         function(info) {
+    //             log.d(info);
+    //             dblog.push('Destroyed: ' + dbs.b.url);
+    //             return replicate(dbs, 'AtoB', filter, dblog);
+    //         }
+    //         ,function(err) {
+    //             log.d('Failed to destroy!!');
+    //             return VOW.broken(err);
+    //         }
+    //     );
+    // }
     
-    var cookie = Cookie.get('sync');
-    parseCookie(cookie);
+    Cookie.get('sync').when(function(repRules) {
+        repRules = JSON.parse(repRules);
+        log.pp(repRules);
     
-    if (cookie || testing) {
         Cookie.remove('sync');
         window.stop();
-        $.couch.urlPrefix='http://localhost:8090/local';
-        startSyncing();
-    }
-    
-    
-    var reps = {
-        rep: [
-            { from: localUrl
-              ,filter: function() {}
-              ,to: remoteUrl
+        // $.couch.urlPrefix='http://localhost:8090/local';
+        
+        var dblog = [];
+        
+        function iterate(i) {
+            if (i < repRules.length)
+                execute(repRules[i], dblog).when(
+                    function() {
+                        iterate(i+1);
+                        // dblog.push(msg);
+                        // $('#sync').html(dblog.join('<br>'));
+                        // printConflicts(dbs);
+                    },
+                    function() {
+                        iterate(i+1);
+                        // dblog.push(msg);
+                        // console.log(dblog);
+                        // $('#sync').html(dblog.join('<br>'));
+                        // printConflicts(dbs);
+                    }
+                );
+            else {
+                $('#sync').html(dblog.join('<br>'));               
+                Cookie.set('replResult', dblog.join('<br>'));
+                // location.reload();
             } 
-            ,{ from: remoteUrl
-               ,filter: null
-               ,to: localUrl }
-        ] 
-        ,log: []
-        ,error: []
-    };
+        }
+        iterate(0);
+        // }
+    });
     
 })();

@@ -76,6 +76,18 @@ define
               pickDbForm.getField('url').setValueMap(state.urlValuemap);
               pickAForm.getField('url').setValueMap(state.urlValuemap);
               pickBForm.getField('url').setValueMap(state.urlValuemap);
+              Cookie.get('replResult').when(
+                  function(value) {
+                      // Cookie.remove('replResult');
+                      replResult.setContents(value);
+                      replResult.setVisibility('inherit');
+                      // isc.say(value);
+                      // log.d(value);
+                  }
+                  ,function() {
+                      replResult.setVisibility('hidden');
+                      log.d('No replResult cookie found..'); }
+              );
           }
       });
       
@@ -315,26 +327,25 @@ define
                  changed: function () {
                      var record = repTable.getSelectedRecord();
                      record.from = getUrl(pickAForm);
+                     record.pickA.url = arguments[2];
+                     // var url = pickAForm.getField('url').getValue();
+                     checkUrl(pickAForm, arguments[2], 'A');
                      repTable.myRedraw();
-                     // view.modified();
-                     // view.getState().urlA = arguments[2];
                  }
-                 ,icons: [{
-                     src: "checkUrl.png",
-                     click: function() {
-                         var url = pickAForm.getField('url').getValue();
-                         var state = view.getState();
-                         state.urlA = url;
-                         // var url = state.urlA || '';
-                         checkUrl(pickAForm, url, 'A');
-                     }
-                 }]
+                 // ,icons: [{
+                 //     src: "checkUrl.png",
+                 //     click: function() {
+                 //         var url = pickAForm.getField('url').getValue();
+                 //         checkUrl(pickAForm, url, 'A');
+                 //     }
+                 // }]
                }
               ,{ editorType: 'comboBox', name: 'dbName', title: 'Database name:',
                  titleOrientation: 'top', startRow: true, width: 300,
                  changed: function () {
                      var record = repTable.getSelectedRecord();
                      record.from = getUrl(pickAForm);
+                     record.pickA.dbName = arguments[2];
                      repTable.myRedraw();
                      // view.modified();
                      // view.getState().dbNameA = arguments[2];
@@ -346,9 +357,9 @@ define
                      
                      var record = repTable.getSelectedRecord();
                      record.from = getUrl(pickAForm);
+                     record.pickA.idbName = arguments[2];
                      repTable.myRedraw();
                      // view.modified();
-                     // view.getState().idbNameA = arguments[2];
                  }
                }
           ]
@@ -395,17 +406,20 @@ define
                      // view.getState().urlB = arguments[2];
                      var record = repTable.getSelectedRecord();
                      record.to = getUrl(pickBForm);
+                     record.pickB.url = arguments[2];
+                     checkUrl(pickBForm, arguments[2], 'A');
                      repTable.myRedraw();
                  }
-                 ,icons: [{
-                     src: "checkUrl.png",
-                     click: function() {
-                         var url = pickBForm.getField('url').getValue();
-                         var state = view.getState();
-                         state.urlB = url;
-                         checkUrl(pickBForm, url, 'B');
-                     }
-                 }]
+                 // ,icons: [{
+                 //     src: "checkUrl.png",
+                 //     click: function() {
+                 //         var url = pickBForm.getField('url').getValue();
+                 //         // var state = view.getState();
+                 //         // state.urlB = url;
+                 //         checkUrl(pickBForm, url, 'B');
+                 //     }
+
+                 // }]
                }
               ,{ editorType: 'comboBox', name: 'dbName', title: 'Database name:',
                  titleOrientation: 'top', startRow: true, width: 300,
@@ -414,6 +428,7 @@ define
                      // view.getState().dbNameB = arguments[2];
                      var record = repTable.getSelectedRecord();
                      record.to = getUrl(pickBForm);
+                     record.pickB.dbName = arguments[2];
                      repTable.myRedraw();
                  }
                }
@@ -424,6 +439,7 @@ define
                      // view.getState().idbNameB = arguments[2];
                      var record = repTable.getSelectedRecord();
                      record.to = getUrl(pickBForm);
+                     record.pickB.idbName = arguments[2];
                      repTable.myRedraw();
                  }
                }
@@ -499,14 +515,25 @@ define
                   ,startRow: false
                   ,click: function() {
                       var url = backend.get().getUrl();
-                      // db_utils.destroy(url).when(
-                      //     function(info) {
-                      //         alert(info);
-                      //     }
-                      //     ,function(err) {
-                      //         alert(err);
-                      //     }
-                      // );
+                      
+                      isc.confirm('Are you sure you want to wipe this database? This is irreversible!!!',
+                                  function(ok) {
+                                      if (ok) {
+                                          db_utils.destroy(url).when(
+                                              function() {
+                                                  log.d('Wiped!!');
+                                                  // alert(info);
+                                                  location.reload(); 
+                                              }
+                                              ,function(err) {
+                                                  alert('Error wiping: ' + err);
+                                              }
+                                          );
+
+
+                                      }
+                                  }
+                                 );
                   }  
               })
               
@@ -611,10 +638,11 @@ define
               ,{name:"filterName", canEdit: true, title: '_design/filter', type: 'text'}
           ],
           // rowClick: function(record, recordNum) {
-              // view.getState().rowSelected = recordNum;
-              // log.d(recordNum);
+          // view.getState().rowSelected = recordNum;
+          // log.d(recordNum);
           // },
           selectionUpdated: function (record, recordList) {
+              replResult.setVisibility('hidden');
               if (recordList.length !== 1) {
                   hideRepEditor();   
                   view.getState().repSelection = null;
@@ -631,7 +659,7 @@ define
           ,canGroupBy: false
           ,canPickFields: false
           ,myRedraw: function () {
-              log.e("REDRAW");
+              // log.e("REDRAW");
               this.redraw();
               view.modified();
           }
@@ -666,21 +694,47 @@ define
       });
       
       var replicateButton =isc.Button.create({
-          title: 'Replicate'
+          title: 'Execute'
           ,startRow: false
           ,click: function() {
-              editorWindow.show();
+              var data = repTable.getData();
+              if (data.length === 0) {
+                  isc.say('Add some replicate rules first..');
+                  return;
+              }
+              var rules = [];
+              var  validKeys = ['operation', 'from', 'to', 'filter', 'filterName', 'criteria'];
+              // log.d(data);
+              data.forEach(function(e) {
+                  var rule = {};
+                  // log.d(data[e]);
+                  Object.keys(e).forEach(function(k) {
+                      if (validKeys.contains(k)) rule[k] = e[k];
+                  });
+                  rules.push(rule);
+                  
+              });
+              Cookie.set('sync', JSON.stringify(rules)).when(
+                  function() {
+                      //     isc.confirm('Ready to replicate. Pressing ok will reload the page and replicate the data.',
+                      //                 function(ok) {
+                      //                     if (ok) { location.reload(); }
+                      //                 }
+                      //                );
+                      location.reload();
+                  }
+              );
           }  
       });
-      var removeButton = isc.Button.create({
-          title: 'Remove'
-          ,startRow: false
-          ,click: function() {
-              repTable.removeSelectedData();
-              view.modified();
-              hideRepEditor();
-          }  
-      });
+          var removeButton = isc.Button.create({
+              title: 'Remove'
+              ,startRow: false
+              ,click: function() {
+                  repTable.removeSelectedData();
+                  view.modified();
+                  hideRepEditor();
+              }  
+          });
       var newButton = isc.Button.create({
           title: 'New'
           ,startRow: false
@@ -708,7 +762,7 @@ define
       
       
       var operationRadio = isc.DynamicForm.create({
-              width: 150,
+          width: 150,
           titleWidth: 20,  
           // border: "1px dashed blue",
           fields: [
@@ -726,7 +780,7 @@ define
                 vertical: false,  type: 'radioGroup' , valueMap: ['inactive', 'sync', 'replicate', 'replace']}
               // ,{titleOrientation: 'top',
               //     title: '_design/filter', type: 'text'}
-          ]
+              ]
           
       });
       
@@ -740,7 +794,7 @@ define
           members: [operationRadio,
                     pickABLayout
                     
-                   ]
+                       ]
       });
       
       
@@ -753,17 +807,17 @@ define
           // },
           fields: [
               { name: 'Filter',
-                change: function() {
-                    var record = repTable.getSelectedRecord();
-                    record.filter = arguments[2];
-                    repTable.myRedraw();
-                    var name = 'hidden', filter = 'hidden';
-                    if (record.filter === 'filterName') name = 'inherit';
-                    else if (record.filter === 'yes') filter = 'inherit';
-                    filterName.setVisibility(name);
-                    filterForm.setVisibility(filter);
-                    log.d(arguments[2]);
-                },
+                    change: function() {
+                        var record = repTable.getSelectedRecord();
+                        record.filter = arguments[2];
+                        repTable.myRedraw();
+                        var name = 'hidden', filter = 'hidden';
+                        if (record.filter === 'filterName') name = 'inherit';
+                        else if (record.filter === 'yes') filter = 'inherit';
+                        filterName.setVisibility(name);
+                        filterForm.setVisibility(filter);
+                        log.d(arguments[2]);
+                    },
                 valueHoverHTML: function(value) { return value; },
                 vertical: false,  type: 'radioGroup' , valueMap: {'no':'no', 'yes':'yes' , 'filterName':'function'}}
               // ,{titleOrientation: 'top',
@@ -867,7 +921,7 @@ define
       var filterLayout = isc.VLayout.create({
           layoutMargin: 6,
           membersMargin: 6,
-              // height: 20,
+          // height: 20,
           width:'100%',
           members: [filterRadio, filterName, filterForm] 
           
@@ -908,9 +962,9 @@ define
               isc.Button.create({
                   title: 'Save'
                   ,startRow: true
-                      ,click: function() {
-                          saveRep();
-                      }  
+                  ,click: function() {
+                      saveRep();
+                  }  
               })
               ,isc.LayoutSpacer.create()
               ,isc.Button.create({
@@ -922,14 +976,26 @@ define
           ]
       });
       
+      var replResult = isc.HTMLPane.
+      create({
+	  height:'100%'
+	  // contentsURL:'version.html'
+	  ,overflow:"auto",
+	  styleName:"defaultBorder",
+	  padding:10
+          });
+      
+      
       var databaseLayout = isc.VLayout.create({
           layoutMargin: 6,
           membersMargin: 6,
           // border: "1px dashed blue",
           // height: 20,
-              width:'100%',
-          members: [dbChangeLayout, repTableLayout, repEditorTabset, buttonBar ] 
+          width:'100%',
+          members: [dbChangeLayout, repTableLayout, repEditorTabset, buttonBar, replResult ] 
       }); 
+      
+      
       
       function getUrl(form) {
           var url;
@@ -937,11 +1003,11 @@ define
           if (backendName === 'pouchDB') {
               url = form.getValue('idbName') || '';
           }
-              else {
-                  url = form.getValue('url') || '';
-                  if (!url.endsWith('/')) url += '/';
+          else {
+              url = form.getValue('url') || '';
+              if (!url.endsWith('/')) url += '/';
                   url += form.getValue('dbName');
-              }
+          }
           
           var urlPrefix = dbDescriptions[backendName].urlPrefix;
           if (url.startsWith(urlPrefix)) urlPrefix = '';
@@ -974,8 +1040,8 @@ define
               filter: 'no',
               filterName: ''
               ,criteria: { _constructor: "AdvancedCriteria",
-                            operator: 'and',
-                            criteria: []}
+                           operator: 'and',
+                           criteria: []}
           };
       }
       
@@ -1017,7 +1083,7 @@ define
           };
           var record = repTable.getSelectedRecord();
           isc.addProperties(record, rep);
-          repTable.myRedraw();
+              repTable.myRedraw();
           log.d(rep);
       }
             
@@ -1026,7 +1092,7 @@ define
           tabBarPosition: "top",
           selectedTab: 0,
           // width: 400,
-              // height: 300,
+          // height: 300,
           tabSelected: function(tabno) {
               view.modified();
               view.getState().tab = tabno;
