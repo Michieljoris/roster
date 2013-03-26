@@ -1,8 +1,5 @@
-// {
-// "validate_doc_update" :
-// }
 function(newDoc, oldDoc, userCtx, secObj) {
-    var type = 'shift';
+    // var type = 'shift';
     var dbname = 'waterfordwest';
         
     var has_db_rw= function(userCtx, secObj) {
@@ -18,14 +15,19 @@ function(newDoc, oldDoc, userCtx, secObj) {
     };
         
     if (!has_db_rw(userCtx, secObj)) {
-        throw({unauthorized: 'Only users with the ' + type + '-rw role assigned can update this database'});
+        throw({unauthorized: 'Only users with the ' + dbname + '-rw role assigned can update this database'});
+    }
+    
+    if ((oldDoc && oldDoc.type !== 'shift' && oldDoc.type !== 'location') || (newDoc.type !== 'shift'  && newDoc.type !== 'location')) {
+        throw({forbidden : 'type must be ' + 'shift' + ' or location'});
+    } // we only allow type docs 
+    
+    if ((oldDoc && oldDoc.type === 'location' && oldDoc._id !== dbname) || (newDoc.type === 'location' && newDoc._id !== dbname )) {
+        throw({forbidden : 'If type is location, the id has to be ' + dbname});
+    }
+        
+    if ((oldDoc && oldDoc.type === 'shift' && oldDoc.location !== dbname) || (newDoc.type === 'shift' && newDoc.location !== dbname) ) {
+        throw({forbidden : 'location must be ' + dbname + ' for all docs of type shift'});
     }
 
-    if ((oldDoc && oldDoc.type !== type) || newDoc.type !== type ) {
-        throw({forbidden : 'doc.type must be ' + type});
-    } // we only allow type docs 
-    if (type === 'shift')
-        if ((oldDoc && oldDoc.location !== dbname) || newDoc.location !== dbname ) {
-            throw({forbidden : 'doc.location must be ' + dbname});
-        }
 }
