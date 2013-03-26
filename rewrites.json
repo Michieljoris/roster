@@ -1,6 +1,6 @@
 [
-    {
-	"from":"",
-	"to":"roster/_design/app/dev.html"
-    }
+   {
+       "to": "app/_design/app/*",
+       "from": "*"
+   }
 ]

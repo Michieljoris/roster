@@ -1,0 +1,15 @@
+To push to couchdb and to update:
+couchapp push . http://admin:admin@localhost:5984/app
+
+Set vhosts of couchdb to 
+/app/_design/app/
+
+and rewrites to:
+[
+   {
+       "to": "app/_design/app/*",
+       "from": "*"
+   }
+]
+Now need to set rewrite for databases...
+
