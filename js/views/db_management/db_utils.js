@@ -94,7 +94,7 @@ define
                         vow.keep(err) ;
                 }
                 else {
-                    var result = { id:id,
+                    var result = { _id:id,
                                    conflictingRevs: res.map(function(r) {
                                        return r.ok;})
                                  };
@@ -205,7 +205,7 @@ define
         window.test2 = function(url) {
             conflicts(url).when(
                 function(arr) {
-                    log.pp(arr);
+                    log.pp(arr[0].docsWithConflicts);
                 },
                 function(err) {
                     log.pp(err);

@@ -6,13 +6,14 @@
 define
 ({ //load: ['editorLoader'],
     inject: ['View', 'loaders/backend', 'views/db_management/db_utils'
+             ,'types/typesAndFields'
             ],
-   factory: function(View, backend, db_utils)
+   factory: function(View, backend, db_utils, typesAndFields)
     
     { "use strict";
       var log = logger('db_management');
       var dbDescriptions;
-      
+      var itemViewers = {};
       var view = View.create({
           type: 'Manage databases'
           ,alwaysSet: true
@@ -63,6 +64,22 @@ define
               currentDbLabel.setContents('<h2>Current database name: ' + url +
                                          (backendName === 'pouchDB' ? ' (in the browser)' : '') + 
                                          '</h2>');
+              
+              
+      
+              function createItemViewer(type) {
+                  return isc.DetailViewer.create({
+                      emptyMessage:"Select an item to view its details"
+                      ,fields: typesAndFields.getFieldsCloner(type)()
+                  });
+              }
+      
+
+              typesAndFields.allTypes.forEach(function(t) {
+                  itemViewers[t] = createItemViewer(t);
+          
+              });
+      
               // currentUrlLabel.setContents('<h3>At: ' + backendName + '<h3>');
           }
           ,set: function(state) {
@@ -178,11 +195,11 @@ define
           
       // }
       
-      function checkUrl(form, url, postFix) {
+      function checkUrl(form, url) {
           log.d('Looking for dbs in ' + url);
           var state = view.getState();
-          if (!state['urlValuemap' + postFix]) state['urlValuemap' + postFix] = [];
-          var index = state['urlValuemap' + postFix].indexOf(url);
+          if (!state.urlValuemap) state.urlValuemap = [];
+          var isListed;
           // var url = state.url;
           db_utils.getAllDbs(url).when(
               function(values) {
@@ -197,6 +214,7 @@ define
                   // log.d(index, url, state.urlValuemap);
                   // log.d('log.d');
                   // console.log('console');
+                  var index = state.urlValuemap.indexOf(url);
                   if (index === -1) state.urlValuemap.push(url);
                   // log.d(index, url, state.urlValuemap);
                   form.getField('url').setValueMap(state.urlValuemap);
@@ -206,12 +224,13 @@ define
                   // if (!state['urlValuemap' + postFix]) state['urlValuemap' + postFix] = [];
                   // if (!state.urlValuemap) state.urlValuemap = [];
                   // var index = state.urlValuemap.indexOf(url);
+                  var index = state.urlValuemap.indexOf(url);
                   if (index !== -1)
                       isc.ask('Not a valid url.<p> Do you want to remove it from the list of urls?',
                               function(yes) {
                                   if (yes) {
-                                      state['urlValuemap' + postFix].removeAt(index);
-                                      form.getField('url').setValueMap(state['urlValuemap' + postFix]);
+                                      state.urlValuemap.removeAt(index);
+                                      form.getField('url').setValueMap(state.urlValuemap);
                                   }
                               });
                   else {
@@ -726,17 +745,17 @@ define
               );
           }  
       });
-          var removeButton = isc.Button.create({
-              title: 'Remove'
-              ,startRow: false
-              ,click: function() {
-                  repTable.removeSelectedData();
-                  view.modified();
-                  hideRepEditor();
-              }  
-          });
+      var removeButton = isc.Button.create({
+          title: 'Remove'
+          ,startRow: false
+          ,click: function() {
+              repTable.removeSelectedData();
+              view.modified();
+              hideRepEditor();
+          }  
+      });
       var newButton = isc.Button.create({
-          title: 'New'
+              title: 'New'
           ,startRow: false
           ,click: function() {
               repTable.addData(newRep());
@@ -780,12 +799,12 @@ define
                 vertical: false,  type: 'radioGroup' , valueMap: ['inactive', 'sync', 'replicate', 'replace']}
               // ,{titleOrientation: 'top',
               //     title: '_design/filter', type: 'text'}
-              ]
+          ]
           
       });
       
       var pickABLayout = isc.HLayout.create({
-          members: [pickALayout, pickBLayout]
+              members: [pickALayout, pickBLayout]
       }); 
       
       var pickLayout = isc.VLayout.create({
@@ -794,7 +813,7 @@ define
           members: [operationRadio,
                     pickABLayout
                     
-                       ]
+                   ]
       });
       
       
@@ -807,17 +826,17 @@ define
           // },
           fields: [
               { name: 'Filter',
-                    change: function() {
-                        var record = repTable.getSelectedRecord();
-                        record.filter = arguments[2];
-                        repTable.myRedraw();
-                        var name = 'hidden', filter = 'hidden';
-                        if (record.filter === 'filterName') name = 'inherit';
-                        else if (record.filter === 'yes') filter = 'inherit';
-                        filterName.setVisibility(name);
-                        filterForm.setVisibility(filter);
-                        log.d(arguments[2]);
-                    },
+                change: function() {
+                    var record = repTable.getSelectedRecord();
+                    record.filter = arguments[2];
+                    repTable.myRedraw();
+                    var name = 'hidden', filter = 'hidden';
+                    if (record.filter === 'filterName') name = 'inherit';
+                    else if (record.filter === 'yes') filter = 'inherit';
+                    filterName.setVisibility(name);
+                    filterForm.setVisibility(filter);
+                    log.d(arguments[2]);
+                },
                 valueHoverHTML: function(value) { return value; },
                 vertical: false,  type: 'radioGroup' , valueMap: {'no':'no', 'yes':'yes' , 'filterName':'function'}}
               // ,{titleOrientation: 'top',
@@ -899,7 +918,7 @@ define
       
       var filterForm = isc.FilterBuilder.create({
           ID:"advancedFilter"
-          ,dataSource: DS
+              ,dataSource: DS
           ,filterChanged: function() {
               // log.d('changed', arguments);
               var record = repTable.getSelectedRecord();
@@ -939,7 +958,7 @@ define
       
       var repEditorTabset = isc.TabSet.create({
           // ID: "topTabSet",
-          tabBarPosition: "top",
+              tabBarPosition: "top",
           selectedTab: 0,
           height: '100%',
           // height: 300,
@@ -983,7 +1002,7 @@ define
 	  ,overflow:"auto",
 	  styleName:"defaultBorder",
 	  padding:10
-          });
+      });
       
       
       var databaseLayout = isc.VLayout.create({
@@ -1006,7 +1025,7 @@ define
           else {
               url = form.getValue('url') || '';
               if (!url.endsWith('/')) url += '/';
-                  url += form.getValue('dbName');
+              url += form.getValue('dbName');
           }
           
           var urlPrefix = dbDescriptions[backendName].urlPrefix;
@@ -1083,9 +1102,113 @@ define
           };
           var record = repTable.getSelectedRecord();
           isc.addProperties(record, rep);
-              repTable.myRedraw();
+          repTable.myRedraw();
           log.d(rep);
       }
+      
+      
+      function makeResolveTree(arr) {
+          return isc.Tree.create({
+              modelType: "children",
+              nameProperty: "_id",
+              childrenProperty: "conflictingRevs",
+              root: { _id: 'treeroot', conflictingRevs: arr }
+              // root: {EmployeeId: "1", directReports: [
+              //     {EmployeeId:"4", Name:"Charles Madigen", directReports: [
+              //         {EmployeeId:"188", Name:"Rogine Leger"},
+              //         {EmployeeId:"189", Name:"Gene Porter", directReports: [
+              //             {EmployeeId:"265", Name:"Olivier Doucet"},
+              //             {EmployeeId:"264", Name:"Cheryl Pearson"}
+              //         ]}
+              //     ]}
+              // ]}
+          });
+      }
+      
+      var resolveTreeGrid = isc.TreeGrid.create({
+          ID: "resolveTree",
+          // data: isc.Tree.create({
+          //     modelType: "children",
+          //     nameProperty: "Name",
+          //     childrenProperty: "directReports",
+          //     root: {EmployeeId: "1", directReports: [
+          //         {EmployeeId:"4", Name:"Charles Madigen", directReports: [
+          //             {EmployeeId:"188", Name:"Rogine Leger"},
+          //             {EmployeeId:"189", Name:"Gene Porter", directReports: [
+          //                 {EmployeeId:"265", Name:"Olivier Doucet"},
+          //                 {EmployeeId:"264", Name:"Cheryl Pearson"}
+          //             ]}
+          //         ]}
+          //     ]}
+          // }),
+
+          // customize appearance
+          width: '100%',
+          height: 200,
+          fields: [
+              {name: '_id'},
+              {name: "_rev"},
+              {name: "type"},
+              {name: "lastEditedAt", type: 'date', title: 'Last edited at'},
+              {name: "lastEditedBy", title: 'Last edited by' } 
+          ]
+          ,selectionUpdated: function(record) {
+              log.d(record);
+              if (record.type) {
+                  // log.d(Object.keys(record));
+                  log.d(record);
+                  // itemViewer.setFields(Object.keys(record));
+                  
+                  itemViewers[record.type].setData(record);
+                  var types = Object.keys(itemViewers);
+                  types.forEach(function(t) {
+                      resolveLayout.removeMember(itemViewers[t]);
+                  });
+                  resolveLayout.addMember(itemViewers[record.type]);
+                  
+              }
+          }
+          // nodeIcon:"icons/16/person.png",
+          // folderIcon:"icons/16/person.png",
+          // showOpenIcons:false,
+          // showDropIcons:false,
+          // closedIconSuffix:""
+      });
+      
+      
+      var resolveButton = isc.Button.create({
+          title: 'Get conflicts'
+          ,startRow: false
+          ,click: function() {
+              var url = backend.get().getUrl();
+              db_utils.conflicts(url).when(
+                  function(arr) {
+                      log.pp(arr[0].docsWithConflicts);
+                      resolveTreeGrid.setData(makeResolveTree(arr[0].docsWithConflicts));
+                  },
+                  function(err) {
+                      log.pp(err);
+                  }
+              );
+              // resolveTree.setData([]);
+              
+          }  
+      });
+      
+      
+      var resolveLayout = isc.VLayout.create({
+          layoutMargin: 6,
+          membersMargin: 6,
+          // border: "1px dashed blue",
+          // height: 20,
+          // width: 400,
+          members: [
+              resolveTreeGrid, resolveButton
+              ]
+          });
+      
+      
+      // mployeeTree.getData().openAll();
             
       var tabset = isc.TabSet.create({
           // ID: "topTabSet",
@@ -1103,7 +1226,7 @@ define
               {title: "Database", 
                pane: databaseLayout}
               ,{title: "Resolve", 
-                pane: 'hello'}
+                pane: resolveLayout }
           ]
       });
       

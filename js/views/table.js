@@ -343,12 +343,12 @@ define
        var newRecord = function(aType) {
            if (dataTable.selectionType === 'none') return;
            var record = typesAndFields.newRecord(aType);
-           record.lastEdited = {
-               user: user.get()._id,
-               time: new Date()
-           };
-           // record.lastEdited = new Date();
-           // record.lastEditedBy = user.get()._id;
+           // record.lastEdited = {
+           //     user: user.get()._id,
+           //     time: new Date()
+           // };
+           record.lastEditedAt = new Date();
+           record.lastEditedBy = user.get()._id;
            
            if (record.type === 'location' || record.type === 'person') {
                isc.askForValue('Set the unique id for this ' + record.type, function(value) {

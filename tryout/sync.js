@@ -30,32 +30,33 @@
 
 
     function replicate(dbs, direction, filter, dblog) {
-        log.d('Replicating!!!');
+        log.d('Replicating ' + direction);
         var vow = VOW.make();
         var db1 = direction === 'BtoA' ? dbs.b: dbs.a;
         var db2 = direction === 'BtoA' ? dbs.a: dbs.b;
         filter = { filter: filter };
-        try {
-            db1.handle.replicate.to(db2.handle, filter, function(err, changes) {
-                log.d('Finished replicating');
-                if (err) {
-                    dblog.push( ['Replicating from ' + db1.url + ' to ' +
-                                 db2.url + ' produced errors: ' + err]);
-                    vow['break'](dbs);
-                }
-                else {
-                    db1.to =  db2.url;
-                    db2.from =  db1.url;
-                    dblog.push(['' + db1.url + ' --> ' + db2.url,
-                                '\nDocs read: ' + changes.docs_read, 
-                                '\n Docs written: ' + changes.docs_written]);
-                    vow.keep(dbs);
-                }
+        // try {
+        db1.handle.replicate.to(db2.handle, function(err, changes) {
+            log.d('Finished replicating ' + direction);
+            if (err) {
+                log.d('Errors!!!', err);
+                dblog.push( ['Replicating from ' + db1.url + ' to ' +
+                             db2.url + ' produced errors: ' + err]);
+                vow['break'](dbs);
+            }
+            else {
+                db1.to =  db2.url;
+                db2.from =  db1.url;
+                dblog.push(['' + db1.url + ' --> ' + db2.url,
+                            '\nDocs read: ' + changes.docs_read, 
+                            '\n Docs written: ' + changes.docs_written]);
+                vow.keep(dbs);
+            }
             
-            });
-        } catch(e) {
-            log.d('hello', e);
-        }
+        });
+        // } catch(e) {
+        //     log.d('hello', e);
+        // }
         
         return vow.promise;
     }
@@ -288,7 +289,7 @@
         // $.couch.urlPrefix='http://localhost:8090/local';
         
         var dblog = [];
-        
+        // pouch.destroy();
         function iterate(i) {
             if (i < repRules.length)
                 execute(repRules[i], dblog).when(
@@ -309,7 +310,7 @@
             else {
                 $('#sync').html(dblog.join('<br>'));               
                 Cookie.set('replResult', dblog.join('<br>'));
-                // location.reload();
+                location.reload();
             } 
         }
         iterate(0);

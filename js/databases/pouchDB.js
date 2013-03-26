@@ -116,12 +116,12 @@ define
           // console.log('putDoc ', record);
           var vow = VOW.make();
           console.log('In PUTDOC');
-          record.lastEdited = {
-              id: user ? user._id: undefined,
-              time: new Date()
-          };
-          // if (user) record.lastEditedBy = user._id;
-          // record.lastEdited = new Date();
+          // record.lastEdited = {
+          //     id: user ? user._id: undefined,
+          //     time: new Date()
+          // };
+          if (user) record.lastEditedBy = user._id;
+          record.lastEditedAt = new Date();
           pouchDbHandle.post(record, function(err, response) {
               if (!err) {
                   // log.d('keeping put vow');
