@@ -1,0 +1,13 @@
+{ 
+    "forward": [
+	{ "prefix": "local",
+	  "target": "http://localhost:5984" },
+	{ "prefix": "iris",
+          "target": "https://michieljoris.iriscouch.com"}
+]
+
+    ,"dir": true
+    ,"index": false
+    ,"silent": false
+    ,"port": 8090
+}

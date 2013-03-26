@@ -1,0 +1,27 @@
+To push to couchdb and to update:
+couchapp push . http://admin:admin@localhost:5984/app
+or:
+
+couchapp push . http://admin:admin@multicap.iriscouch.com/app
+
+
+Set vhosts of couchdb to 
+/app/_design/app/_rewrite
+
+and rewrites to:
+[
+   {
+       "from": "db/*",
+       "to": "../../../*"
+   },
+   {
+       "from": "/*",
+       "to": "/*"
+   }
+]
+
+
+Make sure secure rewrites in config is false.
+
+
+
