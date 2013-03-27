@@ -1,5 +1,5 @@
 To push to couchdb and to update:
-couchapp push . http://admin:admin@localhost:5984/app
+couchapp push . http://root:root@localhost:5984/app
 or:
 
 couchapp push . http://admin:admin@multicap.iriscouch.com/app

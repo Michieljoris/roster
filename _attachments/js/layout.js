@@ -111,11 +111,18 @@ define
         viewTree.notify(); 
         
         mainLayout.draw();
+        
+        
+    }
+    
+    function setup() {
+        viewTree.newView('Manage databases');
     }
     
     //##API 
     return {
-        draw : draw
+        draw : draw,
+        setup: setup
     };
     
   }});

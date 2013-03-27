@@ -147,8 +147,7 @@ define(
            */
           function start() {
               getBackend().when(
-                  initBackend
-              ).when(
+                  initBackend              ).when(
                   function(backend)  {
                       View.setBackend(backend); 
                       Editor.setBackend(backend);
@@ -164,6 +163,11 @@ define(
                       try { layout.draw();
                             document.getElementById('appFail').style.display = 'none';
                             document.getElementById('statusUpdate').style.display = 'none';
+                            
+                            log.d('-----------------------------------New database? ', backend.get().isNew());
+                            if (backend.get().isNew()) {
+                                layout.setup();
+                            }
                           } catch(e) {
                           console.error(e.stack); }
                       

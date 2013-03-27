@@ -14,17 +14,15 @@ define
       var pouchDbHandle;
       var pouchDS;
       var url = '';
+      var newDatabase = false; 
       // var dbviews;
       // var authenticatedUser;
       // var settingsCache;
       
-      var rootUser = {
-          _id:'root'
-          // name: 'root',
+      var localUser = {
+          _id:'guest'
           ,type: 'person'
-          // login: 'root'
           ,status: 'permanent'
-          // ,pwd:'root'
       };
       
       
@@ -34,14 +32,14 @@ define
       //     ,dataSource: 'pouchDS'
       // };
       
-      var defaultUserId = 'root';
+      var defaultUserId = 'guest';
       
       function getUrl() {
           return url;
       }
       
       //##init
-      /** Make sure there is a handle for pouch, and a root user in
+      /** Make sure there is a handle for pouch, and a local user in
        * the database */
       function init(vow, idbname) {
           Pouch(idbname, function(err, aDb) {
@@ -49,29 +47,21 @@ define
                   log.d('pouchDB is ready');
                   url= idbname;
                   pouchDbHandle = aDb;
-                  getDoc('root').when(
+                  getDoc('guest').when(
                       function() {
                           vow.keep(self);
                       },
                       function() {
-                          putDoc(rootUser, rootUser).when(
+                          putDoc(localUser, localUser).when(
                               function() {
-                                  log.d('Created root user..');
+                                  log.d('Created local guest user..');
+                                  newDatabase = true;
                                   vow.keep(self);
                               },
                               vow['break']
                           );
                   }
                   );
-                  // VOW.first([
-                  //     getDoc('root'),
-                  //     putDoc(rootUser)]).when()
-                  //     .when(
-                  //         function() {
-                  //             vow.keep(self);
-                  //         },
-                  //         vow['break']
-                  //     );
               }
               else { var msg = "Error opening idb database for pouchDS" + idbname +
 		     "err: "+ err.error + ' reason:' + err.reason;
@@ -574,6 +564,9 @@ define
           ,changeUser: changeUser
           ,getDbDescriptions: getDbDescriptions
           ,getUrl: getUrl
+          ,isNew : function() {
+              return newDatabase;
+          }
       };
       return self;
   }});

@@ -191,12 +191,12 @@ define
                            displayField: '_id',
                            valueField: '_id',
                            width:340,
-                           colSpan:2,
-                           icons: [{
-                               src: isc.Page.getSkinDir() +"images/actions/edit.png",
-                               click: "isc.say(item.helpText)"
-                               //TODO: make drag drop shift worker editor
-                           }]
+                           colSpan:2
+                           // ,icons: [{
+                           //     src: isc.Page.getSkinDir() +"images/actions/edit.png",
+                           //     click: "isc.say(item.helpText)"
+                           //     //TODO: make drag drop shift worker editor
+                           // }]
                          };
     
     var locationNames = [];
@@ -280,7 +280,7 @@ define
         autoDraw: false,
         // width:250,
         // dataSource: datasource,
-        height: 350,
+        height: 380,
         colWidths: ['60', '60', '*'],
         cellPadding: 4,
         numCols: 3,
@@ -302,11 +302,10 @@ define
                 //appropriate for an event 
             }, fields.claim),
             
-            locationPickList,
-            
+            locationPickList
             
             //---------------------------- 
-            personPickList,
+            ,personPickList,
             
             //---------------------------------
             isc.addDefaults({
@@ -393,6 +392,15 @@ define
             // }),
             //TODO implement repeats UI, similar to Extensible calenda
             
+           isc.addDefaults({
+                showTitle: false,
+                titleOrientation: 'top',
+                // title: 'Working on public holiday',
+                colSpan:2,
+                align: 'left',
+                startRow: true 
+            }, fields.claimNightAsDisturbed),
+            
             //---------------------------------------- 
             isc.addDefaults(
                 { height: 100,
@@ -416,7 +424,7 @@ define
         width: '100%',
         members: [
             eventForm,
-            buttonBar(allButtons, 'horizontal', 25, 350,
+            buttonBar(allButtons, 'horizontal', 25, 330,
                       ['Delete', '|', 'Cancel', 'Save'],
                       {  width: 50,
                          autoDraw: false

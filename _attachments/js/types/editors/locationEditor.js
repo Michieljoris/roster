@@ -60,6 +60,22 @@ define
                   showIf: 'true'
               }, fields.region),
               isc.addDefaults({
+                  colSpan:2,
+                  itemHoverHTML: function() {
+                      return 'In increments of 30 minutes.';
+                  },
+                  titleOrientation: 'top',
+                  showIf: 'true'
+              }, fields.dayStart),
+              isc.addDefaults({
+                  itemHoverHTML: function() {
+                      return 'In increments of 30 minutes.';
+                  },
+                  colSpan:2,
+                  titleOrientation: 'top',
+                  showIf: 'true'
+              }, fields.dayEnd),
+              isc.addDefaults({
                   // showIf: 'true'
               }, fields.inheritable),
               isc.addDefaults({

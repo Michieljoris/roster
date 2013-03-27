@@ -23,12 +23,47 @@ define
               repTab: 0,
               backendName: 'pouchDB' ,
               idbName: '',
-              url: '',
-              urlValuemap: ['http://localhost:8090/local',
-                            'http://localhost:1234',
-                            'http://multicap.iriscouch.com'],
+              url: 'http://couch:5984/db',
+              urlValuemap: [
+                  'http://couch:5984/db',
+                  'http://w:w@couch:5984/db',
+                  'http://wt:wt@couch:5984/db',
+                  'http://m:m@couch:5984/db',
+                  // 'https://couch:6984/db',
+                  'http://multicap.iriscouch.com/db'
+                  // 'https://multicap.iriscouch.com/db',
+                  ,'http://localhost:1234'
+                  // 'http://localhost:8090'
+              ],
               dbName: '',
-              reps: [],
+              reps: [
+                  {
+                      operation: 'sync',
+                      pickA: {
+                          backendName:'pouchDB',
+                          url: '',
+                          dbName: '',
+                          idbName: 'db'
+                      },
+                      pickB: {
+                          backendName:'couchDB',
+                          // url: 'http://w:w@couch:5984/db',
+                          url: 'http://localhost:1234',
+                          dbName: '',
+                          idbName: ''
+                      },
+                      from: 'db',
+                      // to: 'http://w:w@couch:5984',
+                      to: 'http://localhost:1234',
+                      filter: 'no',
+                      filterName: ''
+                      ,criteria: { _constructor: "AdvancedCriteria",
+                                   operator: 'and',
+                                   criteria: []}
+                  }
+
+                  
+              ],
               // rowSelected: null,
               // backendNameA: 'pouchDB' ,
               // idbNameA: 'db',
@@ -79,13 +114,16 @@ define
                   itemViewers[t] = createItemViewer(t);
           
               });
+              
+              
+              
       
-              // currentUrlLabel.setContents('<h3>At: ' + backendName + '<h3>');
           }
           ,set: function(state) {
               log.d('setting reptable to', state.reps);
               repTable.setData(state.reps);
               repTable.deselectAllRecords();
+              
               tabset.selectTab(state.tab);
               repEditorTabset.selectTab(state.repTab);
               setUrlAndName(state);
@@ -95,17 +133,20 @@ define
               pickBForm.getField('url').setValueMap(state.urlValuemap);
               Cookie.get('replResult').when(
                   function(value) {
-                      // Cookie.remove('replResult');
-                      replResult.setContents(value);
-                      replResult.setVisibility('inherit');
+                      Cookie.remove('replResult');
+                      state.result = value;
+                      showRepEditor();
+                      repEditorTabset.selectTab(2);
+                      replResult.setContents(state.result);
                       // isc.say(value);
                       // log.d(value);
                   }
                   ,function() {
-                      replResult.setVisibility('hidden');
+                      replResult.setContents(state.result);
                       log.d('No replResult cookie found..'); }
               );
-          }
+              // replResult.setVisibility('inherit');
+         }
       });
       
       
@@ -208,6 +249,7 @@ define
                   console.log('dbName valuemap has been set..');
                   // form.getField('url').setHint('url added');
                   form.getField('dbName').setHint('updated');
+                  form.getField('url').setHint('');
                   setTimeout(function() {
                       form.getField('dbName').setHint('');
                   }, 3000);
@@ -282,7 +324,7 @@ define
                          var url = pickDbForm.getField('url').getValue();
                          var state = view.getState();
                          state.url = url;
-                         checkUrl(pickDbForm, url, '');
+                         checkUrl(pickDbForm, url);
                      }
                  }]
                }
@@ -348,16 +390,16 @@ define
                      record.from = getUrl(pickAForm);
                      record.pickA.url = arguments[2];
                      // var url = pickAForm.getField('url').getValue();
-                     checkUrl(pickAForm, arguments[2], 'A');
+                     checkUrl(pickAForm, arguments[2]);
                      repTable.myRedraw();
                  }
-                 // ,icons: [{
-                 //     src: "checkUrl.png",
-                 //     click: function() {
-                 //         var url = pickAForm.getField('url').getValue();
-                 //         checkUrl(pickAForm, url, 'A');
-                 //     }
-                 // }]
+                 ,icons: [{
+                     src: "checkUrl.png",
+                     click: function() {
+                         var url = pickAForm.getField('url').getValue();
+                         checkUrl(pickAForm, url);
+                     }
+                 }]
                }
               ,{ editorType: 'comboBox', name: 'dbName', title: 'Database name:',
                  titleOrientation: 'top', startRow: true, width: 300,
@@ -426,19 +468,19 @@ define
                      var record = repTable.getSelectedRecord();
                      record.to = getUrl(pickBForm);
                      record.pickB.url = arguments[2];
-                     checkUrl(pickBForm, arguments[2], 'A');
+                     checkUrl(pickBForm, arguments[2]);
                      repTable.myRedraw();
                  }
-                 // ,icons: [{
-                 //     src: "checkUrl.png",
-                 //     click: function() {
-                 //         var url = pickBForm.getField('url').getValue();
-                 //         // var state = view.getState();
-                 //         // state.urlB = url;
-                 //         checkUrl(pickBForm, url, 'B');
-                 //     }
+                 ,icons: [{
+                     src: "checkUrl.png",
+                     click: function() {
+                         var url = pickBForm.getField('url').getValue();
+                         // var state = view.getState();
+                         // state.urlB = url;
+                         checkUrl(pickBForm, url);
+                     }
 
-                 // }]
+                 }]
                }
               ,{ editorType: 'comboBox', name: 'dbName', title: 'Database name:',
                  titleOrientation: 'top', startRow: true, width: 300,
@@ -661,7 +703,7 @@ define
           // log.d(recordNum);
           // },
           selectionUpdated: function (record, recordList) {
-              replResult.setVisibility('hidden');
+              // replResult.setVisibility('hidden');
               if (recordList.length !== 1) {
                   hideRepEditor();   
                   view.getState().repSelection = null;
@@ -713,7 +755,7 @@ define
       });
       
       var replicateButton =isc.Button.create({
-          title: 'Execute'
+          title: 'Replicate'
           ,startRow: false
           ,click: function() {
               var data = repTable.getData();
@@ -758,7 +800,10 @@ define
               title: 'New'
           ,startRow: false
           ,click: function() {
-              repTable.addData(newRep());
+              var rep = newRep();
+              repTable.addData(rep);
+              repTable.deselectAllRecords();
+              repTable.selectRecord(rep);
               view.modified();
               // view.getState().reps = repTable.getData();
           }  
@@ -956,6 +1001,18 @@ define
           buttonBar.setVisibility('hidden');
       }
       
+      var replResult = isc.HTMLPane.
+      create({
+          ID: 'replresult',
+	  height:'100%'
+	  // contentsURL:'version.html'
+	  ,overflow:"auto",
+	  // styleName:"defaultBorder",
+	  padding:10
+      });
+      
+      
+      
       var repEditorTabset = isc.TabSet.create({
           // ID: "topTabSet",
               tabBarPosition: "top",
@@ -973,6 +1030,8 @@ define
                pane: pickLayout}
               ,{title: "Filter", 
                 pane: filterLayout}
+              ,{title: "Result", 
+                pane: replResult }
           ]
       });
       
@@ -995,23 +1054,13 @@ define
           ]
       });
       
-      var replResult = isc.HTMLPane.
-      create({
-	  height:'100%'
-	  // contentsURL:'version.html'
-	  ,overflow:"auto",
-	  styleName:"defaultBorder",
-	  padding:10
-      });
-      
-      
       var databaseLayout = isc.VLayout.create({
           layoutMargin: 6,
           membersMargin: 6,
           // border: "1px dashed blue",
           // height: 20,
           width:'100%',
-          members: [dbChangeLayout, repTableLayout, repEditorTabset, buttonBar, replResult ] 
+          members: [dbChangeLayout, repTableLayout, repEditorTabset, buttonBar] 
       }); 
       
       

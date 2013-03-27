@@ -26,7 +26,7 @@ define
          ,init: function() {
              var dataSource = View.getBackend().getDS(); 
              calendar.setDataSource(dataSource);
-             setCssClasses();
+             // setCssClasses();
              personForm.getField('person').setOptionDataSource(dataSource);
              locationForm.getField('location').setOptionDataSource(dataSource);
              
@@ -36,6 +36,9 @@ define
              state.currentViewName = calendar.getCurrentViewName();
          }
          ,set: function(state) {
+             log.d('Calendar is being set!!!');
+             // calendar.workdayStart = state.dayStart;
+             // calendar.workdayEnd = state.dayEnd;
              var person = state.person, location = state.location;
              calendar.setChosenDate(new Date(state.chosenDate));
              calendar.setCurrentViewName(state.currentViewName);
@@ -52,8 +55,26 @@ define
                  });
              }
              else calendar.setCriteria(criteria);
+             setDayCss(state);
+             
          }
      }); 
+     
+     function setDayCss(state) {
+         log.d('****************************', state.location.ids);
+         if (state.location && state.location.ids.length === 1) {
+             backend.get().getDoc('L1').when(
+                 function(value) { log.d(value); }
+                 ,function(value) { log.d('Error', value); }
+             );
+         }
+         else {
+             calendar.workdayStart = '0am'; 
+             calendar.workdayEnd = '23:59'; 
+             calendar.redraw();
+         }
+         
+     }
      
      var personPickList = { name: "person",
                             type: 'enum',
@@ -128,6 +149,7 @@ define
                                   };
                                   // if (locationNames[0]) state.location.name = locationNames[0];
                                   applyCriteria(state);
+                                  setDayCss(state);
                                   view.modified();
                                   log.d('PICKLIST', state.location);
                                   

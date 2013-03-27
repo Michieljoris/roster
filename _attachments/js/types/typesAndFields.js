@@ -9,7 +9,7 @@ define
         var log = logger('typesAndFields');
         var typesAndFields = {};
         // var dataSource;
-        // var timeLists = {};
+        var timeLists = {};
         // var eventSnapGap = 30;
         // database.setViews(views);
         
@@ -83,54 +83,54 @@ define
         //                      };
         
         
-        // function formatTime(hour, minute) {
-        //     // var hourPrefix = hour<10 ? '0' : '';
-        //     var hourPrefix = hour<10 ? '' : '';
-        //     var minutePrefix = minute<10 ? '0' : '';
-        //     return hourPrefix + hour + ':' + minutePrefix + minute;
-        // }
+        function formatTime(hour, minute) {
+            // var hourPrefix = hour<10 ? '0' : '';
+            var hourPrefix = hour<10 ? '' : '';
+            var minutePrefix = minute<10 ? '0' : '';
+            return hourPrefix + hour + ':' + minutePrefix + minute;
+        }
    
-        // function getTimeList(step, startTime, endTime, endHour, endMinute) {
-        //     step = step || 30;
-        //     startTime = startTime || 0;
-        //     endTime = endTime || 0;
-        //     endMinute = endMinute || 0;
+        function getTimeList(step, startTime, endTime, endHour, endMinute) {
+            step = step || 30;
+            startTime = startTime || 0;
+            endTime = endTime || 0;
+            endMinute = endMinute || 0;
              
-        //     var hour, minute;
-        //     if (typeof startTime === 'object') {
-        //         if (startTime) {
-        //             hour = startTime.getHours();
-        //             minute = startTime.getMinutes();
-        //         } else { hour = 0; minute = 0; }
-        //         if (endTime) {
-        //             endHour = endTime.getHours();
-        //             endMinute = endTime.getMinutes();
-        //         } else { endHour = 24; endMinute = 0; }
-        //     }
-        //     else {
-        //         hour = startTime, minute = endTime;  
+            var hour, minute;
+            if (typeof startTime === 'object') {
+                if (startTime) {
+                    hour = startTime.getHours();
+                    minute = startTime.getMinutes();
+                } else { hour = 0; minute = 0; }
+                if (endTime) {
+                    endHour = endTime.getHours();
+                    endMinute = endTime.getMinutes();
+                } else { endHour = 24; endMinute = 0; }
+            }
+            else {
+                hour = startTime, minute = endTime;  
                 
-        //     } 
-        //     endHour = endHour || 24;
-        //     // log.d(hour, minute, endHour, endMinute);
-        //     if (endHour > 24) endHour = 24;
-        //     var uniqueList = formatTime(hour,minute) + '-' + 
-        //         formatTime(endHour, endMinute) + step;
-        //     if (timeLists[uniqueList]) return timeLists[uniqueList] ;
-        //     var list = [];
-        //     while (hour < endHour || (hour === endHour && minute <= endMinute)) {
-        //         // list.push(formatTime(hour,minute));
-        //         list.push(isc.Time.createLogicalTime(hour, minute, 0));
-        //         minute+=step; 
-        //         // log.d(minute,hour);
-        //         if ((minute/60) >= 1) hour++;
-        //         minute %= 60;
-        //     }
-        //     // if (list.last() === '24:00') list[list.length-1] = '0.00';
-        //     timeLists[uniqueList] = list;
+            } 
+            endHour = endHour || 24;
+            // log.d(hour, minute, endHour, endMinute);
+            if (endHour > 24) endHour = 24;
+            var uniqueList = formatTime(hour,minute) + '-' + 
+                formatTime(endHour, endMinute) + step;
+            if (timeLists[uniqueList]) return timeLists[uniqueList] ;
+            var list = [];
+            while (hour < endHour || (hour === endHour && minute <= endMinute)) {
+                // list.push(formatTime(hour,minute));
+                list.push(isc.Time.createLogicalTime(hour, minute, 0));
+                minute+=step; 
+                // log.d(minute,hour);
+                if ((minute/60) >= 1) hour++;
+                minute %= 60;
+            }
+            // if (list.last() === '24:00') list[list.length-1] = '0.00';
+            timeLists[uniqueList] = list;
 
-        //     return list;
-        // }
+            return list;
+        }
         
         //add fields here and they will appear in dropdown boxes and when claimed will create
         //a field in the shift record with the value of the shift's length
@@ -153,7 +153,7 @@ define
             claimValueMap.push( claimFields[f].title ? claimFields[f].title :
                                 isc.DataSource.getAutoTitle(f) ); 
         });
-        claimValueMap.push('Event');
+        // claimValueMap.push('Event');
         
         
         
@@ -179,7 +179,7 @@ define
                         // valueMap: getTimeList(eventSnapGap)
                       }
             ,person: { type: 'enum', canFilter: false, canEdit: false, title: 'Person Ids' }
-            // ,personNames: { type: 'text', canEdit: false, title: 'Employee(s)', validOperators: ['iContains', 'iNotContains']}
+            // ,personNames: { type 'text', canEdit: false, title: 'Employee(s)', validOperators: ['iContains', 'iNotContains']}
             ,personIdsString: { title: 'Person IDs', type: 'text', canEdit: false,
                                 validOperators: ['iContains', 'iNotContains']}
             ,location: { type: "text", canEdit: false, title: 'Location Id'} 
@@ -196,6 +196,8 @@ define
                       //TODO: implement 'event'. Change form when this is selected to somethin
                       //appropriate for an event 
                      }
+            ,claimNightAsDisturbed: { type: "boolean",
+                                      title: "Claim any night hours as disturbed sleep."}
             ,isPublicHolidayWorked: { type: 'boolean'}
             ,sleepOver: { type: 'boolean'}
             ,adminHoursUsed: { type: 'float' , canEdit: false }
@@ -233,7 +235,20 @@ define
                        valueMap: ['permanent', 'part time', 'casual']
                      }
             ,costCentre: { type: 'text'}
-            
+            ,dayStart: { type: 'time',
+                         // editorType: 'select',
+                         required: true,
+                         title:'Start of the day'
+                         // ,canEdit:false
+                         // ,valueMap: getTimeList(30)
+                       }
+            ,dayEnd: { type: 'time',
+                       // editorType: 'select',
+                       required: true,
+                       title:'End of the day'
+                       // ,canEdit:false
+                       // ,valueMap: getTimeList(30)
+                     }
             //calculated fields for a shift:
             ,length: { type: 'float' , canEdit: false}
             
@@ -273,11 +288,12 @@ define
                               'endDate', 'date',
                               'startTime', 'endTime', 'length',
                               'sickLeave', 'annualLeave', 'adminHoursUsed','isPublicHolidayWorked',
+                              'claimNightAsDisturbed',
                               'notes', 'ad' ]
                      ,icon: 'shift.png'
                    },
             location: {
-                fields: ['costCentre', 'address', 'suburb','postalCode', 'state',
+                fields: ['dayStart', 'dayEnd', 'costCentre', 'address', 'suburb','postalCode', 'state',
                          'phone', 'mob', 'email', 'region', 'notes']
                 ,icon: 'home.png'
             }

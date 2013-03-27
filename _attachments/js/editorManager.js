@@ -14,8 +14,8 @@ define
        var editorWindow = isc.Window.create({
            title: "TODO: Set to event date, start and end",
            // autoSize: true,
-           width: 400,
-           height:410,
+           width: 360,
+           height:440,
            // height:'100%',
            canDragReposition: true,
            canDragResize: false

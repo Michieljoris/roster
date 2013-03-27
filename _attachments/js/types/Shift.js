@@ -370,6 +370,7 @@ define
               claim: values.claim,
               adminHoursUsed: values.adminHoursUsed,
               isPublicHolidayWorked: values.isPublicHolidayWorked,
+              claimNightAsDisturbed: values.claimNightAsDisturbed,
               repeats: values.repeats, //TODO not implemented yet 
               notes: values.notes || '',
               // name: values.name,

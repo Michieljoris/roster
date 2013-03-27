@@ -27,7 +27,7 @@ define
           type: 'Timesheet'
           ,alwaysSet: true
           ,icon: 'timesheet.png'
-          ,defaultState: { person:'root', location:'',
+          ,defaultState: { person:'guest', location:'',
                            fortnight: calculateFortnight(Date.today())} 
           // ,sync: function(state) {
           //     log.d('UPDATING STATE:', state);

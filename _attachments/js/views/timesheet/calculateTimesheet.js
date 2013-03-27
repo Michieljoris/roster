@@ -87,17 +87,27 @@ define
           //set overtime and disturbed sleep fields:
           var over2;
           
+          var dayHours = fields.day ? fields.day : 0;
           var disturbedSleepHours = 0;
           if (fields.night) {
-              fields.disturbedSleepHoursT1 = fields.disturbedSleepHours = disturbedSleepHours = fields.night;
-              over2 = fields.night -2;
-              fields.disturbedSleepHoursT1p5 = over2 > 0 ? 2 : fields.night; 
-              if (over2 > 0) fields.disturbedSleepHoursT2 = over2;
-              
+              if (fields.claimNightAsDisturbed) {
+                  fields.disturbedSleepHoursT1 = fields.disturbedSleepHours = disturbedSleepHours = fields.night;
+                  over2 = fields.night -2;
+                  fields.disturbedSleepHoursT1p5 = over2 > 0 ? 2 : fields.night; 
+                  if (over2 > 0) fields.disturbedSleepHoursT2 = over2;
+                  fields.totalHoursWorked = dayHours + disturbedSleepHours;
+              }
+              else {
+                  fields.late = fields.late || 0;
+                  fields.late += fields.night;   
+                  fields.totalHoursWorked = dayHours + fields.night;
+              }
+          } 
+          else {
+              fields.totalHoursWorked = dayHours;
           }
           
-          var dayHours = fields.day ? fields.day : 0;
-          fields.totalHoursWorked = dayHours + disturbedSleepHours;
+          
           
           var SHIFT_MAXLEN = 10;
           var overtime = 0;

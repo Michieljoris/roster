@@ -262,7 +262,7 @@ define
       } 
       
       function newView(type) {
-          log.d('newView')   ;
+          log.d('newView',type);
           var selRecord = viewTree.getSelectedRecord();
           // var state = selRecord.viewState;
           var parent; 
@@ -571,6 +571,7 @@ define
       };
       
       user.addObserver(viewTree);
+      viewTree.newView = newView;
       
       return viewTree;
   }});
