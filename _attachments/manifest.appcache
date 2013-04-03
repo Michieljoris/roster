@@ -1,7 +1,7 @@
 CACHE MANIFEST
 
 #version 1.0 2-16-2013
-#version 0.1.3b
+#version 0.2
 
 
 CACHE:
@@ -23,6 +23,7 @@ images/saveui.png
 images/shift.png
 images/table.png
 images/timesheet.png
+images/multicap_logo.png
 lib/isomorphic/skins/Enterprise/images/DynamicForm/checked.png
 lib/isomorphic/skins/Enterprise/images/DynamicForm/date_control.png
 lib/isomorphic/skins/Enterprise/images/DynamicForm/unchecked.png

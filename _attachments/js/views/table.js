@@ -364,6 +364,8 @@ define
                        
                    }
                    else alert('Bad id');
+               }, {
+                 defaultWidth: 200                 
                });
                // record.name = 'mynewname';
            } else dataSource.addData(

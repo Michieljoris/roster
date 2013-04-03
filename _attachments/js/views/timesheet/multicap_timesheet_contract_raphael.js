@@ -309,7 +309,8 @@ define
             element = anElement;
             if (element) paper = new Raphael(element,portWidth, portHeight);
             else paper = new Raphael(0, 0 ,portWidth, portHeight);
-            // window.mypaper = paper;
+            
+            window.mypaper = paper;
             // paper = new Raphael(0,0,portWidth, portHeight, function() {
             //     console.log('hello', arguments);
             // });
@@ -377,6 +378,7 @@ define
                  { align: 'start' } , {weight: 'normal'});
             // cont();
             // setFields({name: 'hello'});
+            paper.image("images/multicap_logo.png", 820,0,120,60);
             return paper;
         }       
         

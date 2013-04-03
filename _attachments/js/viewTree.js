@@ -424,7 +424,7 @@ define
       
       var saveButton = isc.ToolStripButton.create({
 	  icon: "saveui.png",
-	  prompt: "Save this view"
+	  prompt: "Save user interface setup. <p>Any data entered is always immediately saved in a database. This button just saves the current look and setup to that same database."
 	  ,click: function() { saveTreeToDb(); }
       });
 
@@ -549,14 +549,15 @@ define
       window.onbeforeunload= 
 	  function() { 
               if (viewInstanceShowing) views[viewInstanceShowing.type].sync();
-              // if (!modified) return null;
-              // else return 'Leaving will discard changes made to the organising tree.'+
-              //     '\\n Select "Stay on this page" and then click the icon next to '+
-              //         'the login name to save the changes.';
+              if (treeModified)
+                  return 'Leaving will discard changes made to the organising tree.'+
+                  '\\n Select "Stay on this page" and then click the icon next to '+
+                  'the login name to save the changes.';
               
-              // return 'Leaving will discard changes made to a view.\n\nSelect "Stay on '+
-              //     'this page" and then click the icon next to the login name to ' +
-              //     'save the changes.';
+              if (viewModified)
+                  return 'Leaving will discard changes made to a view.\n\nSelect "Stay on '+
+                  'this page" and then click the icon next to the login name to ' +
+                  'save the changes.';
               return null;
           };
       
