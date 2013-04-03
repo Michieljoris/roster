@@ -61,17 +61,37 @@ define
      }); 
      
      function setDayCss(state) {
-         log.d('****************************', state.location.ids);
+         log.d('Getting day CSS ****************************', state.location.ids);
          if (state.location && state.location.ids.length === 1) {
-             backend.get().getDoc('L1').when(
-                 function(value) { log.d(value); }
+             backend.get().getDoc(state.location.ids[0]).when(
+                 function(location) { log.d("One location picked, setting calendar night shade");
+                                      log.d(location.dayStart, location.dayEnd);
+                                      var dayStart = location.dayStart;
+                                      var dayEnd = location.dayEnd; 
+                                      if (dayEnd.getHours() === 0)
+                                          dayEnd.addMinutes(-1);
+                                      if ((dayStart.getHours() + dayStart.getMinutes()/60) >
+                                         (dayEnd.getHours() + dayEnd.getMinutes()/60)) {
+                                          calendar.workdayStart = '0am';
+                                          calendar.workdayEnd = '23:59';
+                                      }
+                                      else {
+                                          calendar.workdayEnd = dayEnd;
+                                          calendar.workdayStart = dayStart;
+                                      }
+                                      // calendar.workdayStart = '10am'; 
+                                      // calendar.workdayEnd = '6pm'; 
+                                      calendar.redraw();
+                                    }
                  ,function(value) { log.d('Error', value); }
              );
          }
          else {
-             calendar.workdayStart = '0am'; 
-             calendar.workdayEnd = '23:59'; 
-             calendar.redraw();
+             setTimeout(function() {
+                 calendar.workdayStart = '0am'; 
+                 calendar.workdayEnd = '23:59'; 
+                 calendar.redraw();
+             }, 0);
          }
          
      }
@@ -373,11 +393,20 @@ define
                                                             event.endDate.getMinutes(),0),
                  event.startTime = isc.Time.createLogicalTime(event.startDate.getHours(),
                                                               event.startDate.getMinutes(),0);
-                 var resizedEvent = Shift.create(event);
-                 calendar.updateEvent(resizedEvent, resizedEvent.startDate,
-                                      resizedEvent.endDate,
-                                      resizedEvent[calendar.nameField],
-                                      resizedEvent.description);
+                 
+                 Shift.create(event).when(
+                     function(resizedEvent) {
+                         calendar.updateEvent(resizedEvent, resizedEvent.startDate,
+                                              resizedEvent.endDate,
+                                              resizedEvent[calendar.nameField],
+                                              resizedEvent.description);
+                     },
+                     function(e) {
+                         alert("Couldn't save the shift", e);
+                     }
+                 );
+                 
+                 // var resizedEvent = Shift.create(event);
                  return false;
              }
              ,eventMoved: function(newDate, event) {
@@ -392,13 +421,20 @@ define
                  event.startTime = isc.Time.createLogicalTime(event.startDate.getHours(),
                                                               event.startDate.getMinutes(),0);
                  log.d('EVENT',event);
-                 var movedEvent = Shift.create(event);
-                 log.d('moved event:', movedEvent);
+                 // var movedEvent = Shift.create(event);
                      
-                 calendar.updateEvent(movedEvent, newDate,
-                                          Date.create(endTime),
-                                      movedEvent[calendar.nameField],
-                                      movedEvent.description);
+                 Shift.create(event).when(
+                     function(movedEvent) {
+                         log.d('moved event:', movedEvent);
+                         calendar.updateEvent(movedEvent, newDate,
+                                              Date.create(endTime),
+                                              movedEvent[calendar.nameField],
+                                              movedEvent.description);
+                     },
+                     function(e) {
+                         alert("Couldn't save the shift", e);
+                     }
+                 );
                  return false;
                      
                      
@@ -515,6 +551,7 @@ define
                      // ,locationName: view.getState().location.name
                      ,person : person.ids
                      ,personIdsString : person.idsString
+                     ,isPublicHolidayWorked : true
                      // ,personNames: person.names
                      // ,location: location.ids[0]
                      // ,locationName: location.name

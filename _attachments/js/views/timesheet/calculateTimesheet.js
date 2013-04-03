@@ -51,18 +51,20 @@ define
               log.d('overlapping!!');
               throw new Error("Alert:Can't calculate timesheet. Shifts overlap on " +
                               shifts[0].date.toLocaleDate());
+
           }
           var fields = utils.addFieldValues(shifts);
           fields.awayFromBase = fields.awayFromBase ? 1 : '';
           fields.sleepOver = fields.sleepOver ? 1 : '';
+          fields.totalHoursWorked = fields.length;
           
           log.d("FIELDS:", fields);
           // set public holiday fields:
           var ph = fields.publicHoliday;
           if (ph) {
               if (person.status === 'casual') {
-               fields.publicHolidayOrdinary =  ph;   
-               fields.publicHolWorkPerm1p5 =  ph;   
+                  fields.publicHolidayOrdinary =  ph;   
+                  fields.publicHolWorkPerm1p5 =  ph;   
               }
               else {
                   var phw = fields.publicHolidayWorked;
@@ -83,39 +85,25 @@ define
               }
               
           }
-          
-          //set overtime and disturbed sleep fields:
-          var over2;
-          
-          var dayHours = fields.day ? fields.day : 0;
-          var disturbedSleepHours = 0;
-          if (fields.night) {
-              if (fields.claimNightAsDisturbed) {
-                  fields.disturbedSleepHoursT1 = fields.disturbedSleepHours = disturbedSleepHours = fields.night;
-                  over2 = fields.night -2;
-                  fields.disturbedSleepHoursT1p5 = over2 > 0 ? 2 : fields.night; 
-                  if (over2 > 0) fields.disturbedSleepHoursT2 = over2;
-                  fields.totalHoursWorked = dayHours + disturbedSleepHours;
-              }
-              else {
-                  fields.late = fields.late || 0;
-                  fields.late += fields.night;   
-                  fields.totalHoursWorked = dayHours + fields.night;
-              }
-          } 
-          else {
-              fields.totalHoursWorked = dayHours;
+          // var disturbedSleepHours = 0;
+          if (fields.night && !fields.adjustDisturbedHours) {
+                  fields.disturbedSleepHours = fields.night;
           }
-          
-          
+          else {
+              // fields.disturbedSleepHours = fields.disturbedSleepHours || 0;
+          }
+          if (fields.disturbedSleepHours)
+              adjustFields(fields, ['penalty', 'weekend'], fields.disturbedSleepHours);
+          // fields.penalty -= fields.disturbedSleepHours;
           
           var SHIFT_MAXLEN = 10;
-          var overtime = 0;
+              var overtime = 0;
           if (!ph) {
-              overtime = Math.max(dayHours - SHIFT_MAXLEN, 0);
+              overtime = Math.max(fields.length - SHIFT_MAXLEN, 0);
+              log.d('OVERTIME', overtime);
               if (overtime > 0) {
                   if (person.status !== 'casual')
-                      adjustFields(fields, ['weekend', 'late', 'ord', 'early'], overtime);
+                      adjustFields(fields, ['disturbedSleepHours', 'weekend', 'penalty', 'ord'], overtime);
                   fields.overtime = overtime;
                   over2 = overtime -2;
                   fields.overtimeT1p5 = over2 > 0 ? 2 : overtime; 
@@ -124,21 +112,37 @@ define
           }
           if (person.status === 'casual') {
               if(fields.ord) {
-                  fields.ord += fields.late ? fields.late: 0;
+                  fields.ord += fields.penalty ? fields.penalty: 0;
               }
               if(fields.weekend) {
                   fields.ord = fields.weekend;
               }
               
           }
+          var over2;
+          if (fields.disturbedSleepHours) {
+                  // fields.disturbedSleepHoursT1 = fields.disturbedSleepHours;
+                  over2 = fields.disturbedSleepHours -2;
+                  fields.disturbedSleepHoursT1p5 = over2 > 0 ? 2 : fields.disturbedSleepHours; 
+                  if (over2 > 0) fields.disturbedSleepHoursT2 = over2;
+                  // fields.totalHoursWorked = dayHours + disturbedSleepHours;
+                  // adjustFields(fields, ['weekend', 'penalty', 'ord'], disturbedSleepHours);
+                  // adjustFields(fields, ['weekend', 'ord'], fields.disturbedSleepHours);
+              }
+          //     else {
+          //         // fields.penalty = fields.penalty || 0;
+          //         // fields.penalty += fields.night;   
+          //         // fields.totalHoursWorked = dayHours + fields.night;
+          //     }
+          // } 
+          // else {
+          //     // fields.totalHoursWorked = dayHours;
+          // }
+          
+          log.d('PENALTY', fields.penalty);
+          
+          
           // overtime += disturbedSleepHours;
-          
-          //toil fields?
-          
-          
-          
-          // log.pp('fields', fields, 'person', person, 'location', location);
-          
           return fields;
       }
       

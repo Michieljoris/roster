@@ -61,7 +61,7 @@ define
             ,{ title: '*TOTAL HOURS WORKED', name: 'totalHoursWorked' }
             // ,{ title: 'EARLY (6-7.30)', name: 'early' }
             ,{ title: 'ORDINARY (6.00-20.00) T1', name: 'ord' }
-            ,{ title: 'PENALTY (20.00-6.00) T1.15', name: 'late' }
+            ,{ title: 'PENALTY (20.00-6.00) T1.15', name: 'penalty' }
             ,{ title: 'WEEKEND (PERM) T1.6', name: 'weekend' }
             ,{ title: 'SICK LEAVE', name: 'sickLeave' }
             ,{ title: 'ANNUAL LEAVE', name: 'annualLeave' }
@@ -184,7 +184,7 @@ define
 
         //#API
         function setFields(props) {
-            log.d('in setFields in raphael contract', props);
+            // log.d('in setFields in raphael contract', props);
             Object.keys(props).forEach(function(p) {
                 setDataField(p, props[p]);
             });
@@ -199,7 +199,7 @@ define
          * @param {string} value The value to set the data field to
          */
         function setDataField(key, value) {
-            log.d('SETDATAFIELD', key, value);
+            // log.d('SETDATAFIELD', key, value);
             data.props[key] = value;
             if (!value) value = '';
             var element;
@@ -430,7 +430,7 @@ define
                 }
                 calc.init(fortnight, person, location, shifts);
                 for (var i=0; i<14; i++) {
-                    log.d("Setting column", i);
+                    // log.d("Setting column", i);
                     log.pp(calc.getColumn(i));
                     setColumn( i, calc.getColumn(i));
                 }

@@ -3,6 +3,7 @@ CACHE MANIFEST
 #version 1.0 2-16-2013
 #version 0.1.3b
 
+
 CACHE:
 
 #images
@@ -123,7 +124,7 @@ lib/browserDetect.js
 lib/logger.js
 lib/bootstrap.js
 js/main.js
-lib/cookie.js
+lib/Cookie.js
 js/loaders/backend.js
 js/user.js
 js/layout.js
@@ -153,6 +154,13 @@ js/views/timesheet/multicap_timesheet_contract_raphael.js
 js/views/timesheet/fetchTimesheetShifts.js
 js/views/timesheet/calculateTimesheet.js
 test/quickpouch.js
+lib/jquery-1.6.2.js
+lib/couchdb/jquery.couch.js
+tryout/sync.js
+js/views/db_management.js
+js/defaultTimePatterns.js
+js/patterns.js
+js/views/db_management/db_utils.js
 
 NETWORK:
 *

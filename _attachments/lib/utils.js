@@ -135,7 +135,26 @@ define
      }
      window.createCSSClass = createCSSClass;
      
+     //any objects that are not objects are ignored
+      function addProperties() {
+          function addProps(o1,o2) {
+              o1 = typeof o1 === 'object' ? o1 : {};
+              o2 = typeof o2 === 'object' ? o2 : {};
+              Object.keys(o2).forEach(function(k) {
+                  o1[k] = o2[k];
+              });
+              return o1;
+          }
+          var args = Array.prototype.slice.call(arguments);
+          var newObject = {};
+          args.forEach(function(a) {
+              addProps(newObject, a);
+          });
+          return newObject;
+      } 
+      
      return {
+         addProperties: addProperties,
          sortBy: sortBy,
          addFieldValues: addFieldValues,
          pp: pp,

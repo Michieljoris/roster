@@ -1,12 +1,14 @@
 /*global  logger:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
-/*jshint maxparams:4 maxcomplexity:7 maxlen:190 devel:true*/
+/*jshint maxparams:7 maxcomplexity:7 maxlen:190 devel:true*/
 
 //This kind of module does not produce an injectable, but registers itself with the editorManager
 //to use this editor, both load the editorLoader module and inject the editorManager
 define
-({inject: ['Editor', 'types/typesAndFields', 'editorManager', 'editorUtils',  'parentListEditor'],
-  factory: function(Editor, typesAndFields, editorManager, editorUtils, parentListEditor) {
+({inject: ['lib/utils', 'defaultTimePatterns', 'patterns',
+           'Editor', 'types/typesAndFields', 'editorManager', 'editorUtils'],
+  factory: function(utils, defaultTimePatterns, patterns,
+                    Editor, typesAndFields, editorManager, editorUtils) {
       "use strict";
       var log = logger('locationEditor');
       
@@ -60,22 +62,6 @@ define
                   showIf: 'true'
               }, fields.region),
               isc.addDefaults({
-                  colSpan:2,
-                  itemHoverHTML: function() {
-                      return 'In increments of 30 minutes.';
-                  },
-                  titleOrientation: 'top',
-                  showIf: 'true'
-              }, fields.dayStart),
-              isc.addDefaults({
-                  itemHoverHTML: function() {
-                      return 'In increments of 30 minutes.';
-                  },
-                  colSpan:2,
-                  titleOrientation: 'top',
-                  showIf: 'true'
-              }, fields.dayEnd),
-              isc.addDefaults({
                   // showIf: 'true'
               }, fields.inheritable),
               isc.addDefaults({
@@ -83,6 +69,109 @@ define
               }, fields.inheritingFrom)
           ]
       };
+      
+     var dayLengthFormConfig = {
+          // ID: 'lengthForm',
+          autoDraw: false,
+          // width:300,
+          // height: 48,
+          colWidths: [90, "*"],
+          cellPadding: 4,
+          numCols: 2,
+          itemKeyPress: function(item,keyName) {
+              if (keyName === 'Enter') addLocation();
+          },
+          itemChanged: formChanged,
+          fields: [
+              {
+                  // title:'Info',
+                  showTitle: false,
+                  type: 'text',
+                  canEdit: false,
+                  value: 'The day should start not later than penalty hours end in the morning, and not not end before penalty hours start in the evening.<p>Refresh the page to update the calendar\'s greyed out areas (These will not appear in the calendar when the day ends past midnight).'
+              },
+              isc.addDefaults({
+                  colSpan:2,
+                  itemHoverHTML: function() {
+                      return 'If filled in, takes prevalence over the day length value.<p>'; 
+                      // return 'In increments of 30 minutes.';
+                  },
+                  titleOrientation: 'top',
+                  showIf: 'true'
+                  ,change: function() {
+                      var startTime = arguments[2];
+                      var endTime = lengthForm.getValue('dayEnd');
+                      var sHour, sMinutes;
+                      var eHour, eMinutes;
+                      var dayLength;
+                      if (endTime) {
+                          eHour = endTime.getHours();
+                          eMinutes = endTime.getMinutes();
+                          if (startTime) {
+                              sHour = startTime.getHours();
+                              sMinutes = startTime.getMinutes();
+                              dayLength = eHour - sHour +
+                                  (eMinutes - sMinutes)/60;
+                              if (dayLength <= 0) {
+                                  dayLength = null;                                 
+                                  lengthForm.setValue('dayStart',null);
+                              }
+                              lengthForm.setValue('dayLength', dayLength);
+                          }
+                      }
+                  }
+              }, fields.dayStart),
+              isc.addDefaults({
+                  itemHoverHTML: function() {
+                      return 'If filled in, takes prevalence over the day length value.<p>' +
+                          'The day has to end before midnight.';
+                  },
+                  colSpan:2,
+                  titleOrientation: 'top',
+                  showIf: 'true'
+                  ,change: function() {
+                      var endTime = arguments[2];
+                      var startTime = lengthForm.getValue('dayStart');
+                      var sHour, sMinutes;
+                      var eHour, eMinutes;
+                      var dayLength;
+                      if (endTime) {
+                          eHour = endTime.getHours();
+                          eMinutes = endTime.getMinutes();
+                          if (startTime) {
+                              sHour = startTime.getHours();
+                              sMinutes = startTime.getMinutes();
+                              dayLength = eHour - sHour +
+                                  (eMinutes - sMinutes)/60;
+                              if (dayLength <= 0) {
+                                  dayLength = null;                                 
+                                  lengthForm.setValue('dayEnd',null);
+                              }
+                              lengthForm.setValue('dayLength', dayLength);
+                          }
+                      }
+                  }
+              }, fields.dayEnd),
+              isc.addDefaults({
+                  itemHoverHTML: function() {
+                      return 'If modified, it takes prevalence over the day end value.<p>' +
+                          'This makes it possible to end a day on or after midnight';
+                  },
+                  colSpan:2,
+                  titleOrientation: 'top',
+                  showIf: 'true',
+                  change: function() {
+                      var length = arguments[2];
+                      if (length<=0) lengthForm.setValue('dayEnd',null);
+                      else {
+                          var dayStart = lengthForm.getValue('dayStart');
+                          if (dayStart) lengthForm.setValue('dayEnd', dayStart.clone().addHours(length));
+                      }
+                  }
+                  ,validators: [{ type:'isOnHalfHour'}]
+              }, fields.dayLength)
+              ]
+     };
       
       var addressFormConfig = {
           autoDraw: false,
@@ -181,6 +270,7 @@ define
       };
               
       var mainForm = isc.DynamicForm.create(mainFormConfig);
+      var lengthForm = isc.DynamicForm.create(dayLengthFormConfig);
       var addressForm = isc.DynamicForm.create(addressFormConfig);
       var contactForm = isc.DynamicForm.create(contactFormConfig);
       var notesForm = isc.DynamicForm.create(notesFormConfig);
@@ -188,9 +278,23 @@ define
       
       var vm = isc.ValuesManager.create({
           members: [
-              mainForm, addressForm, contactForm, notesForm
+              mainForm, lengthForm, addressForm, contactForm, notesForm
           ]
       });
+      
+    isc.Validator.addValidator(
+        'isOnHalfHour',
+        function(item, validator, dummy, record) {
+            var errorMessage;
+            var length = item.getValue();
+            var multiple = length/0.5;
+            if (multiple - Math.floor(multiple) > 0)
+                errorMessage = 'Day length has to be a multiple of 0.5';
+            validator.errorMessage = errorMessage;
+            return !errorMessage;
+        }
+        
+    );
     
     
       function addLocation() {
@@ -201,6 +305,18 @@ define
               if (!location.notes) location.notes = '';
               
               typesAndFields.removeUnderscoreFields(location);
+              // if (location.dayEnd.getHours() === 0 &&
+              //     location.dayEnd.getMinutes() === 0) {
+              //     location.dayEnd.addSeconds(-1); //so that we get 23:59
+              // }
+              var timePattern = patterns.makeDayHours(location.dayStart, location.dayLength);
+              log.d('DAYPATTERN', timePattern);
+               
+              location.timePattern = JSON.stringify(timePattern);
+              // location.timePatterns = utils.addProperties(
+              //     defaultTimePatterns.weekend,
+              //     defaultTimePatterns.publicHolidays,
+              //     dayPattern);
               editorManager.save(location, updateVm);           
           }
       }
@@ -211,19 +327,19 @@ define
           editorManager.changed(editor, false);
       } 
                                        
-      var parentLabel = isc.Label.create({
-          height: 30,
-          padding: 10,
-          align: "center",
-          valign: "center",
-          wrap: false,
-          // icon: "icons/16/approved.png",
-          // showEdges: true,
-          contents: "Mamre house, Southside",
-          click: "log.d('hello')",
-          prompt: 'click to edit'
+      // var parentLabel = isc.Label.create({
+      //     height: 30,
+      //     padding: 10,
+      //     align: "center",
+      //     valign: "center",
+      //     wrap: false,
+      //     // icon: "icons/16/approved.png",
+      //     // showEdges: true,
+      //     contents: "Mamre house, Southside",
+      //     click: "log.d('hello')",
+      //     prompt: 'click to edit'
           
-      });
+      // });
       
       var allButtons = {};
       // function buttonBar(orientation, entries, buttonProps, action) {
@@ -267,6 +383,7 @@ define
       
       var formLayout = isc.HLayout.create({
           members: [ mainForm
+                     ,lengthForm
                      ,addressForm
                      ,contactForm
                      ,notesForm
@@ -290,7 +407,7 @@ define
                   // align: 'left', 
                   members: [
                       buttonBar(allButtons, 'vertical', 180, 50,
-                                ['Main', 'Address', 'Contact', 'Notes'],
+                                ['Main', 'Day hours', 'Address', 'Contact', 'Notes'],
                                 { // baseStyle: "cssButton",
                                     // left: 200,
                                     showRollOver: true,
@@ -306,11 +423,10 @@ define
           ]
       });
       
-       
-      
       function action(e) {
           switch (e) {
             case 'Main': formLayout.setVisibleMember(mainForm); break;
+            case 'Day hours': formLayout.setVisibleMember(lengthForm); break;
             case 'Address': formLayout.setVisibleMember(addressForm); break;
             case 'Contact': formLayout.setVisibleMember(contactForm); break;
             case 'Notes': formLayout.setVisibleMember(notesForm); break; 

@@ -62,7 +62,7 @@ define
             ,{ title: '*TOTAL HOURS WORKED', name: 'totalHoursWorked' }
             // ,{ title: 'EARLY (6-7.30)', name: 'early' }
             ,{ title: 'ORDINARY (6.00-20.00) T1', name: 'ord' }
-            // ,{ title: 'PENALTY (20.00-6.00) T1.15', name: 'late' }
+            // ,{ title: 'PENALTY (20.00-6.00) T1.15', name: 'penalty' }
             // ,{ title: 'WEEKEND (PERM) T1.6', name: 'weekend' }
             // ,{ title: 'SICK LEAVE', name: 'sickLeave' }
             // ,{ title: 'ANNUAL LEAVE', name: 'annualLeave' }

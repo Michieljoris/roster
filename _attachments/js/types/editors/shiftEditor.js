@@ -30,9 +30,51 @@ define
         
     };
     
+    function calcShift() {
+        var eventValues = eventForm.getValues();
+        // var distSleep = eventForm.getValue('disturbedSleepHours');
+        Shift.create(eventValues).when(
+            function(aShift) {
+                log.pp(aShift);
+                // if (!distSleep) 
+                //     eventForm.setValue('disturbedSleepHours', aShift.night || 0);
+                if (!aShift.night) {
+                    eventForm.getField('nightHours').hide();   
+                    eventForm.getField('adjustDisturbedHours').hide();
+                    eventForm.getField('nightHours').hide();
+                }
+                else {
+                    // eventForm.getField('nightHours').show();
+                    eventForm.setValue('nightHours', aShift.night);
+                    eventForm.getField('adjustDisturbedHours').show();
+                    
+                    var distSleep =eventForm.getValue('disturbedSleepHours');
+                   if (!distSleep) eventForm.setValue('disturbedSleepHours', 0);
+                    if (eventForm.getValue('adjustDisturbedHours'))  {
+                        eventForm.getField('disturbedSleepHours').show();
+                    }
+                    else {
+                        eventForm.getField('nightHours').show();
+                        eventForm.getField('disturbedSleepHours').hide();
+                    }
+                }
+                if (aShift.publicHoliday) {
+                    eventForm.getField('phClaim').show();}
+                else { eventForm.getField('phClaim').hide();}
+            },
+            function() {
+                // if (!distSleep) 
+                //     eventForm.setValue('disturbedSleepHours', null);
+                eventForm.setValue('nightHours',null); 
+                // alert("Couldn't calculate the shift ", e);
+            }
+        );
+    }
+    
     function formChanged(item) {
-        log.d('CHANGE', item);
-        log.d('ITEMCHANGED', eventForm.valuesHaveChanged());
+        // log.d('CHANGE', item);
+        if (item.name === 'disturbedSleepHours') return;
+        // log.d('ITEMCHANGED', eventForm.valuesHaveChanged());
         var changed = eventForm.valuesHaveChanged();
         allButtons.Save.setDisabled(!changed);
         editorManager.changed(editor, changed);
@@ -48,6 +90,7 @@ define
             endDate: endTime
         };
         var length = Shift.calculateLength(period);
+        calcShift(eventForm.getValues());
         eventForm.setValue('length', length);
         
         if (item.getClassName() === 'TextAreaItem')
@@ -73,7 +116,7 @@ define
             
             if (endTime.getHours() === 0 &&
                 endTime.getMinutes() === 0) endTime.setDate(startTime.getDate() + 1);
-            var length = endTime.getTime() - startTime.getTime();
+            // var length = endTime.getTime() - startTime.getTime();
             log.d(startTime, endTime, ' validated--------------------------');
             if (startTime >= endTime)  {
                 errorMessage = 'Finish time should be after start time';
@@ -107,26 +150,16 @@ define
                 validates = false;
             log.d(errors);
         }
-        // var valuesHaveChanged = eventForm.valuesHaveChanged();
-        // log.d('VALUESHAVECHANGED', valuesHaveChanged);
-        // if (validates && valuesHaveChanged) {
         else {
             var eventValues = eventForm.getValues();
-            
-            // var personList = eventForm.getField('person').
-            //     pickList.getSelectedRecords();
-            // personNames = [];
-            // personList.forEach(function(p) {
-            //     personNames.push(p.name);
-            // });
-            // if (personNames.length === 0) personNames = ['Nobody'];
-            
-            // eventValues.personNames = personNames;
-            // eventValues.locationNames = locationNames;
-            
-            event =Shift.create(eventValues);
-            window.test = event;
-            editorManager.save(event, updateForm);
+            Shift.create(eventValues).when(
+                function(aShift) {
+                    editorManager.save(aShift, updateForm);
+                },
+                function(e) {
+                     alert("Couldn't save the shift", e);
+                }
+            );
         }
     }
     
@@ -370,23 +403,47 @@ define
                 canEdit: true
                 //TODO add validator to make sure the value is smaller than the length
                 // ,valueMap: getTimeList(settings.eventSnapGap)
-            }, fields.adminHoursUsed),
-            
-            isc.addDefaults({
+            }, fields.adminHoursUsed)
+            ,{
                 showTitle: false,
                 titleOrientation: 'top',
-                title: 'Working on public holiday',
+                title: 'Public holiday claim only',
                 align: 'left',
+                type: 'boolean',
                 startRow: true 
+                ,name: 'phClaim'
+                ,change: function() {
+                    eventForm.setValue('isPublicHolidayWorked', !arguments[2]);
+                }
                 // colSpan:2
-            }, fields.isPublicHolidayWorked),
-            {
+            }
+            
+            // isc.addDefaults({
+            //     showTitle: false,
+            //     titleOrientation: 'top',
+            //     title: 'Public holiday claim',
+            //     align: 'left',
+            //     startRow: true 
+                
+            //     // colSpan:2
+            // }, fields.isPublicHolidayWorked),
+            ,{
                 titleOrientation: 'top',
                 type: 'text',
-                title: 'Shift length (hours)',
+                startRow: true,
+                title: 'Disturbed sleep',
                 canEdit: false,
-                name:'length'
+                name:'nightHours',
+                colSpan:1
             },
+            isc.addDefaults({
+                startRow: true,
+                showTitle: true,
+                titleOrientation: 'top',
+                width:60,
+                colSpan:1,
+                align: 'left'
+            }, fields.disturbedSleepHours),
             // isc.BlurbItem.create({
             //   name: 'blurb', value: 'hello'  
             // }),
@@ -395,11 +452,36 @@ define
            isc.addDefaults({
                 showTitle: false,
                 titleOrientation: 'top',
-                // title: 'Working on public holiday',
+                title: 'Modify disturbed sleep hours',
                 colSpan:2,
                 align: 'left',
-                startRow: true 
-            }, fields.claimNightAsDisturbed),
+                startRow: true,
+               change:  function() {
+                   log.d('change args:', arguments);
+                   // var nightHours = eventForm.getValue('nightHours');
+                   // eventForm.setValue('disturbedSleepHours', nightHours || 0);
+                   if (arguments[2]) {
+                       if (!eventForm.getValue('disturbedSleepHours'))
+                           eventForm.setValue('disturbedSleepHours', 0);
+                       eventForm.getField('disturbedSleepHours').show();
+                       eventForm.getField('nightHours').hide();
+                   }
+                   else {
+                       eventForm.getField('disturbedSleepHours').hide();
+                       eventForm.getField('nightHours').show();
+                   } 
+                   
+               }
+            }, fields.adjustDisturbedHours),
+            {
+                titleOrientation: 'top',
+                startRow: true,
+                type: 'text',
+                title: 'Shift length (hours)',
+                canEdit: false,
+                name:'length'
+                // colSpan:2
+            },
             
             //---------------------------------------- 
             isc.addDefaults(
@@ -422,6 +504,7 @@ define
           // autoSize:true,
         height: '100%',
         width: '100%',
+        layoutLeftMargin: 5,
         members: [
             eventForm,
             buttonBar(allButtons, 'horizontal', 25, 330,
@@ -471,7 +554,20 @@ define
         
         eventForm.clearErrors();
         eventForm.setValues(someEvent);
-       // log.d('CHANGED', eventForm.valuesHaveChanged());
+        calcShift(someEvent);
+        if (someEvent.adjustDisturbedHours) {
+            eventForm.getField('disturbedSleepHours').show();
+            eventForm.getField('nightHours').hide();
+        }
+        else {
+            eventForm.getField('disturbedSleepHours').hide();
+            eventForm.getField('nightHours').show();
+        } 
+        eventForm.setValue('phClaim', !someEvent.isPublicHolidayWorked);
+        // if (someEvent.claimNightasdisturbed)
+        //     eventForm.getField('disturbedSleepHours').show();
+        // else eventForm.getField('disturbedSleepHours').hide();
+        // log.d('CHANGED', eventForm.valuesHaveChanged());
         
         allButtons.Cancel.setVisibility(settings.cancelButton);
         allButtons.Delete.setVisibility(settings.removeButton);

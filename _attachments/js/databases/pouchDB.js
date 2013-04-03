@@ -87,6 +87,7 @@ define
           else pouchDbHandle.get(record, function(err, doc) {
               if (!err) {
                   // log.d('keeping get vow');
+                  addTimezoneOffset(doc);
                   vow.keep(doc);   
               }
               else {
@@ -112,6 +113,7 @@ define
           // };
           if (user) record.lastEditedBy = user._id;
           record.lastEditedAt = new Date();
+          subtractTimezoneOffset(record);
           pouchDbHandle.post(record, function(err, response) {
               if (!err) {
                   // log.d('keeping put vow');
@@ -254,7 +256,7 @@ define
 				    typefyProps(key); 
                                     addTimezoneOffset(key);
                                     if (key.person) {
-                                        log.d('found person', key.person);
+                                        // log.d('found person', key.person);
                                         key.person = JSON.parse(key.person);    
                                     }
 				    // dsResponse.data.push({ _id:key._id, _rev:key._rev, text:key.text});
