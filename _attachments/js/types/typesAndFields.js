@@ -413,6 +413,11 @@ define
                 };
                 isc.addDefaults(record, event);
             }
+            ,location: function (record) {
+                isc.addDefaults(record,{
+                    dayStart: Date.parse('2000 6am'), dayEnd:Date.parse('2000 10pm'), dayLength: 14
+                });
+            }
         };
         
         

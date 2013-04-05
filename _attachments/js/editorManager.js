@@ -16,7 +16,7 @@ define
            // autoSize: true,
            // layoutLeftMargin: 20,
            width: 365,
-           height:480,
+           height:500,
            // height:'100%',
            canDragReposition: true,
            canDragResize: false
