@@ -25,14 +25,16 @@ define
               idbName: '',
               url: 'http://couch:5984/db',
               urlValuemap: [
+                  'http://multicap.iriscouch.com/db',
+                  'http://localhost:1234',
+                  'http://localhost:8090/local',
+                  
                   'http://couch:5984/db',
                   'http://w:w@couch:5984/db',
                   'http://wt:wt@couch:5984/db',
-                  'http://m:m@couch:5984/db',
+                  'http://m:m@couch:5984/db'
                   // 'https://couch:6984/db',
-                  'http://multicap.iriscouch.com/db'
                   // 'https://multicap.iriscouch.com/db',
-                  ,'http://localhost:1234'
                   // 'http://localhost:8090'
               ],
               dbName: '',
@@ -95,9 +97,11 @@ define
               setValuemaps();
               
               var backendName = backend.getName();
+              log.pp(dbDescriptions);
               var url = backend.get().getUrl();
               currentDbLabel.setContents('<h2>Current database name: ' + url +
-                                         (backendName === 'pouchDB' ? ' (in the browser)' : '') + 
+                                         // (backendName === 'pouchDB' ? ' (in the browser)' : ''
+                                         // ) + 
                                          '</h2>');
               
               

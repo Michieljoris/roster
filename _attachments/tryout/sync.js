@@ -41,12 +41,13 @@
             if (err) {
                 log.d('Errors!!!', err);
                 dblog.push( ['Replicating from ' + db1.url + ' to ' +
-                             db2.url + ' produced errors: ' + err]);
+                             db2.url + ' produced errors: ' + err.toString()]);
                 vow['break'](dbs);
             }
             else {
                 db1.to =  db2.url;
                 db2.from =  db1.url;
+                log.d('CHANGES:', changes);
                 dblog.push(['' + db1.url + ' --> ' + db2.url,
                             '\nDocs read: ' + changes.docs_read, 
                             '\n Docs written: ' + changes.docs_written]);
@@ -281,6 +282,7 @@
     // }
     
     Cookie.get('sync').when(function(repRules) {
+        $('sync').html('Syncing.. ');
         repRules = JSON.parse(repRules);
         log.pp(repRules);
     
@@ -310,7 +312,7 @@
             else {
                 $('#sync').html(dblog.join('<br>'));               
                 Cookie.set('replResult', dblog.join('<br>'));
-                location.reload();
+                // location.reload();
             } 
         }
         iterate(0);

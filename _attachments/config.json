@@ -3,7 +3,7 @@
 	{ "prefix": "local",
 	  "target": "http://localhost:5984" },
 	{ "prefix": "iris",
-          "target": "https://michieljoris.iriscouch.com"}
+          "target": "http://multicap.iriscouch.com/db"}
 ]
 
     ,"dir": true

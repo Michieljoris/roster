@@ -66,7 +66,7 @@ var pouch =
 
         };
 
-        var pinfo = function () {
+        var palldocs = function () {
             Pouch(db, function(err, db) {
 	        if (err) {
 		    console.log(err.error, err.reason); 
@@ -93,6 +93,23 @@ var pouch =
 			});
 		    }
 		}); 
+  	    });
+        };
+        var pinfo = function () {
+            Pouch(db, function(err, db) {
+	        if (err) {
+		    console.log(err.error, err.reason); 
+		    return;
+	        }
+  	        function map(doc) {
+  		    if(doc) {
+  		        emit(doc, null);
+  		    }}
+  	        db.info(function(err,info) {
+		    if (err) console.log(err.error, err.reason); 
+  		    else pp(info);
+  		});
+	       
   	    });
         };
      
@@ -311,6 +328,7 @@ var pouch =
             // bulk: bulk,
             setdb: setdb,
             info: pinfo,
+            alldocs: palldocs,
             get: pget,
             post: ppost,
             put: pput,

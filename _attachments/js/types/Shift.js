@@ -39,7 +39,7 @@ define
               function(e) {
                   log.e("Couldn't get shift's location, so couldn't calculate the shift's hours");
                   log.e("Create the location or download it from a database.");
-                  isc.warn('Shift\'s location is not in the database!! Create or download it..');
+                  // isc.warn('Shift\'s location is not in the database!! Create or download it..');
                   vow['break'](e);
               }
               

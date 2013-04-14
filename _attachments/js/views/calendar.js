@@ -324,31 +324,32 @@ define
          //                      'background-color:' + 'aliceBlue' +
          //                      '; color:' + 'black');
      
-         backend.get().getDS().fetchData(null,
-                                         function (dsResponse, data) {
-                                             if (dsResponse.status < 0) alert("Can't get data from the database!!!");
-                                             else {
-                                                 // log.d('GOT a response from pouchDS', data);
-                                                 var resultSet = isc.ResultSet.create({
-                                                     dataSource:backend.get().getDS(),
-                                                     criteria: personCriterion,
-                                                     allRows:data
-                                                 });
-                                                 // log.d('and the result set is:', resultSet);
-                                                 // log.d('and the visible rows are:', resultSet.getAllVisibleRows());
-                                                 var persons = resultSet.getAllVisibleRows();
-                                                 persons.forEach(function(p) {
-                                                     var fg = p.colorFg ? p.colorFg : 'black';
-                                                     var bg = p.colorBg ? p.colorBg : 'f0f8ff';
-                                                     log.d('setting css classes' , p._id, fg, bg);
-                                                     utils.createCSSClass('.eventColor' + p._id,
-                                                                          'background-color:' + bg +
-                                                                          '; color:' + fg);
-                                                 }); 
+         backend.get().getDS().fetchData(
+             null,
+             function (dsResponse, data) {
+                 if (dsResponse.status < 0) alert("Can't get data from the database!!!");
+                 else {
+                     // log.d('GOT a response from pouchDS', data);
+                     var resultSet = isc.ResultSet.create({
+                         dataSource:backend.get().getDS(),
+                             criteria: personCriterion,
+                         allRows:data
+                     });
+                     // log.d('and the result set is:', resultSet);
+                     // log.d('and the visible rows are:', resultSet.getAllVisibleRows());
+                     var persons = resultSet.getAllVisibleRows();
+                     persons.forEach(function(p) {
+                         var fg = p.colorFg ? p.colorFg : 'black';
+                         var bg = p.colorBg ? p.colorBg : 'f0f8ff';
+                         log.d('setting css classes' , p._id, fg, bg);
+                         utils.createCSSClass('.eventColor' + p._id,
+                                              'background-color:' + bg +
+                                              '; color:' + fg + ';');
+                     }); 
                                                  
-                                             }
-                                         }
-                                        );
+                 }
+             }
+         );
      }
      
      function getShiftDescription(event) {
