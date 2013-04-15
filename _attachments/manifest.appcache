@@ -1,7 +1,7 @@
 CACHE MANIFEST
 
 #version 1.0 2-16-2013
-#version 0.2.1
+#version 0.2.2
 
 
 CACHE:
@@ -25,6 +25,15 @@ images/table.png
 images/timesheet.png
 images/multicap_logo.png
 
+lib/isomorphic/skins/Enterprise/images/actions/column_preferences.png
+lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_Over_end.png
+lib/isomorphic/skins/Enterprise/images/actions/sort_ascending.png
+lib/isomorphic/skins/Enterprise/images/headerIcons/close_Over.png
+lib/isomorphic/skins/Enterprise/images/Menu/check.png
+lib/isomorphic/skins/Enterprise/images/Scrollbar/vscroll_Disabled_corner.png
+lib/isomorphic/skins/Enterprise/images/actions/freezeLeft.png
+lib/isomorphic/skins/Enterprise/images/actions/groupby.png
+lib/isomorphic/skins/Enterprise/images/Menu/submenu.png
 lib/isomorphic/skins/Enterprise/images/DynamicForm/checked.png
 lib/isomorphic/skins/Enterprise/images/DynamicForm/date_control.png
 lib/isomorphic/skins/Enterprise/images/DynamicForm/unchecked.png

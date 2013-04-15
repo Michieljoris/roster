@@ -136,7 +136,7 @@ define
           var shift = {
               type: 'shift',
               eventWindowStyle: className + ' eventWindow',
-              _id: values._id,
+              // _id: values._id,
               _rev: values._rev,
               person: values.person, //array of _id's of people doing the shift
               location: values.location, //one single location _id
@@ -155,6 +155,7 @@ define
               notes: values.notes || '',
               endTijd: values.location
           };
+          if (values._id) shift._id = values._id;
           
           if (values.disturbedSleepHours)
               shift.disturbedSleepHours =  values.disturbedSleepHours;
