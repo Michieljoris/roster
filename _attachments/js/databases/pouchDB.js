@@ -270,7 +270,6 @@ define
               var receivedData = isc.clone(data);
               data = subtractTimezoneOffset(data);
               if (data.person) data.person = JSON.stringify(data.person);
-              
               db.post(data,
                      function (err,response){
                          if (err) {
