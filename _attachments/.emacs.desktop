@@ -1,0 +1,172 @@
+;; -*- mode: emacs-lisp; coding: emacs-mule; -*-
+;; --------------------------------------------------------------------------
+;; Desktop File for Emacs
+;; --------------------------------------------------------------------------
+;; Created Wed Apr 17 14:14:17 2013
+;; Desktop file format version 206
+;; Emacs version 24.2.1
+
+;; Global section:
+(setq desktop-missing-file-warning nil)
+(setq tags-file-name nil)
+(setq tags-table-list nil)
+(setq search-ring nil)
+(setq regexp-search-ring '("su" "appcach" "_id" "POST" "Sends a Post" "save"))
+(setq register-alist '((23) (0) (113) (134217847) (101 file . "~/emacs/init.el") (98 file . "~/.bashrc") (107 file . "~/.emacs.d/my-config/keys.el") (105 file . "~/.emacs.d/init.el")))
+(setq file-name-history '("~/mysrc/javascript/roster/app/_attachments/" "/home/michieljoris/temp/isotope/isotope/_posts/docs/2011-12-11-help.mdown" "/home/michieljoris/mysrc/javascript/roster/app/couchapp_help.txt" "/home/michieljoris/mysrc/javascript/roster/app/_attachments/version.html" "/home/michieljoris/mysrc/javascript/roster/app/_attachments/helptext.html" "/home/michieljoris/mysrc/javascript/roster/app/_attachments/manifest.appcache" "~/mysrc/javascript/roster/app/_attachments/index.html" "~/mysrc/javascript/roster/app/_attachments/dev.html" "/home/michieljoris/mysrc/javascript/roster/app/_attachments/index.html" "~/mysrc/javascript/roster/app/_attachments/dev.html" "/home/michieljoris/mysrc/javascript/roster/app/_attachments/js/types/Shift.js" "/home/michieljoris/mysrc/javascript/roster/app/_attachments/lib/pouchdb-nightly.js" "/home/michieljoris/mysrc/javascript/roster/app/_attachments/devlocal.html" "~/mysrc/javascript/roster/app/_attachments/dev.html" "~/mysrc/javascript/roster/app/_attachments/devlocal.html" "~/mysrc/javascript/roster/app/_attachments/mydev.html" "/home/michieljoris/mysrc/javascript/roster/app/_attachments/mydev.html" "/home/michieljoris/mysrc/javascript/roster/app/_attachments/devlocal.html" "/home/michieljoris/mysrc/javascript/roster/app/_attachments/dev.html" "/home/michieljoris/mysrc/javascript/roster/app/_attachments/js/types/editors/shiftEditor.js" "/home/michieljoris/mysrc/javascript/roster/app/_attachments/js/databases/pouchDB.js" "/home/michieljoris/mysrc/javascript/roster/app/_attachments/tryout/sync.js" "/home/michieljoris/mysrc/javascript/roster/app/_attachments/localdev.html" "~/www/firstdoor/" "/home/michieljoris/www/firstdoor/build/html/basicAngularPage.html" "/home/michieljoris/www/firstdoor/build/html/basicAngularPage1.html" "/home/michieljoris/www/firstdoor/js/feedback.js" "/home/michieljoris/www/firstdoor/js/jquery.contactable.js" "/home/michieljoris/www/firstdoor/js/jquery.contactable.min.js" "/home/michieljoris/www/firstdoor/build/html/wisenet-login.html"))
+
+;; Buffer section -- buffers listed in same order as in buffer list:
+(desktop-create-buffer 206
+  "/home/michieljoris/mysrc/javascript/roster/app/_attachments/dev.html"
+  "dev.html"
+  'html-mode
+  '(auto-fill-mode undo-tree-mode window-number-mode autopair-mode global-auto-revert-mode)
+  274
+  '(837 nil)
+  nil
+  nil
+  '((buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "/home/michieljoris/mysrc/javascript/roster/app/_attachments/manifest.appcache"
+  "manifest.appcache"
+  'fundamental-mode
+  '(window-number-mode global-auto-revert-mode)
+  408
+  '(408 nil)
+  nil
+  nil
+  '((buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "/home/michieljoris/mysrc/org/project-roster.org"
+  "project-roster.org"
+  'org-mode
+  '(auto-fill-mode undo-tree-mode window-number-mode autopair-mode global-auto-revert-mode)
+  8153
+  '(8152 nil)
+  nil
+  nil
+  '((buffer-file-coding-system . undecided-unix) (truncate-lines . t)))
+
+(desktop-create-buffer 206
+  "/home/michieljoris/mysrc/javascript/roster/app/couchapp_help.txt"
+  "couchapp_help.txt"
+  'text-mode
+  '(auto-fill-mode undo-tree-mode window-number-mode autopair-mode global-auto-revert-mode)
+  93
+  '(nil nil)
+  nil
+  nil
+  '((buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "/home/michieljoris/mysrc/javascript/roster/app/_attachments/version.html"
+  "version.html"
+  'html-mode
+  '(auto-fill-mode undo-tree-mode window-number-mode autopair-mode global-auto-revert-mode)
+  138
+  '(140 nil)
+  nil
+  nil
+  '((buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "/home/michieljoris/mysrc/javascript/roster/app/_attachments/js/databases/pouchDB.js"
+  "pouchDB.js"
+  'js2-mode
+  '(undo-tree-mode flymake-mode moz-minor-mode auto-complete-mode window-number-mode autopair-mode global-auto-revert-mode hs-minor-mode)
+  10805
+  '(10374 nil)
+  nil
+  nil
+  '((indent-tabs-mode) (buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "/home/michieljoris/mysrc/javascript/roster/app/_attachments/helptext.html"
+  "helptext.html"
+  'html-mode
+  '(auto-fill-mode undo-tree-mode window-number-mode autopair-mode global-auto-revert-mode)
+  6
+  '(1 nil)
+  nil
+  nil
+  '((buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "/home/michieljoris/mysrc/javascript/roster/app/_attachments/index.html"
+  "index.html"
+  'html-mode
+  '(auto-fill-mode undo-tree-mode window-number-mode autopair-mode global-auto-revert-mode)
+  690
+  '(596 nil)
+  nil
+  nil
+  '((buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "/home/michieljoris/mysrc/javascript/roster/app/_attachments/js/types/Shift.js"
+  "Shift.js"
+  'js2-mode
+  '(undo-tree-mode flymake-mode moz-minor-mode auto-complete-mode window-number-mode autopair-mode global-auto-revert-mode hs-minor-mode)
+  5039
+  '(4414 nil)
+  nil
+  nil
+  '((indent-tabs-mode) (buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "/home/michieljoris/mysrc/javascript/roster/app/_attachments/devlocal.html"
+  "devlocal.html"
+  'html-mode
+  '(auto-fill-mode undo-tree-mode window-number-mode autopair-mode global-auto-revert-mode)
+  2231
+  '(nil nil)
+  nil
+  nil
+  '((buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "/home/michieljoris/mysrc/javascript/roster/app/_attachments/lib/pouchdb-nightly.js"
+  "pouchdb-nightly.js"
+  'js2-mode
+  '(undo-tree-mode flymake-mode moz-minor-mode auto-complete-mode window-number-mode autopair-mode global-auto-revert-mode hs-minor-mode)
+  61364
+  '(139002 nil)
+  nil
+  nil
+  '((indent-tabs-mode) (buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "/home/michieljoris/mysrc/javascript/roster/app/_attachments/mydev.html"
+  "mydev.html"
+  'html-mode
+  '(auto-fill-mode undo-tree-mode window-number-mode autopair-mode global-auto-revert-mode)
+  329
+  '(2532 nil)
+  nil
+  nil
+  '((buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "/home/michieljoris/mysrc/javascript/roster/app/_attachments/js/types/editors/shiftEditor.js"
+  "shiftEditor.js"
+  'js2-mode
+  '(undo-tree-mode flymake-mode moz-minor-mode auto-complete-mode window-number-mode autopair-mode global-auto-revert-mode hs-minor-mode)
+  7352
+  '(6751 nil)
+  nil
+  nil
+  '((indent-tabs-mode) (buffer-file-coding-system . undecided-unix)))
+
+(desktop-create-buffer 206
+  "/home/michieljoris/mysrc/javascript/roster/app/_attachments/tryout/sync.js"
+  "sync.js"
+  'js2-mode
+  '(undo-tree-mode flymake-mode moz-minor-mode auto-complete-mode window-number-mode autopair-mode global-auto-revert-mode hs-minor-mode)
+  2048
+  '(1 nil)
+  nil
+  nil
+  '((indent-tabs-mode) (buffer-file-coding-system . undecided-unix)))
+
