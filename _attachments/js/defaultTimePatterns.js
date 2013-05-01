@@ -156,14 +156,14 @@ define
                       rank: 300
                     }
           ,easter2: { type: 'publicHoliday', //Boxing day
-                      date: Date.parse('1 April 2013 0:00am'),
+                      date: Date.parse('April 1 2013 0:00am'),
                       pattern: [1],
                       unit: 'year',
                       length: 24,
                       rank: 300
                     }
           ,anzac: { type: 'publicHoliday', 
-                      date: Date.parse('25 April 2013 0:00am'),
+                      date: Date.parse('April 25 2013 0:00am'),
                       pattern: [1],
                       unit: 'year',
                       length: 24,
@@ -177,7 +177,7 @@ define
                       rank: 300
                     }
           ,ecca: { type: 'publicHoliday',
-                      date: Date.parse('14 August 2013 0:00am'),
+                      date: Date.parse('August 14 2013 0:00am'),
                       pattern: [1],
                       unit: 'year',
                       length: 24,

@@ -33,7 +33,7 @@ define
                   month: p.date.getMonth(),
                   day: p.date.getDate() });
           });
-          log.pp(patternsArray);
+          // log.pp(patternsArray);
       }
       
       function sameDay(d1, d2) {
