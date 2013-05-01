@@ -162,6 +162,34 @@ define
                       length: 24,
                       rank: 300
                     }
+          ,anzac: { type: 'publicHoliday', 
+                      date: Date.parse('25 April 2013 0:00am'),
+                      pattern: [1],
+                      unit: 'year',
+                      length: 24,
+                      rank: 300
+                    }
+          ,queensbirthday: { type: 'publicHoliday',
+                      date: Date.parse('10 June 2013 0:00am'),
+                      pattern: [1],
+                      unit: 'year',
+                      length: 24,
+                      rank: 300
+                    }
+          ,ecca: { type: 'publicHoliday',
+                      date: Date.parse('14 August 2013 0:00am'),
+                      pattern: [1],
+                      unit: 'year',
+                      length: 24,
+                      rank: 300
+                    } 
+          ,labourday: { type: 'publicHoliday',
+                      date: Date.parse('7 October 2013 0:00am'),
+                      pattern: [1],
+                      unit: 'year',
+                      length: 24,
+                      rank: 300
+                    }
           // ,test: { type: 'publicHoliday', //Boxing day
           //           date: Date.parse('19 feb  2000 6am'),
           //           pattern: [1],
