@@ -1,0 +1,538 @@
+* Done
+** DONE get rid of version get request  I am using lgpl now, with a commenting out of a warning that I am
+   using server components, which I am not.. Using my own server, by
+   adapting a datasource clientcustom, but I also got rid rid of
+   warnings etc in the commercial version.. 
+** DONE ways to build timesheets:
+   CLOSED: [2012-10-22 Mon 18:08]
+   - State "DONE"       from ""           [2012-10-22 Mon 18:08]
+- plonk text over image of timesheets withs absolute positioning-> is
+  not printing out
+- make plain smartclient table
+- export cvs and import into excel, possible more than one timesheet
+  at a time, with a dozen or so templates ready to receive the data in
+  an excel spreadsheet.
+- draw table with raphael, done
+Whatever, you start with producing the data in a plain smartclient
+table
+
+**  'This data not available when offline msg' when datasource is empty :bug:hack:
+   Solved it by replacing the text in ICS_core.js 
+    
+* good to know
+** Ways to authenticate
+- hash pwd, then verify by sending random number to client, who hashes
+   it and his hash together, sends it, server hashes his hashed pwd and
+   number and compares. Never a pwd is sent over the network. However
+   pwd needs to be set up on server, or sent  over network initially.
+- ssl
+  costs money, but is easy and secure.
+- openid
+- persona
+  
+- host on aws or on iriscouch, which means do authorization in node or
+  have couchdb do it.
+- if you visit couchdb on the same domain as the app, so if you
+  forward the request (done by the node server) you can authorize directly
+  in futon!  
+   
+  
+  
+** iriscouch urls
+ Hi, Ian. I'm sorry, I should really add this to the FAQ. 
+
+You can get still access your couch. Even if you botch a vhost, there are many other URLs to your couch which will *not* trigger the vhost. 
+
+Suppose your vhost is mycouch.iriscouch.com. You can still reach it via: 
+
+ http://mycouch.iriscouch.com:5984/ 
+ https://mycouch.iriscouch.com:6984/ (cert is broken, fixing this weekend) 
+ http://mycouch.ic.ht/ 
+ http://mycouch.ic.ht:5984/ 
+ http://mycouch.ic.tl/ 
+ http://mycouch.ic.tl:5984/ 
+
+If you have any problems, of course feel free to email
+suport@iriscouch.com and we'll get it all sorted. Good luck!
+** ssl
+Use a free certificate from startssl or self-sign one:
+http://datacenteroverlords.com/2012/03/01/creating-your-own-ssl-certificate-authority/
+If you self-sign you have to install the root certificate in the
+browsers used to prevent the red padlock warning that the domain is
+not verified.
+** replication couchdb curl 
+curl -X POST http://127.0.0.1:5984/_replicate -d '{"source":"testcurl", "target":"http://michieljoris.iriscouch.com/replica", "continuous":true}' -H "Content-Type: application/json"
+
+** swank-js repl etc
+M-x
+start-slime
+start-slime-js
+slime-connect
+In REPL:
+,
+sticky[TAB]
+Chrome[TAB]
+Autocomplete works automatically, but not only from dictionary..
+Turn on slime-js-minor-mode if necessary in the js file
+M-C-x to evaluate function
+The webpage has to have the swank-js-inject.js loaded... (See other
+org notes)
+** sync with aws
+sources uploaded to github and gitlab (on aws)
+in gitlab upload the ssh pub key
+in ~/bin is a script called sync that rsyncs the roster dir to aws
+ssh ubuntu@aws
+cd roster
+nohup browsserver.js & 
+open roster on aws:8000/index.html
+** live refresh
+I am using live page in chrome. Tried nodejuice, but I it gives stat
+errors. You need to debug these errors. Also add /\.#.+/ to ignore in
+nodejuice.js config files, otherwise emacs' lockfile triggers
+reload. All in all live page is much easier and quicker. Other one to
+try is livereload with guard reload in linux  
+Debugged nodejuice somewhat. Got it to work with
+
+    add     : false,  // allow new file to push updates.
+    remove  : true,  // allow file delete to push updates.
+    touch   : true,  // allow file touch to push updates.
+    access  : false, // allow file reads to push updates.
+    bits    : true,  // allow chmod/chown to push updates.
+    save    : true,  // allow file save to push updates.
+    dir     : false,  // allow directory changes to push updates.
+    ignore  : [      // path or file name to ignore.
+        /^\.#.+/,
+        /\/\./,
+        /git$/,
+        /svn$/,
+        /cvs$/,
+        /swp$/,
+        /~$/
+But very slow reload delays. Live page doesn't work either properly it
+    seems.
+So I switched to LivePage (https://github.com/MikeRogers0/LivePage)
+Wrapped it in a define, and having it load my main.js via load['main']
+This seems to work. The chrome extension only works when you enable it
+    after refreshing the page, since it gleans the scripts to watch
+    from the webpage. On a refresh bootstrap is still busy inserting
+    scripts, so they don't get picked up by LivePage.
+
+** nodejuice, mozrepl etc   
+   start nodejuice by running scripts/nj in the roster folder
+   firefox has an extension mozrepl, turn it on on the menu under
+   tools
+   turn on moz-minor-mode
+   C-c C-l opens repl
+   moz-reload-on-save-mode reloads firefox on save
+   see mozrepl on net for use.
+   Https://github.com/bard/mozrepl/wiki/ 
+** right click menu is called contextMenu
+** call invalidateCache on a smartclient grid (or component) to have it reload from the database 
+** views   
+shifts, locations, people, roles, calendars, timesheets, rosters,
+specialized rosterviews, admin
+** Cause of treegrid flickering:
+   It keeps reloading the same resources over and over again. The
+   response headers from the server are not right. They should be
+   something like:
+#+begin_src 
+Content-Length:2871
+Content-Type:image/png
+Date:Mon, 08 Oct 2012 06:32:09 GMT
+ETag:W/"2871-1346821413000"
+Last-Modified:Wed, 05 Sep 2012 05:03:33 GMT
+Server:Apache-Coyote/1.1
+#+end_src
+  Not 
+#+begin_src 
+Connection:keep-alive
+Content-Type:image/png
+Date:Mon, 08 Oct 2012 06:44:38 GMT
+Transfer-Encoding:chunked
+#+end_src 
+ With the Smartclient java server it works properly, also if you load
+ the files directly using file:// protocol. However my makeshift node
+ servers don't work properly. 
+Update: fixed my web-server.js by having it send a modified-last-date
+ with the writeHead call 
+** Update: still flickering when running from openshift			:bug:
+** viewTree APi
+viewTree.removeSelectedRecord
+drag and rearrange, rename by double clicking
+mytree.add(node, parent)
+viewTree.setData and getData , then use indexNodes to extraxt data for
+saving and loading, after setData call viewTree.redraw 
+Make a tree from data loaded from the database
+rightSideLayout.hideSection('tabset')
+rightSideLayout.showSection('tabset')
+
+** Getting rid of version control
+   The lgpl version of smartclient doesn't let me use custom
+   datasources. So I am using the eval version. Set
+   window.isc_expirationOff=true;  
+   and comment out a section in ISC_Foundation.js. The section that
+   has licenseSerialNumber in it. It stops the framework from doing a
+   versionCheck. Hope this is all that's needed. Maybe corrupt all
+   references to smartclient.com and isomorphic.com I searched for
+   more hashed up strings via join(''), no more to be found.
+   The other option is to use the lgpl version and disable the
+   checking of server datasource in ISC_DataBinding I commented out on
+   line 615 (minified version), and line 15812 till 15823 in the
+   source of ISC_DataBinding.js 
+
+        // if (dataFormat == "iscServer" && !this.clientOnly && !isc.hasOptionalModule("SCServer")) {
+        //     if (this.dataURL == null && this.testFileName == null) {
+        //         this.logError("DataSource: "+this.ID+
+        //                   ": attempt to use DataSource of type iscServer without SmartClient Server option."+
+        //                   " Please either set clientOnly: true for one-time fetch against"+
+        //                   " dataURL/testFileName or upgrade to SmartClient Pro, Power or Enterprise");
+        //         return;
+        //     }
+        //     // have dataURL or testFileName, default to clientOnly mode automatically
+        //     this.logInfo("Switching to clientOnly - no SmartClient Server installed.");
+        //     this.clientOnly = true;
+        // }
+ 
+** Overlapping shifts bug
+   Shifts that overlap in the Smartclient calendar around 10 am (zone
+   time offset) don't make room for each other. This is because the
+   isc_calendar uses getUTCHours to determine start and end of shifts.
+   When you change this to getHours it works again. (around line 2028
+   and 2039)_ 
+   
+** openshift
+  app cloned into ~/temp/openshift/roster 
+  cp server.js ../
+  rm -IR *
+  cp ../server.js ./
+  cp -R ~/mysrc/javascript/roster/_attachements/* ./
+  git add -A
+  git add .
+  git commit -m 'bla bla'
+  git push origin remote
+  open url:
+  http://roster-michieljoris.rhcloud.com/index.html
+** Setting up domains and ip ports and redirections and cnames etc
+Use iptables to redirect traffic from port 80 to port 8080
+Setup node-http-proxy on port 8080
+Use that to redirect traffic based on domain to some internal server
+and port. 
+
+* findout
+** Can you refresh a html inline thing like my ext calendar?
+** A shift inherits tags from location, person and events ?
+** How to use couchdb views? How to have custom queries?
+   You need to change line 29 in pouchDS, and make a design doc in
+  couchdb. And then have views in there that get you the info you
+  want.
+  Then ask for it with this line: 
+  db.query( 'pouch/alldocs', function(...
+  pouch being the design doc and alldocs the view
+  Also change this in roster.js:
+  dbname: 'http://127.0.0.1:2020/roster'
+  Then depending ont the database used, you need to adapt the args
+  given to query.
+  Also the add needs to be checked, it doesn't set the _id of a new item?
+** cygwin
+   - [X] minimal size, 75MB unzipped 30MB zipped, but lots can be cut:
+     such as locale, docs, utils etc
+     with vim (no config files) about a 100MB, zipped up about 40MB, with vim and emacs
+     280MB. zipped up 111MB
+   - [ ] start from batch file in windows
+   - [ ] run db and gui in windows, run sample apps in windows
+   - [ ] global pil install
+   - [ ] add minimal utils (vim? etc)
+   - [ ] windows user independent!!!
+     
+    cygwin runs picolisp, but the database doesn't work... 
+    and still doesn't, major problem 
+     But using a one process server it might work
+**  Using coffeescript or parenscript instead of javascript
+  Or even picoscript?
+** Events can be recurring, but tags values can also be recurring!!
+** What happens in a different timezone with the dates and times?
+   Are they 2 different things? 
+  
+   
+* maybe not
+** Use of different database backends:
+   In other words: make a couchdb datasource, being very ambitious you
+   could make a mysql or even a a mongodb datasource. 
+
+** Context menus everywhere
+** Custom tags
+  custom types (simpleType) and validators
+** Customized form display
+  Being able to move the input components around 
+   
+** Open app from the filesystem
+  Only with a script that starts node first. Pouchdb doesn't work
+  loaded from file system.
+   
+
+* maybe
+** Serve app from couchdb?
+** Export data to clipboard
+There is a bug in zeroclipboard that prevents the plugin from loading
+in linux/chrome at least.
+
+  
+  
+* Basic pluggable structure
+** Types
+   Data is classified according to type. They will have their specific
+   fields and their editors Editing and viewing of single records So
+   far I have shifts, locations, user, settings
+*** uistate
+   Is part of a settings object, with user linked to it. Could
+   eventually be a shoppable thing. As in user could share one, or
+   clone good ones.
+*** user
+   Fundamental, since one and one only has to be always logged in. 
+    
+** Views
+   Interacting with collections of records
+   
+   
+*** Datasource pagination and caching
+    
+** Backends
+  Data can come from different backends. Sofar pouchdb and coucdb 
+    
+  
+* Importing/exporting data  
+- Printing, xlsx, couchdb
+- Use a custom view to do some of this stuff
+- Couchdb (selective) replicating and syncing
+- Node server for Cors-Proxy to access a couchhdb See pouchdb repo 
+- Printing out of data and views, like the table
+- Printing of data: canvas.showPrintPreview();
+  
+  
+* Features:
+** Temporal fields
+   To be implemented by the datasource. It serves the tag fields of an
+   object as dependent on a date in one mode or all the values in tag
+   edit mode, where the value of a tag is list of pairs of (date,value).
+** Inherited fields
+  Can tags have rules as value? To apply to its object and to objects
+  that inherit tags of this object? 
+   
+** Roles and permissions
+   Do you assign permissions to groups and users, and give these
+   labels to people? Or assign permissions directly with a inherit
+   system, where your permissions object can inherit permissions from
+   a parent permissions object. Is there a difference in setup?
+** Rotating queries
+  The date in the filter can be set as relative to some other date 
+
+** Recurrent shifts/events
+  
+* Production build
+** Standalone app in chrome using manifest declaration
+ update mechanism 
+  Use manifest, sync it with backend, cache gives problems. Set server
+  not to cache manifest etc
+   Or maybe even a chrome extension?
+   My browserserver doesn't give cachecontrol or expiry headers in its
+  response headers. So nothing gets cached anywhere I assume. App can
+  be wiped (not the data) on page chrome://appcache-internals/
+  cookies with reset() and the pouch database with pouch.destroy()
+  When setting the manifest with manifestR.makeManifest() and then
+  loading the app from cache, it can't find certain smartclient
+  resources. They are non-existant, but the appcache still wants them,
+  it hangs, however normal loading doesn't miss them? 
+
+Appcache manifest. Sync the app to a server, where everybody will load
+the app from initially, and then update from it. Still need to find
+out whether serving files with cache headers will be updated even when
+the manifest file is reloaded and tries to reload all resources.
+** Performance tuning:
+- Load all javascript files and other resources efficiently.
+- Minimize and gzip all resources
+- Instead of filling a view with new data, without redrawing the view,
+create a view for every set of data. So instant switching then, as
+long as there is enough memory.   
+- Lazy creation of views
+- Update bootstrap to produce a single file to download.
+   
+** Mass data...  produce sample fake data, lots of it
+ it needs to cache, load by page etc 
+   
+** Add testing
+  
+* Todo
+** Public holiday setting, make an editor for it.
+** control logger and what it prints out when
+** Hover tips everywhere
+** Drag and drop people into a shift
+** Open shifteditor dialog at timesheet?
+** Add extensible calendar
+** Print out black and white calendar, reset the css
+** Drag and Drop person and location selector
+  
+** Generate all shift time data and tags from just the start and endDate
+So no more endTime, startTime, endTijd etc, clogging up the shift records
+   
+** Refactor to make types pluggable
+Integrate postal.js perhaps for that?
+   
+** Concatenate consecutive continuing shifts, of course!!!
+** Wouldn't we like to search through timesheet result numbers
+   Make another type? For calculated timesheets? For entered and payed
+   timesheets? Or have a separate view aggregated data for a period,
+   calculate all the timesheet data and then present that data?
+** How to get the data from these sheets into Multicap's system? 
+How to export it? how to aggregate it? Only need the totals, make a
+separate view for that? To display it and print/export it?
+
+** Tweaking of final timesheet in Excel
+Or just export it to excel, copy paste it into a timesheet and edit
+that? 
+Or Make a separate editor for this 
+
+** dates and their formatter
+windows has strange formatting in the calendar
+
+** printing of monthview works only online   
+  smartclient dynamically gets a print.html, doesn't work offline then
+  of course.
+
+** Update to the latest smartclient, especially for the pick columns bit
+Calendar still has bug in it, can't move event to top of column. 
+ Can't move shift to top of calendar!!!
+   This seems to be a fault of smartclient. Barebones calendar also
+   doesn't work. Using 8.3p at the moment.
+
+** Location decides qualifiers. Make an editor for them, and use the right qualifiers when calculating sheets
+  Some house have different hours 
+
+  
+** Running totals while editing shifts in the calendar
+  Maybe not just the total length, but other qualifiers as well. 
+** Use jspdf to bulk print timesheets and a roster
+** Summary sheet and easy roster sheet
+  
+* Bugs etc
+** In datasources, set status of dsResponse properly
+** clean up code and comment it  
+** In table expanding of 
+bottom section is not totally smooth, sometimes being full height,
+I think especially when using the filter
+
+** Saving of person in the shift event
+I JSONed it, shouldn't be necessary, and it's a dirty hack.
+
+   
+** Editing shift in month view or day view doesn't update 
+the shifts in weekview nor does the editor reflect the new values
+refreshevents on updateevent and on viewchange
+** css classes can't have odd chars in them!!!
+Check the uniquenames of persons before creating css classes having
+their name in them!!!
+
+** shift doesn't always gets its color!
+
+* Do now:
+** Login to start shift and logout to stop
+   
+** Replicate to couchdbb and back
+   
+** Check timesheet calculations
+*** checkbox for disturbed sleep
+So also validate start hour to start on the half hour
+   
+   
+** Change shift calculation for different locations
+Only do that when entering the shift, not when calculating the timesheet,
+so if you change the hours for a house, it won't be reflected in the
+shift and timesheet, till you edit and update it. No biggie, these
+hourse should change often, and now the shifts remember what the day
+hours were when they were entered, but obviously proper temporal tags
+are better, and then calculate all hours bases on location, person,
+shift, patternsobject and time of the shift to recall historical
+values for all the tags.
+
+
+** Check for modified uistate when closing window and show warning dialog
+** Add logo
+   
+* syncing
+ 
+** install couchdb
+** local.ini is in roster/app
+** copy to c:\Program Files\Apache Software Foundation\CouchDB\etc\couchdb 
+** setup root user (maybe in local.ini already)
+** create local shift db
+set security members roles 
+["all-r", "all-rw", "all_houses-rw", "all_houses-r","<house_id>-r",
+"<house_id>-rw"] "waterfordwest-rw"]
+** on local shift house db:  
+   create or modify doc to:
+ _id:_design/auth
+ 
+   function(newDoc, oldDoc, userCtx, secObj) {
+    "use strict";
+    var house_id = 'waterfordwest';
+        
+    var has_db_rw= function(userCtx, secObj) {
+        // see if the user is has write permissions as specified by
+        // role type-rw
+        // log(userCtx);
+        for(var idx = 0; idx < userCtx.roles.length; idx++) {
+            var user_role = userCtx.roles[idx];
+            if(user_role === "all-rw" || user_role === house_id+'-rw' || user_role === 'all_houses-rw' || user_role === '_admin') {
+                return true; // role matches!
+            }
+        }
+        return false; // default to no type admin
+    };
+        
+    if (!has_db_rw(userCtx, secObj)) {
+        throw({unauthorized: 'Only users with the ' + house_id + '-rw role assigned can update this database '+userCtx.roles.toString()});
+    }
+    
+    if (newDoc._deleted === true) {
+        // allow deletes by admins and matching users
+        // without checking the other fields
+        return;
+    }
+    
+  
+        
+    if ((oldDoc && oldDoc.type === 'shift' && oldDoc.location !== house_id) || (newDoc.type === 'shift' && newDoc.location !== house_id) ) {
+        throw({forbidden : 'location must be ' + house_id + ' for all docs of type shift'});
+    }
+
+}
+
+set security members roles 
+["all-r", "all-rw", "all_houses-rw", "all_houses-r","<house_id>-r",
+"<house_id>-rw"] "waterfordwest-rw"]
+** on iriscouch people security should be:
+["all-r", "all-rw", "people-r", "people-rw"]
+** on iriscouch locations security should be:
+["all-r", "all-rw", "locations-r", "locations-rw"]
+ 
+
+** setup user that is able to write to house db
+** app comes down via http from a couchdb server or from a regular
+server.
+** app interacts with local couchdb.
+** local couchdb is pwd protected, 
+so _replicator and _users can not be tampered with, also _design docs
+can not be updated or created.
+
+
+   
+
+** setup replications:
+pull locations, people, housedb
+merge locations and people with housedb
+filter out _design/docs with the merging
+
+** when signed in as guest:
+
+
+
+
