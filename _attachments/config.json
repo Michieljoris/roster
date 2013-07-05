@@ -1,0 +1,13 @@
+{ 
+    "forward": [
+	{ "prefix": "local",
+	  "target": "http://localhost:5984" },
+	{ "prefix": "iris",
+          "target": "http://multicap.iriscouch.com/db"}
+]
+
+    ,"dir": true
+    ,"index": false
+    ,"silent": false
+    ,"port": 8090
+}
