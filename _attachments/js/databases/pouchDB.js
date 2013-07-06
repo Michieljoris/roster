@@ -38,6 +38,25 @@ define
           return url;
       }
       
+      
+      function guestUser(vow) {
+          getDoc('guest').when(
+              function() {
+                  vow.keep(self);
+              },
+              function() {
+                  putDoc(localUser, localUser).when(
+                      function() {
+                          log.d('Created local guest user..');
+                          newDatabase = true;
+                          vow.keep(self);
+                      },
+                      vow['break']
+                  );
+              }
+          );
+      }
+      
       //##init
       /** Make sure there is a handle for pouch, and a local user in
        * the database */
@@ -47,25 +66,30 @@ define
                   log.d('pouchDB is ready');
                   url= idbname;
                   pouchDbHandle = aDb;
-                  getDoc('guest').when(
-                      function() {
-                          vow.keep(self);
-                      },
-                      function() {
-                          putDoc(localUser, localUser).when(
-                              function() {
-                                  log.d('Created local guest user..');
-                                  newDatabase = true;
-                                  vow.keep(self);
-                              },
-                              vow['break']
-                          );
-                  }
-                  );
+                  guestUser(vow);
               }
-              else { var msg = "Error opening idb database for pouchDS" + idbname +
-		     "err: "+ err.error + ' reason:' + err.reason;
-                     vow['break'](msg);
+              else {
+                  // var msg = "\nError opening database with Pouch:" + idbname +
+		  //    "\nerr: "+ err.error + '\nreason:' + err.reason;
+                     isc.warn('Couldn\'t open database ' + idbname + 
+                              '<br><br>Loading default browser database db' +
+                             '<br>Possible causes: <ul><li>internet not connected</li><li> CouchDB not running</li><li>Wrong credentials</li></ul><br>');
+                     idbname = "db4";
+                     Pouch(idbname, function(err, aDb) {
+	                 if (!err) {
+                             log.d('pouchDB is ready');
+                             url= idbname;
+                             pouchDbHandle = aDb;
+                             guestUser(vow);
+                         }
+                         else { var msg = "\nError opening database with Pouch:" + idbname +
+		                "\nerr: "+ err.error + '\nreason:' + err.reason;
+                                isc.warn('Couldn\'t open database ' + idbname + '<br><br>Giving up..');
+                                vow['break'](msg);
+		              }
+                     });
+                     
+                     // vow['break'](msg);
 		   }
           });
       }
@@ -239,19 +263,19 @@ define
 			      else  pouchDS.processResponse(requestId, dsResponse);} );});});}
       function fetch(view, dsResponse, requestId ) {
           doPouch(function(db) {
-              db.query( {map:view.map},{reduce: view.reduce},
-                        // db.query( 'pouch/alldocs',
+              // db.query( {map:view.map},{reduce: view.reduce},
+                        db.allDocs({include_docs:true},
                         function (err,response){
                          if (err) {
                              alert('Error fetching record from database. Reason: ' + err.reason);
-                             log.d("Error from pouch put in fetch:", err,
+                             log.d("Error from pouch fetch :", err,
                                    "resp:", response); }
 			    else {
 			      
 			        log.d('Response in fetch is: ', response);
 			        dsResponse.data=[];
 			        for (var i = 0; i< response.rows.size();i++) {
-				    var key=response.rows[i].key;
+				    var key=response.rows[i].doc;
                                     // log.d('calling typefy');
 				    typefyProps(key); 
                                     addTimezoneOffset(key);

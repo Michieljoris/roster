@@ -70,6 +70,7 @@ define(
            * to the choice made.
            */
           function pickBackend(vow) {
+              console.log('picking backend');
               backend.pick(function(aBackend, name, url){
                   vow.keep(aBackend);
                   VOW.every([
@@ -92,7 +93,6 @@ define(
               var vow = VOW.make();
               Cookie.get('backendName').when(
                   function(backendName) {
-                      
                       setBackend(vow, backendName);   
                   }
                   ,function() {
@@ -121,7 +121,7 @@ define(
                   ,function() {
                       var msg = 'There is no backend url cookie';
                       log.d(msg);
-                      var url = 'db';
+                      var url = 'dba';
                       Cookie.set('backendUrl', url, Date.today().addYears(10)).when(
                                function() { log.d('Saved backend url cookie.'); }
                                ,function() { log.e('Unable to set the backend url cookie!!'); }
@@ -146,36 +146,40 @@ define(
           /** This kicks off the app
            */
           function start() {
-              getBackend().when(
-                  initBackend              ).when(
-                  function(backend)  {
-                      View.setBackend(backend); 
-                      Editor.setBackend(backend);
-                      return backend.login();   
-                  }
-              ).when(
-                  user.init
-              ).when(
-                  //Give some feedback
-                  function() {
-                      log.d('Drawing app.');
-                      // layout.draw();
-                      try { layout.draw();
-                            document.getElementById('appFail').style.display = 'none';
-                            document.getElementById('statusUpdate').style.display = 'none';
+              getBackend().
+                  when(
+                      initBackend).
+                  when(
+                      function(backend)  {
+                          console.log('finsihed');
+                          View.setBackend(backend); 
+                          Editor.setBackend(backend);
+                          return backend.login();   
+                      }).
+                  when(
+                      user.init).
+                  when(
+                      //Give some feedback
+                      function() {
+                          log.d('Drawing app.');
+                          // layout.draw();
+                          try { layout.draw();
+                                document.getElementById('appFail').style.display = 'none';
+                                document.getElementById('statusUpdate').style.display = 'none';
                             
-                            log.d('-----------------------------------New database? ', backend.get().isNew());
-                            if (backend.get().isNew()) {
-                                layout.setup();
-                            }
-                          } catch(e) {
-                          console.error(e.stack); }
+                                log.d('-----------------------------------New database? ', backend.get().isNew());
+                                if (backend.get().isNew()) {
+                                    layout.setup();
+                                }
+                              } catch(e) {
+                                  console.error(e.stack); }
                       
-                  },
-                  function(err) {
-                      console.log('Failed setting up app..', err.stack);
-                  }
-              );
+                      },
+                      function(err) {
+                          console.log('Failed setting up app....', err, ' ', err.stack);
+                          isc.warn('Failed setting up app....' + err + ' ' +  err.stack);
+                      }
+                  );
               
           }
           

@@ -23,19 +23,12 @@ define
               repTab: 0,
               backendName: 'pouchDB' ,
               idbName: '',
-              url: 'http://couch:5984/db',
+              url: 'http://localhost:5984',
               urlValuemap: [
-                  'http://multicap.iriscouch.com/db',
-                  'http://localhost:1234',
-                  'http://localhost:8090/local',
-                  
-                  'http://couch:5984/db',
-                  'http://w:w@couch:5984/db',
-                  'http://wt:wt@couch:5984/db',
-                  'http://m:m@couch:5984/db'
-                  // 'https://couch:6984/db',
-                  // 'https://multicap.iriscouch.com/db',
-                  // 'http://localhost:8090'
+                  'http://localhost:5984',
+                  'http://multicap.ic.ht:5984',
+                  'https://multicapdb.iriscouch.com',
+                  'http://multicapdb.iriscouch.com'
               ],
               dbName: '',
               reps: [

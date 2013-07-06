@@ -413,6 +413,7 @@ Calendar still has bug in it, can't move event to top of column.
 ** Use jspdf to bulk print timesheets and a roster
 ** Summary sheet and easy roster sheet
   
+** Show week nr in calendar
 * Bugs etc
 ** In datasources, set status of dsResponse properly
 ** clean up code and comment it  
@@ -434,6 +435,8 @@ their name in them!!!
 ** shift doesn't always gets its color!
 
 * Do now:
+** fetch in pouchDB.js fetches all docs, no good..
+line  267: using allDocs, should use a view, and pagination etc..
 ** Login to start shift and logout to stop
    
 ** Replicate to couchdbb and back

@@ -30,13 +30,14 @@
 
 
     function replicate(dbs, direction, filter, dblog) {
-        log.d('Replicating ' + direction);
+        log.d('>>Replicating ' + direction);
         var vow = VOW.make();
         var db1 = direction === 'BtoA' ? dbs.b: dbs.a;
         var db2 = direction === 'BtoA' ? dbs.a: dbs.b;
         filter = { filter: filter };
-        // try {
-        db1.handle.replicate.to(db2.handle, function(err, changes) {
+        try {
+        // db1.handle.replicate.to(db2.handle, {}, function(err, changes) {
+        Pouch.replicate(db1.url,db2.url, {}, function(err, changes) {
             log.d('Finished replicating ' + direction);
             if (err) {
                 log.d('Errors!!!', err);
@@ -45,6 +46,7 @@
                 vow['break'](dbs);
             }
             else {
+                
                 db1.to =  db2.url;
                 db2.from =  db1.url;
                 log.d('CHANGES:', changes);
@@ -55,9 +57,9 @@
             }
             
         });
-        // } catch(e) {
-        //     log.d('hello', e);
-        // }
+        } catch(e) {
+            log.d('hello', e);
+        }
         
         return vow.promise;
     }
