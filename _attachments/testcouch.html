@@ -1,0 +1,45 @@
+<!doctype html>
+<html ng-app>
+  <HEAD>
+    <meta charset="utf-8">
+    
+    <script src=tryout/angular.min.js></script>    
+    <script src=lib/Cookie.js></script>    
+    <!-- <script src=lib/jquery-1.9.1.min.js></script> -->
+    
+    <script src=lib/jquery-1.6.2.js></script>
+    <script src=lib/couchdb/jquery.couch.js></script> 
+    <script src=tryout/couchdb.js></script> 
+    <script src=tryout/testcouch.js></script> 
+    
+  </HEAD>
+  
+  <BODY ng-controller="myapp">
+   <button ng-click="info()">info</button>
+   <button ng-click="allDbs()">allDbs</button>
+   <br>
+   <form ng-submit="signup()">
+     <input type="text" ng-model="name"  size="30"
+            placeholder="name">
+     <input type="text" ng-model="pwd"  size="30"
+            placeholder="pwd">
+     <input class="btn-primary" type="submit" value="signup">
+   </form>
+   <br>
+   <form ng-submit="login()">
+     <input type="text" ng-model="name"  size="30"
+            placeholder="name">
+     <input type="text" ng-model="pwd"  size="30"
+            placeholder="pwd">
+     <input class="btn-primary" type="submit" value="login">
+   </form>
+   
+   <button ng-click="session()">session</button>
+   <br>
+   <button ng-click="logout()">logout</button>
+   <br>
+   <button ng-click="config()">config</button>
+   
+  </BODY> 
+</HTML>
+
