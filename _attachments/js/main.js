@@ -177,7 +177,11 @@ define(
                       },
                       function(err) {
                           console.log('Failed setting up app....', err, ' ', err.stack);
-                          isc.warn('Failed setting up app....' + err + ' ' +  err.stack);
+                          alert('Failed setting up app....\n' + err.error + '\n ' +  err.reason +
+                                '\nClicking ok will refresh the page and load the default internal database'
+                               );
+                          reset();
+                          location.reload();
                       }
                   );
               

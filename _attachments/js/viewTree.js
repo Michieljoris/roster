@@ -3,8 +3,9 @@
 /*jshint maxparams:5 maxcomplexity:7 maxlen:200 devel:true*/
 
 define
-({inject: ['View', 'loaders/view', 'loaders/backend', 'user'],
-  factory: function(View, views, backend, user) {
+({inject: ['View', 'loaders/view', 'loaders/backend', 'user',
+           'views/db_management/pickDbWindow'],
+  factory: function(View, views, backend, user, pickDbWindow) {
       "use strict";
       var log = logger('viewTree');
       var newViewMenu = [];
@@ -398,24 +399,27 @@ define
               ]
           });
       
-      // var databaseButton = isc.ToolStripButton.create(
-      //     {   align:'left' 
-      //         ,icon: "database.png"
-      //         ,action: function() {
-      //             backend.pick(function(aBackend, name, url){
-      //                 VOW.every([
-      //                     Cookie.set('backendName', name, Date.today().addYears(10))
-      //                     ,Cookie.set('backendUrl', url, Date.today().addYears(10))]
-      //                          ).when(
-      //                              function() { log.d('Saved backend cookie.');
-      //                                           location.reload();
-      //                                         }
-      //                              ,function() {
-      //                                  log.e('Unable to set the backend or url cookie!!'); }
-      //                          );
-      //             }, 'cancellable');
-      //         }
-      //     }); 
+      var databaseButton = isc.ToolStripButton.create(
+          {   align:'left' 
+              ,icon: "sync.png"
+              ,action: function() {
+                  pickDbWindow.init();
+                  
+                  pickDbWindow.show();
+                  // backend.pick(function(aBackend, name, url){
+                  //     VOW.every([
+                  //         Cookie.set('backendName', name, Date.today().addYears(10))
+                  //         ,Cookie.set('backendUrl', url, Date.today().addYears(10))]
+                  //              ).when(
+                  //                  function() { log.d('Saved backend cookie.');
+                  //                               location.reload();
+                  //                             }
+                  //                  ,function() {
+                  //                      log.e('Unable to set the backend or url cookie!!'); }
+                  //              );
+                  // }, 'cancellable');
+              }
+          }); 
       
       var loginButton = isc.ToolStripButton.create(
           {   align:'left' 
@@ -430,7 +434,7 @@ define
 
       var toolStrip = isc.ToolStrip.create(
           {members: [
-              // databaseButton,
+              databaseButton,
               loginButton
 	      ,saveButton     
               ,isc.LayoutSpacer.create({  width:"*" })

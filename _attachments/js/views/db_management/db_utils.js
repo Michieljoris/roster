@@ -237,8 +237,8 @@ define
                     var values = [];
                     var length = list.length || 0;
                     for (var i = 0; i < length; i++){
-                        if (typeof list[i] === 'string' && list[i][0] !== '_')
-                            values.push(list[i]);
+                        if (typeof list[i] === 'string' && list[i].startsWith('_pouch_'))
+                            values.push(list[i].slice(7));
                     }
                     vow.keep(values);
                 };

@@ -73,8 +73,8 @@ define
 		  //    "\nerr: "+ err.error + '\nreason:' + err.reason;
                      isc.warn('Couldn\'t open database ' + idbname + 
                               '<br><br>Loading default browser database db' +
-                             '<br>Possible causes: <ul><li>internet not connected</li><li> CouchDB not running</li><li>Wrong credentials</li></ul><br>');
-                     idbname = "db4";
+                             '<br>Possible causes: <ul><li>Internet not connected</li><li> CouchDB not running or configured wrong</li><li>Wrong credentials</li></ul><br>');
+                     idbname = "db";
                      Pouch(idbname, function(err, aDb) {
 	                 if (!err) {
                              log.d('pouchDB is ready');
@@ -550,22 +550,22 @@ define
        */
 
       var dbDescriptions = [
-          {
-              name: 'pouchDB',
-              shortDescr: 'Browser',
-              description: 'Select/create a database. These databases are stored locally in the browser. You can have multiple databases per browser. These are persisted across refreshes of the page, and across restarts of the browser. <p>If you use a standalone Chrome browser you can start this app from wherever you are storing the browser. Your could store the standalone browser on a USB stick for instance and open the app on another computer and work with the same data, even if that computer has no internet access. <p>Clicking the OK button will refresh the page and the app will load the database selected/created.',
-              urlPrefix: '',
-              adapter: 'pouchDB',
-              prompt: 'db'
-          }
-         ,{
+         {
               name: 'couchDB',
               shortDescr: 'External (CouchDB)',
-              description: 'The data is stored in a standalone database server called CouchDb. This server can run on your local machine or on the internet somewhere. <p>You will have to specify an url such as http://localhost:1234/dbname or http://www.iriscouch.com/dbname, where 1234 is the port. An internet based database is not recommended because of latency. Note that because of a thing called "Same origin security policy" the database will have to to be served from the same domain as this app is, or served via a CORS-proxy.<p>Clicking the OK button will refresh the page and the app will load the database selected/created.',
+              description: 'The data is stored in a standalone database server called CouchDb. This server can run on your local machine or on the internet somewhere. <p>You will have to specify an url such as http://localhost:5984/dbname or http://yourcouch.iriscouch.com/dbname, where 5984 is the port. You can set up a local CouchDB database that syncs with a master database on the net. Your app will then work when there is no internet connectivity. Also latency will be less.<p>Clicking the OK button will refresh the page and the app will load the database selected/created.',
               // urlPrefix: 'http://',
               urlPrefix: '',
               adapter: 'pouchDB',
               prompt: 'http://localhost:1234/db'
+          }
+          ,{
+              name: 'pouchDB',
+              shortDescr: 'Internal (PouchDB)',
+              description: 'Select/create a database. These databases are stored locally in the browser. You can have multiple databases per browser. These are persisted across refreshes of the page, and across restarts of the browser. <p>If you use a standalone Chrome browser you can start this app from wherever you are storing the browser. Your could store the standalone browser on a USB stick for instance and open the app on another computer and work with the same data, even if that computer has no internet access. PouchDB is under development and not recommended for production use. Use it to experiment or to use the app as a standalone rostering system. In time this should function as a regular external CouchDB, so it will be able to sync to other CouchDB databases.<p>Clicking the OK button will refresh the page and the app will load the database selected/created.',
+              urlPrefix: '',
+              adapter: 'pouchDB',
+              prompt: 'db'
           }
       ];
       

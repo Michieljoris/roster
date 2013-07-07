@@ -459,6 +459,8 @@ values for all the tags.
 
 ** Check for modified uistate when closing window and show warning dialog
 ** Add logo
+** Store list of databases accessed/tried in cookie
+   
    
 * syncing
  
