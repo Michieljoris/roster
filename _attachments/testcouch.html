@@ -4,12 +4,17 @@
     <meta charset="utf-8">
     
     <script src=tryout/angular.min.js></script>    
+    
+    <script src="lib/sha1b.js"></script>
+    <script src="lib/pbkdf2.js"></script>    
     <script src=lib/Cookie.js></script>    
+    <script src=lib/vow.js></script>    
     <!-- <script src=lib/jquery-1.9.1.min.js></script> -->
     
     <script src=lib/jquery-1.6.2.js></script>
     <script src=lib/couchdb/jquery.couch.js></script> 
-    <script src=tryout/couchdb.js></script> 
+    <script src=tryout/couchapi.js></script> 
+    
     <script src=tryout/testcouch.js></script> 
     
   </HEAD>
@@ -34,11 +39,43 @@
      <input class="btn-primary" type="submit" value="login">
    </form>
    
+   <form ng-submit="hash()">
+     <input type="text" ng-model="salt"  size="30"
+            placeholder="salt">
+     <input type="text" ng-model="pwd"  size="30"
+            placeholder="pwd">
+     <input class="btn-primary" type="submit" value="hash">
+   </form>
+   
+   
+   <form ng-submit="dbInfo()">
+     <input type="text" ng-model="dbName"  size="30"
+            placeholder="dbName">
+     <input class="btn-primary" type="submit" value="dbInfo">
+   </form>
+   
    <button ng-click="session()">session</button>
    <br>
    <button ng-click="logout()">logout</button>
    <br>
    <button ng-click="config()">config</button>
+   <br>
+   <button ng-click="getDbProperty()">getDbProperty</button>
+   <button ng-click="setDbProperty()">setDbProperty</button>
+   
+   <form ng-submit="replicate()">
+     <input type="text" ng-model="repId"  size="30"
+            placeholder="repId">
+     <input type="text" ng-model="source"  size="30"
+            placeholder="source">
+     <input type="text" ng-model="target"  size="30"
+            placeholder="target">
+     <input type="checkbox" ng-model="continuous"  size="30"
+            placeholder="continous">
+     <input class="btn-primary" type="submit" value="replicate">
+   </form>
+   <button ng-click="replicateRemove()">remove replication</button>
+   <br><button ng-click="active()">Active Tasks</button>
    
   </BODY> 
 </HTML>

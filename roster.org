@@ -20,6 +20,12 @@ table
    Solved it by replacing the text in ICS_core.js 
     
 * good to know
+** couchdb sessions
+You have to set cors/credentials=true on CouchDB and set xhr.withCredentials=true
+on client for the cookies to set on cors xhmlhttprequests
+So add
+xhr.withCredentials = true; 
+to the xhr object in the function ajax in pouchdb.js
 ** Ways to authenticate
 - hash pwd, then verify by sending random number to client, who hashes
    it and his hash together, sends it, server hashes his hashed pwd and
@@ -537,6 +543,20 @@ merge locations and people with housedb
 filter out _design/docs with the merging
 
 ** when signed in as guest:
+   
+   
+* mylist
+make api for setting up couch
+    setting validate_doc_update
+    creating database
+    creating replication docs
+    editing/adding users, setting roles
+    getting conflicts for database
+
+adjust login process.
+use ssl to communicate with couchdb
+
+ 
 
 
 

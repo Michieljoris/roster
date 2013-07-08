@@ -441,8 +441,15 @@ define
                                   log.d('passwords are: ',pwd1, pwd2);
                                   pwd1 = pwd1 ? pwd1 : '';
                                   pwd2 = pwd2 ? pwd2 : '';
-                                  if (hash.calc(pwd1) === hash.calc(pwd2)) {
-                                      vm.setValue('pwd', hash.calc(pwd1));
+                                  
+                                  var key1 = new PBKDF2(pwd1).deriveKey();
+                                  var key2 = new PBKDF2(pwd2).deriveKey();
+                                  if (key1 === key2){
+                                      vm.setValue('pwd', key1);
+                                      vm.setValue('derived_key', key1);
+                                      vm.setValue('iterations', 10);
+                                      vm.setValue('password_scheme', 'pbkdf2');
+                                      vm.setValue('salt', 'salt');
                                       pwdForm.setValue('pwd1', '');
                                       pwdForm.setValue('pwd2', '');
                                       formChanged();

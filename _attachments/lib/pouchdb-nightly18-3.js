@@ -577,55 +577,56 @@ var ajax = function ajax(options, callback) {
     } catch(e){}
     call(cb, errObj);
   };
-  if (typeof window !== 'undefined' && window.XMLHttpRequest) {
-    var timer,timedout  = false;
-    var xhr = new XMLHttpRequest();
-    xhr.open(options.method, options.url);
-    if (options.json) {
-      options.headers.Accept = 'application/json';
-      options.headers['Content-Type'] = options.headers['Content-Type'] || 'application/json';
-      if (options.body && options.processData && typeof options.body !== "string") {
-        options.body = JSON.stringify(options.body);
-      }
-    }
-    if (options.binary) {
-      xhr.responseType = 'arraybuffer';
-    }
-    for (var key in options.headers){
-      xhr.setRequestHeader(key, options.headers[key]);
-    }
-    if (!("body" in options)) {
-      options.body = null;
-    }
-
-    var abortReq = function() {
-        timedout=true;
-        xhr.abort();
-        call(onError, xhr, callback);
-    };
-    xhr.onreadystatechange = function() {
-      if (xhr.readyState !== 4 || timedout) {
-        return;
-      }
-      clearTimeout(timer);
-      if (xhr.status >= 200 && xhr.status < 300) {
-        var data;
-        if (options.binary) {
-          data = new Blob([xhr.response || ''], {type: xhr.getResponseHeader('Content-Type')});
-        } else {
-          data = xhr.responseText;
+    if (typeof window !== 'undefined' && window.XMLHttpRequest) {
+        var timer,timedout  = false;
+            var xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+        xhr.open(options.method, options.url);
+        if (options.json) {
+            options.headers.Accept = 'application/json';
+            options.headers['Content-Type'] = options.headers['Content-Type'] || 'application/json';
+            if (options.body && options.processData && typeof options.body !== "string") {
+                options.body = JSON.stringify(options.body);
+            }
         }
-        call(onSuccess, data, xhr, callback);
-      } else {
-         call(onError, xhr, callback);
-      }
-    };
-    if (options.timeout > 0) {
-      timer = setTimeout(abortReq, options.timeout);
-    }
-    xhr.send(options.body);
-    return {abort:abortReq};
-  } else {
+        if (options.binary) {
+            xhr.responseType = 'arraybuffer';
+        }
+        for (var key in options.headers){
+            xhr.setRequestHeader(key, options.headers[key]);
+            }
+        if (!("body" in options)) {
+            options.body = null;
+        }
+
+        var abortReq = function() {
+            timedout=true;
+            xhr.abort();
+            call(onError, xhr, callback);
+        };
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState !== 4 || timedout) {
+                return;
+            }
+            clearTimeout(timer);
+            if (xhr.status >= 200 && xhr.status < 300) {
+                var data;
+                if (options.binary) {
+                    data = new Blob([xhr.response || ''], {type: xhr.getResponseHeader('Content-Type')});
+                } else {
+                    data = xhr.responseText;
+                }
+                call(onSuccess, data, xhr, callback);
+            } else {
+                call(onError, xhr, callback);
+            }
+        };
+        if (options.timeout > 0) {
+            timer = setTimeout(abortReq, options.timeout);
+        }
+        xhr.send(options.body);
+        return {abort:abortReq};
+    } else {
     if (options.json) {
       if (!options.binary) {
         options.headers.Accept = 'application/json';

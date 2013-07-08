@@ -447,8 +447,11 @@ define
                           if (rows.length > 1)
                               alert('There are two persons with the same login name!!! ' +
                                     'Using the first one' , rows[0], 'from ', rows); 
-                          if (!rows[0].pwd ||
-                              rows[0].pwd === hash.calc(credentials.password)) vow.keep(rows[0]);
+                          
+                          var key = new PBKDF2(credentials.password, rows[0].iterations, rows[0].salt).deriveKey();
+                          if (!rows[0].derived_key ||
+                              // rows[0].pwd === hash.calc(credentials.password)) vow.keep(rows[0]);
+                              rows[0].derived_key === key) vow.keep(rows[0]);
                           else vow['break']('Wrong password');
                       }
                   }
