@@ -17,8 +17,8 @@
 
 define(
     {   
-        inject: ['loaders/backend', 'user', 'layout', 'View', 'Editor'], 
-        factory: function(backend, user, layout, View, Editor) 
+        inject: ['loaders/backend', 'user', 'layout', 'View', 'Editor', 'authWindow'], 
+        factory: function(backend, user, layout, View, Editor, authWindow) 
         { "use strict";
           var log = logger('main');
           
@@ -121,7 +121,8 @@ define(
                   ,function() {
                       var msg = 'There is no backend url cookie';
                       log.d(msg);
-                      var url = 'dba';
+                      //set default url to internal database
+                      var url = 'db';
                       Cookie.set('backendUrl', url, Date.today().addYears(10)).when(
                                function() { log.d('Saved backend url cookie.'); }
                                ,function() { log.e('Unable to set the backend url cookie!!'); }
@@ -146,27 +147,38 @@ define(
           /** This kicks off the app
            */
           function start() {
+              //>>reads cookie, defaults to pouchDB if cookie or backend doesn't exist
+              //only one backend used at the moment: pouchDB
               getBackend().
                   when(
+                      //>>looks for cookie, defaults to internal db
+                      //give the backend an url to work with, and connect
                       initBackend).
                   when(
                       function(backend)  {
                           console.log('finsihed');
                           View.setBackend(backend); 
                           Editor.setBackend(backend);
-                          return backend.login();   
+                          user.setBackend(backend);
+                          authWindow.setBackend(backend);
+                          //>>looks for lastlogin cookie
+                          //defaults to guest user if present or it can be
+                          //created otherwise prompt
+                          //in any case it returns a user doc from the backend
+                          return backend.autoLogin();   
                       }).
                   when(
+                      //gets the user's settings file
                       user.init).
                   when(
-                      //Give some feedback
                       function() {
+                          //Draw the app 
                           log.d('Drawing app.');
-                          // layout.draw();
                           try { layout.draw();
+                                //hide startup messages
                                 document.getElementById('appFail').style.display = 'none';
                                 document.getElementById('statusUpdate').style.display = 'none';
-                            
+                                //TODO do something for new users
                                 log.d('-----------------------------------New database? ', backend.get().isNew());
                                 if (backend.get().isNew()) {
                                     layout.setup();
@@ -177,11 +189,11 @@ define(
                       },
                       function(err) {
                           console.log('Failed setting up app....', err, ' ', err.stack);
-                          alert('Failed setting up app....\n' + err.error + '\n ' +  err.reason +
-                                '\nClicking ok will refresh the page and load the default internal database'
-                               );
-                          reset();
-                          location.reload();
+                          // alert('Failed setting up app....\n' + (err.error || '') + '\n ' +  (err.reason  || '') +
+                          //       '\nClicking ok will refresh the page and load the default internal database'
+                          //      );
+                          // reset();
+                          // location.reload();
                       }
                   );
               

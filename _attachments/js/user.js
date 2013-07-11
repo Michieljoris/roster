@@ -6,12 +6,13 @@
 define(
     // { inject: ['lib/cookie', 'loaders/backend'], 
     //   factory: function(cookie, backend ) 
-    { inject: ['loaders/backend'], 
-      factory: function(backend ) 
+    { inject: [], 
+      factory: function() 
       { "use strict";
         var log = logger('user');
         
         var user;
+        var backend;
         var settingsCache;
         var modified;
         var observers = [];
@@ -94,14 +95,17 @@ define(
         
         function init(aUser) {
             var vow = VOW.make();
-            backend = backend.get();
-            log.d('BACKEND AT USER', backend);
+            // backend = backend.get();
+            // log.d('BACKEND AT USER', backend);
             user = aUser; 
             getSettings(user.settingsId).when(
                 function() {
-                    // notifyObservers();
                     vow.keep(user);
+                },
+                function() {
+                    vow['break']("Error: Could not get and/or create settings doc for user ");
                 }
+                
             );
             return vow.promise;
         }
@@ -174,9 +178,26 @@ define(
         function addObserver(observer) {
             observers.push(observer);
         }
+        var help = {
+            couch: "Authentication is done against a CouchDB instance on the network. As long as this instance is locked down by a server admin password security is relativily high. You will stay logged accross refreshes of the page, till you log out. <p>If you want to connect to a different database, visit the connect tab.<p>If you provide no credentials on login the app will try to log in as user: \'guest\', pwd: \'\'",
+            pouch: "The app is working against an internal database. Authentication is done in the browser in javascript, which makes it vulnarable for attack. However if your security needs are light it is still useable. Passwords are not stored in clear text.<p>If you provide no credentials on login the app will try to log in as user guest, with an empty password"
+        };
+        
+        function getHelpText(version) {
+            return help[version];
+        }
+        
+        function isLoggedIn() {
+            return user;
+        }
+        function getName() {
+            if (user) return user._id;
+            else return 'nobody';
+        }
         
         return {
             init: init
+            ,isLoggedIn: isLoggedIn
             ,get: get
             ,getPermission: getPermission
             ,setPermission: setPermission
@@ -187,6 +208,12 @@ define(
             ,change: change
             ,saveSettings: saveSettings
             ,addObserver: addObserver
+            ,getHelpText: getHelpText
+            ,getName: getName
+            ,logOut: function() {}
+            ,setBackend: function(aBackend) {
+                backend = aBackend;
+            }
         };
       }});
 

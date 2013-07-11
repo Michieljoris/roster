@@ -24,12 +24,8 @@ define(
         api.config = function(section, option, value){
             var vow = VOW.make(); 
             $.couch.config({
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             },section, option, value);
             return vow.promise;
         };
@@ -40,12 +36,8 @@ define(
             $.couch.login({
                 name: name,
                 password: pwd,
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             return vow.promise;
         };
@@ -53,12 +45,8 @@ define(
         api.logout = function() {
             var vow = VOW.make(); 
             $.couch.logout({
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             return vow.promise;
         };
@@ -66,12 +54,8 @@ define(
         api.session = function() {
             var vow = VOW.make(); 
             $.couch.session({
-                success: function(data) {
-                    vow.keep(data.userCtx);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             return vow.promise;
         };
@@ -81,12 +65,8 @@ define(
         api.dbAll = function() {
             var vow = VOW.make(); 
             $.couch.allDbs({
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             
             return vow.promise;
@@ -101,12 +81,8 @@ define(
             if (name) dbName = name;
             var vow = VOW.make(); 
             $.couch.db(dbName).drop({
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             return vow.promise;
         };
@@ -115,12 +91,8 @@ define(
             if (name) dbName = name;
             var vow = VOW.make(); 
             $.couch.db(dbName).create({
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             return vow.promise;
         };
@@ -130,12 +102,8 @@ define(
             if (name) dbName = name;
             var vow = VOW.make(); 
             $.couch.db(dbName).compact({
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             
             return vow.promise;
@@ -159,9 +127,7 @@ define(
                     data.uri = $.couch.db(dbName).uri;
                     vow.keep(data);
                 },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                error: vow.break
             });
             
             return vow.promise;
@@ -172,12 +138,8 @@ define(
             if (typeof securityObj === 'object') {
                 if (aDbName) dbName = aDbName;
                 $.couch.db(dbName).setDbProperty('_security', securityObj, {
-                    success: function(data) {
-                        vow.keep(data);
-                    },
-                    error: function(status) {
-                        vow['break'](status);
-                    }
+                    success: vow.keep,
+                    error: vow.break
                 });
                 
             }
@@ -185,12 +147,8 @@ define(
                 aDbName = securityObj;
                 if (aDbName) dbName = aDbName;
                 $.couch.db(dbName).getDbProperty('_security', {
-                    success: function(data) {
-                        vow.keep(data);
-                    },
-                    error: function(status) {
-                        vow['break'](status);
-                    }
+                    success: vow.keep,
+                    error: vow.break
                 });
                 
             }
@@ -214,13 +172,8 @@ define(
                     else delete designDoc[funName];
                 }
                 api.docSave(designDoc).when(
-                    function(data) {
-                        vow.keep(data);
-                    },
-                    function(status) {
-                        vow['break'](status);
-                    }
-                        
+                    vow.keep,
+                    vow.break
                 );
             }
             api.docGet('_design/' + docName).when(
@@ -256,14 +209,15 @@ define(
         //options is optional and can contain key value query params
         //for instance: open_revs=all rev=asdfasf4333 conflicts=true
         api.docGet = function(id, options, aDbName) {
-            if (typeof options !== 'object') aDbName = options;
+            if (typeof options !== 'object') {
+                aDbName = options;   
+                options = undefined;
+            }
             if (aDbName) dbName = aDbName;
             var vow = VOW.make(); 
             options = $.extend({
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
+                success: vow.keep
+                ,error: function(status) {
                     vow['break']({ id: id, options: options, status: status});
                 }
             },options);
@@ -390,12 +344,8 @@ define(
             if (aDbName) dbName = aDbName;
             var vow = VOW.make(); 
             $.couch.db(dbName).removeDoc(doc, {
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             return vow.promise;
         };
@@ -406,18 +356,11 @@ define(
             api.docGet(id).when(
                 function(doc) {
                     api.docRemove(doc).when(
-                        function(data) {
-                            vow.keep(data);
-                        },
-                        function(data) {
-                            vow['break'](data);
-                        }
-                        
+                        vow.keep,
+                        vow.break
                     );
                 },
-                function(data) {
-                    vow.keep(data);
-                }
+                vow.keep
             );
             return vow.promise;
         };
@@ -426,12 +369,8 @@ define(
             if (aDbName) dbName = aDbName;
             var vow = VOW.make(); 
             $.couch.db(dbName).bulkRemove({"docs": docs }, {
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             return vow.promise;
         };
@@ -440,12 +379,8 @@ define(
             if (aDbName) dbName = aDbName;
             var vow = VOW.make(); 
             $.couch.db(dbName).bulkSave({"docs": docs }, {
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             return vow.promise;
         };
@@ -454,12 +389,8 @@ define(
             if (aDbName) dbName = aDbName;
             var vow = VOW.make(); 
             $.couch.db(dbName).allDocs({
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             return vow.promise;
         };
@@ -468,12 +399,8 @@ define(
             if (aDbName) dbName = aDbName;
             var vow = VOW.make(); 
             $.couch.db(dbName).allDesignDocs({
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             return vow.promise;
         };
@@ -485,12 +412,8 @@ define(
             if (aDbName) dbName = aDbName;
             var vow = VOW.make(); 
             $.couch.db(dbName).copyDoc(id, {
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             }, {
                 beforeSend: function(xhr) {
                     xhr.setRequestHeader("Destination", newId);
@@ -503,12 +426,8 @@ define(
             if (aDbName) dbName = aDbName;
             var vow = VOW.make(); 
             $.couch.db(dbName).saveDoc(doc, {
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             return vow.promise;
         };
@@ -518,12 +437,8 @@ define(
             if (aDbName) dbName = aDbName;
             var vow = VOW.make(); 
             $.couch.db(dbName).list(designDoc + '/' + listName,'all', {
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                },
+                success: vow.keep,
+                error: vow.break,
                 reduce: false
             });
             return vow.promise;
@@ -533,12 +448,8 @@ define(
             if (aDbName) dbName = aDbName;
             var vow = vow.make(); 
             $.couch.db(dbName).compactView({
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             return vow.promise;
         };
@@ -547,12 +458,8 @@ define(
             if (aDbName) dbName = aDbName;
             var vow = vow.make(); 
             $.couch.db(dbName).viewCleanup({
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             return vow.promise;
         };
@@ -561,12 +468,8 @@ define(
             if (aDbName) dbName = aDbName;
             var vow = VOW.make(); 
             $.couch.db(dbName).view(designDoc + '/' + viewName , {
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                },
+                success: vow.keep,
+                error: vow.break,
                 reduce: false
             });
             return vow.promise;
@@ -576,12 +479,8 @@ define(
             if (aDbName) dbName = aDbName;
             var vow = VOW.make(); 
             $.couch.db(dbName).query(map,"_count", "javascript", {
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                },
+                success: vow.keep,
+                error: vow.break,
                 reduce: false
             });
             return vow.promise;
@@ -590,12 +489,8 @@ define(
         api.activeTasks = function() {
             var vow = VOW.make(); 
             $.couch.activeTasks({
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             return vow.promise;
         };
@@ -612,18 +507,12 @@ define(
             var vow = VOW.make();
                 api.dbDesign('couchapi', 'views', 'conflicts', "?").
                 when(
-                    function(data) {
-                        vow.keep(data);
-                    }
+                    vow.keep
                     ,function() {
                         api.dbDesign('couchapi', 'views', 'conflicts', conflictsView).
                             when(
-                                function(data) {
-                                    vow.keep(data);
-                                }
-                                ,function(data) {
-                                    vow['break'](data);
-                                }
+                                vow.keep,
+                                vow.break
                             );
                     }
                 );
@@ -652,9 +541,7 @@ define(
                     
                     vow.keep(conflicts);
                 },
-                function(data) {
-                    vow['break'](data);
-                }
+                vow.break
             );
             return vow.promise;
         }
@@ -680,12 +567,8 @@ define(
                     if (!fetchDocs) return VOW.kept(idsWithConflicts);
                     else return getRevs(idsWithConflicts);
                 }).when(
-                    function(conflicts) {
-                        vow.keep(conflicts);
-                    } 
-                    ,function(data) {
-                        vow['break'](data);
-                    }
+                    vow.keep,
+                    vow.break
                 );
             return vow.promise;
         };
@@ -697,12 +580,8 @@ define(
             repOptions.replication_id = repId;
             var vow = VOW.make(); 
             $.couch.replicate('', '', {
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             }, repOptions);
             return vow.promise;
         };
@@ -710,12 +589,8 @@ define(
         api.replicateDo = function(db1, db2, repOptions) {
             var vow = VOW.make(); 
             $.couch.replicate(db1, db2, {
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             }, repOptions);
             return vow.promise;
         };
@@ -748,12 +623,8 @@ define(
                 ,roles: roles
             };
             $.couch.signup(userDoc, pwd, {
-                success: function(data) {
-                    vow.keep(data);
-                },
-                error: function(status) {
-                    vow['break'](status);
-                }
+                success: vow.keep,
+                error: vow.break
             });
             return vow.promise;
         };
@@ -763,12 +634,8 @@ define(
             $.couch.userDb(function(data) {
                 var dbName = data.name;
                 $.couch.db(dbName).removeDoc(name, {
-                    success: function(data) {
-                        vow.keep(data);
-                    },
-                    error: function(status) {
-                        vow['break'](status);
-                    }
+                    success: vow.keep,
+                    error: vow.break
                 });
             });
             return vow.promise;
@@ -779,12 +646,8 @@ define(
             $.couch.userDb(function(data) {
                 var dbName = data.name;
                 $.couch.db(dbName).openDoc('org.couchdb.user:' +name, {
-                    success: function(data) {
-                        vow.keep(data);
-                    },
-                    error: function(status) {
-                        vow['break'](status);
-                    }
+                    success: vow.keep,
+                    error: vow.break
                 });
             });
             return vow.promise;
@@ -801,17 +664,11 @@ define(
                             data[p] = props[p]; 
                         });
                         $.couch.db(dbName).saveDoc(data, {
-                            success: function(data) {
-                                vow.keep(data);
-                            },
-                            error: function(status) {
-                                vow['break'](status);
-                            }
+                            success: vow.keep,
+                            error: vow.break
                         });
                     },
-                    error: function(status) {
-                        vow['break'](status);
-                    }
+                    error: vow.break
                 });
             });
             return vow.promise;
@@ -821,21 +678,13 @@ define(
             var vow = VOW.make(); 
             if (roles) {
                 api.userUpdate(name, {roles:roles}).when(
-                    function() {
-                        vow.keep(roles);
-                    },
-                    function(data) {
-                        vow['break'](data);
-                    }
+                    vow.keep,
+                    vow.break
                 );
             }
             else api.userGet(name).when(
-                function(data) {
-                    vow.keep(data.roles);
-                },
-                function(data) {
-                    vow['break'](data);
-                }
+               vow.keep,
+                vow.break
             );
             return vow.promise;
         };
@@ -861,9 +710,7 @@ define(
                         else vow.keep(data);
                         
                     },
-                    error: function(status) {
-                        vow['break'](status);
-                    }
+                    error: vow.break
                 });
             });
             return vow.promise;
@@ -889,9 +736,7 @@ define(
                         else vow.keep(data);
                         
                     },
-                    error: function(status) {
-                        vow['break'](status);
-                    }
+                    error: vow.break
                 });
             });
             return vow.promise;

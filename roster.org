@@ -546,13 +546,6 @@ filter out _design/docs with the merging
    
    
 * mylist
-make api for setting up couch
-    setting validate_doc_update
-    creating database
-    creating replication docs
-    editing/adding users, setting roles
-    getting conflicts for database
-
 adjust login process.
 use ssl to communicate with couchdb
 

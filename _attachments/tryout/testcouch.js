@@ -24,7 +24,7 @@ function myapp($scope) {
     }; 
 
     $scope.signup = function() {
-        couchapi.addUser($scope.name, $scope.pwd, ["newrole"]).when(
+        couchapi.userAdd($scope.name, $scope.pwd, ["newrole"]).when(
             function(data) {
                 console.log(data);
             }
@@ -90,7 +90,7 @@ function myapp($scope) {
             }
             
         });
-       }; 
+    }; 
     $scope.getDbProperty = function() {
         $.couch.db('atest').getDbProperty('_security', {
             success: function(data) {
@@ -101,7 +101,7 @@ function myapp($scope) {
             }
             
         });
-       }; 
+    }; 
     $scope.config = function() {
         $.couch.config({
             success: function(data) {
@@ -120,14 +120,14 @@ function myapp($scope) {
     };
     $scope.active = function() {
         couchapi.activeTasks().when(
-           function(data) {
-              console.log(data); 
-           } 
-           ,function(data) {
-              console.log(data); 
-           } 
+            function(data) {
+                console.log(data); 
+            } 
+            ,function(data) {
+                console.log(data); 
+            } 
         );
-       }; 
+    }; 
     $scope.replicateRemove = function() {
         couchapi.replicationRemove($scope.repId).when(
             function(data) {
@@ -137,7 +137,51 @@ function myapp($scope) {
                 console.log(data);
             }
         );
-       }; 
+    }; 
+    $scope.docId = 'bla';
+    $scope.params = "";
+    //open_revs=all rev=asdfasf4333 conflicts=true
+    $scope.docGet = function() {
+        var options = {};
+        var params = $scope.params.split('&');
+        params.forEach(function(p) {
+            var pair = p.split('=');
+            options[pair[0]] = pair[1];
+        });
+        couchapi.docGet($scope.docId, options, 'b').when(
+            function(data) {
+                console.log(data);
+            },
+            function(data) {
+                console.log(data);
+            }
+        );
+    };
+    $scope.replicateStop = function() {
+        couchapi.replicateStop($scope.repId).when(
+            function(data) {
+                console.log(data);
+            }
+            ,function(data) {
+                console.log(data);
+            }
+        );
+    };
+    
+    $scope.replicateDo = function() {
+        couchapi.replicateDo($scope.source, $scope.target, {
+            create_target: true,
+            continuous: $scope.continuous
+        }).when(
+            function(data) {
+                console.log(data);
+            }
+            ,function(data) {
+                console.log(data);
+            }
+        );
+    };
+    
     $scope.replicate = function() {
         console.log('replicate');
         couchapi.replicationAdd($scope.repId, {
@@ -155,5 +199,30 @@ function myapp($scope) {
             }
         );
     };
+    
+    var fun = function(doc) {
+            if (doc._conflicts) {
+                emit(null, [doc._rev].concat(doc._conflicts));
+            }
+        };
+    var conflicts =
+        {"map" : fun.toString()};
+    
+    $scope.addView = function() {
+        console.log(conflicts);
+        console.log(JSON.stringify(conflicts));
+        // console.log($scope.viewFun);
+        // var obj = JSON.parse($scope.viewFun);
+        // console.log(obj)
+        couchapi.dbDesignDoc($scope.viewGroup, $scope.viewFunName, conflicts, $scope.dbName).
+        when(
+            function(data) {
+                console.log(data);
+            }
+            ,function(data) {
+                console.log(data);
+            }
+        );
+}
     
 }

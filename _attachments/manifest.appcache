@@ -1,7 +1,7 @@
 CACHE MANIFEST
 
 #version 1.0 2-16-2013
-#version 0.2.4b
+#version 0.2.4c
 
 
 CACHE:
@@ -147,7 +147,9 @@ js/viewTree.js
 js/loaders/view.js
 js/loaders/editor.js
 js/types/typesAndFields.js
-lib/sha1.js
+lib/sha1b.js
+lib/pbkdf2.js
+lib/couchapi.js
 js/views/table.js
 js/views/calendar.js
 js/views/timesheet.js

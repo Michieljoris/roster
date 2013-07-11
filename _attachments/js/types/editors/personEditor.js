@@ -1,4 +1,4 @@
-/*global  logger:false isc:false define:false */
+/*global  PBKDF2:false logger:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:6 maxcomplexity:10 maxlen:190 devel:true*/
 
@@ -436,17 +436,17 @@ define
                               title: 'Ok'
                               ,startRow: true
                               ,click: function() {
-                                  var pwd1 = pwdForm.getValue('pwd1'); 
-                                  var pwd2 = pwdForm.getValue('pwd2');
+                                  var pwd1 = pwdForm.getValue('pwd1') || ''; 
+                                  var pwd2 = pwdForm.getValue('pwd2') || '';
                                   log.d('passwords are: ',pwd1, pwd2);
-                                  pwd1 = pwd1 ? pwd1 : '';
-                                  pwd2 = pwd2 ? pwd2 : '';
+                                  // pwd1 = pwd1 ? pwd1 : '';
+                                  // pwd2 = pwd2 ? pwd2 : '';
                                   
-                                  var key1 = new PBKDF2(pwd1).deriveKey();
-                                  var key2 = new PBKDF2(pwd2).deriveKey();
-                                  if (key1 === key2){
-                                      vm.setValue('pwd', key1);
-                                      vm.setValue('derived_key', key1);
+                                  // var key2 = new PBKDF2(pwd2).deriveKey();
+                                  if (pwd1 === pwd2){
+                                      var key = new PBKDF2(pwd1, 10, 'salt').deriveKey();
+                                      // vm.setValue('pwd', 1);
+                                      vm.setValue('derived_key', key);
                                       vm.setValue('iterations', 10);
                                       vm.setValue('password_scheme', 'pbkdf2');
                                       vm.setValue('salt', 'salt');

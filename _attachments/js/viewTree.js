@@ -4,8 +4,8 @@
 
 define
 ({inject: ['View', 'loaders/view', 'loaders/backend', 'user',
-           'views/db_management/pickDbWindow'],
-  factory: function(View, views, backend, user, pickDbWindow) {
+           'authWindow'],
+  factory: function(View, views, backend, user, authWindow) {
       "use strict";
       var log = logger('viewTree');
       var newViewMenu = [];
@@ -402,10 +402,10 @@ define
       var databaseButton = isc.ToolStripButton.create(
           {   align:'left' 
               ,icon: "sync.png"
+              ,prompt: 'Change the database the app works against. '
               ,action: function() {
-                  pickDbWindow.init();
-                  
-                  pickDbWindow.show();
+                  // pickDbWindow.init();
+                  authWindow.show('connect');
                   // backend.pick(function(aBackend, name, url){
                   //     VOW.every([
                   //         Cookie.set('backendName', name, Date.today().addYears(10))
@@ -424,6 +424,7 @@ define
       var loginButton = isc.ToolStripButton.create(
           {   align:'left' 
 	      ,action: user.change 
+              ,prompt: 'Logout, or login with different credentials.'
           }); 
       
       var saveButton = isc.ToolStripButton.create({
@@ -436,7 +437,6 @@ define
           {members: [
               databaseButton,
               loginButton
-	      ,saveButton     
               ,isc.LayoutSpacer.create({  width:"*" })
               ,isc.IconMenuButton.create({title:''
 				          ,ID:'addButton'
@@ -457,6 +457,7 @@ define
 	          prompt: "Create a new folder"
 	          ,click: function() { newFolder(); }
               })
+	      ,saveButton     
               // ,isc.ToolStripButton.create({
 	      //     icon: "[SKIN]/actions/edit.png",
 	      //     prompt: "Rename selected item"
