@@ -1,4 +1,4 @@
-/*global isc:false VOW:false logger:false isc:false define:false*/
+/*global VOW:false logger:false Cookie:false define:false*/
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:7 maxcomplexity:7 maxlen:150 devel:true*/
 
@@ -35,10 +35,10 @@ define(
                     return backend.putDoc(user, user);
                 }
             ).when(
-                function () {
-                    vow.keep(); }
+                function (user) {
+                    vow.keep(user); }
                 ,function(err) {
-                    vow['break']('Could not save new settings doc for user!!', err);
+                    vow['break']('Could not save new settings doc for user!!'  + err);
                 }
                 
             );
@@ -53,7 +53,7 @@ define(
                     settingsCache = someSettings;
                     if (settingsCache.look)  
                         settingsCache.look = JSON.parse(settingsCache.look);
-                    vow.keep();
+                    vow.keep(user);
                 }
                 ,function() {
                     //this user didn't have a settings file yet. The
@@ -84,8 +84,12 @@ define(
                     vow.keep(user);
                     notifyObservers();
                 },
-                function(err) {
-                    vow['break'](err);
+                function(data) {
+                    // vow['break'](err);
+                    alert('Cannot save user settings to the database');
+                    console.log('Failed to get the settings for this user: ' + user._id + ' ', data);
+                    vow.keep(user);
+                    notifyObservers();
                 }
             );
             return vow.promise;
@@ -100,10 +104,16 @@ define(
             user = aUser; 
             getSettings(user.settingsId).when(
                 function() {
+                    Cookie.set('lastLogin', user._id,
+                               Date.today().addYears(10));
                     vow.keep(user);
                 },
-                function() {
-                    vow['break']("Error: Could not get and/or create settings doc for user ");
+                function(data) {
+                    alert('Cannot save any user settings to the database');
+                    console.log('Failed to get the settings for this user: ' + user._id + ' ', data);
+                    vow.keep(user);
+                    //we'll have work with the cache. Future saves might also fail.
+                    // vow['break']("Error: Could not get and/or create settings doc for user ");
                 }
                 
             );
@@ -129,6 +139,9 @@ define(
                         // user.settingsId = updatedSettings._id;
                         modified = false;
                         vow.keep();
+                    },
+                    function() {
+                      vow.break();  
                     }
                 );
             } 

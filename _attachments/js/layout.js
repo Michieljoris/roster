@@ -69,6 +69,7 @@ define
 
    //##The main layout 
     var mainLayout = isc.HLayout.create({ 
+        ID: 'mainLayout',
 	width: "100%",
 	height: "100%",
 	members: [

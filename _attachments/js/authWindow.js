@@ -1,4 +1,4 @@
-/*global VOW:false Cookie:false logger:false isc:false define:false */
+/*global VOW:false Cookie:false logger:false isc:false define:false PBKDF2:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:5 maxcomplexity:7 maxlen:190 devel:true*/
 
@@ -6,7 +6,7 @@ define
 ({ //load: ['editorLoader'],
     inject: ['views/db_management/db_utils', 'user', 'lib/couchapi'
             ],
-   factory: function( db_utils, user, couch)
+   factory: function( db_utils, userManager, couch)
     { "use strict";
       
       var log = logger('pickDbWindow');
@@ -14,6 +14,7 @@ define
       // var url;
       var vow;
       var backend;
+      var authenticated = false;
       var state = {
           backendName: 'couchDB'
           // idbName: 'db',
@@ -37,24 +38,83 @@ define
           // ,contents: 'hello'
       });
       
-      function checkCredentials() {
-          var user = identifyForm.getValue('userName');
-          var pwd = identifyForm.getValue('pwd');
-          console.log(user, pwd);
+      
+      var defaultUser = {
+          _id: 'guest'
+          ,type: 'person'
+          ,status: 'permanent'
+      };
+      
+      function msg(text) {
+          //TODO show msg on window somewhere
+          console.log(text);
+      }
+      
+      function checkCredentialsWithPouch(userName, pwd) {
+          backend.getDoc(userName).when(
+              function(user) {
+                  var key = new PBKDF2(pwd, user.iterations, user.salt).deriveKey();
+                  console.log('KEY ', pwd, key, user);
+                  if (!user.derived_key ||
+                      user.derived_key === key)
+                      return userManager.init(user);
+                  else return VOW.broken('Wrong password.');
+              }).when(
+                  function(user) {
+                      editorWindow.hide();
+                      mainLayout.setVisibility('inherit');
+                      cancelButton.setVisibility('inherit');
+                      logoutButton.setVisibility('inherit');
+                      loginButton.setVisibility('hidden');
+                      identifyForm.getField('pwd').setValue('');
+                      setCurrentDbLabel(backend.getUrl());
+                      vow.keep(user);
+                  },
+                  function(data) {
+                      console.log(data);
+                      msg(data);
+                  }); 
+      }
+      
+      function checkCredentialsWithCouch(userName, pwd) {
+          function getUser() {
+              couch.docGet(userName, db).when(
+                  function(user) {
+                      return userManager.init(user);
+                  }
+              ).when(
+                  function(user) {
+                      editorWindow.hide();
+                      mainLayout.setVisibility('inherit');
+                      cancelButton.setVisibility('inherit');
+                      logoutButton.setVisibility('inherit');
+                      loginButton.setVisibility('hidden');
+                      identifyForm.getField('pwd').setValue('');
+                      setCurrentDbLabel(backend.getUrl());
+                      vow.keep(user);
+                  },
+                  function(data) {
+                      console.log(data);
+                      msg('User doesn\'t exist in database, or you are not authorized to access the database' +
+                         'or there is a write or read problem with the settings doc');
+                  }
+              );
+          }
           
           var url = backend.getUrl();
           var path = url.slice(0, url.lastIndexOf('/'));
           var db = url.slice(url.lastIndexOf('/') + 1);
           couch.init(path);
-          couch.login(user, pwd).when(
+          couch.login(userName, pwd).when(
               function() {
-                  console.log('Authenticated!!', user, db);
-                  return couch.docGet(user, db);
-              }
-          ).when(
-              vow.keep,
-              function(data) {
-                  console.log(data);
+                  console.log('Authenticated!!', userName, db);
+                  authenticated = true;
+                  getUser();
+              },
+              function() {
+                  console.log('Not authenticated..', userName, db);
+                  authenticated = false;
+                  getUser();
               }
           );
       }
@@ -284,9 +344,51 @@ define
           // ,visibility: cancellable ? 'inherit' : 'hidden'
           // ,startRow: false
           ,click: function() {
-              editorWindow.hide();
-              checkCredentials();
+              var userName = identifyForm.getValue('userName');
+              var pwd = identifyForm.getValue('pwd');
+              if (!userName || userName.length === 0) {
+                  userName = defaultUser._id;
+              }
+              console.log(userName, pwd);
+              if (backend.getUrl().startsWith('http')) checkCredentialsWithCouch(userName, pwd);
+              else checkCredentialsWithPouch(userName, pwd);
           }  
+      });
+      
+      var logoutButton = isc.Button.create({
+          title: 'Logout'
+          // ,visibility: cancellable ? 'inherit' : 'hidden'
+          // ,startRow: false
+          ,click: function() {
+              userManager.logOut();
+              cancelButton.setVisibility('hidden');
+              logoutButton.setVisibility('hidden');
+              loginButton.setVisibility('inherit');
+              identifyForm.setVisibility('inherit');
+              mainLayout.setVisibility('hidden');
+              
+              var url = backend.getUrl();
+              currentDbLabel.setContents('Currently <b><i>'+ 'nobody' + '</i></b> is logged in at <b><i>' + url + '</i></b>' + 
+                                         (!url.startsWith('http') ? ' (internal)' : '') );
+          }  
+      });
+      
+      var connectButtonsLayout =isc.HLayout.create({
+          // border: "1px dashed blue",
+          height: 25,
+          members: [
+              isc.LayoutSpacer.create({ width: 8 , height:25}),
+              connectButton
+          ]
+      });
+      
+      var logButtonsLayout =isc.HLayout.create({
+          // border: "1px dashed blue",
+          height: 25,
+          members: [
+              isc.LayoutSpacer.create({ width: 8 , height:25}),
+              loginButton, logoutButton
+          ]
       });
       
       
@@ -299,8 +401,10 @@ define
           // autoSize: true,
           members: [
               identifyForm
-              ,loginButton
+              ,logButtonsLayout
+              // ,loginButton
               ,identifyHelp
+              // ,logoutButton
           ]});
       
       var connectLayout =isc.VLayout.create({
@@ -312,7 +416,7 @@ define
           // autoSize: true,
           members: [
               pickDbForm
-              ,connectButton
+              ,connectButtonsLayout
               ,helpLabel
           ]});
       
@@ -327,39 +431,21 @@ define
               var tab = arguments[4];
               console.log(tab);
               if (tab === 'identify') {
-                  if (user.isLoggedIn()) logoutButton.setVisibility('inherit');
+                  // if (userManager.isLoggedIn()) logoutButton.setVisibility('inherit');
               }
               else {
-                  logoutButton.setVisibility('hidden');
+                  // logoutButton.setVisibility('hidden');
               }
           },
           tabs: [
               {title: "Identify", icon: "person.png", iconSize:16, name: 'identify',
                pane: identifyLayout },
-              {title: "Connect", icon: "sync.png", iconSize:16, name: 'connect',
+              {title: "Connect", icon: "database.png", iconSize:16, name: 'connect',
                pane: connectLayout }
           ]
       });
 
       
-      var logoutButton = isc.Button.create({
-          title: 'Logout'
-          // ,visibility: cancellable ? 'inherit' : 'hidden'
-          // ,startRow: false
-          ,click: function() {
-              user.logOut();
-              cancelButton.setVisibility('hidden');
-              logoutButton.setVisibility('hidden');
-              loginButton.setVisibility('inherit');
-              identifyForm.setVisibility('inherit');
-              
-              var url = backend.getUrl();
-              currentDbLabel.setContents('Currently <b><i>'+ 'nobody' + '</i></b> is logged in at <b><i>' + url + '</i></b>' + 
-                                         (!url.startsWith('http') ? ' (internal)' : '') );
-              //TODO wipe cookie
-              
-          }  
-      });
       
       var cancelButton = isc.Button.create({
           title: 'Cancel'
@@ -367,10 +453,9 @@ define
               // ,startRow: false
           ,click: function() {
               editorWindow.hide();
-              vow.break("No credentials provided..");
+              // vow.break("No credentials provided..");
           }  
       });
-      // window.cancelButton = connectButton;
       
       var editorWindow = isc.Window.create({
           title: ""
@@ -378,7 +463,7 @@ define
           // ,height: 490
           // ,width: 500
           ,headerIconDefaults: { width:16, height:16, src: 'sync.png'}
-          ,canDragReposition: true
+          ,canDragReposition: false
           ,canDragResize: false
           ,layoutMargin:20
           ,showMinimizeButton:false
@@ -398,8 +483,8 @@ define
                   height: 20,
                   width: 490,
                   members: [
-                      logoutButton
-                      ,isc.LayoutSpacer.create()
+                      // logoutButton
+                      isc.LayoutSpacer.create()
                       ,cancelButton
                       // ,isc.LayoutSpacer.create()
                   ]
@@ -407,7 +492,16 @@ define
           ] 
       });
       
-      
+      function setCurrentDbLabel(url) {
+          function isAuthenticated() {
+              if (url.startsWith('http')) return authenticated ?  ' (authenticated) ' : ' (not authenticated) ';
+              else return '';
+                  
+          }
+          currentDbLabel.setContents('Currently <b><i>'+ userManager.getName() + isAuthenticated() +
+                                     '</i></b> is logged in at <b><i>' + url + '</i></b>' + 
+                                     (!url.startsWith('http') ? ' (internal)' : '') );
+      }
       
       var initialized = false; 
       function init() {
@@ -429,23 +523,29 @@ define
           );
           var url = backend.getUrl();
           setUrlAndName(state);
-          identifyHelp.setContents(user.getHelpText(url.startsWith('http') ? 'couch' : 'pouch'));
-              
-          currentDbLabel.setContents('Currently <b><i>'+ user.getName() + '</i></b> is logged in at <b><i>' + url + '</i></b>' + 
-                                     (!url.startsWith('http') ? ' (internal)' : '') );
+          identifyHelp.setContents(userManager.getHelpText(url.startsWith('http') ? 'couch' : 'pouch'));
+          setCurrentDbLabel(url);
           initialized = true;
       }
       
       return {
+          setAuthenticated: function() {
+              authenticated = true;
+          },
           setBackend: function(aBackend) {
               backend = aBackend;
           },
-          show: function(tab) {
+          //promises a logged in user
+          show: function(tab, userName) {
+              // vow = aVow;
               vow = VOW.make();
               if (!initialized) init();
+              
               tabSet.selectTab(tab);
               editorWindow.show();
-              if (user.isLoggedIn()) {
+              identifyForm.getField('userName').setValue(userName || '');
+              identifyForm.getField('pwd').setValue('');
+              if (userManager.isLoggedIn()) {
                   if (tab === 'identify')
                       logoutButton.setVisibility('inherit');   
                   loginButton.setVisibility('hidden');   

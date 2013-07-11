@@ -401,7 +401,7 @@ define
       
       var databaseButton = isc.ToolStripButton.create(
           {   align:'left' 
-              ,icon: "sync.png"
+              ,icon: "database.png"
               ,prompt: 'Change the database the app works against. '
               ,action: function() {
                   // pickDbWindow.init();
@@ -424,6 +424,7 @@ define
       var loginButton = isc.ToolStripButton.create(
           {   align:'left' 
 	      ,action: user.change 
+              ,icon: "person.png"
               ,prompt: 'Logout, or login with different credentials.'
           }); 
       
@@ -435,8 +436,8 @@ define
 
       var toolStrip = isc.ToolStrip.create(
           {members: [
-              databaseButton,
               loginButton
+              ,databaseButton
               ,isc.LayoutSpacer.create({  width:"*" })
               ,isc.IconMenuButton.create({title:''
 				          ,ID:'addButton'

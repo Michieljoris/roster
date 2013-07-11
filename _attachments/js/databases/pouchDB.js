@@ -3,10 +3,9 @@
 /*jshint maxparams:4 maxcomplexity:7 maxlen:130 devel:true newcap:false*/
 
 define
-({inject: ['types/typesAndFields',  "authWindow"],
-  factory: function(typesAndFields,  authWindow) {
+({inject: ['types/typesAndFields',  "authWindow", 'lib/couchapi', 'user'],
+  factory: function(typesAndFields,  authWindow, couch, userManager) {
       "use strict";
-      
       var log = logger('pouchDB', 'debug');
       
       var pouchDbHandle;
@@ -79,19 +78,16 @@ define
       //pouchdb. This function returns a promise of
       //a doc.
       function getDoc(record) {
-          // log.d('getDoc ', record);
           var vow = VOW.make();
           if (!record)  
               vow['break']('Can not get doc with undefined id');
           else if (record._id) return vow.keep(record);
           else pouchDbHandle.get(record, function(err, doc) {
               if (!err) {
-                  // log.d('keeping get vow');
                   addTimezoneOffset(doc);
                   vow.keep(doc);   
               }
               else {
-                  // log.d('breaking get vow');
                   err.record = record; 
                   vow['break'](err);   
               }
@@ -104,9 +100,7 @@ define
        * function return a promise of a save.
        */
       function putDoc( record , user){
-          // console.log('putDoc ', record);
           var vow = VOW.make();
-          console.log('In PUTDOC');
           // record.lastEdited = {
           //     id: user ? user._id: undefined,
           //     time: new Date()
@@ -380,9 +374,9 @@ define
       //section of the settings file attached to a user and act
       //accordingly. 
       
-      var defaultUserId = 'guest';
-      var localUser = {
-          _id: defaultUserId
+      // var defaultUserId = 'guest';
+      var defaultUser = {
+          _id: 'guest'
           ,type: 'person'
           ,status: 'permanent'
       };
@@ -406,121 +400,206 @@ define
       // };
         
       
-      function getUser(credentials) { 
-          var vow = VOW.make();
-          var login = credentials.username;
-          log.d('LOGIN IS' , credentials);
-          getDoc(login).when(
-              function(doc) {
-                  var key = new PBKDF2(credentials.password, doc.iterations, doc.salt).deriveKey();
+      // function getUser(credentials) { 
+      //     var vow = VOW.make();
+      //     var login = credentials.username;
+      //     log.d('LOGIN IS' , credentials);
+      //     getDoc(login).when(
+      //         function(doc) {
+      //             var key = new PBKDF2(credentials.password, doc.iterations, doc.salt).deriveKey();
                   
-                  console.log('KEY ', credentials.password, key, doc);
-                  if (!doc.derived_key ||
-                      doc.derived_key === key) vow.keep(doc);
-                  else vow['break']('Wrong password');
+      //             console.log('KEY ', credentials.password, key, doc);
+      //             if (!doc.derived_key ||
+      //                 doc.derived_key === key) vow.keep(doc);
+      //             else vow['break']('Wrong password');
                   
-              },
-              function() {
-                  vow['break']('A person with this login does not exist in this database:' +
-                               login);
-              }
-          ); 
-          return vow.promise;
-      } 
+      //         },
+      //         function() {
+      //             vow['break']('A person with this login does not exist in this database:' +
+      //                          login);
+      //         }
+      //     ); 
+      //     return vow.promise;
+      // } 
       
-      function createLoginDialog(aVow, user) {
+      // function createLoginDialog(aVow, user) {
           
-          var vow = aVow;
-              function checkCredentials(credentials, reportToLoginDialog) {
-                  getUser(credentials).when(
-                      function(anAuthenticatedUser) {
-                          var authenticatedUser = anAuthenticatedUser;
-                          Cookie.set('lastLogin', authenticatedUser._id,
-                                     Date.today().addYears(10));
-                          log.i(authenticatedUser._id + ' logged in.');
-                          vow.keep(authenticatedUser);
-                          reportToLoginDialog(true);
-                      },
-                      function(err) {
-                          log.w(err);
-                          reportToLoginDialog(false);
-                      }
-                  );
-              }
+      //     var vow = aVow;
+      //         function checkCredentials(credentials, reportToLoginDialog) {
+      //             getUser(credentials).when(
+      //                 function(anAuthenticatedUser) {
+      //                     var authenticatedUser = anAuthenticatedUser;
+      //                     Cookie.set('lastLogin', authenticatedUser._id,
+      //                                Date.today().addYears(10));
+      //                     log.i(authenticatedUser._id + ' logged in.');
+      //                     vow.keep(authenticatedUser);
+      //                     reportToLoginDialog(true);
+      //                 },
+      //                 function(err) {
+      //                     log.w(err);
+      //                     reportToLoginDialog(false);
+      //                 }
+      //             );
+      //         }
       
-          function showLoginDialog() {
-              log.d(user);
-	      isc.showLoginDialog(checkCredentials,
-			          {username: user._id, password: '',
-			           dismissable:true});
-          } 
+      //     function showLoginDialog() {
+      //         log.d(user);
+      //         isc.showLoginDialog(checkCredentials,
+      //   		          {username: user._id, password: '',
+      //   		           dismissable:true});
+      //     } 
           
-          return {
-              show: showLoginDialog
-          };
-      }
-      
-      function changeUserInternal(user) {
-          var vow = VOW.make();
-          createLoginDialog(vow, user).show();
-          return vow.promise;
-      }
-      
-      function set(vow, userId) {
-          getDoc(userId).when(
-              function(user) {
-                  if (!user.derived_key) {
-                      log.i(user._id + ' logged in (no pwd).');
-                      vow.keep(user);
-                  }
-                  else  createLoginDialog(vow, user).show();
-              },
-              function() {
-                  if (userId === defaultUserId) {
-                      putDoc(localUser, localUser).when(
-                          function() {
-                              log.d('Created local guest user..');
-                              newDatabase = true;
-                              vow.keep(localUser);
-                          },
-                          vow['break']
-                      );
+      //     return {
+      //         show: showLoginDialog
+      //     };
+      // }
+      // function set(vow, userId) {
+      //     getDoc(userId).when(
+      //         function(user) {
+      //             if (!user.derived_key) {
+      //                 log.i(user._id + ' logged in (no pwd).');
+      //                 vow.keep(user);
+      //             }
+      //             // else  createLoginDialog(vow, user).show();
+      //             else  authWindow.show('identify', vow, user._id).show();
+      //         },
+      //         function() {
+      //             if (userId === defaultUser._id) {
+      //                 putDoc(defaultUser, defaultUser).when(
+      //                     function() {
+      //                         log.d('Created default user (guest)..');
+      //                         vow.keep(defaultUser);
+      //                     },
+      //                     vow['break']
+      //                 );
                       
-                  }
-                  else createLoginDialog(vow, defaultUserId).show();
-              }
-          ); 
+      //             } else authWindow.show('identify', vow,
+      //             defaultUser).show(); // else
+      //             createLoginDialog(vow, defaultUser).show(); } );
+      //             }
+
+
+      
+      function changeUser() {
+          return authWindow.show('identify', '');
       }
       
-      function autoLoginInternal() {
-          //promises a user
-          var vow = VOW.make();
-          Cookie.get('lastLogin').when(
-              function(userId) {
-                  set(vow, userId);
-              }
-              ,function() {
-                  //try to login as guest user
-                  set(vow, defaultUserId);     
-              }
-          );
-          return vow.promise;
-      }
-      
-      function changeUser(user) {
-          if (url.startsWith('http')) {
-              return authWindow.show('identify');
-          }
-          else return changeUserInternal(user);
-      }
+     // The proper security lies with CouchDB. By authenticating
+     // against it we can get read and/or write access to its data. On
+     // top of this I put a light veneer of additional security by
+     // requiring the user to identify himself, so I can keep logs and
+     // hand out permissions if I wanted to. But a user does not have
+     // to be logged in to read/write the databases. In the case of
+     // pouch really not, and in the case of couch not as far as it is
+     // not locked down.  I just make it look like it is necessary in
+     // both cases.
 
       //returns promise of user
       function autoLogin() {
-          if (url.startsWith('http')) {
-              return authWindow.show('identify');
+          function getLastLoginVows() {
+              var vows = [ Cookie.get('lastLogin'), VOW.kept(defaultUser._id)];
+              if (url.startsWith('http')) {
+                  var path = url.slice(0, url.lastIndexOf('/'));
+                  couch.init(path);
+                  vows.push(couch.session());
+              }
+              return vows;
           }
-          else return autoLoginInternal();
+          var vow = VOW.make();
+          console.log('autologin');
+          var userName;
+          VOW.any(getLastLoginVows()).when(
+              function(array) {
+                  console.log('ANY', array);
+                  var lastLogin = array[0];
+                  var defaultUserId = array[1];
+                  var session = array[2];
+                  if (url.startsWith('http') && session && session.userCtx.name) {
+                      if (lastLogin !== userName) {
+                          couch.logout();   
+                          userName = lastLogin;
+                      }
+                      else {
+                          userName = session.userCtx.name;
+                          authWindow.setAuthenticated();
+                      }
+                  }
+                  else if (lastLogin) userName =lastLogin;
+                  else userName = defaultUserId;
+                  return getDoc(userName);
+              }).
+              when(
+                  function(user) {
+                      console.log('Found user', user);
+                      //we've been able to retrieve the user doc
+                      //If our backend is couch we consider ourselves logged in
+                      if (url.startsWith('http')) return userManager.init(user);
+                      else {
+                          //If our backend is pouch and there is no pwd, we're
+                          //also logged in
+                          if (!user.derived_key) return userManager.init(user);
+                          //else prompt for the pwd hashed into the user doc
+                          //(if only we could make the next line immutable..)
+                          else  return authWindow.show('identify', userName);
+                      }
+                      //The above 3 calls always keep the vow
+                  }).
+              when(
+                  vow.keep,
+                  function() {
+                      //Whatever userName was used, its doc wasn't
+                      //there. This could be a new database.  To give
+                      //authWindow a chance we will first try to
+                      //create a defaultUser
+                      getDoc(defaultUser._id).when(
+                          function(user) {
+                              if (!user.derived_key) return userManager.init(user);
+                              else return authWindow.show('identify', userName);
+                          }).when(
+                              vow.keep,
+                              function() {
+                                  putDoc(defaultUser, defaultUser).when(
+                                      function() {
+                                          newDatabase = true;
+                                          log.d('Created default user (guest)..');
+                                          userManager.init(defaultUser).when( vow.keep );
+                                          // vow.keep(defaultUser);
+                                      },
+                                      function() {
+                                          authWindow.show('indentify',userName).when(vow.keep);
+                                      });
+                              });
+                  });
+          return vow.promise;
       }
+          // if (url.startsWith('http')) {
+          //     // var db = url.slice(url.lastIndexOf('/') + 1);
+          //     couch.session().when(
+          //         function(data) {
+          //             return getDoc(data.userCtx.userName);
+          //         }
+          //     ).when(
+          //         vow.keep,
+          //         function(data) {
+          //             console.log('no session!', data);
+          //             authWindow.show('identify', vow);
+          //         }
+          //     );
+          // }
+          // else {
+          //     Cookie.get('lastLogin').when(
+          //         function(userId) {
+          //             set(vow, userId);
+          //         }
+          //         ,function() {
+          //             //try to login as default user
+          //             set(vow, defaultUser._id);     
+          //         }
+          //     );
+              
+          // }
+          // return vow.promise;
+      // }
       
       //##getSettings
       /**Get settings by type (look, behaviour or permissions) *
@@ -593,9 +672,10 @@ define
           
           ,getDoc: getDoc
           ,putDoc: putDoc
+          ,changeUser: changeUser
           
           ,autoLogin: autoLogin
-          ,changeUser: changeUser
+          // ,changeUser: changeUser
           ,getUrl: getUrl
           ,isNew : function() {
               return newDatabase;

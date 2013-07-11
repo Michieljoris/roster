@@ -156,7 +156,7 @@ define(
                       initBackend).
                   when(
                       function(backend)  {
-                          console.log('finsihed');
+                          console.log('Connected with backend', backend);
                           View.setBackend(backend); 
                           Editor.setBackend(backend);
                           user.setBackend(backend);
@@ -168,9 +168,9 @@ define(
                           return backend.autoLogin();   
                       }).
                   when(
-                      //gets the user's settings file
-                      user.init).
-                  when(
+                  // //     //gets the user's settings file
+                  // //     user.init).
+                  // when(
                       function() {
                           //Draw the app 
                           log.d('Drawing app.');
@@ -189,11 +189,11 @@ define(
                       },
                       function(err) {
                           console.log('Failed setting up app....', err, ' ', err.stack);
-                          // alert('Failed setting up app....\n' + (err.error || '') + '\n ' +  (err.reason  || '') +
-                          //       '\nClicking ok will refresh the page and load the default internal database'
-                          //      );
-                          // reset();
-                          // location.reload();
+                          alert('Failed setting up app....\n' + (err.error || '') + '\n ' +  (err.reason  || '') +
+                                '\nClicking ok will refresh the page and load the default internal database'
+                               );
+                          reset();
+                          location.reload();
                       }
                   );
               
