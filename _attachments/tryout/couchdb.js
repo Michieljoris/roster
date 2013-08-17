@@ -318,7 +318,7 @@ CouchDB.login = function(name, password) {
       + encodeURIComponent(password)
   });
   return JSON.parse(CouchDB.last_req.responseText);
-}
+};
 
 CouchDB.logout = function() {
   CouchDB.last_req = CouchDB.request("DELETE", "/_session", {
@@ -384,11 +384,11 @@ CouchDB.xhrbody = function(xhr) {
   if (xhr.responseText) {
     return xhr.responseText;
   } else if (xhr.body) {
-    return xhr.body
+    return xhr.body;
   } else {
     throw new Error("No XMLHTTPRequest support detected");
   }
-}
+};
 
 CouchDB.xhrheader = function(xhr, header) {
   if(xhr.getResponseHeader) {
@@ -398,14 +398,14 @@ CouchDB.xhrheader = function(xhr, header) {
   } else {
     throw new Error("No XMLHTTPRequest support detected");
   }
-}
+};
 
 CouchDB.proxyUrl = function(uri) {
   if(uri.substr(0, CouchDB.protocol.length) != CouchDB.protocol) {
     uri = CouchDB.urlPrefix + uri;
   }
   return uri;
-}
+};
 
 CouchDB.request = function(method, uri, options) {
   options = typeof(options) == 'object' ? options : {};
@@ -471,7 +471,7 @@ CouchDB.maybeThrowError = function(req) {
 
     throw (new CouchError(result));
   }
-}
+};
 
 CouchDB.params = function(options) {
   options = options || {};

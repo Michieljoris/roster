@@ -1,0 +1,13 @@
+[
+    { "entry": "write-password" }
+    ,{ "entry": "write-own-password" }
+    ,{ "entry": "write-roles" }
+    ,{ "entry": "write-own-roles" }
+    ,{ "entry": "write-person" }
+    ,{ "entry": "write-own-person" }
+    ,{ "entry": "write-all" }
+    ,{ "entry": "write-location" }
+    ,{ "entry": "write-shift" }
+    ,{ "entry": "write-availibility" }
+    ,{ "entry": "write-own-availibility" }
+]

@@ -31,9 +31,9 @@ define
       
       var currentDbLabel = isc.Label.create({
           // ID:'test',
-          width: 400,
+          width: 300,
           height: 10
-          ,margin: 10
+          // ,margin: 10
           // ,border: "1px dashed blue"
           // ,contents: 'hello'
       });
@@ -448,7 +448,7 @@ define
       
       
       var cancelButton = isc.Button.create({
-          title: 'Cancel'
+          title: 'Close'
           // ,visibility: cancellable ? 'inherit' : 'hidden'
               // ,startRow: false
           ,click: function() {
@@ -475,7 +475,6 @@ define
           ,items: [
               tabSet
               // ,helpLabel
-              ,currentDbLabel
               ,isc.HLayout.create({
                   layoutMargin: 6,
                   membersMargin: 6,
@@ -484,6 +483,7 @@ define
                   width: 490,
                   members: [
                       // logoutButton
+                      currentDbLabel,
                       isc.LayoutSpacer.create()
                       ,cancelButton
                       // ,isc.LayoutSpacer.create()

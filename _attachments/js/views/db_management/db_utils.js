@@ -226,11 +226,21 @@ define
         
         function getAllDbs(url) {
             var vow = VOW.make();
-            if (url.startsWith('idb') &&
-                window.webkitIndexedDB &&
-                window.webkitIndexedDB.webkitGetDatabaseNames) {
+            
+            //but this only works with databases created with this latest pouchdb
+            if (url.startsWith('idb')) {
+                {
+                    Pouch.allDbs(function(err, resp) {
+                        vow.keep(resp);
+                    });
+                }
+            } 
+            //obsolete now
+            else if (url.startsWith('idb') &&
+                     window.webkitIndexedDB &&
+                     window.webkitIndexedDB.webkitGetDatabaseNames) {
                 //only works in chrome ..
-                var dbNames = window.webkitIndexedDB.webkitGetDatabaseNames();
+                    var dbNames = window.webkitIndexedDB.webkitGetDatabaseNames();
                 dbNames.onsuccess = function(event) {
                     var list = event.target ? event.target.result : [];
                     list = list || [];

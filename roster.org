@@ -1,3 +1,14 @@
+
+* non smart client calendars
+  http://www.dhtmlx.com/docs/products/dhtmlxScheduler/
+  http://www.web-delicious.com/jquery-events-calendar-wdcalendar/
+  http://arshaw.com/fullcalendar/
+https://github.com/angular-ui/ui-calendar for the arshaw calendar
+http://www.dillingermediaonline.com/atlanta-web-developer/angularjs-calendar-2261/?utm_source=rss&utm_medium=rss&utm_campaign=angularjs-calendar
+* tables
+https://github.com/lorenzofox3/Smart-Table
+http://angular-ui.github.io/ng-grid/
+http://kendo-labs.github.io/angular-kendo/#/ (purchase $400)
 * Done
 ** DONE get rid of version get request  I am using lgpl now, with a commenting out of a warning that I am
    using server components, which I am not.. Using my own server, by
@@ -550,6 +561,8 @@ adjust login process.
 use ssl to communicate with couchdb
 
  
+
+
 
 
 
