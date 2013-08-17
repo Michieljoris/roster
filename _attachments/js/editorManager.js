@@ -15,7 +15,7 @@ define
            title: "TODO: Set to event date, start and end",
            // autoSize: true,
            // layoutLeftMargin: 20,
-           width: 365,
+           width: 375,
            height:500,
            // height:'100%',
            canDragReposition: true,

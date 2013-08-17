@@ -48,6 +48,16 @@
     
   </HEAD>
   <BODY>
+    <script>
+      
+      Pouch.enableAllDbs = true;
+      
+      
+        Pouch.replicate('http://localhost:5984/testrep','testrep', {  
+            onChange: function() { console.log('change', arguments);},  
+            complete: function() { console.log('complete',arguments); }
+        });
+      </script>
     <!-- SYNC ------------------------------------->
     <!--this script will stop any further processing of the document by -->
     <!-- the browser when the sync cookie is found, and then do its thing -->
@@ -68,7 +78,6 @@
     </div>
 
     <script>
-      Pouch.enableAllDbs = true;
       console.log(BrowserDetect.browser);
       if (BrowserDetect.browser !== 'Chrome' && BrowserDetect.browser !== 'Firefox') { 
       document.getElementById('appFail').style.visibility = 'visible'; 

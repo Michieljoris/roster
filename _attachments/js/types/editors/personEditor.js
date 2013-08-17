@@ -16,12 +16,13 @@ define
       var defaultSettings = {};
       var settings = {}; 
       
-      function formChanged() {
-          log.d('ITEMCHANGED', vm.valuesHaveChanged());
-          var changed = vm.valuesHaveChanged();
-          allButtons.Save.setDisabled(!changed);
-          // allButtons.Discard.setDisabled(!changed);
-          editorManager.changed(editor, changed);
+      function areArraysEqual(a1, a2) {
+          if (!isc.isAn.Array(a1) || !isc.isAn.Array(a2)) return false;
+          if (a1.length !== a2.length) return false;
+          for (var i=0; i< a1.length; i++) {
+              if (a2.indexOf(a1[i]) === -1) return false;
+          }
+          return true;   
       }
       
       var mainFormConfig = {
@@ -102,7 +103,69 @@ define
               }, fields.state)
           ] 
       };
+      
+      
+      var rolesDS = isc.DataSource.create({
+          allowAdvancedCriteria: true,
+          dataFormat: "json",
+          dataURL: "roles.json",
+          fields:[
+              { name: "entry" }
+          ]
+      });
+      
+      var availibilityDS = isc.DataSource.create({
+          allowAdvancedCriteria: true,
+          dataFormat: "json",
+          dataURL: "availibility.json",
+          fields:[
+              { name: "entry" }
+          ]
+      });
+      
+      var rolesFormConfig = {
+          ID: "rolesID",
+          colWidths: [250, 120],
+          cellPadding: 15,
+          itemChanged: formChanged,
+          titleOrientation: "top",
+          fields: [
+              isc.addDefaults({
+                  // changed: function() {
+                  //     console.log('change to roles', arguments);
+                  // },
+                  editorType: "MultiComboBoxItem",
+                  optionDataSource: rolesDS,
+                  layoutStyle: 'vertical'
+                  ,displayField: "entry",
+                  valueField: "entry",
+                  autoFetchData: true
+              }, fields.roles)
+          ]
+      };
               
+      var availibilityFormConfig = {
+          ID: "availibilityID",
+          colWidths: [250, 120],
+          cellPadding: 15,
+          itemChanged: formChanged,
+          titleOrientation: "top",
+          fields: [
+              isc.addDefaults({
+                  // changed: function() {
+                  //     console.log('change to roles', arguments);
+                  // },
+                  editorType: "MultiComboBoxItem",
+                  optionDataSource: availibilityDS,
+                  layoutStyle: 'vertical'
+                  ,displayField: "entry",
+                  valueField: "entry",
+                  autoFetchData: true
+              }, fields.availibility)
+          ]
+      };
+              
+      
       
       var contactFormConfig = {
           autoDraw: false,
@@ -153,24 +216,49 @@ define
                   // colSpan: 2,
                   startRow: true
               }, fields.notes)
-              // ,isc.addDefaults({
-              //     startRow: true,
-              //     // titleOrientation: 'top',
-              //     align: 'left'
-              // }, fields.colorBg)
-              // ,isc.addDefaults({
-              //     startRow: true,
-              //     // titleOrientation: 'top',
-              //     align: 'left'
-              // }, fields.colorFg)
               
           ]
       };
       
       var mainForm = isc.DynamicForm.create(mainFormConfig);
+      window.personmainForm = mainForm;
       var addressForm = isc.DynamicForm.create(addressFormConfig);
       var contactForm = isc.DynamicForm.create(contactFormConfig);
       var notesForm = isc.DynamicForm.create(notesFormConfig);
+      var rolesForm = isc.DynamicForm.create(rolesFormConfig);
+      window.rolesForm = rolesForm;
+      // var rolesForm = rolesPane;
+      var availibilityForm = isc.DynamicForm.create(availibilityFormConfig);
+      
+      var newRoles, newAvailibility;
+      
+      function formChanged(item, newValue) {
+          console.log(item, newValue);
+          log.d('ITEMCHANGED', vm.valuesHaveChanged(), vm.getValues());
+          var changed = vm.valuesHaveChanged();
+          
+          if (item.name === 'roles') {
+              var oldRoles = vm.getValues().roles;
+              if (!areArraysEqual(newValue, oldRoles)) {
+                  newRoles = newValue;
+                  changed = true;
+              }
+              else newRoles = false;
+          }
+          else if (item.name === 'availibility') {
+              var oldAvailibility = vm.getValues().availibility;
+              if (!areArraysEqual(newValue, oldAvailibility)) {
+                  newAvailibility = newValue;
+                  changed = true;
+              }
+              else newAvailibility = false;
+          } 
+          allButtons.Save.setDisabled(!changed);
+          // allButtons.Discard.setDisabled(!changed);
+          editorManager.changed(editor, changed);
+      }
+      
+      
 
       var pickerBgLabel = isc.Label.create({
           border: "1px grey solid",
@@ -215,7 +303,7 @@ define
               this.setContents("<div style='border:1px grey solid; text-align:center;" +
                                " min-height:20px; line-height:20px; color:" +
                                fg + ";background-color:" + bg +
-                                ";'>Text</div>");
+                               ";'>Text</div>");
           },
           setBg: function(bg) {
               this.bg = bg;
@@ -245,7 +333,7 @@ define
               this.setContents("<div style='border:1px grey solid; text-align:center;" +
                                " min-height:20px; line-height:20px; color:" +
                                fg + ";background-color:" + bg +
-                                ";'>Calendar color</div>");
+                               ";'>Calendar color</div>");
           },
           setBg: function(bg) {
               this.bg = bg;
@@ -291,10 +379,11 @@ define
       
       var vm = isc.ValuesManager.create({
           members: [
-              mainForm, addressForm, contactForm, notesForm
+              mainForm, addressForm, contactForm, notesForm, rolesForm, availibilityForm
           ]
       });
     
+      window.valueManager = vm;
     
       function addPerson() {
           console.log('addPerson',vm.getValues());
@@ -309,6 +398,9 @@ define
               utils.createCSSClass('.eventColor' + person._id,
                                    'background-color:' + bg +
                                    '; color:' + fg);
+              
+              if (newRoles) person.roles = newRoles;
+              if (newAvailibility) person.availibility = newAvailibility;
               
               typesAndFields.removeUnderscoreFields(person);
               editorManager.save(person, updateVm);           
@@ -344,11 +436,13 @@ define
                      ,addressForm
                      ,contactForm
                      ,notesForm
+                     ,rolesForm
+                     ,availibilityForm
                    ]
       });
       
       var editLayout = isc.VLayout.create({
-              // autoSize:true,
+          // autoSize:true,
           width: "30%",
           // height: "100%",
           members: [
@@ -356,7 +450,7 @@ define
                   width: "70%",
                   members: [
                       buttonBar(allButtons, 'vertical', 180, 50,
-                                ['Main', 'Address', 'Contact', 'Notes', 'Password'],
+                                ['Main', 'Address', 'Contact', 'Notes', 'Password', 'Roles', 'Availibility'],
                                 { // baseStyle: "cssButton",
                                     left: 200,
                                     showRollOver: true,
@@ -394,7 +488,7 @@ define
               // ID:'test',
               // width: 300,
               height: '100%',
-              margin: 10
+                  margin: 10
               ,contents: 'Enter your new password.'
           });
             
@@ -476,6 +570,8 @@ define
             case 'Address': formLayout.setVisibleMember(addressForm); break;
             case 'Contact': formLayout.setVisibleMember(contactForm); break;
             case 'Notes': formLayout.setVisibleMember(notesForm); break; 
+            case 'Roles': formLayout.setVisibleMember(rolesForm); break; 
+            case 'Availibility': formLayout.setVisibleMember(availibilityForm); break; 
             case 'Password': pickPwd();
               break;
               
@@ -485,7 +581,7 @@ define
           default: alert('unknown action in function action!!');
           }
           console.log(e);
-      }
+          }
       
       var itemViewer = isc.DetailViewer.create({
           // ID:"itemViewer",
@@ -561,6 +657,10 @@ define
           
           // console.log('somePerson', somePerson);
           person = somePerson;
+          person.roles = person.roles || [];
+          newRoles = false;
+          person.availibility = person.availibility || [];
+          newAvailibility = false;
           vm.setValues(person);
           fgColorPicker.setBg(person.colorBg);
           bgColorPicker.setBg(person.colorBg);

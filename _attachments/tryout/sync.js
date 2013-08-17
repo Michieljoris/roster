@@ -284,13 +284,22 @@
     // }
     
     Cookie.get('sync').when(function(repRules) {
+        console.log('in sync');
+        Pouch.replicate('http://localhost:5984/testrep','testrep', {  
+            onChange: function() { console.log('change', arguments);},  
+            complete: function() { console.log('complete',arguments); }
+        });
+        
+        console.log('in sync2');
+        
         $('sync').html('Syncing.. ');
         repRules = JSON.parse(repRules);
         log.pp(repRules);
     
-        Cookie.remove('sync');
+        // Cookie.remove('sync');
         window.stop();
         // $.couch.urlPrefix='http://localhost:8090/local';
+        return;
         
         var dblog = [];
         // pouch.destroy();

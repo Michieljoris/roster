@@ -1,0 +1,19 @@
+<!Doctype HTML>
+<html>
+    <header>
+      
+      <script src=lib/pouchdb-nightly.min28July2013.js></script>
+    </head>
+    <body>
+      
+      <script>Pouch.enableAllDbs = true; 
+      
+        Pouch.replicate('http://localhost:5984/testrep','testrep', {  
+            onChange: function() { console.log('change', arguments);},  
+            complete: function() { console.log('complete',arguments); }
+        });
+      
+      </script>
+      PouchDb loaded..
+    </body>
+</html>
