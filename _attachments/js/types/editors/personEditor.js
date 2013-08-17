@@ -8,13 +8,14 @@ define
 ({inject: ['Editor', 'types/typesAndFields', 'editorUtils', 'editorManager', 'lib/sha1' , 'lib/utils'],
   factory: function(Editor, typesAndFields, editorUtils, editorManager, hash, utils) {
       "use strict";
-      var log = logger('typesAndFields') ;
+      var log = logger('personEditor') ;
       var editor = { type: 'person'};
       var fields = editorManager.register(editor);
       var buttonBar = editorUtils.buttonBar;
       var person;   
       var defaultSettings = {};
       var settings = {}; 
+      var roles;
       
       function areArraysEqual(a1, a2) {
           if (!isc.isAn.Array(a1) || !isc.isAn.Array(a2)) return false;
@@ -109,15 +110,18 @@ define
           allowAdvancedCriteria: true,
           dataFormat: "json",
           dataURL: "roles.json",
+          cacheAllData: true,
           fields:[
               { name: "entry" }
           ]
       });
+      window.rolesDS = rolesDS;
       
-      var availibilityDS = isc.DataSource.create({
+      var availabilityDS = isc.DataSource.create({ //Availability
           allowAdvancedCriteria: true,
           dataFormat: "json",
-          dataURL: "availibility.json",
+          dataURL: "house_list.json",
+          cacheAllData: true,
           fields:[
               { name: "entry" }
           ]
@@ -129,14 +133,15 @@ define
           cellPadding: 15,
           itemChanged: formChanged,
           titleOrientation: "top",
+          autoDraw: false,
           fields: [
               isc.addDefaults({
                   // changed: function() {
                   //     console.log('change to roles', arguments);
                   // },
                   editorType: "MultiComboBoxItem",
-                  optionDataSource: rolesDS,
-                  layoutStyle: 'vertical'
+                  optionDataSource: rolesDS
+                  ,layoutStyle: 'vertical'
                   ,displayField: "entry",
                   valueField: "entry",
                   autoFetchData: true
@@ -144,24 +149,25 @@ define
           ]
       };
               
-      var availibilityFormConfig = {
-          ID: "availibilityID",
+      var availabilityFormConfig = {
+          ID: "availabilityID",
           colWidths: [250, 120],
           cellPadding: 15,
           itemChanged: formChanged,
           titleOrientation: "top",
+          autoDraw: false,
           fields: [
               isc.addDefaults({
                   // changed: function() {
                   //     console.log('change to roles', arguments);
                   // },
                   editorType: "MultiComboBoxItem",
-                  optionDataSource: availibilityDS,
+                  optionDataSource: availabilityDS,
                   layoutStyle: 'vertical'
                   ,displayField: "entry",
                   valueField: "entry",
                   autoFetchData: true
-              }, fields.availibility)
+              }, fields.availability)
           ]
       };
               
@@ -226,36 +232,44 @@ define
       var contactForm = isc.DynamicForm.create(contactFormConfig);
       var notesForm = isc.DynamicForm.create(notesFormConfig);
       var rolesForm = isc.DynamicForm.create(rolesFormConfig);
+      
       window.rolesForm = rolesForm;
       // var rolesForm = rolesPane;
-      var availibilityForm = isc.DynamicForm.create(availibilityFormConfig);
+      var availabilityForm = isc.DynamicForm.create(availabilityFormConfig);
       
-      var newRoles, newAvailibility;
+      var newRoles, newAvailability, oldAvailability, oldRoles;
+      var changed;
       
       function formChanged(item, newValue) {
+          if (ignoreChanges) return;
           console.log(item, newValue);
-          log.d('ITEMCHANGED', vm.valuesHaveChanged(), vm.getValues());
-          var changed = vm.valuesHaveChanged();
+          log.d('ITEMCHANGED', vm.valuesHaveChanged(), vm.getChangedValues());
+          changed = vm.valuesHaveChanged();
           
-          if (item.name === 'roles') {
-              var oldRoles = vm.getValues().roles;
+          if (item && item.name === 'roles') {
+              // var oldRoles = vm.getValues().roles;
               if (!areArraysEqual(newValue, oldRoles)) {
+                  console.log(newValue, oldRoles);
                   newRoles = newValue;
                   changed = true;
+                  // alert('roles: changed set to ' + changed);
               }
               else newRoles = false;
           }
-          else if (item.name === 'availibility') {
-              var oldAvailibility = vm.getValues().availibility;
-              if (!areArraysEqual(newValue, oldAvailibility)) {
-                  newAvailibility = newValue;
+          else if (item && item.name === 'availability') {
+              // var oldAvailability = vm.getValues().availability;
+              if (!areArraysEqual(newValue, oldAvailability)) {
+                  newAvailability = newValue;
                   changed = true;
+                  // alert('avail: changed set to ' + changed);
               }
-              else newAvailibility = false;
+              else newAvailability = false;
           } 
           allButtons.Save.setDisabled(!changed);
           // allButtons.Discard.setDisabled(!changed);
-          editorManager.changed(editor, changed);
+          
+          // alert('changed set to ' + changed);
+          // editorManager.changed(editor, changed);
       }
       
       
@@ -379,7 +393,7 @@ define
       
       var vm = isc.ValuesManager.create({
           members: [
-              mainForm, addressForm, contactForm, notesForm, rolesForm, availibilityForm
+              mainForm, addressForm, contactForm, notesForm, rolesForm, availabilityForm
           ]
       });
     
@@ -400,14 +414,16 @@ define
                                    '; color:' + fg);
               
               if (newRoles) person.roles = newRoles;
-              if (newAvailibility) person.availibility = newAvailibility;
+              if (newAvailability) person.availability = newAvailability;
               
               typesAndFields.removeUnderscoreFields(person);
+              console.log('no underscores?', person);
               editorManager.save(person, updateVm);           
           }
       }
       
       function updateVm(record) {
+          console.log('updateVm');
           vm.setValues(record);
           allButtons.Save.setDisabled(!settings.isNewRecord);
           editorManager.changed(editor, false);
@@ -437,7 +453,7 @@ define
                      ,contactForm
                      ,notesForm
                      ,rolesForm
-                     ,availibilityForm
+                     ,availabilityForm
                    ]
       });
       
@@ -450,7 +466,7 @@ define
                   width: "70%",
                   members: [
                       buttonBar(allButtons, 'vertical', 180, 50,
-                                ['Main', 'Address', 'Contact', 'Notes', 'Password', 'Roles', 'Availibility'],
+                                ['Main', 'Address', 'Contact', 'Notes', 'Password', 'Roles', 'Availability'],
                                 { // baseStyle: "cssButton",
                                     left: 200,
                                     showRollOver: true,
@@ -488,7 +504,7 @@ define
               // ID:'test',
               // width: 300,
               height: '100%',
-                  margin: 10
+              margin: 10
               ,contents: 'Enter your new password.'
           });
             
@@ -571,7 +587,7 @@ define
             case 'Contact': formLayout.setVisibleMember(contactForm); break;
             case 'Notes': formLayout.setVisibleMember(notesForm); break; 
             case 'Roles': formLayout.setVisibleMember(rolesForm); break; 
-            case 'Availibility': formLayout.setVisibleMember(availibilityForm); break; 
+            case 'Availability': formLayout.setVisibleMember(availabilityForm); break; 
             case 'Password': pickPwd();
               break;
               
@@ -581,7 +597,7 @@ define
           default: alert('unknown action in function action!!');
           }
           console.log(e);
-          }
+      }
       
       var itemViewer = isc.DetailViewer.create({
           // ID:"itemViewer",
@@ -651,17 +667,19 @@ define
       //     allButtons.Save.setDisabled(true);
       // };
       
+      var ignoreChanges;
       editor.set = function(somePerson, someSettings) {
+          ignoreChanges = true;
           console.log('setting values', somePerson, someSettings);
           settings = isc.addDefaults(someSettings, defaultSettings);
           
           // console.log('somePerson', somePerson);
           person = somePerson;
-          person.roles = person.roles || [];
+          oldRoles = person.roles = person.roles || [];
+          
           newRoles = false;
-          person.availibility = person.availibility || [];
-          newAvailibility = false;
-          vm.setValues(person);
+          oldAvailability = person.availability = person.availability || [];
+          newAvailability = false;
           fgColorPicker.setBg(person.colorBg);
           bgColorPicker.setBg(person.colorBg);
           fgColorPicker.setFg(person.colorFg);
@@ -675,16 +693,23 @@ define
           allButtons.Save.setVisibility(settings.saveButton);
           allButtons.Save.setDisabled(true);
           // allButtons.Discard.setDisabled(true);
+          
           formLayout.setVisibleMember(mainLayout);
           
+          vm.setValues(person);
+          changed = false;
+          ignoreChanges = false;
       };
       
-      editor.init = function() {
-          // var dataSource = Editor.getBackend().getDS();
+      editor.init = function() {     // var dataSource = Editor.getBackend().getDS();
           // eventForm.getField('person').setOptionDataSource(dataSource);
           // eventForm.getField('location').setOptionDataSource(dataSource);
       };
-    
+      
+      editor.isChanged = function() {
+          return changed;
+      };
+      
       return editor;
 
   }});

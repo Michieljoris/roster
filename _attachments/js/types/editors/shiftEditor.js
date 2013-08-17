@@ -18,6 +18,7 @@ define
     
     var event;   
     var settings = {}; 
+    var changed;
     
     var defaultSettings = {
         minimumShiftLength: 10,
@@ -49,7 +50,7 @@ define
                     eventForm.getField('adjustDisturbedHours').show();
                     
                     var distSleep =eventForm.getValue('disturbedSleepHours');
-                   if (!distSleep) eventForm.setValue('disturbedSleepHours', 0);
+                    if (!distSleep) eventForm.setValue('disturbedSleepHours', 0);
                     if (eventForm.getValue('adjustDisturbedHours'))  {
                         eventForm.getField('disturbedSleepHours').show();
                     }
@@ -75,7 +76,7 @@ define
         // log.d('CHANGE', item);
         if (item.name === 'disturbedSleepHours') return;
         // log.d('ITEMCHANGED', eventForm.valuesHaveChanged());
-        var changed = eventForm.valuesHaveChanged();
+        changed = eventForm.valuesHaveChanged();
         allButtons.Save.setDisabled(!changed);
         editorManager.changed(editor, changed);
         
@@ -106,9 +107,9 @@ define
             log.d('validator',validator, record);
             // var startTime = eventForm.getValue('startTime');
             var startTime = isc.Time.createLogicalTime(record.startTime.getHours(),
-                                                     record.startTime.getMinutes(),0);
+                                                       record.startTime.getMinutes(),0);
             var endTime = isc.Time.createLogicalTime(record.endTime.getHours(),
-                                                       record.endTime.getMinutes(),0);
+                                                     record.endTime.getMinutes(),0);
             // var startTime = record.startTime;
             // var endTime = record.endTime;
             log.d(startTime<endTime);
@@ -157,7 +158,7 @@ define
                     editorManager.save(aShift, updateForm);
                 },
                 function(e) {
-                     alert("Couldn't save the shift", e);
+                    alert("Couldn't save the shift", e);
                 }
             );
         }
@@ -449,29 +450,29 @@ define
             // }),
             //TODO implement repeats UI, similar to Extensible calenda
             
-           isc.addDefaults({
+            isc.addDefaults({
                 showTitle: false,
                 titleOrientation: 'top',
                 title: 'Modify disturbed sleep hours',
                 colSpan:2,
                 align: 'left',
                 startRow: true,
-               change:  function() {
-                   log.d('change args:', arguments);
-                   // var nightHours = eventForm.getValue('nightHours');
-                   // eventForm.setValue('disturbedSleepHours', nightHours || 0);
-                   if (arguments[2]) {
-                       if (!eventForm.getValue('disturbedSleepHours'))
-                           eventForm.setValue('disturbedSleepHours', 0);
-                       eventForm.getField('disturbedSleepHours').show();
-                       eventForm.getField('nightHours').hide();
-                   }
-                   else {
-                       eventForm.getField('disturbedSleepHours').hide();
-                       eventForm.getField('nightHours').show();
-                   } 
+                change:  function() {
+                    log.d('change args:', arguments);
+                    // var nightHours = eventForm.getValue('nightHours');
+                    // eventForm.setValue('disturbedSleepHours', nightHours || 0);
+                    if (arguments[2]) {
+                        if (!eventForm.getValue('disturbedSleepHours'))
+                            eventForm.setValue('disturbedSleepHours', 0);
+                        eventForm.getField('disturbedSleepHours').show();
+                        eventForm.getField('nightHours').hide();
+                    }
+                    else {
+                        eventForm.getField('disturbedSleepHours').hide();
+                        eventForm.getField('nightHours').show();
+                    } 
                    
-               }
+                }
             }, fields.adjustDisturbedHours),
             {
                 titleOrientation: 'top',
@@ -495,13 +496,13 @@ define
                 , fields.notes)
             //-------------------------------------- 
         ]
-    };
+        };
     
     var eventForm = isc.DynamicForm.create(eventFormData);
     
     var layout = isc.VLayout.create({
         // overflow:'auto',
-          // autoSize:true,
+        // autoSize:true,
         height: '100%',
         width: '100%',
         layoutLeftMargin: 5,
@@ -532,8 +533,11 @@ define
     
     editor.canvas.getValues = function() {
         return eventForm.getValues();
-    };
+        };
+    
+    var ignoreChanges;
     editor.set = function(someEvent, someSettings) {
+        ignoreChanges = true;
         // log.d('AAAAAAAAAAAAAAAAA', someSettings.isNewRecord);
         // log.d('AAAAAA', someEvent.person);
         event = someEvent;
@@ -551,9 +555,9 @@ define
         event.date = event.startDate;
         event.length = Shift.calculateLength(event);
         
+        eventForm.setValues(someEvent);
         
         eventForm.clearErrors();
-        eventForm.setValues(someEvent);
         calcShift(someEvent);
         if (someEvent.adjustDisturbedHours) {
             eventForm.getField('disturbedSleepHours').show();
@@ -573,15 +577,24 @@ define
         allButtons.Delete.setVisibility(settings.removeButton);
         allButtons.Save.setVisibility(settings.saveButton);
         allButtons.Save.setDisabled(!settings.isNewRecord);
+        
+        changed = false;
+        ignoreChanges = false;
         // if (settings.cancelButton) cancelButton.show(); else cancelButton.hide();
         // if (settings.removeButton) removeButton.show(); else removeButton.hide();
         // if (settings.saveButton) saveButton.show(); else saveButton.hide();
     };
+    
     editor.init = function() {
-              var dataSource = Editor.getBackend().getDS();
-              eventForm.getField('person').setOptionDataSource(dataSource);
-              eventForm.getField('location').setOptionDataSource(dataSource);
+        var dataSource = Editor.getBackend().getDS();
+        eventForm.getField('person').setOptionDataSource(dataSource);
+        eventForm.getField('location').setOptionDataSource(dataSource);
     };
+    
+    editor.isChanged = function() {
+        return changed;
+    };
+      
     return editor; 
 
   }});

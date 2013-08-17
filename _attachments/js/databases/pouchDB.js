@@ -81,7 +81,7 @@ define
           var vow = VOW.make();
           if (!record)  
               vow['break']('Can not get doc with undefined id');
-          else if (record._id) return vow.keep(record);
+          else if (record._id) vow.keep(record);
           else pouchDbHandle.get(record, function(err, doc) {
               if (!err) {
                   addTimezoneOffset(doc);
@@ -298,6 +298,44 @@ define
       function doPouch(f) {
           f(pouchDbHandle);
       }			 
+      
+      function saveUser(data) {
+          if (!data || data.type !== 'person' || !data.derived_key) return;
+          var user = {
+              _id: 'org.couchdb.user:' + data._id
+              ,name: data._id
+              ,type: 'user'
+              ,derived_key: data.derived_key
+              ,password_scheme: data.password_scheme
+              ,iterations: data.iterations
+              ,salt: data.salt
+              ,roles:data.roles
+          };
+          var result;
+          var vow = VOW.make();
+          getDoc(user._id).when(
+              function(data) {
+                  user._rev = data._rev;
+                  vow.keep(user);
+              },
+              function(error) {
+                  vow.keep(user);
+              }
+          );
+          vow.promise.when(
+              function(user) {
+                  return putDoc(user);
+              }
+          ).when(
+              function(data) {
+                  console.log('successfully saved user ' + user.name);
+              },
+              function(error) {
+                  alert('failed to save couchdb user ' + user.name); 
+                  console.log('failed to save user ' + user.name, error);
+              }
+          );
+      }
 
       
       pouchDS = isc.DataSource.create(
@@ -331,6 +369,7 @@ define
                       log.d('dsResponse', dsResponse);
 	              break;
 	            case "update" : 
+                      saveUser(dsRequest.data);
 	              log.d("update", dsRequest); 
 	              log.d("old values", dsRequest.oldValues); 
 	              dsResponse = {
@@ -342,6 +381,7 @@ define
 		             dsResponse, dsRequest.requestId);
 	              break; 
 	            case "add" : 
+                      saveUser(dsRequest.data);
 	              log.d('add: data', dsRequest.data);
 	              dsResponse = {
 	                  clientContext: dsRequest.clientContext,
@@ -684,6 +724,6 @@ define
           ,getDescriptions: function() { return descriptions; }
           ,getValueMap: function() { return valueMap; }
       };
-      
+      window.mypouch = self;
       return self;
   }});

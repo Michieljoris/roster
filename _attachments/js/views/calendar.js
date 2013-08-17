@@ -31,31 +31,39 @@ define
              locationForm.getField('location').setOptionDataSource(dataSource);
              
              calendar.addEventButton.hide();
+             
          }
          ,sync: function(state) {
              state.currentViewName = calendar.getCurrentViewName();
          }
          ,set: function(state) {
              log.d('Calendar is being set!!!');
+             
              // calendar.workdayStart = state.dayStart;
              // calendar.workdayEnd = state.dayEnd;
              var person = state.person, location = state.location;
              calendar.setChosenDate(new Date(state.chosenDate));
              calendar.setCurrentViewName(state.currentViewName);
              personForm.setValue('person', person.ids);
+             personForm.setValue('allPersons', state.allPersons);
              locationForm.setValue('location', location.ids);
+             
              // calendar.fetchData();
-             log.d('fetching data for calendar:');
-             var criteria = createCriteria(state);
-             if (calendar.willFetchData(criteria)) {
-                 calendar.fetchData({  }, function() {
-                     calendar.setCriteria(criteria);
-                     setCssClasses();
-                     log.d('in callback!!');
-                 });
-             }
-             else calendar.setCriteria(criteria);
+             // log.d('fetching data for calendar:');
+             // var criteria = createCriteria(state);
+             // if (calendar.willFetchData(criteria)) {
+             //     calendar.fetchData({  }, function() {
+             //         calendar.setCriteria(criteria);
+             //         setCssClasses();
+             //         log.d('in callback!!');
+             //     });
+             // }
+             // else calendar.setCriteria(criteria);
              setDayCss(state);
+             
+             // isc_ShiftCalendar_previousButton.setLeft(isc_ShiftCalendar_previousButton.left + 20);
+             // isc_ShiftCalendar_nextButton.setLeft(isc_ShiftCalendar_nextButton.left + 20);
+             // isc_ShiftCalendar_dateDisplay.setLeft(isc_ShiftCalendar_dateDisplay.left + 20);             // isc_ShiftCalendar_datePickerButton.setLeft(isc_ShiftCalendar_datePickerButton.left + 20);
              
          }
      }); 
@@ -96,6 +104,23 @@ define
          
      }
      
+     isc.DataSource.addSearchOperator({
+        condition: function (value, record, fieldName, criterion, operator) {
+            var op1 = record[fieldName];
+            var op2 = value;
+            if (typeof op1 === 'string' || typeof op1 === 'number') op1 = [op1];
+            if (!isc.isAn.Array(op1)) return false;
+            if (typeof op2 === 'string' || typeof op2 === 'number') op2 = [op2];
+            if (!isc.isAn.Array(op2)) return false;
+            var intersect = op1.intersect(op2);
+            return intersect.length > 0;
+            //     return isc.isAn.Array(record[fieldName]) && record[fieldName].indexOf(value) !== -1;
+        }
+         ,ID: "intersect"
+         ,fieldType: 'custom'
+         
+     });
+     
      var personPickList = { name: "person",
                             type: 'enum',
                             // type: "select",
@@ -134,13 +159,33 @@ define
                             multipleAppearance: 'picklist',
                             // optionDataSource: dataSource,
                             filterLocally: true, 
-                            pickListCriteria: { type: 'person'},
-                            displayField: '_id',
-                            valueField: '_id',
-                            width:180
-                            ,top: 0
-                            ,height: 20
-                          };
+                            // pickListCriteria: { type: 'person', availability: 'bla'},
+                            getPickListFilterCriteria : function () {
+                                
+                                var state = view.getState();
+                                var locationIds = state.location.ids;
+                                var availablePersons = { operator:"and", criteria:[
+                                    { fieldName:"availability", operator:"intersect", value: locationIds } 
+                                ]};
+                                
+                                var advancedCriteria = {
+                                    _constructor:"AdvancedCriteria",
+                                    operator:"and",
+                                    criteria:[
+                                        { fieldName:"type", operator:"equals", value:"person" }
+                                    ]
+                                };
+                                if (!state.allPersons) {
+                                    advancedCriteria.criteria.push(availablePersons);
+                                }
+                                return advancedCriteria;
+                            }
+                                ,displayField: '_id',
+                                valueField: '_id',
+                                width:180
+                                ,top: 0
+                                ,height: 20
+                            };
  
      var locationPickList = { name: "location",
                               type: 'enum',
@@ -204,7 +249,7 @@ define
 	 icon:"person.png",
          // top:0,
          height: 20, 
-         left:170
+         left:405 
          ,click: function() { //var f = personForm.getField('person');
              // if (f.disabled) f.enable(); else f.disable();
              // personIcon.active = !personIcon.active;
@@ -216,15 +261,35 @@ define
          
      });
      
-     var personForm = isc.DynamicForm.create({numCols: 2
-                                               ,fields: [
-                                                   // {width: 10, showTitle: false, type:"checkbox"},
-                                                        personPickList
+     var weekIndicator = isc.Label.create({
+         // width:buttonWidth,				
+         contents: '<b>W1</b>',
+	 // icon:"person.png",
+         // top:0,
+         height: 20, 
+         left:170 
+         
+     });
+     
+     var personForm = isc.DynamicForm.create(
+         {numCols: 4
+          ,fields: [
+              // {width: 10, showTitle: false, type:"checkbox"},
+              personPickList
+              ,{ type: 'boolean', name: 'allPersons' , title: 'All staff',
+                 changed: function() {
+                     console.log('all has changed', arguments);
+                     var state = view.getState();
+                     state.allPersons = !state.allPersons;
+                     view.modified();
+                 }
+               }
 
-                                               ]
-                                              ,top: 0
-                                              ,height: 20
-                                              ,left: 190 });
+          ]
+          
+          ,top: 0
+          ,height: 20
+          ,left: 425 });
       
      var locationIcon = isc.Label.create({
          // width:buttonWidth,				
@@ -232,7 +297,7 @@ define
 	 icon:"home.png",
          top: 0,
          height: 20,
-         left:375 
+         left:200
          ,click: function() {
              var state = view.getState();
              state.locationActive = !state.locationActive;
@@ -244,7 +309,7 @@ define
      var locationForm = isc.DynamicForm.create({fields: [locationPickList]
                                                 ,top: 0
                                                 ,height: 20
-                                                ,left: 395 });
+                                                ,left: 220 });
      
      function applyCriteria(state) {
          calendar.setCriteria(createCriteria(state));
@@ -360,6 +425,14 @@ define
 
          return sDate + "&nbsp;" + sTime + "&nbsp;-&nbsp;" + eTime;
      }
+      var fortnightStart = Date.parse('2000, 1 Jan').getTime();
+      var fortnightLength = 14 *  24 * 60 * 60 *1000;
+      
+      function calculateFortnight(date) {
+          var time = date.getTime();
+          var n = Math.floor((time - fortnightStart)/fortnightLength);
+          return new Date(fortnightStart + n * fortnightLength);
+      }
     
      var calendar = isc.Calendar.create(
          {   ID: "isc_ShiftCalendar" 
@@ -367,6 +440,7 @@ define
 	     // ,autoFetchData: true
 	     // ,descriptionField: 'notes'
 	     ,nameField: 'endTijd'
+             ,fetchMode: 'paged'
              // ,showControlsBar : false
              // ,eventWindowStyle: 'eventWindow'
              ,eventOverlapIdenticalStartTimes: true
@@ -443,7 +517,26 @@ define
              ,dateChanged: function() {
                  var state = view.getState();
                  log.d('change of current date', calendar.chosenDate);
+                 log.d('fortnight ', calculateFortnight(calendar.chosenDate));
+                 var d = calendar.chosenDate;
+                 var f = calculateFortnight(d).addWeeks(1);
+                 var week = d.compareTo(f);
+                 if (week<0) weekIndicator.setContents('<b>W1</b>');
+                 else weekIndicator.setContents('<b>W2</b>');
                  state.chosenDate = calendar.chosenDate.toString();
+                 
+                 log.d('fetching data for calendar:');
+                 var criteria = createCriteria(state);
+                 if (calendar.willFetchData(criteria)) {
+                     calendar.fetchData({}, function() {
+                         calendar.setCriteria(criteria);
+                         setCssClasses();
+                         log.d('in callback!!'); }
+                                        // , { data:{ view: 'calendarView', date: d }}
+                                       );
+                 }
+                 else calendar.setCriteria(criteria);
+                 
                  view.modified();
              }
              ,getDayBodyHTML: function(date, events, calendar, rowNum, colNum) {
@@ -605,10 +698,11 @@ define
          ,left: 580 
      });
      
-     calendar.controlsBar.addChild(locationIcon);
-     calendar.controlsBar.addChild(locationForm);
+     calendar.controlsBar.addChild(weekIndicator);
      calendar.controlsBar.addChild(personIcon);
      calendar.controlsBar.addChild(personForm);
+     calendar.controlsBar.addChild(locationIcon);
+     calendar.controlsBar.addChild(locationForm);
      calendar.controlsBar.addChild(printButton);
 
      view.setCmp(calendar);

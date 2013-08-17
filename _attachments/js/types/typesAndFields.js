@@ -218,9 +218,9 @@ define
                 name: "roles",
                 title: "Roles"
             }
-            ,availibility: {
-                name: "availibility",
-                title: "Availibility"
+            ,availability: {
+                name: "availability",
+                title: "Availability"
             }
             ,address: { type: 'text'}
             ,suburb: { type: 'text'}
@@ -325,7 +325,7 @@ define
             ,person: {
                 fields: ['pwd', 'firstName', 'lastName', 'dswCALevel',
                          'payrollNumber', 'status', 'address', 'suburb','postalCode',
-                         'state', 'phone', 'mob', 'email', 'notes', 'colorFg', 'colorBg', 'roles', 'availibility']
+                         'state', 'phone', 'mob', 'email', 'notes', 'colorFg', 'colorBg', 'roles', 'availability']
                 ,icon: 'person.png'
 
             }};

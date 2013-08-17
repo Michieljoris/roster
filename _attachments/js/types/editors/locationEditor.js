@@ -21,12 +21,15 @@ define
       var defaultSettings = {};
       var settings = {}; 
       
+      var changed
+      ;
       function formChanged() {
+          if (ignoreChanges) return;
           log.d('ITEMCHANGED', vm.valuesHaveChanged());
-          var changed = vm.valuesHaveChanged();
+          changed = vm.valuesHaveChanged();
           allButtons.Save.setDisabled(!changed);
           // allButtons.Discard.setDisabled(!changed);
-          editorManager.changed(editor, changed);
+          // editorManager.changed(editor, changed);
       }
       
       
@@ -509,12 +512,15 @@ define
       //     allButtons.Save.setDisabled(true);
       // };
       
+      var ignoreChanges;
       editor.set = function(someLocation, someSettings) {
+          
+          ignoreChanges = true;
           log.d('setting values', someLocation, someSettings);
+          
           settings = isc.addDefaults(someSettings, defaultSettings);
           log.d('someLocation', someLocation);
           location = someLocation;
-          vm.setValues(location);
           itemViewer.setData(location);
           vm.clearErrors();
           allButtons.Discard.setVisibility(settings.cancelButton);
@@ -522,12 +528,20 @@ define
           allButtons.Save.setVisibility(settings.saveButton);
           allButtons.Save.setDisabled(true);
           formLayout.setVisibleMember(mainForm);
+          
+          vm.setValues(location);
+          
+          changed = false;
+          ignoreChanges = false;
       };
       
       editor.init = function() {
           // var dataSource = Editor.getBackend().getDS();
       };
     
+      editor.isChanged = function() {
+          return changed;
+      };
     
       return editor;
 

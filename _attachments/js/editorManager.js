@@ -89,6 +89,7 @@ define
                return false;
            }
            
+           presentContainer.isChanged = editor.isChanged;
            
            // var changed = false;
            var presentCanvas = presentContainer.getCanvas();
@@ -140,7 +141,6 @@ define
            // if (changed) confirmDiscardDialog.show();
            // else bla();
            putEditorInCanvas();
-           
            return true;  
        };
        
@@ -193,6 +193,7 @@ define
            log.d('changed');
            var presentContainer = containers[editor.type];
            if (presentContainer.changed) presentContainer.changed(changed);   
+           
        };
        
        return API;
