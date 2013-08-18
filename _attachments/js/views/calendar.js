@@ -425,7 +425,7 @@ define
 	     // ,autoFetchData: true
 	     // ,descriptionField: 'notes'
 	     ,nameField: 'endTijd'
-             ,fetchMode: 'paged'
+             // ,fetchMode: 'paged'
              // ,showControlsBar : false
              // ,eventWindowStyle: 'eventWindow'
              ,eventOverlapIdenticalStartTimes: true

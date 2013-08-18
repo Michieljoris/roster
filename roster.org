@@ -340,6 +340,7 @@ in linux/chrome at least.
    labels to people? Or assign permissions directly with a inherit
    system, where your permissions object can inherit permissions from
    a parent permissions object. Is there a difference in setup?
+   
 * Production build
 ** Standalone app in chrome using manifest declaration
  update mechanism 
@@ -384,6 +385,12 @@ Check the uniquenames of persons before creating css classes having
 their name in them!!!
 
 
+** Use jspdf to bulk print timesheets and a roster
+** Summary sheet and easy roster sheet
+** use http://arshaw.com/fullcalendar/docs/   
+** Login to start shift and logout to stop
+  
+   
 ** fetch in pouchDB.js fetches all docs, no good..
 line  267: using allDocs, should use a view, and pagination etc..
 ** Public holiday setting, make an editor for it.
@@ -392,14 +399,11 @@ line  267: using allDocs, should use a view, and pagination etc..
 ** Running totals while editing shifts in the calendar
   Maybe not just the total length, but other qualifiers as well. 
 ** Open shifteditor dialog at timesheet?
-** Use jspdf to bulk print timesheets and a roster
-** Summary sheet and easy roster sheet
 ** Rotating queries
    The date in the filter can be set as relative to some other date 
 
 ** Recurrent shifts/events
-** Login to start shift and logout to stop
-  
+   
 * More todo   
   
 ** Change shift calculation for different locations
@@ -450,7 +454,7 @@ Calendar still has bug in it, can't move event to top of column.
    doesn't work. Using 8.3p at the moment.
 
   
-* Mor bugs etc
+* More bugs etc
 ** In datasources, set status of dsResponse properly
 ** clean up code and comment it  
 ** In table expanding of 
@@ -466,4 +470,4 @@ I JSONed it, shouldn't be necessary, and it's a dirty hack.
 
    
    
- 
+
