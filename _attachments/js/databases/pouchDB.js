@@ -149,32 +149,32 @@ define
       
       var timezoneOffset = Date.today().getTimezoneOffset();
       
-          function addTimezoneOffset(obj) {
-              Object.keys(obj).forEach(
-	          function(k) {
-                      var field = typesAndFields.getField(k);
-	                  if (field) {
-	                      var type = field.type;
-                              if (type === 'datetime' ||
-                                  type === 'time' ||
-                                  type === 'date') {
-                                  var d = Date.parseSchemaDate(obj[k]);
-                                  obj[k]= d.addMinutes(timezoneOffset);
-	                      }
-                          }
-                  });
-          } 
+      function addTimezoneOffset(obj) {
+          Object.keys(obj).forEach(
+	      function(k) {
+                  var field = typesAndFields.getField(k);
+	          if (field) {
+	              var type = field.type;
+                      if (type === 'datetime' ||
+                          type === 'time' ||
+                          type === 'date') {
+                          var d = Date.parseSchemaDate(obj[k]);
+                          obj[k]= d.addMinutes(timezoneOffset);
+	              }
+                  }
+              });
+      } 
       
       function subtractTimezoneOffset(obj) {
           log.d('ADDING OBJECT', obj);
           Object.keys(obj).forEach(
-                  function(k) {
-                      var value = obj[k];
-                      if (value && value.Class && value.Class === 'Date') {
-                          // log.d('FOUND DATE', value.clone().addMinutes(-timezoneOffset).toSchemaDate());
-                          obj[k].addMinutes(-timezoneOffset);
-                      }
+              function(k) {
+                  var value = obj[k];
+                  if (value && value.Class && value.Class === 'Date') {
+                      // log.d('FOUND DATE', value.clone().addMinutes(-timezoneOffset).toSchemaDate());
+                      obj[k].addMinutes(-timezoneOffset);
                   }
+              }
           );
           return obj;
       }
@@ -259,23 +259,23 @@ define
 			         // log.d('data: ', dsResponse.data);
 			         pouchDS.processResponse(requestId, dsResponse);}});});}
       function add(data, dsResponse, requestId) {
-              doPouch(function(db) {
-                  // delete data._id;
-                  var receivedData = isc.clone(data);
-                  data = subtractTimezoneOffset(data);
-                  if (data.person) data.person = JSON.stringify(data.person);
-                  db.post(data,
-                          function (err,response){
-                              if (err) {
-                                  alert('Record not added to database. Reason: ' + err.reason);
-                                  log.d("Error from pouch put in add:", err,
-                                        "resp:", response); }
-                              else {
-                                  receivedData._id = response.id; 
-                                  receivedData._rev = response.rev; 
-                                  dsResponse.data = receivedData;
-                                  pouchDS.processResponse(requestId, dsResponse);}});
-	      });
+          doPouch(function(db) {
+              // delete data._id;
+              var receivedData = isc.clone(data);
+              data = subtractTimezoneOffset(data);
+              if (data.person) data.person = JSON.stringify(data.person);
+              db.post(data,
+                      function (err,response){
+                          if (err) {
+                              alert('Record not added to database. Reason: ' + err.reason);
+                              log.d("Error from pouch put in add:", err,
+                                    "resp:", response); }
+                          else {
+                              receivedData._id = response.id; 
+                              receivedData._rev = response.rev; 
+                              dsResponse.data = receivedData;
+                              pouchDS.processResponse(requestId, dsResponse);}});
+	  });
       }
 
       function update(data, dsResponse, requestId) {
@@ -284,16 +284,16 @@ define
           data = subtractTimezoneOffset(data);
           if (data.person) data.person = JSON.stringify(data.person);
           doPouch(function(db) {
-              db.put(data,
-                     function (err,response){
-                         if (err) {
-                             alert('Record not updated in database. Reason: ' + err.reason);
-                             log.d("Error from pouch put in update:", err,
-                                   "resp:", response); }
-			 else {
-                             receivedData._rev = response.rev; 
-                             dsResponse.data = receivedData;
-			     pouchDS.processResponse(requestId, dsResponse);}});});} 
+                  db.put(data,
+                         function (err,response){
+                             if (err) {
+                                 alert('Record not updated in database. Reason: ' + err.reason);
+                                 log.d("Error from pouch put in update:", err,
+                                       "resp:", response); }
+			     else {
+                                 receivedData._rev = response.rev; 
+                                 dsResponse.data = receivedData;
+			         pouchDS.processResponse(requestId, dsResponse);}});});} 
       //TODO get rid of this function, it is useless and have a module wide var called db
       function doPouch(f) {
           f(pouchDbHandle);
@@ -399,6 +399,24 @@ define
 	          }
 	      }
           });
+      
+      
+      //used to select out the available users
+      isc.DataSource.addSearchOperator({
+          condition: function (value, record, fieldName, criterion, operator) {
+              var op1 = record[fieldName];
+              var op2 = value;
+              if (typeof op1 === 'string' || typeof op1 === 'number') op1 = [op1];
+              if (!isc.isAn.Array(op1)) return false;
+              if (typeof op2 === 'string' || typeof op2 === 'number') op2 = [op2];
+              if (!isc.isAn.Array(op2)) return false;
+              var intersect = op1.intersect(op2);
+              return intersect.length > 0;
+              //     return isc.isAn.Array(record[fieldName]) && record[fieldName].indexOf(value) !== -1;
+          }
+          ,ID: "intersect"
+          ,fieldType: 'custom'
+      });
       
       //****************************************************************
       //Simulation of serverside logic.
@@ -524,15 +542,15 @@ define
           return authWindow.show('identify', '');
       }
       
-     // The proper security lies with CouchDB. By authenticating
-     // against it we can get read and/or write access to its data. On
-     // top of this I put a light veneer of additional security by
-     // requiring the user to identify himself, so I can keep logs and
-     // hand out permissions if I wanted to. But a user does not have
-     // to be logged in to read/write the databases. In the case of
-     // pouch really not, and in the case of couch not as far as it is
-     // not locked down.  I just make it look like it is necessary in
-     // both cases.
+      // The proper security lies with CouchDB. By authenticating
+      // against it we can get read and/or write access to its data. On
+      // top of this I put a light veneer of additional security by
+      // requiring the user to identify himself, so I can keep logs and
+      // hand out permissions if I wanted to. But a user does not have
+      // to be logged in to read/write the databases. In the case of
+      // pouch really not, and in the case of couch not as far as it is
+      // not locked down.  I just make it look like it is necessary in
+      // both cases.
 
       //returns promise of user
       function autoLogin() {
@@ -612,33 +630,33 @@ define
                   });
           return vow.promise;
       }
-          // if (url.startsWith('http')) {
-          //     // var db = url.slice(url.lastIndexOf('/') + 1);
-          //     couch.session().when(
-          //         function(data) {
-          //             return getDoc(data.userCtx.userName);
-          //         }
-          //     ).when(
-          //         vow.keep,
-          //         function(data) {
-          //             console.log('no session!', data);
-          //             authWindow.show('identify', vow);
-          //         }
-          //     );
-          // }
-          // else {
-          //     Cookie.get('lastLogin').when(
-          //         function(userId) {
-          //             set(vow, userId);
-          //         }
-          //         ,function() {
-          //             //try to login as default user
-          //             set(vow, defaultUser._id);     
-          //         }
-          //     );
+      // if (url.startsWith('http')) {
+      //     // var db = url.slice(url.lastIndexOf('/') + 1);
+      //     couch.session().when(
+      //         function(data) {
+      //             return getDoc(data.userCtx.userName);
+      //         }
+      //     ).when(
+      //         vow.keep,
+      //         function(data) {
+      //             console.log('no session!', data);
+      //             authWindow.show('identify', vow);
+      //         }
+      //     );
+      // }
+      // else {
+      //     Cookie.get('lastLogin').when(
+      //         function(userId) {
+      //             set(vow, userId);
+      //         }
+      //         ,function() {
+      //             //try to login as default user
+      //             set(vow, defaultUser._id);     
+      //         }
+      //     );
               
-          // }
-          // return vow.promise;
+      // }
+      // return vow.promise;
       // }
       
       //##getSettings
@@ -702,8 +720,8 @@ define
       });
       
       var self = {
-          // name: 'pouchDB'
-          // ,shortName: 'Browser local storage (idb)'
+              // name: 'pouchDB'
+              // ,shortName: 'Browser local storage (idb)'
           // ,description: 'The data will '
           getDS: function() { return pouchDS; }
           // ,urlPrefix: 'idb://' 

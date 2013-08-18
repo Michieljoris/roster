@@ -340,11 +340,6 @@ in linux/chrome at least.
    labels to people? Or assign permissions directly with a inherit
    system, where your permissions object can inherit permissions from
    a parent permissions object. Is there a difference in setup?
-** Rotating queries
-  The date in the filter can be set as relative to some other date 
-
-** Recurrent shifts/events
-  
 * Production build
 ** Standalone app in chrome using manifest declaration
  update mechanism 
@@ -379,22 +374,55 @@ long as there is enough memory.
 ** Add testing
   
 * Todo
+** fix logo printing of time sheet   
+** warn for overlapping shifts  
+** Editing shift in month view or day view doesn't update 
+the shifts in weekview nor does the editor reflect the new values
+refreshevents on updateevent and on viewchange
+** css classes can't have odd chars in them!!!
+Check the uniquenames of persons before creating css classes having
+their name in them!!!
+
+
+** fetch in pouchDB.js fetches all docs, no good..
+line  267: using allDocs, should use a view, and pagination etc..
 ** Public holiday setting, make an editor for it.
+** Concatenate consecutive continuing shifts, of course!!!
+** Drag and drop people into a shift
+** Running totals while editing shifts in the calendar
+  Maybe not just the total length, but other qualifiers as well. 
+** Open shifteditor dialog at timesheet?
+** Use jspdf to bulk print timesheets and a roster
+** Summary sheet and easy roster sheet
+** Rotating queries
+   The date in the filter can be set as relative to some other date 
+
+** Recurrent shifts/events
+** Login to start shift and logout to stop
+  
+* More todo   
+  
+** Change shift calculation for different locations
+Only do that when entering the shift, not when calculating the timesheet,
+so if you change the hours for a house, it won't be reflected in the
+shift and timesheet, till you edit and update it. No biggie, these
+hourse should change often, and now the shifts remember what the day
+hours were when they were entered, but obviously proper temporal tags
+are better, and then calculate all hours bases on location, person,
+shift, patternsobject and time of the shift to recall historical
+values for all the tags.
+
 ** control logger and what it prints out when
 ** Hover tips everywhere
-** Drag and drop people into a shift
-** Open shifteditor dialog at timesheet?
 ** Add extensible calendar
 ** Print out black and white calendar, reset the css
 ** Drag and Drop person and location selector
-  
 ** Generate all shift time data and tags from just the start and endDate
 So no more endTime, startTime, endTijd etc, clogging up the shift records
    
 ** Refactor to make types pluggable
 Integrate postal.js perhaps for that?
    
-** Concatenate consecutive continuing shifts, of course!!!
 ** Wouldn't we like to search through timesheet result numbers
    Make another type? For calculated timesheets? For entered and payed
    timesheets? Or have a separate view aggregated data for a period,
@@ -421,17 +449,8 @@ Calendar still has bug in it, can't move event to top of column.
    This seems to be a fault of smartclient. Barebones calendar also
    doesn't work. Using 8.3p at the moment.
 
-** Location decides qualifiers. Make an editor for them, and use the right qualifiers when calculating sheets
-  Some house have different hours 
-
   
-** Running totals while editing shifts in the calendar
-  Maybe not just the total length, but other qualifiers as well. 
-** Use jspdf to bulk print timesheets and a roster
-** Summary sheet and easy roster sheet
-  
-** Show week nr in calendar
-* Bugs etc
+* Mor bugs etc
 ** In datasources, set status of dsResponse properly
 ** clean up code and comment it  
 ** In table expanding of 
@@ -441,129 +460,10 @@ I think especially when using the filter
 ** Saving of person in the shift event
 I JSONed it, shouldn't be necessary, and it's a dirty hack.
 
-   
-** Editing shift in month view or day view doesn't update 
-the shifts in weekview nor does the editor reflect the new values
-refreshevents on updateevent and on viewchange
-** css classes can't have odd chars in them!!!
-Check the uniquenames of persons before creating css classes having
-their name in them!!!
-
 ** shift doesn't always gets its color!
 
-* Do now:
-** fetch in pouchDB.js fetches all docs, no good..
-line  267: using allDocs, should use a view, and pagination etc..
-** Login to start shift and logout to stop
    
-** Replicate to couchdbb and back
-   
-** Check timesheet calculations
-*** checkbox for disturbed sleep
-So also validate start hour to start on the half hour
-   
-   
-** Change shift calculation for different locations
-Only do that when entering the shift, not when calculating the timesheet,
-so if you change the hours for a house, it won't be reflected in the
-shift and timesheet, till you edit and update it. No biggie, these
-hourse should change often, and now the shifts remember what the day
-hours were when they were entered, but obviously proper temporal tags
-are better, and then calculate all hours bases on location, person,
-shift, patternsobject and time of the shift to recall historical
-values for all the tags.
 
-
-** Check for modified uistate when closing window and show warning dialog
-** Add logo
-** Store list of databases accessed/tried in cookie
    
    
-* syncing
  
-** install couchdb
-** local.ini is in roster/app
-** copy to c:\Program Files\Apache Software Foundation\CouchDB\etc\couchdb 
-** setup root user (maybe in local.ini already)
-** create local shift db
-set security members roles 
-["all-r", "all-rw", "all_houses-rw", "all_houses-r","<house_id>-r",
-"<house_id>-rw"] "waterfordwest-rw"]
-** on local shift house db:  
-   create or modify doc to:
- _id:_design/auth
- 
-   function(newDoc, oldDoc, userCtx, secObj) {
-    "use strict";
-    var house_id = 'waterfordwest';
-        
-    var has_db_rw= function(userCtx, secObj) {
-        // see if the user is has write permissions as specified by
-        // role type-rw
-        // log(userCtx);
-        for(var idx = 0; idx < userCtx.roles.length; idx++) {
-            var user_role = userCtx.roles[idx];
-            if(user_role === "all-rw" || user_role === house_id+'-rw' || user_role === 'all_houses-rw' || user_role === '_admin') {
-                return true; // role matches!
-            }
-        }
-        return false; // default to no type admin
-    };
-        
-    if (!has_db_rw(userCtx, secObj)) {
-        throw({unauthorized: 'Only users with the ' + house_id + '-rw role assigned can update this database '+userCtx.roles.toString()});
-    }
-    
-    if (newDoc._deleted === true) {
-        // allow deletes by admins and matching users
-        // without checking the other fields
-        return;
-    }
-    
-  
-        
-    if ((oldDoc && oldDoc.type === 'shift' && oldDoc.location !== house_id) || (newDoc.type === 'shift' && newDoc.location !== house_id) ) {
-        throw({forbidden : 'location must be ' + house_id + ' for all docs of type shift'});
-    }
-
-}
-
-set security members roles 
-["all-r", "all-rw", "all_houses-rw", "all_houses-r","<house_id>-r",
-"<house_id>-rw"] "waterfordwest-rw"]
-** on iriscouch people security should be:
-["all-r", "all-rw", "people-r", "people-rw"]
-** on iriscouch locations security should be:
-["all-r", "all-rw", "locations-r", "locations-rw"]
- 
-
-** setup user that is able to write to house db
-** app comes down via http from a couchdb server or from a regular
-server.
-** app interacts with local couchdb.
-** local couchdb is pwd protected, 
-so _replicator and _users can not be tampered with, also _design docs
-can not be updated or created.
-
-
-   
-
-** setup replications:
-pull locations, people, housedb
-merge locations and people with housedb
-filter out _design/docs with the merging
-
-** when signed in as guest:
-   
-   
-* mylist
-adjust login process.
-use ssl to communicate with couchdb
-
- 
-
-
-
-
-
-

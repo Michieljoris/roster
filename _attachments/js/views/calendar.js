@@ -45,7 +45,7 @@ define
              calendar.setChosenDate(new Date(state.chosenDate));
              calendar.setCurrentViewName(state.currentViewName);
              personForm.setValue('person', person.ids);
-             personForm.setValue('allPersons', state.allPersons);
+             personForm.setValue('availableOnly', state.availableOnly);
              locationForm.setValue('location', location.ids);
              
              // calendar.fetchData();
@@ -104,22 +104,6 @@ define
          
      }
      
-     isc.DataSource.addSearchOperator({
-        condition: function (value, record, fieldName, criterion, operator) {
-            var op1 = record[fieldName];
-            var op2 = value;
-            if (typeof op1 === 'string' || typeof op1 === 'number') op1 = [op1];
-            if (!isc.isAn.Array(op1)) return false;
-            if (typeof op2 === 'string' || typeof op2 === 'number') op2 = [op2];
-            if (!isc.isAn.Array(op2)) return false;
-            var intersect = op1.intersect(op2);
-            return intersect.length > 0;
-            //     return isc.isAn.Array(record[fieldName]) && record[fieldName].indexOf(value) !== -1;
-        }
-         ,ID: "intersect"
-         ,fieldType: 'custom'
-         
-     });
      
      var personPickList = { name: "person",
                             type: 'enum',
@@ -165,7 +149,8 @@ define
                                 var state = view.getState();
                                 var locationIds = state.location.ids;
                                 var availablePersons = { operator:"and", criteria:[
-                                    { fieldName:"availability", operator:"intersect", value: locationIds } 
+                                    { fieldName:"availability", operator:"intersect",
+                                      value: locationIds } 
                                 ]};
                                 
                                 var advancedCriteria = {
@@ -175,7 +160,7 @@ define
                                         { fieldName:"type", operator:"equals", value:"person" }
                                     ]
                                 };
-                                if (!state.allPersons) {
+                                if (state.availableOnly) {
                                     advancedCriteria.criteria.push(availablePersons);
                                 }
                                 return advancedCriteria;
@@ -276,11 +261,11 @@ define
           ,fields: [
               // {width: 10, showTitle: false, type:"checkbox"},
               personPickList
-              ,{ type: 'boolean', name: 'allPersons' , title: 'All staff',
+              ,{ type: 'boolean', name: 'availableOnly' , title: 'Available only',
                  changed: function() {
                      console.log('all has changed', arguments);
                      var state = view.getState();
-                     state.allPersons = !state.allPersons;
+                     state.availableOnly = !state.availableOnly;
                      view.modified();
                  }
                }

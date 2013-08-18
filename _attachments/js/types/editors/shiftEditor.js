@@ -19,6 +19,7 @@ define
     var event;   
     var settings = {}; 
     var changed;
+    var allPersons;
     
     var defaultSettings = {
         minimumShiftLength: 10,
@@ -37,6 +38,7 @@ define
         Shift.create(eventValues).when(
             function(aShift) {
                 log.pp(aShift);
+                event = aShift;
                 // if (!distSleep) 
                 //     eventForm.setValue('disturbedSleepHours', aShift.night || 0);
                 if (!aShift.night) {
@@ -98,6 +100,8 @@ define
             return;
         eventForm.validate();
         allButtons.Save.focus();
+        
+        
         
     }
     
@@ -165,6 +169,7 @@ define
     }
     
     function updateForm(record) {
+        console.log('UPDATING FORM');
         eventForm.setValues(record);
         allButtons.Save.setDisabled(true);
         editorManager.changed(editor, false);
@@ -221,8 +226,30 @@ define
                            multipleAppearance: 'picklist',
                            // optionDataSource: backend.get().getDS(),
                            filterLocally: true, 
-                           pickListCriteria: { type: 'person'},
-                           displayField: '_id',
+                           
+                            getPickListFilterCriteria : function () {
+                                
+                                var availablePersons = { operator:"and", criteria:[
+                                    { fieldName:"availability", operator:"intersect",
+                                      value: event.location  } 
+                                ]};
+                                console.log('PICKLIST', event.location, event);
+                                
+                                var advancedCriteria = {
+                                    _constructor:"AdvancedCriteria",
+                                    operator:"and",
+                                    criteria:[
+                                        { fieldName:"type", operator:"equals", value:"person" }
+                                    ]
+                                };
+                                if (!allPersons) {
+                                    advancedCriteria.criteria.push(availablePersons);
+                                }
+                                return advancedCriteria;
+                            }
+                           
+                           // pickListCriteria: { type: 'person'}
+                           ,displayField: '_id',
                            valueField: '_id',
                            width:340,
                            colSpan:2
@@ -240,19 +267,20 @@ define
                              // editorType: 'comboBox',
                              required: true, 
                           
-                             change: function (form, item, value) {
-                                 var locationList = eventForm.getField('location').pickList.getSelectedRecords();
-                                 locationNames = [];
-                                 locationList.forEach(function(p) {
-                                     locationNames.push(p.name);
-                                 });
-                                 if (locationNames.length === 0) locationNames = ['Nowhere?'];
+                             // change: function (form, item, value) {
+                             //     var locationList = eventForm.getField('location').
+                             //         pickList.getSelectedRecords();
+                             //     locationNames = [];
+                             //     locationList.forEach(function(p) {
+                             //         locationNames.push(p.name);
+                             //     });
+                             //     if (locationNames.length === 0) locationNames = ['Nowhere?'];
                                  
-                                 // eventForm.setValue('locationName',
-                                 //                    locationNames[0].toString());
-                                 log.d('PICKLIST', locationNames);
-                                 // event.locationNames = locationNames.toString();
-                             },
+                             //     // eventForm.setValue('locationName',
+                             //     //                    locationNames[0].toString());
+                             //     log.d('PICKLIST', locationNames);
+                             //     // event.locationNames = locationNames.toString();
+                             // },
                           
                              // ID: 'locationPickList' ,
                              showTitle: false,
@@ -578,11 +606,13 @@ define
         allButtons.Save.setVisibility(settings.saveButton);
         allButtons.Save.setDisabled(!settings.isNewRecord);
         
+        
         changed = false;
         ignoreChanges = false;
         // if (settings.cancelButton) cancelButton.show(); else cancelButton.hide();
         // if (settings.removeButton) removeButton.show(); else removeButton.hide();
         // if (settings.saveButton) saveButton.show(); else saveButton.hide();
+        allPersons = typeof settings.allPersons === 'undefined' ? true : settings.allPersons;
     };
     
     editor.init = function() {
