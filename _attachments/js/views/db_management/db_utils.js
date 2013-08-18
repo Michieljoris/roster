@@ -226,19 +226,29 @@ define
         
         function getAllDbs(url) {
             var vow = VOW.make();
-            if (url.startsWith('idb') &&
-                window.webkitIndexedDB &&
-                window.webkitIndexedDB.webkitGetDatabaseNames) {
+            
+            //but this only works with databases created with this latest pouchdb
+            if (url.startsWith('idb')) {
+                {
+                    Pouch.allDbs(function(err, resp) {
+                        vow.keep(resp);
+                    });
+                }
+            } 
+            //obsolete now
+            else if (url.startsWith('idb') &&
+                     window.webkitIndexedDB &&
+                     window.webkitIndexedDB.webkitGetDatabaseNames) {
                 //only works in chrome ..
-                var dbNames = window.webkitIndexedDB.webkitGetDatabaseNames();
+                    var dbNames = window.webkitIndexedDB.webkitGetDatabaseNames();
                 dbNames.onsuccess = function(event) {
                     var list = event.target ? event.target.result : [];
                     list = list || [];
                     var values = [];
                     var length = list.length || 0;
                     for (var i = 0; i < length; i++){
-                        if (typeof list[i] === 'string' && list[i][0] !== '_')
-                            values.push(list[i]);
+                        if (typeof list[i] === 'string' && list[i].startsWith('_pouch_'))
+                            values.push(list[i].slice(7));
                     }
                     vow.keep(values);
                 };

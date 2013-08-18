@@ -88,7 +88,11 @@
      */
     allDbs: function(options) {
       ajax(
-        {url: this.urlPrefix + "/_all_dbs"},
+          {url: this.urlPrefix + "/_all_dbs",
+           xhrFields: {
+               withCredentials: true
+           }
+          },
         options,
         "An error occurred retrieving the list of all databases"
       );
@@ -123,7 +127,7 @@
         req.type = "PUT";
         req.data = toJSON(value);
         req.contentType = "application/json";
-        req.processData = false
+        req.processData = false;
       }
 
       ajax(req, options,
@@ -139,22 +143,25 @@
      */
     session: function(options) {
       options = options || {};
-      $.ajax({
-        type: "GET", url: this.urlPrefix + "/_session",
-        beforeSend: function(xhr) {
-            xhr.setRequestHeader('Accept', 'application/json');
-        },
-        complete: function(req) {
-          var resp = $.parseJSON(req.responseText);
-          if (req.status == 200) {
-            if (options.success) options.success(resp);
-          } else if (options.error) {
-            options.error(req.status, resp.error, resp.reason);
-          } else {
-            throw "An error occurred getting session info: " + resp.reason;
-          }
-        }
-      });
+        $.ajax({
+            type: "GET", url: this.urlPrefix + "/_session",
+            xhrFields: {
+                withCredentials: true
+            },
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('Accept', 'application/json');
+            },
+            complete: function(req) {
+                var resp = $.parseJSON(req.responseText);
+                if (req.status == 200) {
+                    if (options.success) options.success(resp);
+                } else if (options.error) {
+                    options.error(req.status, resp.error, resp.reason);
+                } else {
+                    throw "An error occurred getting session info: " + resp.reason;
+                }
+            }
+        });
     },
 
     /**
@@ -202,23 +209,26 @@
      */
     login: function(options) {
       options = options || {};
-      $.ajax({
-        type: "POST", url: this.urlPrefix + "/_session", dataType: "json",
-        data: {name: options.name, password: options.password},
-        beforeSend: function(xhr) {
-            xhr.setRequestHeader('Accept', 'application/json');
-        },
-        complete: function(req) {
-          var resp = $.parseJSON(req.responseText);
-          if (req.status == 200) {
-            if (options.success) options.success(resp);
-          } else if (options.error) {
-            options.error(req.status, resp.error, resp.reason);
-          } else {
-            throw 'An error occurred logging in: ' + resp.reason;
-          }
-        }
-      });
+        $.ajax({
+            type: "POST", url: this.urlPrefix + "/_session", dataType: "json",
+            data: {name: options.name, password: options.password},
+            xhrFields: {
+                withCredentials: true
+            },
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader('Accept', 'application/json');
+            },
+            complete: function(req) {
+                var resp = $.parseJSON(req.responseText);
+                if (req.status == 200) {
+                    if (options.success) options.success(resp);
+                } else if (options.error) {
+                    options.error(req.status, resp.error, resp.reason);
+                } else {
+                    throw 'An error occurred logging in: ' + resp.reason;
+                }
+            }
+        });
     },
 
 
@@ -233,6 +243,10 @@
       $.ajax({
         type: "DELETE", url: this.urlPrefix + "/_session", dataType: "json",
         username : "_", password : "_",
+          
+          xhrFields: {
+              withCredentials: true
+          },
         beforeSend: function(xhr) {
             xhr.setRequestHeader('Accept', 'application/json');
         },
@@ -624,34 +638,37 @@
             var uri = this.uri + encodeDocId(doc._id);
           }
           var versioned = maybeApplyVersion(doc);
-          $.ajax({
-            type: method, url: uri + encodeOptions(options),
-            contentType: "application/json",
-            dataType: "json", data: toJSON(doc),
-            beforeSend : beforeSend,
-            complete: function(req) {
-              var resp = $.parseJSON(req.responseText);
-              if (req.status == 200 || req.status == 201 || req.status == 202) {
-                doc._id = resp.id;
-                doc._rev = resp.rev;
-                if (versioned) {
-                  db.openDoc(doc._id, {
-                    attachPrevRev : true,
-                    success : function(d) {
-                      doc._attachments = d._attachments;
-                      if (options.success) options.success(resp);
+            $.ajax({
+                type: method, url: uri + encodeOptions(options),
+                contentType: "application/json",
+                dataType: "json", data: toJSON(doc),
+                beforeSend : beforeSend,
+                xhrFields: {
+                    withCredentials: true
+                },
+                complete: function(req) {
+                    var resp = $.parseJSON(req.responseText);
+                    if (req.status == 200 || req.status == 201 || req.status == 202) {
+                        doc._id = resp.id;
+                        doc._rev = resp.rev;
+                        if (versioned) {
+                            db.openDoc(doc._id, {
+                                attachPrevRev : true,
+                                success : function(d) {
+                                    doc._attachments = d._attachments;
+                                    if (options.success) options.success(resp);
+                                }
+                            });
+                        } else {
+                            if (options.success) options.success(resp);
+                        }
+                    } else if (options.error) {
+                        options.error(req.status, resp.error, resp.reason);
+                    } else {
+                        throw "The document could not be saved: " + resp.reason;
                     }
-                  });
-                } else {
-                  if (options.success) options.success(resp);
                 }
-              } else if (options.error) {
-                options.error(req.status, resp.error, resp.reason);
-              } else {
-                throw "The document could not be saved: " + resp.reason;
-              }
-            }
-          });
+            });
         },
 
         /**
@@ -992,40 +1009,43 @@
     options = $.extend({successStatus: 200}, options);
     ajaxOptions = $.extend(defaultAjaxOpts, ajaxOptions);
     errorMessage = errorMessage || "Unknown error";
-    $.ajax($.extend($.extend({
-      type: "GET", dataType: "json", cache : !$.browser.msie,
-      beforeSend: function(xhr){
-        if(ajaxOptions && ajaxOptions.headers){
-          for (var header in ajaxOptions.headers){
-            xhr.setRequestHeader(header, ajaxOptions.headers[header]);
+      $.ajax($.extend($.extend({
+          type: "GET", dataType: "json", cache : !$.browser.msie,
+          xhrFields: {
+              withCredentials: true
+          },
+          beforeSend: function(xhr){
+              if(ajaxOptions && ajaxOptions.headers){
+                      for (var header in ajaxOptions.headers){
+                          xhr.setRequestHeader(header, ajaxOptions.headers[header]);
+                      }
+              }
+          },
+          complete: function(req) {
+              try {
+                  var resp = $.parseJSON(req.responseText);
+              } catch(e) {
+                  if (options.error) {
+                      options.error(req.status, req, e);
+                  } else {
+                      throw errorMessage + ': ' + e;
+                  }
+                  return;
+              }
+              if (options.ajaxStart) {
+                  options.ajaxStart(resp);
+              }
+              if (req.status == options.successStatus) {
+                  if (options.beforeSuccess) options.beforeSuccess(req, resp);
+                  if (options.success) options.success(resp);
+              } else if (options.error) {
+                  options.error(req.status, resp && resp.error ||
+                                errorMessage, resp && resp.reason || "no response");
+              } else {
+                  throw errorMessage + ": " + resp.reason;
+              }
           }
-        }
-      },
-      complete: function(req) {
-        try {
-          var resp = $.parseJSON(req.responseText);
-        } catch(e) {
-          if (options.error) {
-            options.error(req.status, req, e);
-          } else {
-            throw errorMessage + ': ' + e;
-          }
-          return;
-        }
-        if (options.ajaxStart) {
-          options.ajaxStart(resp);
-        }
-        if (req.status == options.successStatus) {
-          if (options.beforeSuccess) options.beforeSuccess(req, resp);
-          if (options.success) options.success(resp);
-        } else if (options.error) {
-          options.error(req.status, resp && resp.error ||
-                        errorMessage, resp && resp.reason || "no response");
-        } else {
-          throw errorMessage + ": " + resp.reason;
-        }
-      }
-    }, obj), ajaxOptions));
+      }, obj), ajaxOptions));
   }
 
   /**

@@ -3,8 +3,9 @@
 /*jshint maxparams:5 maxcomplexity:7 maxlen:200 devel:true*/
 
 define
-({inject: ['View', 'loaders/view', 'loaders/backend', 'user'],
-  factory: function(View, views, backend, user) {
+({inject: ['View', 'loaders/view', 'loaders/backend', 'user',
+           'authWindow'],
+  factory: function(View, views, backend, user, authWindow) {
       "use strict";
       var log = logger('viewTree');
       var newViewMenu = [];
@@ -398,28 +399,33 @@ define
               ]
           });
       
-      // var databaseButton = isc.ToolStripButton.create(
-      //     {   align:'left' 
-      //         ,icon: "database.png"
-      //         ,action: function() {
-      //             backend.pick(function(aBackend, name, url){
-      //                 VOW.every([
-      //                     Cookie.set('backendName', name, Date.today().addYears(10))
-      //                     ,Cookie.set('backendUrl', url, Date.today().addYears(10))]
-      //                          ).when(
-      //                              function() { log.d('Saved backend cookie.');
-      //                                           location.reload();
-      //                                         }
-      //                              ,function() {
-      //                                  log.e('Unable to set the backend or url cookie!!'); }
-      //                          );
-      //             }, 'cancellable');
-      //         }
-      //     }); 
+      var databaseButton = isc.ToolStripButton.create(
+          {   align:'left' 
+              ,icon: "database.png"
+              ,prompt: 'Change the database the app works against. '
+              ,action: function() {
+                  // pickDbWindow.init();
+                  authWindow.show('connect');
+                  // backend.pick(function(aBackend, name, url){
+                  //     VOW.every([
+                  //         Cookie.set('backendName', name, Date.today().addYears(10))
+                  //         ,Cookie.set('backendUrl', url, Date.today().addYears(10))]
+                  //              ).when(
+                  //                  function() { log.d('Saved backend cookie.');
+                  //                               location.reload();
+                  //                             }
+                  //                  ,function() {
+                  //                      log.e('Unable to set the backend or url cookie!!'); }
+                  //              );
+                  // }, 'cancellable');
+              }
+          }); 
       
       var loginButton = isc.ToolStripButton.create(
           {   align:'left' 
 	      ,action: user.change 
+              ,icon: "person.png"
+              ,prompt: 'Logout, or login with different credentials.'
           }); 
       
       var saveButton = isc.ToolStripButton.create({
@@ -430,9 +436,8 @@ define
 
       var toolStrip = isc.ToolStrip.create(
           {members: [
-              // databaseButton,
               loginButton
-	      ,saveButton     
+              ,databaseButton
               ,isc.LayoutSpacer.create({  width:"*" })
               ,isc.IconMenuButton.create({title:''
 				          ,ID:'addButton'
@@ -453,6 +458,7 @@ define
 	          prompt: "Create a new folder"
 	          ,click: function() { newFolder(); }
               })
+	      ,saveButton     
               // ,isc.ToolStripButton.create({
 	      //     icon: "[SKIN]/actions/edit.png",
 	      //     prompt: "Rename selected item"

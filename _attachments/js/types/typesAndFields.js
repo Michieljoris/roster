@@ -155,6 +155,14 @@ define
         });
         // claimValueMap.push('Event');
         
+        // var rolesDS = isc.DataSource.create({
+        //     allowAdvancedCriteria: true,
+        //     dataFormat: "json",
+        //     dataURL: "roles.json",
+        //     fields:[
+        //         { name: "entry" }
+        //     ]
+        // });
         
         
         var typeFields = {
@@ -197,15 +205,23 @@ define
                       //appropriate for an event 
                      }
             ,disturbedSleepHours : { type : 'float',
-                              title: 'Disturbed sleep'}
+                                     title: 'Disturbed sleep'}
             ,adjustDisturbedHours: { type: "boolean",
-                                      title: "Claim"}
+                                     title: "Claim"}
             ,isPublicHolidayWorked: { type: 'boolean'}
             ,sleepOver: { type: 'boolean'}
             ,adminHoursUsed: { type: 'float' , canEdit: false }
             // ,name: { type: 'text', title: 'Unique name', canEdit: false} //should be unique within its type..
             ,colorFg: { type: 'text' }
             ,colorBg: { type: 'text' }
+            ,roles: {
+                name: "roles",
+                title: "Roles"
+            }
+            ,availability: {
+                name: "availability",
+                title: "Availability"
+            }
             ,address: { type: 'text'}
             ,suburb: { type: 'text'}
             ,state: { type: "comboBox",
@@ -252,12 +268,12 @@ define
                        // ,valueMap: getTimeList(30)
                      }
             ,dayLength: { type: 'float',
-                       // editorType: 'select',
-                       required: true,
-                       title:'Length of day (can be past 12 midnight)'
-                       // ,canEdit:false
-                       // ,valueMap: getTimeList(30)
-                     }
+                          // editorType: 'select',
+                          required: true,
+                          title:'Length of day (can be past 12 midnight)'
+                          // ,canEdit:false
+                          // ,valueMap: getTimeList(30)
+                        }
             //calculated fields for a shift:
             ,length: { type: 'float' , canEdit: false}
             
@@ -309,7 +325,7 @@ define
             ,person: {
                 fields: ['pwd', 'firstName', 'lastName', 'dswCALevel',
                          'payrollNumber', 'status', 'address', 'suburb','postalCode',
-                         'state', 'phone', 'mob', 'email', 'notes', 'colorFg', 'colorBg']
+                         'state', 'phone', 'mob', 'email', 'notes', 'colorFg', 'colorBg', 'roles', 'availability']
                 ,icon: 'person.png'
 
             }};
@@ -322,15 +338,15 @@ define
         
         fields.type.valueMap = allTypes;   
         
-        var genericFieldsArray = (function() {
-            var array = [];
-            for (var f in genericFields) {
-                var field = genericFields[f];
-                field.name = f;
-                array.push(field);
-            }
-            return array;
-        })();
+            var genericFieldsArray = (function() {
+                var array = [];
+                for (var f in genericFields) {
+                    var field = genericFields[f];
+                    field.name = f;
+                    array.push(field);
+                }
+                    return array;
+            })();
 
         var fieldsArray = (function() {
             var array = [];
@@ -350,7 +366,7 @@ define
                 var field = fields[f];
                 if (field.title === autoTitle) return field.name;
             }   
-            return undefined;
+                return undefined;
         }
         
         var allTypes = (function () {
@@ -361,7 +377,7 @@ define
     
         function fieldsCloner(someTypes, asObject) {
             if (typeof someTypes === 'string'){
-                someTypes = [ someTypes ];
+                    someTypes = [ someTypes ];
             }
             var result = []; 
             var obj = {};
@@ -388,7 +404,7 @@ define
                 // if (!asObject) return isc.clone(result);
                 // return isc.clone(obj);
             };
-            }
+        }
 
         
         var initializer = {
@@ -449,7 +465,7 @@ define
         //         // return validator.errorMessage;
         //     }
         
-            // );
+        // );
     
         
         var newRecord = function(aType) {

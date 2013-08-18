@@ -19,7 +19,7 @@ define
         var dbDescriptions = {};
         
         args.forEach(function(db) {
-            var descriptions = db.getDbDescriptions();
+            var descriptions = db.getDescriptions();
             descriptions.forEach(function(d) {
                 // dbNames.push(d.name);
                 dbs[d.name] = db;

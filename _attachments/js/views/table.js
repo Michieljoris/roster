@@ -302,6 +302,7 @@ define
                    if (index === 1) {
                        var record = editorContainer.getCanvas().getValues();
                        log.d('saving record', record);
+                       typesAndFields.removeUnderscoreFields(record);
                        
                        var callback = function(response, record) {
                            log.d('CALLBACK', response, record);
@@ -325,8 +326,13 @@ define
        }
        
        function setEditor(action) {
-           log.d(editorHasChanged);
-           if (!editorHasChanged) action();
+           log.d('SETEDITOR', editorContainer.isChanged && editorContainer.isChanged());
+           
+           // if (!editorHasChanged) action();
+           if (!editorContainer.isChanged ||
+               (editorContainer.isChanged && !editorContainer.isChanged())
+               // || !editorHasChanged
+              ) action();
            else {
                getConfirmDialog('Values have changed. Save?',
                                'Save', 'Discard', action).show();

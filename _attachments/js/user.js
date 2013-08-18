@@ -1,4 +1,4 @@
-/*global isc:false VOW:false logger:false isc:false define:false*/
+/*global VOW:false logger:false Cookie:false define:false*/
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:7 maxcomplexity:7 maxlen:150 devel:true*/
 
@@ -6,12 +6,13 @@
 define(
     // { inject: ['lib/cookie', 'loaders/backend'], 
     //   factory: function(cookie, backend ) 
-    { inject: ['loaders/backend'], 
-      factory: function(backend ) 
+    { inject: [], 
+      factory: function() 
       { "use strict";
         var log = logger('user');
         
         var user;
+        var backend;
         var settingsCache;
         var modified;
         var observers = [];
@@ -34,10 +35,10 @@ define(
                     return backend.putDoc(user, user);
                 }
             ).when(
-                function () {
-                    vow.keep(); }
+                function (user) {
+                    vow.keep(user); }
                 ,function(err) {
-                    vow['break']('Could not save new settings doc for user!!', err);
+                    vow['break']('Could not save new settings doc for user!!'  + err);
                 }
                 
             );
@@ -52,7 +53,7 @@ define(
                     settingsCache = someSettings;
                     if (settingsCache.look)  
                         settingsCache.look = JSON.parse(settingsCache.look);
-                    vow.keep();
+                    vow.keep(user);
                 }
                 ,function() {
                     //this user didn't have a settings file yet. The
@@ -83,8 +84,12 @@ define(
                     vow.keep(user);
                     notifyObservers();
                 },
-                function(err) {
-                    vow['break'](err);
+                function(data) {
+                    // vow['break'](err);
+                    alert('Cannot save user settings to the database');
+                    console.log('Failed to get the settings for this user: ' + user._id + ' ', data);
+                    vow.keep(user);
+                    notifyObservers();
                 }
             );
             return vow.promise;
@@ -94,14 +99,23 @@ define(
         
         function init(aUser) {
             var vow = VOW.make();
-            backend = backend.get();
-            log.d('BACKEND AT USER', backend);
+            // backend = backend.get();
+            // log.d('BACKEND AT USER', backend);
             user = aUser; 
             getSettings(user.settingsId).when(
                 function() {
-                    // notifyObservers();
+                    Cookie.set('lastLogin', user._id,
+                               Date.today().addYears(10));
                     vow.keep(user);
+                },
+                function(data) {
+                    alert('Cannot save any user settings to the database');
+                    console.log('Failed to get the settings for this user: ' + user._id + ' ', data);
+                    vow.keep(user);
+                    //we'll have work with the cache. Future saves might also fail.
+                    // vow['break']("Error: Could not get and/or create settings doc for user ");
                 }
+                
             );
             return vow.promise;
         }
@@ -125,6 +139,9 @@ define(
                         // user.settingsId = updatedSettings._id;
                         modified = false;
                         vow.keep();
+                    },
+                    function() {
+                      vow.break();  
                     }
                 );
             } 
@@ -174,9 +191,26 @@ define(
         function addObserver(observer) {
             observers.push(observer);
         }
+        var help = {
+            couch: "Authentication is done against a CouchDB instance on the network. As long as this instance is locked down by a server admin password security is relativily high. You will stay logged accross refreshes of the page, till you log out. <p>If you want to connect to a different database, visit the connect tab.<p>If you provide no credentials on login the app will try to log in as user: \'guest\', pwd: \'\'",
+            pouch: "The app is working against an internal database. Authentication is done in the browser in javascript, which makes it vulnarable for attack. However if your security needs are light it is still useable. Passwords are not stored in clear text.<p>If you provide no credentials on login the app will try to log in as user guest, with an empty password"
+        };
+        
+        function getHelpText(version) {
+            return help[version];
+        }
+        
+        function isLoggedIn() {
+            return user;
+        }
+        function getName() {
+            if (user) return user._id;
+            else return 'nobody';
+        }
         
         return {
             init: init
+            ,isLoggedIn: isLoggedIn
             ,get: get
             ,getPermission: getPermission
             ,setPermission: setPermission
@@ -187,6 +221,12 @@ define(
             ,change: change
             ,saveSettings: saveSettings
             ,addObserver: addObserver
+            ,getHelpText: getHelpText
+            ,getName: getName
+            ,logOut: function() {}
+            ,setBackend: function(aBackend) {
+                backend = aBackend;
+            }
         };
       }});
 

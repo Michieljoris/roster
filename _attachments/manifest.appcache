@@ -1,7 +1,7 @@
 CACHE MANIFEST
 
 #version 1.0 2-16-2013
-#version 0.2.4
+#version 0.2.4c
 
 
 CACHE:
@@ -24,6 +24,7 @@ images/shift.png
 images/table.png
 images/timesheet.png
 images/multicap_logo.png
+images/sync.png
 
 lib/isomorphic/skins/Enterprise/images/actions/column_preferences.png
 lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_Over_end.png
@@ -146,7 +147,9 @@ js/viewTree.js
 js/loaders/view.js
 js/loaders/editor.js
 js/types/typesAndFields.js
-lib/sha1.js
+lib/sha1b.js
+lib/pbkdf2.js
+lib/couchapi.js
 js/views/table.js
 js/views/calendar.js
 js/views/timesheet.js
