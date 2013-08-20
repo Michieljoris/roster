@@ -9,22 +9,27 @@ function (newDoc, oldDoc, userCtx, secObj){
     secObj.members.roles = secObj.members.roles || [];
     secObj.members.names = secObj.members.names || [];
     
-    var validator = require('validator').init(secObj.members.names, userCtx);
-    
-    function is_admin(){
-        return userCtx.indexOf('_admin') !== -1;
-    }
-    
-    function validateDoc(doc) {
-        return validator.validateDoc(doc);
-    }
-    
     function reportError(type, error_msg) {
         log('Error writing document `' + newDoc._id +
             '\' to the database: ' + error_msg);
         var errorObj = {};
         errorObj[type] = error_msg;
         throw(errorObj);
+    }
+    
+    var validator;
+    try {
+        validator = require('validator').init(secObj.members.names, userCtx);
+    }  catch(e) {
+        reportError('forbidden', 'Error initializing validator: \n' + e.source + '\n ' + e.error);
+    }
+        
+    function is_admin(){
+        return userCtx.indexOf('_admin') !== -1;
+    }
+    
+    function validateDoc(doc) {
+        return validator.validateDoc(doc);
     }
     
     if (is_admin()) {
@@ -47,9 +52,9 @@ function (newDoc, oldDoc, userCtx, secObj){
         reportError('unauthorized', 'User ' + userCtx.name  +
                     'is not allowed to write to this database.');
     
-    if  (validator.validateUser(newDoc, oldDoc) )
+    if  (!validator.validateUser(newDoc, oldDoc) )
         reportError('unauthorized', 'User ' + userCtx.name + ' is not allowed to write this particular document to the database.');
     
-    if (!validateDoc(newDoc))
+    if (!validator.validateDoc(newDoc))
         reportError('forbidden', 'The document is not conforming to the validation rules.');
 }
