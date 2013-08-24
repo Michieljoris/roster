@@ -1,4 +1,4 @@
-/*global VOW:false Cookie:false logger:false isc:false define:false PBKDF2:false */
+/*global mainLayout:false VOW:false Cookie:false logger:false isc:false define:false PBKDF2:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:5 maxcomplexity:7 maxlen:190 devel:true*/
 
@@ -15,6 +15,7 @@ define
       var vow;
       var backend;
       var authenticated = false;
+      var mode;
       var state = {
           backendName: 'couchDB'
           // idbName: 'db',
@@ -95,8 +96,9 @@ define
                   },
                   function(data) {
                       console.log(data);
+                      alert(data.reason);
                       msg('User doesn\'t exist in database, or you are not authorized to access the database' +
-                         'or there is a write or read problem with the settings doc');
+                         ' or there is a write or read problem with the settings doc');
                   }
               );
           }
@@ -109,12 +111,13 @@ define
               function() {
                   console.log('Authenticated!!', userName, db);
                   authenticated = true;
-                  getUser();
+                  if (mode === 'connect') getUser();
+                  else vow.keep(userName);
               },
               function() {
                   console.log('Not authenticated..', userName, db);
                   authenticated = false;
-                  getUser();
+                  if (mode === 'connect') getUser();
               }
           );
       }
@@ -350,26 +353,46 @@ define
                   userName = defaultUser._id;
               }
               console.log(userName, pwd);
-              if (backend.getUrl().startsWith('http')) checkCredentialsWithCouch(userName, pwd);
+              if (backend.getUrl().startsWith('http'))
+                  checkCredentialsWithCouch(userName, pwd);
               else checkCredentialsWithPouch(userName, pwd);
           }  
       });
+      
+      function logOut() {
+      }
       
       var logoutButton = isc.Button.create({
           title: 'Logout'
           // ,visibility: cancellable ? 'inherit' : 'hidden'
           // ,startRow: false
           ,click: function() {
-              userManager.logOut();
-              cancelButton.setVisibility('hidden');
-              logoutButton.setVisibility('hidden');
-              loginButton.setVisibility('inherit');
-              identifyForm.setVisibility('inherit');
-              mainLayout.setVisibility('hidden');
-              
               var url = backend.getUrl();
-              currentDbLabel.setContents('Currently <b><i>'+ 'nobody' + '</i></b> is logged in at <b><i>' + url + '</i></b>' + 
-                                         (!url.startsWith('http') ? ' (internal)' : '') );
+              function reset() {
+                  Cookie.remove('lastLogin');
+                  cancelButton.setVisibility('hidden');
+                  logoutButton.setVisibility('hidden');
+                  loginButton.setVisibility('inherit');
+                  identifyForm.setVisibility('inherit');
+                  mainLayout.setVisibility('hidden');
+                  currentDbLabel.setContents(
+                      'Currently <b><i>'+ 'nobody' + '</i></b> is logged in at <b><i>' +
+                          url + '</i></b>' +
+                          (!url.startsWith('http') ? ' (internal)' : '') );
+                  console.log("Logged out..");
+              }
+              userManager.logOut();
+              if (url.startsWith('http')) {
+                  couch.login('98u9da89d89f07dfa897df8as87f9as78fa8asdf', '_____').when(
+                      function() {
+                          console.log('What????');
+                          alert("No! Tried to logout with a impossible user, since the regular lout fails in Firefox for some reason. This user can't exist. Can't be!!!");
+                      },function() {
+                          reset();
+                      });
+                  
+              }
+              else reset();
           }  
       });
       
@@ -538,6 +561,10 @@ define
           //promises a logged in user
           show: function(tab, userName) {
               // vow = aVow;
+              mode = tab;
+              if (tab === 'authorize') {
+                 tab = 'connect';
+              }
               vow = VOW.make();
               if (!initialized) init();
               

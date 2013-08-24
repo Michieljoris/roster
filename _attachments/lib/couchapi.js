@@ -217,8 +217,8 @@ define(
             var vow = VOW.make(); 
             options = $.extend({
                 success: vow.keep
-                ,error: function(status) {
-                    vow['break']({ id: id, options: options, status: status});
+                ,error: function(status, reason) {
+                    vow['break']({ id: id, options: options, status: status, reason: reason});
                 }
             },options);
             $.couch.db(dbName).openDoc(id, options);

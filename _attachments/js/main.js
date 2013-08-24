@@ -109,7 +109,7 @@ define(
           
           
           //##initDatabase
-          /** Try to get the database url cooke and initialize the
+          /** Try to get the database url cookie and initialize the
            * database with it.
            */
           function initBackend(aBackend){

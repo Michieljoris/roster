@@ -6,8 +6,8 @@
 define(
     // { inject: ['lib/cookie', 'loaders/backend'], 
     //   factory: function(cookie, backend ) 
-    { inject: [], 
-      factory: function() 
+    { inject: [ 'lib/couchapi'], 
+      factory: function(couch) 
       { "use strict";
         var log = logger('user');
         
@@ -111,6 +111,8 @@ define(
                 function(data) {
                     alert('Cannot save any user settings to the database');
                     console.log('Failed to get the settings for this user: ' + user._id + ' ', data);
+                    Cookie.set('lastLogin', user._id,
+                               Date.today().addYears(10));
                     vow.keep(user);
                     //we'll have work with the cache. Future saves might also fail.
                     // vow['break']("Error: Could not get and/or create settings doc for user ");
@@ -223,7 +225,9 @@ define(
             ,addObserver: addObserver
             ,getHelpText: getHelpText
             ,getName: getName
-            ,logOut: function() {}
+            ,logOut: function() {
+                
+            }
             ,setBackend: function(aBackend) {
                 backend = aBackend;
             }
