@@ -43,11 +43,30 @@ define
               else {
                   // var msg = "\nError opening database with Pouch:" + idbname +
 		  //    "\nerr: "+ err.error + '\nreason:' + err.reason;
-                  isc.warn('Couldn\'t open database ' + idbname + 
-                           '<br>Possible causes: <ul><li>Internet not connected</li><li> CouchDB not running or configured wrong</li><li>Wrong credentials</li></ul><br>' +
-                           'Loading default internal database.<br>' +
+                  console.log('error getting database info', err);
+                  isc.warn('Couldn\'t open database ' + idbname +  '<br><br>' +
+                           'Status: ' + err.status + '<br>' +
+                           (err.error ? 'Error: ' + err.error + '<br><br>':'') +
+                           (err.reason ? 'Error: ' + err.reason + '<br><br>':'') +
+                           (err.status === 0 ? 'CouchDB might not be running or not configured properly<br><br>' : '') +
+                           (err.status === 404 ? 'Database doesn\'t exist.<br><br>': '') +
+                           (err.status === 401 ? 'You are not authorized<br><br>': '') +
+                           (err.status === 0 ? 'Loading default internal database.<br><br>' : '') +
                            'Click on the left top button in the app to connect to another database.'
                           );
+                  if (err.status === 401) {
+                      log.d('pouchDB is not ready, unauthorized');
+                      url= idbname;
+                      // authWindow.show('authorize', '').when(
+                      //     function() {
+                      //         location.reload();
+                      //     }
+                      // );
+                      
+                      vow.keep(self);
+                      return;
+                  }
+                  
                   idbname = "db";
                   Pouch(idbname, function(err, aDb) {
 	              if (!err) {
@@ -569,23 +588,32 @@ define
           VOW.any(getLastLoginVows()).when(
               function(array) {
                   console.log('ANY', array);
-                  var lastLogin = array[0];
                   var defaultUserId = array[1];
+                  var lastLogin = array[0];
                   var session = array[2];
-                  if (url.startsWith('http') && session && session.userCtx.name) {
-                      if (lastLogin !== userName) {
-                          couch.logout();   
-                          userName = lastLogin;
-                      }
-                      else {
-                          userName = session.userCtx.name;
-                          authWindow.setAuthenticated();
-                      }
+                  if (url.startsWith('http')) {
+                      if (session && session.userCtx.name) {
+                          if (lastLogin !== session.userCtx.name) {
+                              userName = defaultUserId;
+                              //try to authenticate against couchdb
+                              //with the default user and password
+                              return couch.login(userName, userName);   
+                          }
+                          else {
+                              userName = session.userCtx.name;
+                              authWindow.setAuthenticated();
+                          }
+                      } 
                   }
                   else if (lastLogin) userName =lastLogin;
                   else userName = defaultUserId;
-                  return getDoc(userName);
+                  return VOW.kept({ name: userName });
               }).
+              when(
+                  function(userMeta) {
+                      return getDoc(userMeta.name);
+                  }
+              ).
               when(
                   function(user) {
                       console.log('Found user', user);
@@ -604,11 +632,12 @@ define
                   }).
               when(
                   vow.keep,
-                  function() {
+                  function(error) {
+                      console.log('Couldn\'t find user doc:' ,error);
                       //Whatever userName was used, its doc wasn't
-                      //there. This could be a new database.  To give
-                      //authWindow a chance we will first try to
-                      //create a defaultUser
+                      //there. This could be a new database or locked
+                      //down.  To give authWindow a chance we will
+                      //first try to create a defaultUser
                       getDoc(defaultUser._id).when(
                           function(user) {
                               if (!user.derived_key) return userManager.init(user);
@@ -624,7 +653,7 @@ define
                                           // vow.keep(defaultUser);
                                       },
                                       function() {
-                                          authWindow.show('indentify',userName).when(vow.keep);
+                                          authWindow.show('identify',userName).when(vow.keep);
                                       });
                               });
                   });

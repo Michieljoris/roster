@@ -3,8 +3,7 @@
 // 2012-10-29
 // Public Domain
 
-/*global setTimeout, setImmediate */
-
+/*global console, setTimeout, setImmediate */
 
 // If this system does not have setImmediate, then simulate it with setTimeout.
 
@@ -65,6 +64,7 @@ var VOW = (function () {
 
                 } catch (e) {
                     breaker(e);
+                    console.error(e.stack);
                 }
             };
     }
@@ -120,6 +120,10 @@ var VOW = (function () {
 
                     herald('broken', value, breakers);
                 },
+                'breek': function(value) {
+                    
+                    herald('broken', value, breakers);
+                },
                 keep: function keep(value) {
 
 // The keep method keeps the promise.
@@ -135,7 +139,9 @@ var VOW = (function () {
 // The .when method is the promise monad's bind. The .when method can take two
 // optional functions. One of those functions may be called, depending on the
 // promise's resolution. Both could be called if the the kept function throws.
-
+                    then: function(kept, broken) {
+                        return this.when(kept, broken);
+                    },
                     when: function (kept, broken) {
 
 // Make a new vow. Return the new promise.
