@@ -160,7 +160,7 @@ define(
                           View.setBackend(backend); 
                           Editor.setBackend(backend);
                           user.setBackend(backend);
-                          authWindow.setBackend(backend);
+                          // authWindow.setBackend(backend);
                           //>>looks for lastlogin cookie
                           //defaults to guest user if present or it can be
                           //created otherwise prompt

@@ -57,14 +57,16 @@ define
                   if (err.status === 401) {
                       log.d('pouchDB is not ready, unauthorized');
                       url= idbname;
-                      // authWindow.show('authorize', '').when(
-                      //     function() {
-                      //         location.reload();
-                      //     }
-                      // );
+                      authWindow.show('authorize', self).when(
+                          function() {
+                              location.reload();
+                          }
+                      );
                       
-                      vow.keep(self);
                       return;
+                      
+                      // vow.keep(self);
+                      // return;
                   }
                   
                   idbname = "db";
@@ -558,7 +560,22 @@ define
 
       
       function changeUser() {
-          return authWindow.show('identify', '');
+          return authWindow.show('identify', self);
+      }
+      
+      function loginUser(name, pwd) {
+          pwd = pwd || name;
+          var vow = VOW.make();
+          couch.login(name,pwd).when(
+              function(data) {
+                  authWindow.setAuthenticated();
+                  vow.keep({ name: name });
+              },
+              function(err) {
+                  vow.breek();
+              }
+          );
+          return vow.promise;
       }
       
       // The proper security lies with CouchDB. By authenticating
@@ -597,13 +614,19 @@ define
                               userName = defaultUserId;
                               //try to authenticate against couchdb
                               //with the default user and password
-                              return couch.login(userName, userName);   
+                              return loginUser(userName);
                           }
                           else {
                               userName = session.userCtx.name;
                               authWindow.setAuthenticated();
                           }
                       } 
+                      else {
+                          userName = defaultUserId;
+                          //try to authenticate against couchdb
+                          //with the default user and password
+                          return loginUser(userName);
+                      }
                   }
                   else if (lastLogin) userName =lastLogin;
                   else userName = defaultUserId;
@@ -653,7 +676,11 @@ define
                                           // vow.keep(defaultUser);
                                       },
                                       function() {
-                                          authWindow.show('identify',userName).when(vow.keep);
+                                          authWindow.show('authorize',self).when(
+                                              function() {
+                                                  location.reload();
+                                              }
+                                          );
                                       });
                               });
                   });
@@ -717,15 +744,15 @@ define
           {
               name: 'couchDB',
               shortDescr: 'External (CouchDB)',
-              description: 'The data will be stored in a standalone database server called CouchDb. This server can run on your local machine or on the internet somewhere. <p>You will have to specify an url such as http://localhost:5984/dbname or http://yourcouch.iriscouch.com/dbname, where 5984 is the port. You can set up a local CouchDB database that syncs with a master database on the net. Your app will then work when there is no internet connectivity. Also latency will be less.<p>Clicking the OK button will refresh the page and the app will load the database selected/created.',
+              description: 'The data will be stored in a standalone database server called CouchDb. This server can run on your local machine or on the internet somewhere. <p>You will have to specify an url such as http://localhost:5984/dbname or http://yourcouch.iriscouch.com/dbname, where 5984 is the port. You can set up a local CouchDB database that syncs with a master database on the net. Your app will then work when there is no internet connectivity. Also latency will be less.<p>Clicking the Connect button will refresh the page and the app will load the database selected/created.',
               // urlPrefix: 'http://',
               urlPrefix: '',
               adapter: 'pouchDB',
               promptUrl: 'http://multicapdb.iriscouch.com',
               prompt: '',
               defaultUrls: [
-                  'https://multicapdb.iriscouch.com',
                   'http://localhost:5984',
+                  'https://multicapdb.iriscouch.com',
                   'http://multicap.ic.ht:5984'
                   // 'http://multicapdb.iriscouch.com'
               ]
@@ -733,7 +760,7 @@ define
           ,{
               name: 'pouchDB',
               shortDescr: 'Internal (PouchDB)',
-              description: 'Select/create a database. These databases are stored locally in the browser. You can have multiple databases per browser. These are persisted across refreshes of the page, and across restarts of the browser. <p>If it is a new database you can login as guest and leave password blank, a default guest user will be created<p>If you use a standalone Chrome browser you can start this app from wherever you are storing the browser. Your could store the standalone browser on a USB stick for instance and open the app on another computer and work with the same data, even if that computer has no internet access. PouchDB is under development and not recommended for production use. Use it to experiment or to use the app as a standalone rostering system. In time this should function as a regular external CouchDB, so it will be able to sync to other CouchDB databases.<p>Clicking the OK button will refresh the page and the app will load the database selected/created.',
+              description: 'Select/create a database. These databases are stored locally in the browser. You can have multiple databases per browser. These are persisted across refreshes of the page, and across restarts of the browser. <p>If it is a new database you can login as guest and leave password blank, a default guest user will be created<p>If you use a standalone Chrome browser you can start this app from wherever you are storing the browser. Your could store the standalone browser on a USB stick for instance and open the app on another computer and work with the same data, even if that computer has no internet access. PouchDB is under development and not recommended for production use. Use it to experiment or to use the app as a standalone rostering system. In time this should function as a regular external CouchDB, so it will be able to sync to other CouchDB databases.<p>Clicking the Connect button will refresh the page and the app will load the database selected/created.',
               urlPrefix: '',
               adapter: 'pouchDB',
               prompt: 'db'

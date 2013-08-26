@@ -405,7 +405,7 @@ define
               ,prompt: 'Change the database the app works against. '
               ,action: function() {
                   // pickDbWindow.init();
-                  authWindow.show('connect');
+                  authWindow.show('connect', backend.get());
                   // backend.pick(function(aBackend, name, url){
                   //     VOW.every([
                   //         Cookie.set('backendName', name, Date.today().addYears(10))

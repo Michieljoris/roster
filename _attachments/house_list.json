@@ -1,6 +1,12 @@
 [
-    { "entry": "Waterford West" }
-    ,{ "entry": "bla" }
-    ,{ "entry": "h2" }
-    ,{ "entry": "Kurraby" }
+    { "entry": "Waterford West" , dbName: 'waterford_west'}
+    ,{ "entry": "Camp Strong", dbName: 'camp_strong' }
+    ,{ "entry": "Carindale", dbName: 'carindale' }
+    ,{ "entry": "Drewvale", dbName: 'drewvale' }
+    ,{ "entry": "Esperance", dbName: 'esperance' }
+    ,{ "entry": "Rubicon", dbName: 'rubicon' }
+    ,{ "entry": "Runcorn 11", dbName: 'runcorn_11' }
+    ,{ "entry": "Runcorn 9", dbName: 'runcorn_9' }
+    ,{ "entry": "Training", dbName: 'training' }
+    ,{ "entry": "Kurraby West", dbName: 'kurraby_west' }
 ]

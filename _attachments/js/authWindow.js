@@ -48,6 +48,7 @@ define
       
       function msg(text) {
           //TODO show msg on window somewhere
+          alert(text);
           console.log(text);
       }
       
@@ -96,9 +97,8 @@ define
                   },
                   function(data) {
                       console.log(data);
-                      alert(data.reason);
-                      msg('User doesn\'t exist in database, or you are not authorized to access the database' +
-                         ' or there is a write or read problem with the settings doc');
+                      // alert(data.reason);
+                      msg('Wrong user/pwd or you are not authorized to access this database');
                   }
               );
           }
@@ -111,13 +111,14 @@ define
               function() {
                   console.log('Authenticated!!', userName, db);
                   authenticated = true;
-                  if (mode === 'connect') getUser();
+                  if (mode !== 'authorize') getUser();
                   else vow.keep(userName);
               },
               function() {
                   console.log('Not authenticated..', userName, db);
                   authenticated = false;
-                  if (mode === 'connect') getUser();
+                  if (mode !== 'authorize') getUser();
+                  else msg('Wrong user/pwd');
               }
           );
       }
@@ -205,6 +206,7 @@ define
                 change: function () {
                     // view.modified();
                     var url = state.url = arguments[2];
+                    localStorage.setItem('db_path', state.url);
                     checkUrl(pickDbForm, arguments[2]);
                 }
               }
@@ -225,6 +227,7 @@ define
                  change: function () {
                      // view.modified();
                      state.dbName = arguments[2];
+                     localStorage.setItem('db_name', state.dbName);
                  }
                  ,icons: [{
                      src: "checkUrl.png",
@@ -238,8 +241,8 @@ define
               ,{ editorType: 'comboBox', name: 'idbName', title: 'Database:',
                  titleOrientation: 'top', startRow: true, width: 300,
                  change: function () {
-                     // view.modified();
-                     state().idbName = arguments[2];
+                     state.idbName = arguments[2];
+                     localStorage.setItem('idb_name', state.idbName);
                  }
                }
               
@@ -304,16 +307,19 @@ define
       });
       
       function connect() {
-          var url ;
+          var url;
           var backendName = pickDbForm.getValue('backendName');
-          // var userName = pickDbForm.getValue('userName');
+          var idbName = pickDbForm.getValue('idbName');
+          var dbName = pickDbForm.getValue('dbName');
+          
+          url = pickDbForm.getValue('url');
+          if (url && !url.endsWith('/')) url += '/';
+          
           if (backendName === 'pouchDB') {
-              url = pickDbForm.getValue('idbName');
+              url = idbName;
           }
           else {
-              url = pickDbForm.getValue('url');
-              if (!url.endsWith('/')) url += '/';
-              url += pickDbForm.getValue('dbName');
+              url += dbName;
           }
           var urlPrefix = dbDescriptions[backendName].urlPrefix;
           if (url.startsWith(urlPrefix)) urlPrefix = '';
@@ -322,7 +328,6 @@ define
                                     
           VOW.every([
               Cookie.set('backendName', adapter, Date.today().addYears(10))
-              // Cookie.set('lastLogin', userName, Date.today().addYears(10))
               ,Cookie.set('backendUrl', url, Date.today().addYears(10))]
                    ).when(
                        function() { log.d('Saved backend cookie.');
@@ -376,7 +381,7 @@ define
                   identifyForm.setVisibility('inherit');
                   mainLayout.setVisibility('hidden');
                   currentDbLabel.setContents(
-                      'Currently <b><i>'+ 'nobody' + '</i></b> is logged in at <b><i>' +
+                      'Please log in at <i><b>' +
                           url + '</i></b>' +
                           (!url.startsWith('http') ? ' (internal)' : '') );
                   console.log("Logged out..");
@@ -516,14 +521,19 @@ define
       });
       
       function setCurrentDbLabel(url) {
-          function isAuthenticated() {
-              if (url.startsWith('http')) return authenticated ?  ' (authenticated) ' : ' (not authenticated) ';
-              else return '';
-                  
+          var userName = userManager.getName();
+          var statusLine;
+          if (!userName)
+              statusLine = "Please log in at " + url +
+              (!url.startsWith('http') ? ' (internal)' : '');
+          else {
+              statusLine = 'Currently <b><i>'+ userManager.getName() +
+                  '</i></b> is logged in at <b><i>' + url + '</i></b>' + 
+                  (!url.startsWith('http') ? ' (internal)' :
+                  (authenticated ? '' : ' but is <b>not</b> authenticated against CouchDB'));
           }
-          currentDbLabel.setContents('Currently <b><i>'+ userManager.getName() + isAuthenticated() +
-                                     '</i></b> is logged in at <b><i>' + url + '</i></b>' + 
-                                     (!url.startsWith('http') ? ' (internal)' : '') );
+                  
+          currentDbLabel.setContents(statusLine);
       }
       
       var initialized = false; 
@@ -537,6 +547,7 @@ define
           state.idbName = state.idbName || dbDescriptions.pouchDB.prompt;
           state.dbName = state.dbName || dbDescriptions.couchDB.prompt;
           state.url = state.url || dbDescriptions.couchDB.promptUrl;
+          checkUrl(pickDbForm, state.url );
               
           db_utils.getAllDbs('idb').when(
               function(values) {
@@ -555,21 +566,24 @@ define
           setAuthenticated: function() {
               authenticated = true;
           },
-          setBackend: function(aBackend) {
-              backend = aBackend;
-          },
+          // setBackend: function(aBackend) {
+          //     backend = aBackend;
+          // },
           //promises a logged in user
-          show: function(tab, userName) {
+          show: function(tab, aBackend) {
+              backend = aBackend;
               // vow = aVow;
               mode = tab;
-              if (tab === 'authorize') {
-                 tab = 'connect';
-              }
               vow = VOW.make();
+              state.backendName = backend.getUrl().startsWith('http') ? 'couchDB' : 'pouchDB';
               if (!initialized) init();
+              pickDbForm.getField('url').setValue(localStorage.getItem('db_path'));
+              pickDbForm.getField('dbName').setValue(localStorage.getItem('db_name'));
+              pickDbForm.getField('idbName').setValue(localStorage.getItem('idb_name') || state.idbName);
               
-              tabSet.selectTab(tab);
+              tabSet.selectTab(tab === 'authorize' ? 'identify' : tab);
               editorWindow.show();
+              var userName = userManager.getName();
               identifyForm.getField('userName').setValue(userName || '');
               identifyForm.getField('pwd').setValue('');
               if (userManager.isLoggedIn()) {
@@ -584,6 +598,7 @@ define
                       identifyForm.setVisibility('inherit');
                       cancelButton.setVisibility('hidden');
                    }
+              
               return vow.promise;
           }
       };

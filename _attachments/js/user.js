@@ -194,7 +194,7 @@ define(
             observers.push(observer);
         }
         var help = {
-            couch: "Authentication is done against a CouchDB instance on the network. As long as this instance is locked down by a server admin password security is relativily high. You will stay logged accross refreshes of the page, till you log out. <p>If you want to connect to a different database, visit the connect tab.<p>If you provide no credentials on login the app will try to log in as user: \'guest\', pwd: \'\'",
+            couch: "Authentication is done against a CouchDB instance on the network. As long as this instance is locked down by a server admin password security is relativily high. You will stay logged accross refreshes of the page, till you log out. <p>If you want to connect to a different database, visit the connect tab.<p>If you provide no credentials on login the app will try to log in as user: \'guest\', pwd: \'guest\'",
             pouch: "The app is working against an internal database. Authentication is done in the browser in javascript, which makes it vulnarable for attack. However if your security needs are light it is still useable. Passwords are not stored in clear text.<p>If you provide no credentials on login the app will try to log in as user guest, with an empty password"
         };
         
@@ -207,7 +207,7 @@ define(
         }
         function getName() {
             if (user) return user._id;
-            else return 'nobody';
+            else return null;
         }
         
         return {
