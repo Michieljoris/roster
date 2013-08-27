@@ -413,7 +413,8 @@ define
                                    'background-color:' + bg +
                                    '; color:' + fg);
               
-              if (newRoles) person.roles = newRoles;
+              // if (newRoles) person.roles = newRoles;
+              person.roles = newRoles || [];
               if (newAvailability) person.availability = newAvailability;
               
               typesAndFields.removeUnderscoreFields(person);
@@ -554,12 +555,13 @@ define
                                   
                                   // var key2 = new PBKDF2(pwd2).deriveKey();
                                   if (pwd1 === pwd2){
-                                      var key = new PBKDF2(pwd1, 10, 'salt').deriveKey();
+                                      var salt = generateSalt(32);
+                                      var key = new PBKDF2(pwd1, 10, salt).deriveKey();
                                       // vm.setValue('pwd', 1);
                                       vm.setValue('derived_key', key);
                                       vm.setValue('iterations', 10);
                                       vm.setValue('password_scheme', 'pbkdf2');
-                                      vm.setValue('salt', 'salt');
+                                      vm.setValue('salt', salt);
                                       pwdForm.setValue('pwd1', '');
                                       pwdForm.setValue('pwd2', '');
                                       formChanged();
@@ -578,6 +580,16 @@ define
           window.show();
       }
         
+      function generateSalt(len) {
+          var set = '0123456789abcdefghijklmnopqurstuvwxyz',
+          setLen = set.length,
+          salt = '';
+          for (var i = 0; i < len; i++) {
+              var p = Math.floor(Math.random() * setLen);
+              salt += set[p];
+          }
+          return salt;
+      }
        
       
       function action(e) {
