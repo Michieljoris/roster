@@ -1,4 +1,4 @@
-/*global PBKDF2:false Cookie:false VOW:false Pouch:false logger:false isc:false define:false emit:false*/
+/*global  Cookie:false VOW:false Pouch:false logger:false isc:false define:false emit:false*/
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:4 maxcomplexity:7 maxlen:130 devel:true newcap:false*/
 
@@ -200,6 +200,30 @@ define
           return obj;
       }
       
+      function stringifyEnums(obj) {
+          Object.keys(obj).forEach(
+	      function(k) {
+                  var field = typesAndFields.getField(k);
+	          if (field) {
+	              var type = field.type;
+	              switch (type) {
+                        case 'enum':
+                          obj[k] = JSON.stringify(obj[k]);
+                          break;
+                        case 'array':
+                          obj[k] = JSON.stringify(obj[k]);
+                          break;
+	              default: 
+	              }
+	          }
+	          else {
+	              //leave it as is
+	          }
+	          // log.d(k, obj[k]);
+	      }
+          );
+      }
+      
       function typefyProps(obj) {
           Object.keys(obj).forEach(
 	      function(k) {
@@ -208,7 +232,7 @@ define
 	              var type = field.type;
 	              switch (type) {
                         case 'enum':
-                          // obj[k] = JSON.parse(obj[k]);
+                          obj[k] = JSON.parse(obj[k]);
                           break;
                         case 'time' : 
                         case 'date' :
@@ -270,10 +294,10 @@ define
                                      // log.d('calling typefy');
 				     typefyProps(key); 
                                      addTimezoneOffset(key);
-                                     if (key.person) {
+                                     // if (key.person) {
                                          // log.d('found person', key.person);
-                                         key.person = JSON.parse(key.person);    
-                                     }
+                                         // key.person = JSON.parse(key.person);    
+                                     // }
 				     // dsResponse.data.push({ _id:key._id, _rev:key._rev, text:key.text});
 				     dsResponse.data.push(key);
                                  }
@@ -284,7 +308,9 @@ define
               // delete data._id;
               var receivedData = isc.clone(data);
               data = subtractTimezoneOffset(data);
-              if (data.person) data.person = JSON.stringify(data.person);
+              // if (data.person) data.person = JSON.stringify(data.person);
+              stringifyEnums(data);
+              console.log('saving data:', data);
               db.post(data,
                       function (err,response){
                           if (err) {
@@ -303,24 +329,28 @@ define
           // log.d('data', data);
           var receivedData = isc.clone(data);
           data = subtractTimezoneOffset(data);
-          if (data.person) data.person = JSON.stringify(data.person);
+          // if (data.person) data.person = JSON.stringify(data.person);
+          stringifyEnums(data);
+          
+          console.log('updating data:', data);
           doPouch(function(db) {
-                  db.put(data,
-                         function (err,response){
-                             if (err) {
-                                 alert('Record not updated in database. Reason: ' + err.reason);
-                                 log.d("Error from pouch put in update:", err,
-                                       "resp:", response); }
-			     else {
-                                 receivedData._rev = response.rev; 
-                                 dsResponse.data = receivedData;
-			         pouchDS.processResponse(requestId, dsResponse);}});});} 
+              db.put(data,
+                     function (err,response){
+                         if (err) {
+                             alert('Record not updated in database. Reason: ' + err.reason);
+                             log.d("Error from pouch put in update:", err,
+                                   "resp:", response); }
+			 else {
+                             receivedData._rev = response.rev; 
+                             dsResponse.data = receivedData;
+			     pouchDS.processResponse(requestId, dsResponse);}});});} 
       //TODO get rid of this function, it is useless and have a module wide var called db
       function doPouch(f) {
           f(pouchDbHandle);
       }			 
       
       function saveUser(data) {
+          if (!url.startsWith('http')) return;
           if (!data || data.type !== 'person' || !data.derived_key) return;
           var user = {
               _id: 'org.couchdb.user:' + data._id
@@ -649,7 +679,7 @@ define
                           if (!user.derived_key) return userManager.init(user);
                           //else prompt for the pwd hashed into the user doc
                           //(if only we could make the next line immutable..)
-                          else  return authWindow.show('identify', userName);
+                          else  return authWindow.show('identify', self);
                       }
                       //The above 3 calls always keep the vow
                   }).

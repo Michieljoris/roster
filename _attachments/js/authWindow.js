@@ -1,4 +1,4 @@
-/*global mainLayout:false VOW:false Cookie:false logger:false isc:false define:false PBKDF2:false */
+/*global mainLayout:false sjcl:false VOW:false Cookie:false logger:false isc:false define:false PBKDF2:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:5 maxcomplexity:7 maxlen:190 devel:true*/
 
@@ -52,10 +52,40 @@ define
           console.log(text);
       }
       
+      function calcKey(pwd, iterations, salt) {
+          var hmacSHA1 = function (key) {
+              var hasher = new sjcl.misc.hmac(key, sjcl.hash.sha1);
+              this.encrypt = function () {
+                  return hasher.encrypt.apply(hasher, arguments);
+              };
+          };
+                                      
+          function a2hex(str) {
+              var arr = [];
+              for (var i = 0, l = str.length; i < l; i ++) {
+                  var hex = Number(str.charCodeAt(i)).toString(16);
+                  arr.push(hex);
+              }
+              return arr.join('');
+          }
+                                      
+          var hexSalt = a2hex(salt);
+          var sjclSalt = sjcl.codec.hex.toBits(hexSalt);
+          // var compkey = new PBKDF2(pwd, iterations, salt).deriveKey();
+          var key = sjcl.codec.hex.fromBits(
+              sjcl.misc.pbkdf2(pwd,
+                               sjclSalt,
+                               iterations, 160, hmacSHA1));
+          // console.log(compkey, key);
+          return key;
+      }
+      
       function checkCredentialsWithPouch(userName, pwd) {
           backend.getDoc(userName).when(
               function(user) {
-                  var key = new PBKDF2(pwd, user.iterations, user.salt).deriveKey();
+                  console.log('new person loggin int:', user);
+                  // var key = new PBKDF2(pwd, user.iterations, user.salt).deriveKey();
+                  var key = calcKey(pwd, user.iterations || 1, user.salt || '');
                   console.log('KEY ', pwd, key, user);
                   if (!user.derived_key ||
                       user.derived_key === key)

@@ -1,12 +1,12 @@
-/*global  PBKDF2:false logger:false isc:false define:false */
+/*global  ITERATIONS:false sjcl:false logger:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:6 maxcomplexity:10 maxlen:190 devel:true*/
 
 //This kind of module does not produce an injectable, but registers itself with the editorManager
 //to use this editor, both load the editorLoader module and inject the editorManager
 define
-({inject: ['Editor', 'types/typesAndFields', 'editorUtils', 'editorManager', 'lib/sha1' , 'lib/utils'],
-  factory: function(Editor, typesAndFields, editorUtils, editorManager, hash, utils) {
+({inject: ['Editor', 'types/typesAndFields', 'editorUtils', 'editorManager', 'lib/utils'],
+  factory: function(Editor, typesAndFields, editorUtils, editorManager, utils) {
       "use strict";
       var log = logger('personEditor') ;
       var editor = { type: 'person'};
@@ -15,7 +15,6 @@ define
       var person;   
       var defaultSettings = {};
       var settings = {}; 
-      var roles;
       
       function areArraysEqual(a1, a2) {
           if (!isc.isAn.Array(a1) || !isc.isAn.Array(a2)) return false;
@@ -416,10 +415,18 @@ define
               // if (newRoles) person.roles = newRoles;
               person.roles = newRoles || [];
               if (newAvailability) person.availability = newAvailability;
+              // person.rolesStr= JSON.stringify(person.roles);
+              // person.availabilityStr = JSON.stringify(person.availability);
+              // person.roles = "";
+             // person.availability = "";
               
               typesAndFields.removeUnderscoreFields(person);
               console.log('no underscores?', person);
               editorManager.save(person, updateVm);           
+          }
+          else {
+              console.log('not validating', vm.getErrors());
+              
           }
       }
       
@@ -491,26 +498,50 @@ define
       /** Pick a password */
       function pickPwd(){
           
+          var pwdHelp = "You will have to fill in a password with a score of at least 3. The password is relatively secure but try not to use a password you already use somewhere else.<p>Feel free to write it down on a piece of paper if you like,just take care never to type it in anywhere except when logging into this app.<p>If you have any write permissions please don't set your password here, but set it directly in the user database. For how to do this and for more info on security and this app click <a target='_blank' href='security.html'>here</a>.";
+          var pwd1 = '', pwd2 = '';
+          var score = 0;
+          
+          function checkPwd() {
+              score = zxcvbn(pwd1);
+              var equal = pwd1 === pwd2 ? 'Passwords identical!!' : 'Passwords not identical';
+              helpLabel.setContents('Score: ' + score.score + '<br>Time to crack: ' + score.crack_time_display + '<br><br>' + equal + '<p>' + pwdHelp);
+              passwordOk.setDisabled(score.score > 2  && pwd1 === pwd2 ? false: true);
+              // passwordOk.setDisabled(false);
+              return score;
+          }
+          
           var pwdForm = isc.DynamicForm.create({
               columns: 1
               ,fields: [
                   { type: 'password', name: 'pwd1', title: 'Password:', 
-                    titleOrientation: 'top', startRow: true}
+                    titleOrientation: 'top', startRow: true,
+                    change:function() {
+                        pwd1 = arguments[2];
+                        checkPwd();
+                    }
+                  }
+                  
                   ,{ type: 'password', name: 'pwd2', title: 'Repeat:', 
+                     change:function() {
+                         pwd2 = arguments[2];
+                         checkPwd();
+                         // console.log('change pwd');
+                     },
                      titleOrientation: 'top', startRow: true}
               ]
           });
             
           var helpLabel = isc.Label.create({
               // ID:'test',
-              // width: 300,
+              width: 300,
               height: '100%',
               margin: 10
-              ,contents: 'Enter your new password.'
+              ,contents: 'Enter your new password.<p>' + pwdHelp
           });
             
           var window = isc.Window.create({
-              title: "Set a password"
+                  title: "Set a password"
               ,autoSize: true
               // ,height:200
               // ,width:300
@@ -544,22 +575,25 @@ define
                               
                           })
                           ,isc.Button.create({
+                              ID: 'passwordOk',
                               title: 'Ok'
                               ,startRow: true
+                              ,disabled: true
                               ,click: function() {
-                                  var pwd1 = pwdForm.getValue('pwd1') || ''; 
-                                  var pwd2 = pwdForm.getValue('pwd2') || '';
+                                  // var pwd1 = pwdForm.getValue('pwd1') || ''; 
+                                  // var pwd2 = pwdForm.getValue('pwd2') || '';
                                   log.d('passwords are: ',pwd1, pwd2);
-                                  // pwd1 = pwd1 ? pwd1 : '';
+                                  // pwd1 = pwd1  pwd1 : '';
                                   // pwd2 = pwd2 ? pwd2 : '';
                                   
                                   // var key2 = new PBKDF2(pwd2).deriveKey();
-                                  if (pwd1 === pwd2){
-                                      var salt = generateSalt(32);
-                                      var key = new PBKDF2(pwd1, 10, salt).deriveKey();
-                                      // vm.setValue('pwd', 1);
+                                  
+                                  if (pwd1 === pwd2 && score > 2){
+                                      var salt = generateSalt(64);
+                                      var iterations = ITERATIONS;
+                                      var key = calcKey(pwd1, iterations, salt);
                                       vm.setValue('derived_key', key);
-                                      vm.setValue('iterations', 10);
+                                      vm.setValue('iterations', iterations);
                                       vm.setValue('password_scheme', 'pbkdf2');
                                       vm.setValue('salt', salt);
                                       pwdForm.setValue('pwd1', '');
@@ -568,7 +602,8 @@ define
                                       window.hide();
                                   }
                                   else {
-                                      helpLabel.setContents("Passwords don't match. Try again.");
+                                      
+                                      // helpLabel.setContents("Passwords don't match. Try again.");
                                   }
                               }  
                           })
@@ -579,11 +614,39 @@ define
           });
           window.show();
       }
+      
+      function calcKey(pwd, iterations, salt) {
+          var hmacSHA1 = function (key) {
+              var hasher = new sjcl.misc.hmac(key, sjcl.hash.sha1);
+              this.encrypt = function () {
+                  return hasher.encrypt.apply(hasher, arguments);
+              };
+          };
+                                      
+          function a2hex(str) {
+              var arr = [];
+              for (var i = 0, l = str.length; i < l; i ++) {
+                  var hex = Number(str.charCodeAt(i)).toString(16);
+                  arr.push(hex);
+              }
+              return arr.join('');
+          }
+                                      
+          var hexSalt = a2hex(salt);
+          var sjclSalt = sjcl.codec.hex.toBits(hexSalt);
+          // var compkey = new PBKDF2(pwd, iterations, salt).deriveKey();
+          var key = sjcl.codec.hex.fromBits(
+              sjcl.misc.pbkdf2(pwd,
+                               sjclSalt,
+                               iterations, 160, hmacSHA1));
+          // console.log(compkey, key);
+          return key;
+      }
         
       function generateSalt(len) {
           var set = '0123456789abcdefghijklmnopqurstuvwxyz',
-          setLen = set.length,
-          salt = '';
+              setLen = set.length,
+              salt = '';
           for (var i = 0; i < len; i++) {
               var p = Math.floor(Math.random() * setLen);
               salt += set[p];
@@ -707,7 +770,14 @@ define
           // allButtons.Discard.setDisabled(true);
           
           formLayout.setVisibleMember(mainLayout);
-          
+          // if (typeof person.rolesStr === 'string')
+          //      person.roles = JSON.parse(person.rolesStr);
+          // else person.roles = [];
+          // if (typeof person.availabilityStr === 'string')
+          //     person.availability = JSON.parse(person.availabilityStr);
+          // else person.availability = [];
+          // person.roles = person.roles || [''];
+          // person.availability = person.availability || [''];
           vm.setValues(person);
           changed = false;
           ignoreChanges = false;
@@ -725,3 +795,5 @@ define
       return editor;
 
   }});
+
+

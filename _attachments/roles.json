@@ -1,20 +1,18 @@
 [
     { "entry": "write" }
     ,{ "entry": "read" }
-    ,{ "allow_*_"}
-    ,{ "allow_*_type:'shift"}
-    ,{ "allow_*_type:'shift;location:'waterford_west'"}
-    
-    
-    ,{ "allow_*_type:'location"}
-    ,{ "allow_*_type:'person"}
-    ,{ "allow_*_type:'person;_id:user"}
-    ,{ "allow_*_type:'person;_id:user|ONLY derivedKey salt lastEditedAt"}
-    ,{ "allow_*_type:'person;_id:user|NOT roles derivedKey salt"}
-    ,{ "allow_*_type:'person;_id:user|NOT roles"}
-    ,{ "allow_*_type:'settings;lastEditedBy:user"}
-    ,{ "allow_*_type:'user"}
-    ,{ "allow_*_type:'user;_id:user"}
-    ,{ "allow_*_type:'user;_id:user|ONLY derivedKey salt"}
-    ,{ "allow_*_type:'user;_id:user|NOT roles"}
+    ,{ "entry": "allow_*_"}
+    ,{ "entry": "allow_*_type:'shift"}
+    ,{ "entry": "allow_*_type:'shift;location:'waterford_west'"}
+    ,{ "entry": "allow_*_type:'location"}
+    ,{ "entry": "allow_*_type:'person"}
+    ,{ "entry": "allow_*_type:'person;_id:user"}
+    ,{ "entry": "allow_*_type:'person;_id:user|ONLY derivedKey salt lastEditedAt"}
+    ,{ "entry": "allow_*_type:'person;_id:user|NOT roles derivedKey salt"}
+    ,{ "entry": "allow_*_type:'person;_id:user|NOT roles"}
+    ,{ "entry": "allow_*_type:'settings;lastEditedBy:user"}
+    ,{ "entry": "allow_*_type:'user"}
+    ,{ "entry": "allow_*_type:'user;_id:user"}
+    ,{ "entry": "allow_*_type:'user;_id:user|ONLY derivedKey salt"}
+    ,{ "entry": "allow_*_type:'user;_id:user|NOT roles"}
 ]

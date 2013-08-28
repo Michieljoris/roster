@@ -217,10 +217,14 @@ define
             ,roles: {
                 name: "roles",
                 title: "Roles"
+                ,required: false
+                ,type:'array'
             }
             ,availability: {
                 name: "availability",
                 title: "Availability"
+                ,required: false
+                ,type:'array'
             }
             ,address: { type: 'text'}
             ,suburb: { type: 'text'}

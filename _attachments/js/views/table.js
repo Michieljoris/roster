@@ -339,40 +339,56 @@ define
            }
        }
        
+       
        function checkId(str) {
-           if (str === null || str.length ===0) return false;
-          // TODO: check for funny chars and spaces etc
+           var msg;
+           // var match = str.match(/[A-Za-z0-9 \-_]+/);
+           var match = str.match(/^[A-Za-z0-9_\-]*[A-Za-z][A-Za-z0-9 _]*$/);
+           console.log(match);
+           if (str.length === 0) msg = "Empty string";
+           else if (!match || match.length === 0 || match[0].length !== str.length)
+               msg = 'Illegal id, only letters, numbers, space, - (dash) and _  (underscore) are allowed, with at least one letter.';
+           if (msg) {
+               alert(msg);
+               console.log(msg);
+               return false;
+           }
            return true;
        }
        
-       
-       var newRecord = function(aType) {
+       var newRecord = function(aType, prompt) {
+           prompt =  prompt || '';
            if (dataTable.selectionType === 'none') return;
            var record = typesAndFields.newRecord(aType);
            // record.lastEdited = {
            //     user: user.get()._id,
            //     time: new Date()
            // };
-           record.lastEditedAt = new Date();
-           record.lastEditedBy = user.get()._id;
            
            if (record.type === 'location' || record.type === 'person') {
-               isc.askForValue('Set the unique id for this ' + record.type, function(value) {
-                   record._id = value;
-                   if (checkId(value)) {
-                       dataSource.addData( record,
-                                           function(resp, data, req) 
-		                           {   dataTable.deselectAllRecords();
-                                               dataTable.selectRecord(data);
-                                               editRecord(data);
-                                               // editForm.setValues(data);
-                                               log.d('AAAAAAAAAAA',resp,data,req);});
+               isc.askForValue('Set the unique id for this ' + record.type,
+                               function(value) {
+                                   if (value === null) return; //cancel
+                                   value = value.trim();
+                                   if (checkId(value)) {
+                                       record.lastEditedAt = new Date();
+                                       record.lastEditedBy = user.get()._id;
+                                       record._id = value;
+                                       dataSource.addData( record,
+                                                           function(resp, data, req) 
+		                                           {   dataTable.deselectAllRecords();
+                                                               dataTable.selectRecord(data);
+                                                               editRecord(data);
+                                                               // editForm.setValues(data);
+                                                               // log.d('AAAAAAAAAAA',resp,data,req);
+                                                           });
                        
-                   }
-                   else alert('Bad id');
-               }, {
-                 defaultWidth: 200                 
-               });
+                                   }
+                                   else newRecord(aType, value);
+                               }, {
+                                   width: 400                 
+                                   ,defaultValue: prompt 
+                               });
                // record.name = 'mynewname';
            } else dataSource.addData(
                record,

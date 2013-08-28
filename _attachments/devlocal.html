@@ -12,8 +12,13 @@
     
     <!-- easily access cookies -->
     <script src=lib/Cookie.js></script>    
-    <script src="lib/sha1b.js"></script>
-    <script src="lib/pbkdf2.js"></script>    
+    <!-- <script src="lib/sha1b.js"></script>  -->
+    <!-- <script src="lib/pbkdf2.js"></script>      -->
+    
+   <!-- use sjcl instead  -->
+   <script type="text/javascript" src="lib/zxcvbn-async.js"> </script> 
+    <script src="lib/sjcl.js"></script>    
+    <script src="lib/sha1.js"></script>    
     
     <!-- easy adding time to dates -->
     <script src=lib/date.js></script>    
@@ -181,7 +186,7 @@
       timeOut: 15,
       testing: false
       };
-
+      window.ITERATIONS = 100;
     </script> 
     <script src=lib/bootstrap.js></script>
     

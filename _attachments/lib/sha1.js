@@ -1,130 +1,165 @@
-define(
-  {
-    factory: function() 
-    {
+/** @fileOverview Javascript SHA-1 implementation.
+ *
+ * Based on the implementation in RFC 3174, method 1, and on the SJCL
+ * SHA-256 implementation.
+ *
+ * @author Quinn Slack
+ */
 
-      /*
-       * A JavaScript implementation of the Secure Hash Algorithm, SHA-1, as defined
-       * in FIPS PUB 180-1
-       * Copyright (C) Paul Johnston 2000.
-       * See http://pajhome.org.uk/site/legal.html for details.
-       */
-
-      /*
-       * Convert a 32-bit number to a hex string with ms-byte first
-       */
-      var hex_chr = "0123456789abcdef";
-      function hex(num)
-      {
-	var str = "";
-	for(var j = 7; j >= 0; j--)
-	  str += hex_chr.charAt((num >> (j * 4)) & 0x0F);
-	return str;
-      }
-
-      /*
-       * Convert a string to a sequence of 16-word blocks, stored as an array.
-       * Append padding bits and the length, as described in the SHA1 standard.
-       */
-      function str2blks_SHA1(str)
-      {
-	var nblk = ((str.length + 8) >> 6) + 1;
-	var blks = new Array(nblk * 16);
-	for(var i = 0; i < nblk * 16; i++) blks[i] = 0;
-	for(i = 0; i < str.length; i++)
-	  blks[i >> 2] |= str.charCodeAt(i) << (24 - (i % 4) * 8);
-	blks[i >> 2] |= 0x80 << (24 - (i % 4) * 8);
-	blks[nblk * 16 - 1] = str.length * 8;
-	return blks;
-      }
-
-      /*
-       * Add integers, wrapping at 2^32. This uses 16-bit operations internally 
-       * to work around bugs in some JS interpreters.
-       */
-      function add(x, y)
-      {
-	var lsw = (x & 0xFFFF) + (y & 0xFFFF);
-	var msw = (x >> 16) + (y >> 16) + (lsw >> 16);
-	return (msw << 16) | (lsw & 0xFFFF);
-      }
-
-      /*
-       * Bitwise rotate a 32-bit number to the left
-       */
-      function rol(num, cnt)
-      {
-	return (num << cnt) | (num >>> (32 - cnt));
-      }
-
-      /*
-       * Perform the appropriate triplet combination function for the current
-       * iteration
-       */
-      function ft(t, b, c, d)
-      {
-	if(t < 20) return (b & c) | ((~b) & d);
-	if(t < 40) return b ^ c ^ d;
-	if(t < 60) return (b & c) | (b & d) | (c & d);
-	return b ^ c ^ d;
-      }
-
-      /*
-       * Determine the appropriate additive constant for the current iteration
-       */
-      function kt(t)
-      {
-	return (t < 20) ?  1518500249 : (t < 40) ?  1859775393 :
-          (t < 60) ? -1894007588 : -899497514;
-      }
-
-      /*
-       * Take a string and return the hex representation of its SHA-1.
-       */
-      function calcSHA1(str)
-      {
-	var x = str2blks_SHA1(str);
-	var w = new Array(80);
-
-	var a =  1732584193;
-	var b = -271733879;
-	var c = -1732584194;
-	var d =  271733878;
-	var e = -1009589776;
-
-	for(var i = 0; i < x.length; i += 16)
-	{
-	  var olda = a;
-	  var oldb = b;
-	  var oldc = c;
-	  var oldd = d;
-	  var olde = e;
-
-	  for(var j = 0; j < 80; j++)
-	  {
-	    if(j < 16) w[j] = x[i + j];
-	    else w[j] = rol(w[j-3] ^ w[j-8] ^ w[j-14] ^ w[j-16], 1);
-	    t = add(add(rol(a, 5), ft(j, b, c, d)), add(add(e, w[j]), kt(j)));
-	    e = d;
-	    d = c;
-	    c = rol(b, 30);
-	    b = a;
-	    a = t;
-	  }
-
-	  a = add(a, olda);
-	  b = add(b, oldb);
-	  c = add(c, oldc);
-	  d = add(d, oldd);
-	  e = add(e, olde);
-	}
-	return hex(a) + hex(b) + hex(c) + hex(d) + hex(e);
-      }
-      
-     return {
-       calc: calcSHA1 
-     };
-      
-    }
+/**
+ * Context for a SHA-1 operation in progress.
+ * @constructor
+ * @class Secure Hash Algorithm, 160 bits.
+ */
+sjcl.hash.sha1 = function (hash) {
+  if (hash) {
+    this._h = hash._h.slice(0);
+    this._buffer = hash._buffer.slice(0);
+    this._length = hash._length;
+  } else {
+    this.reset();
   }
-);
+};
+
+/**
+ * Hash a string or an array of words.
+ * @static
+ * @param {bitArray|String} data the data to hash.
+ * @return {bitArray} The hash value, an array of 5 big-endian words.
+ */
+sjcl.hash.sha1.hash = function (data) {
+  return (new sjcl.hash.sha1()).update(data).finalize();
+};
+
+sjcl.hash.sha1.prototype = {
+  /**
+   * The hash's block size, in bits.
+   * @constant
+   */
+  blockSize: 512,
+   
+  /**
+   * Reset the hash state.
+   * @return this
+   */
+  reset:function () {
+    this._h = this._init.slice(0);
+    this._buffer = [];
+    this._length = 0;
+    return this;
+  },
+  
+  /**
+   * Input several words to the hash.
+   * @param {bitArray|String} data the data to hash.
+   * @return this
+   */
+  update: function (data) {
+    if (typeof data === "string") {
+      data = sjcl.codec.utf8String.toBits(data);
+    }
+    var i, b = this._buffer = sjcl.bitArray.concat(this._buffer, data),
+        ol = this._length,
+        nl = this._length = ol + sjcl.bitArray.bitLength(data);
+    for (i = this.blockSize+ol & -this.blockSize; i <= nl;
+         i+= this.blockSize) {
+      this._block(b.splice(0,16));
+    }
+    return this;
+  },
+  
+  /**
+   * Complete hashing and output the hash value.
+   * @return {bitArray} The hash value, an array of 5 big-endian words. TODO
+   */
+  finalize:function () {
+    var i, b = this._buffer, h = this._h;
+
+    // Round out and push the buffer
+    b = sjcl.bitArray.concat(b, [sjcl.bitArray.partial(1,1)]);
+    // Round out the buffer to a multiple of 16 words, less the 2 length words.
+    for (i = b.length + 2; i & 15; i++) {
+      b.push(0);
+    }
+
+    // append the length
+    b.push(Math.floor(this._length / 0x100000000));
+    b.push(this._length | 0);
+
+    while (b.length) {
+      this._block(b.splice(0,16));
+    }
+
+    this.reset();
+    return h;
+  },
+
+  /**
+   * The SHA-1 initialization vector.
+   * @private
+   */
+  _init:[0x67452301, 0xEFCDAB89, 0x98BADCFE, 0x10325476, 0xC3D2E1F0],
+
+  /**
+   * The SHA-1 hash key.
+   * @private
+   */
+  _key:[0x5A827999, 0x6ED9EBA1, 0x8F1BBCDC, 0xCA62C1D6],
+
+  /**
+   * The SHA-1 logical functions f(0), f(1), ..., f(79).
+   * @private
+   */
+  _f:function(t, b, c, d) {
+    if (t <= 19) {
+      return (b & c) | (~b & d);
+    } else if (t <= 39) {
+      return b ^ c ^ d;
+    } else if (t <= 59) {
+      return (b & c) | (b & d) | (c & d);
+    } else if (t <= 79) {
+      return b ^ c ^ d;
+    }
+  },
+
+  /**
+   * Circular left-shift operator.
+   * @private
+   */
+  _S:function(n, x) {
+    return (x << n) | (x >>> 32-n);
+  },
+  
+  /**
+   * Perform one cycle of SHA-1.
+   * @param {bitArray} words one block of words.
+   * @private
+   */
+  _block:function (words) {  
+    var t, tmp, a, b, c, d, e,
+    w = words.slice(0),
+    h = this._h,
+    k = this._key;
+   
+    a = h[0]; b = h[1]; c = h[2]; d = h[3]; e = h[4]; 
+
+    for (t=0; t<=79; t++) {
+      if (t >= 16) {
+        w[t] = this._S(1, w[t-3] ^ w[t-8] ^ w[t-14] ^ w[t-16]);
+      }
+      tmp = (this._S(5, a) + this._f(t, b, c, d) + e + w[t] +
+             this._key[Math.floor(t/20)]) | 0;
+      e = d;
+      d = c;
+      c = this._S(30, b);
+      b = a;
+      a = tmp;
+   }
+
+   h[0] = (h[0]+a) |0;
+   h[1] = (h[1]+b) |0;
+   h[2] = (h[2]+c) |0;
+   h[3] = (h[3]+d) |0;
+   h[4] = (h[4]+e) |0;
+  }
+};
