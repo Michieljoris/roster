@@ -1,4 +1,4 @@
-/*global mainLayout:false sjcl:false VOW:false Cookie:false logger:false isc:false define:false PBKDF2:false */
+/*global mainLayout:false sjcl:false VOW:false Cookie:false logger:false isc:false define:false */
 /*jshint strict:true unused:true smarttabs:true eqeqeq:true immed: true undef:true*/
 /*jshint maxparams:5 maxcomplexity:7 maxlen:190 devel:true*/
 

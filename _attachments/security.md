@@ -25,12 +25,12 @@ appropriate external database, except for security features. Since the
 app is using a database called CouchDb that means the internal
 database can automatically synchronize with other (CouchDB) databases
 on a network whenever there is connectivity. Note that the capability
-is there but the interface to easily manage it has not been
+is there but the interface to easily manage this last feature has not been
 implemented yet.
 
 ###External database
 
-The other source of data is external CouchDB instances running on an
+The other source of data can be external CouchDB instances running on an
 accessible network. This network can be local on the computer where
 the browser is running, on an intranet or on the internet. A CouchDB
 instance can be secured with a industry standard level set of security
@@ -134,9 +134,9 @@ Passwords normally do not get stored in an authenticating database in
 clear text but in encoded form called a hash. Depending on the hash
 method it can be very difficult to reverse the encoding, that is to
 change to hash back into the password. When a user logs on the server
-it simply hashes the entered password and compares that with the
+,the server simply hashes the entered password and compares that with the
 stored hash. When a user database is exposed a potential cracker will
-not find any passwords but he will have full access to the hashes,
+not find any passwords **but** he will have full access to the hashes,
 hashing method used and any other relevant data necessary to
 authenticate a user. An offline attack can begin, that is he doesn't
 even have try to log in anymore to test passwords. He can do it in his
@@ -164,10 +164,10 @@ Third to make brute force or dictionary attacks cumbersome you can
 force a hashing method to be slow in computing a hash. Since an
 authenticating server might do a few to possible a few hundreds or
 thousands of authenticating hashing per minute, a cracker will want to
-calculate a hashes in the order of millions or more per minute. A
+calculate hashes in the order of millions or more per minute. A
 calculation that takes 20 ms will not affect the user's experience of
 logging in very much but it will seriously slow down a cracker's
-calculation.
+calculations.
 
 There is a fourth defense. The original user database doesn't actually
 get shared, it only gets written to, either directly or replicated
@@ -176,20 +176,20 @@ replicated and synced with other instances is that local replica of
 the user database. If a user really wants to protect their password
 and not expose its hash they can write directly to the user database
 (everyone has access to their own records). They can use the CouchDB
-internal manager or use [quilt](http://localhost:8081). They will then
+internal manager or use [quilt]. They will then
 have to refrain from using the roster app to update their password
 otherwise it will get shared again. They can use the password update
 of the roster app at other instances as long as that instance doesn't
-not have permission to update users' passwords, since it will get
-written to the original instance again and update its user database.
+have permission to update users' passwords, since it will get written
+to the original instance again and update its user database.
 
-Another way to localize users is tag them as such. These users do not
+Another way to localize users is to tag them as such. These users do not
 get replicated from instance to instance, and only get replicated to
 the local user database (not implemented yet).
 
 ####Implementation
 
-First of all the roster app and the connection to the database on the
+First of all the [roster] app and the connection to the [database][database] on the
 internet are over a certified SSl connection, preventing anybody from
 snooping on the data while in transit and from spoofing the site and
 database as long as Go Daddy Secure Certification Authority can be
@@ -238,7 +238,7 @@ So for instance:
 
 A user with this role assigned can only write to database db1
 (providing he has write permission for db1) and only documents with a
-field type equal to 'location' as long costCode is not updated.
+field type equal to 'location' as long as costCode is not updated.
 
 You can add more fields value pairs to the left of the | and more
 fields to the right.
@@ -279,10 +279,133 @@ still protecting the integrity of databases.
 
 ####In practice
 
+#####Architecture
 There is a central (backed up by replicas perhaps) instance holding
  separate databases for locations, persons and users. There are also
- separate shift databases, one for every location.
+ separate shift databases, one for every location. This can be at
+ [iriscouch.com](http://www.iriscouch.com) or at a VPS like AWS or
+ Linode or anywhere else you can install and control a CouchDB
+ instance. You can install it on your own network and open the proper
+ port to the wider internet. In all but the first case you will have
+ to buy and install ssl certificates to enable verification of the
+ identity of your instance (You will want the little green lock in the
+ address bar of browsers when users use the app or access the
+ database). All these other instance will be able to replicate from
+ and to the any central or for that matter any other instance. What
+ they exactly are able to replicate and write back will depend on the
+ credentials that are available to the installer of the 2nd tier
+ instance and the roles and permissions granted to these credentials.
  
-Any user can go to
-[multicap.iriscouch.com](http://multicap.iriscouch.com) and play
-around in the app since by default it works against the internal database.
+Any user can go to the [roster] website and play
+around in the app since by default it works against the internal
+database. In future users will be able to replicate and sync data from
+an external database directly with this internal one, and have this
+data persist across restarts of the browser and computer but for now
+the user will have to log on to a CouchDB instance to have this
+happen. If there is lag or the connection is unreliable because
+the CouchDB instance is running on the internet they can install a
+local instance and synchronize that with the remote instance and have
+the app work against the local instance. 
+
+#####Changing of permissions
+Because the source of data is ultimately the central database (or
+central cluster) and users will have to authenticate against this
+database to contribute or read any new data allocation of permissions
+can be done centrally. As the status of employees changes over time
+(not employed, employed, manager, admin etc) appropriate permissions
+can be added and removed. Of course any data already replicated to
+users' local instances can not be removed but users could have copied
+that data by any other means already anyway.
+
+#####Changing passwords
+
+If a password gets compromised a user can change this himself using
+the roster app or somebody with the right permissions can do it for
+him. This new password then gets replicated across all instances of
+CouchDB, so that means this user can log in with the same credentials
+at any location or from any computer. It this user is maintaining a
+local instance he will have to change the credentials used to setup
+the replications for this instance as well. If a user does not want
+his password hash exposed he can change it in the a central user
+database directly, and again if he maintains a local database he will
+to update the credentials used. If he accesses the data via a local
+instance maintained by someone else he will have to use the old
+password since no user data gets replicated *out* of the central user
+database only *in*. If he updates this out of sync password in the
+roster app the password might be synchronized again across all
+instances. If a user does not want to expose their hash he can adopt
+this strategy however if he is that worried he is better off using
+a single but very strong and unique (compared to any other passwords
+he might be using elsewhere) password. It greatly eases administration
+of users' credentials.
+
+#####Groups of users
+I imagine there are 3 groups of users. The first group consists of
+people that want to check up on the roster to see when their shifts
+are on. These people will log in using their user name and password
+either at home or where they work. They will not be able to update or
+write any data back to any database, except for perhaps to update
+their own password. The bulk of people will be in this group. Any
+person might have read access to more than one house at the time.
+
+The second group would be maintainers of local 2nd tier databases,
+people like team leaders at the houses, coordinators, anybody that
+decides on who works when. These people will be able to add and update
+shifts, but not any other type of data except perhaps their own user
+data. If they need to add staff to their database but the central
+database has not yet been updated or internet connectivity is down ,as
+a temporary fix they can add and a new user as long as he is tagged as
+local. Once the central staff/user database has been updated they will
+have to update the shifts where the user was employed and start using
+the official user information. People in this group might have write
+permission to one house database or multiple house databases. Since
+they maintain and control their own instance of CouchDB they can
+configure it however they like, but for ease of installation they
+should use [quilt]. I've tried to make this as easy as possible and in
+a typical situation this should be a 3 or 4 click affair. 
+
+The third group will be people that maintain central user and location
+databases. These people will be able to update anybodies' password,
+assign and remove any users' roles. It is advisable for them to use a
+strong password and they need to be trusted since they will be able to
+modify any data in any database except the replicator database. 
+
+There will also will have to be 1 or 2 people with server admin
+credentials to a central database for general trouble shooting and/or
+to add more (house) databases to the system and then configure them
+properly. This sounds complicated but is really only a couple of
+clicks affair using a tool like [quilt].
+
+###Networking is optional 
+
+It is important to understand that the networking of the instances of
+CouchDB is optional. Anybody can setup and use the [roster] app
+independently from any other instances. For that matter they don't
+even need to set up a local instance of CouchDB and can use the
+[roster] app as it comes down to their browser. They can add
+locations, persons, shifts and even have quasi authentication for any
+persons they want to share the app with. They can then print out
+summaries, time sheets, calendars, perform queries etc based on the
+data entered.If the data needs to be shared it can be replicated to an
+external instance. Or they can setup their own instance to start off
+with and implement their own role based permission system.
+
+However if people want the benefit of centrally managed user, location
+and shift database they can hook in to an established network of
+instances. But this hook can at any time be released (by cancelling
+all replications) or connected again (by reconfiguring the
+replications). By unhooking no data gets sent back to the central
+database either though.
+
+One last thing: the default user is 'guest' with password
+'guest'. This user will always be present in the user database and if
+removed the roster app will try to add it again to the user database
+if necessary. When kick starting a new system of networked instances
+this user will have to given full permissions by a server admin, but
+when hooking up a local instance to a wider network this user will
+have no or very little permissions assigned to him. At the very least
+his password should not be 'guest' anymore.
+
+[quilt]: http://quilt.michieljoris.com
+[roster]: http://multicap.iriscouch.com
+[database]: http://multicapdb.iriscouch.com
