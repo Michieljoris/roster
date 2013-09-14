@@ -498,7 +498,7 @@ define
       /** Pick a password */
       function pickPwd(){
           
-          var pwdHelp = "You will have to fill in a password with a score of at least 3. The password is relatively secure but try not to use a password you already use somewhere else.<p>Feel free to write it down on a piece of paper if you like,just take care never to type it in anywhere except when logging into this app.<p>If you have any write permissions please don't set your password here, but set it directly in the user database. For how to do this and for more info on security and this app click <a target='_blank' href='security.html'>here</a>.";
+          var pwdHelp = "You will have to fill in a password with a score of at least 3. The password is relatively secure but try not to use a password you already use somewhere else.<p>Feel free to write it down on a piece of paper if you like,just take care never to type it in anywhere except when logging into this app.<p>For more security you can set the password directly in the user database. For how to do this and for more info on security and this app click <a target='_blank' href='http://roster_help.michieljoris.net'>here</a>.";
           var pwd1 = '', pwd2 = '';
           var score = 0;
           

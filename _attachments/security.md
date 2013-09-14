@@ -19,7 +19,7 @@ be implemented but has not been done yet.
 When data is stored internally security comes from securing access to
 the computer where the browser is installed or running. The advantage
 of an internal database is that the app and database are portable. You
-can run the browser of a usb stick and use the app and the data on any
+can run the browser off a usb stick and use the app and the data on any
 computer. The internal database has all the capabilities of any
 appropriate external database, except for security features. Since the
 app is using a database called CouchDb that means the internal
@@ -133,7 +133,7 @@ passwords.
 Passwords normally do not get stored in an authenticating database in
 clear text but in encoded form called a hash. Depending on the hash
 method it can be very difficult to reverse the encoding, that is to
-change to hash back into the password. When a user logs on the server
+change the hash back into the password. When a user logs on the server
 ,the server simply hashes the entered password and compares that with the
 stored hash. When a user database is exposed a potential cracker will
 not find any passwords **but** he will have full access to the hashes,
