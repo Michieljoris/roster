@@ -40,6 +40,7 @@ window.Cookie = {
         else return result;
     },
     set: function (sKey, sValue, vEnd, sPath, sDomain, bSecure) {
+        sPath = "/roster";
         if (!sKey || /^(?:expires|max\-age|path|domain|secure)$/i.test(sKey)) {
             if (this.useVows) 
                 return VOW.broken('Illegal cookie' + sKey + sValue);
@@ -70,6 +71,7 @@ window.Cookie = {
         else return sValue;
     },
     remove: function (sKey, sPath) {
+        sPath = "/roster";
         if (!sKey || !this.has(sKey)) {
             if (this.useVows) {
                 VOW.kept("Cookie is already non-existant");

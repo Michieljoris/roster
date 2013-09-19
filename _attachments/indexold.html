@@ -1,6 +1,6 @@
 <!-- <!Doctype HTML> -->
-<!-- <html manifest="./manifest.appcache"> -->
-<html>
+<html manifest="./manifest.appcache">
+<!-- <html> -->
   <HEAD>
     <meta charset="utf-8">
     <!-- basic console logger -->
@@ -12,35 +12,22 @@
     
     <!-- easily access cookies -->
     <script src=lib/Cookie.js></script>    
-    <!-- <script src="lib/sha1b.js"></script>  -->
-    <!-- <script src="lib/pbkdf2.js"></script>      -->
-    
-   <!-- use sjcl instead  -->
-   <script type="text/javascript" src="lib/zxcvbn-async.js"> </script> 
-    <script src="lib/sjcl.js"></script>    
-    <script src="lib/sha1.js"></script>    
     
     <!-- easy adding time to dates -->
     <script src=lib/date.js></script>    
     
     <!-- couchdb in the browser -->
     <!-- <script src=lib/pouchdb-nightly18-3.js></script> -->
-    <!-- <script src=lib/pouchApril6.js></script> -->
-    <!-- <script src=lib/pouchdbApril7.js></script> -->
-    <!-- <script src=lib/pouchdbmarch.js></script> -->
-    <!-- <script src=lib/pouchdb-nightly.js></script> -->
-   <!-- -------------  -->
-    <!-- <script src=lib/pouchdb-nightly7-July.js></script> -->
-    <script src=lib/pouchdb-nightly.min28July2013.js></script>
+    <script src=lib/pouchdb-nightly.js></script>
     
     <!-- only use when testing -->
     <script src=test/quickpouch.js></script>
     
     <!-- access couchdb using a jquery api -->
-    <script src=lib/jquery-1.6.2.js></script>
+    <script src=lib/jquery-1.6.2.js></script>  
     <!-- <script src=lib/jquery-1.9.1.min.js></script> -->
     <script src=lib/couchdb/jquery.couch.js></script> 
-    <link rel="stylesheet" type="text/css" media="print" href="bla.css">
+    
     <!-- easy adding time to dates , interferes with smartclient..-->
     <!-- <script src=lib/sugar-1.3.9.min.js></script> -->
     
@@ -74,7 +61,6 @@
     </div>
 
     <script>
-      Pouch.enableAllDbs = true;
       console.log(BrowserDetect.browser);
       if (BrowserDetect.browser !== 'Chrome' && BrowserDetect.browser !== 'Firefox') { 
       document.getElementById('appFail').style.visibility = 'visible'; 
@@ -187,7 +173,7 @@
       timeOut: 15,
       testing: false
       };
-      window.ITERATIONS = 100;
+
     </script> 
     <script src=lib/bootstrap.js></script>
     

@@ -588,7 +588,7 @@ define
                                   
                                   // var key2 = new PBKDF2(pwd2).deriveKey();
                                   
-                                  if (pwd1 === pwd2 && score > 2){
+                                  if (pwd1 === pwd2 && score.score > 2){
                                       var salt = generateSalt(64);
                                       var iterations = ITERATIONS;
                                       var key = calcKey(pwd1, iterations, salt);
