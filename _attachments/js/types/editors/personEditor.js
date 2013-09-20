@@ -15,6 +15,34 @@ define
       var person;   
       var defaultSettings = {};
       var settings = {}; 
+      var locationsDocUrl = "http://localhost:5984/multicap/locations";
+      // var locationsDocUrl = "https://ssl.axion5.net/multicap/locations";
+      
+      var rolesArray =[
+          "allow_*_"
+          , "allow_*_type:'shift"
+          , "allow_*_type:'shift'"
+          , "allow_*_type:'location"
+          , "allow_*_type:'person"
+          , "allow_*_type:'person;_id:user"
+          , "allow_*_type:'person;_id:user|ONLY derivedKey salt lastEditedAt"
+          , "allow_*_type:'person;_id:user|NOT roles derivedKey salt"
+          , "allow_*_type:'person;_id:user|NOT roles"
+          , "allow_*_type:'settings;lastEditedBy:user"
+          , "allow_*_type:'user"
+          , "allow_*_type:'user;_id:user"
+          , "allow_*_type:'user;_id:user|ONLY derivedKey salt"
+          , "allow_*_type:'user;_id:user|NOT roles"
+      ];
+      
+      var roles = rolesArray.map(function(r) {
+          return { role: r };
+      });
+      
+      var locations = [ 'Waterford West' ];
+      locations = locations.map(function(r) {
+          return { name: r };
+      });
       
       function areArraysEqual(a1, a2) {
           if (!isc.isAn.Array(a1) || !isc.isAn.Array(a2)) return false;
@@ -122,14 +150,103 @@ define
           dataURL: "house_list.json",
           cacheAllData: true,
           fields:[
-              { name: "entry" }
+              { name: "role" }
+          ]
+      });
+      isc.defineClass("AvailabilityGrid","ListGrid").addProperties({
+          width:150, height:400, cellHeight:24, imageSize:16,
+          showFilterEditor: true,
+          filterOnKeypress: true,
+          showEdges:false,  bodyStyleName:"normal",
+          alternateRecordStyles:true, showHeader:false, 
+          emptyMessage:"<br><br>Nothing selected"
+          ,fields:[
+              {name:"name"}
           ]
       });
       
+      isc.DataSource.create({
+          ID: "countryDS",
+          fields:[
+              {name:"role"}
+          ],
+          clientOnly: true,
+          testData: roles
+      });
+
+      
+      isc.defineClass("RolesGrid","ListGrid").addProperties({
+          width:300, height:400, cellHeight:24, imageSize:16,
+          // showEdges:true,
+          // border:"r0px",
+          showFilterEditor: true,
+          filterOnKeypress: true,
+          bodyStyleName:"normal",
+          autoFetchData: true,
+          alternateRecordStyles:true, showHeader:false,// leaveScrollbarGap:false,
+          emptyMessage:"<br><br>Nothing selected"
+          ,fields:[
+              {name:"role"}
+          ]
+      });
+
+      var rolesPane = isc.HStack.create({layoutLeftMargin:20, membersMargin:10, height:160, members:[
+          isc.RolesGrid.create({
+              ID:"rolesGridSource",
+              canDragRecordsOut: true,
+              canAcceptDroppedRecords: true,
+              canReorderRecords: true
+          })
+          ,isc.VStack.create({width:32, height:74, layoutAlign:"center", membersMargin:10, members:[
+              isc.Img.create({src:"arrow_right.png", width:32, height:32,
+                              click:"rolesGrid.transferSelectedData(rolesGridSource)"
+                             }),
+              isc.Img.create({src:"arrow_left.png", width:32, height:32,
+                              click:"rolesGridSource.transferSelectedData(rolesGrid)"
+                             })
+          ]}),
+          
+          isc.RolesGrid.create({
+              ID:"rolesGrid",
+              membersChanged: function() {
+                  console.log('members changed', arguments);
+              },
+              canDragRecordsOut: true,
+              canAcceptDroppedRecords: true,
+              canReorderRecords: true,
+              dragDataAction: "move"
+          })
+      ]});
+      
+      var availabilityPane = isc.HStack.create({layoutLeftMargin:20, membersMargin:10, height:160, members:[
+          isc.AvailabilityGrid.create({
+              ID:"availabilityGridSource",
+              // data:locations,
+              canDragRecordsOut: true,
+              canAcceptDroppedRecords: true,
+              canReorderRecords: true,
+              dragDataAction: "move"
+          }),
+          isc.VStack.create({width:32, height:74, layoutAlign:"center", membersMargin:10, members:[
+              isc.Img.create({src:"arrow_right.png", width:32, height:32,
+                              click:"availabilityGrid.transferSelectedData(availabilityGridSource)"
+                             }),
+              isc.Img.create({src:"arrow_left.png", width:32, height:32,
+                              click:"availabilityGridSource.transferSelectedData(availabilityGrid)"
+                             })
+          ]}),
+          isc.AvailabilityGrid.create({
+              ID:"availabilityGrid",
+              canDragRecordsOut: true,
+              canAcceptDroppedRecords: true,
+              canReorderRecords: true
+          })
+      ]});
+
       var rolesFormConfig = {
           ID: "rolesID",
-          colWidths: [250, 120],
-          cellPadding: 15,
+          colWidths: [350, 350],
+          cellPadding: 3,
           itemChanged: formChanged,
           titleOrientation: "top",
           autoDraw: false,
@@ -145,6 +262,19 @@ define
                   valueField: "entry",
                   autoFetchData: true
               }, fields.roles)
+              ,isc.addDefaults({
+                  // changed: function() {
+                  //     console.log('change to roles', arguments);
+                  // },
+                  editorType: "MultiComboBoxItem",
+                  valueMap: [],
+                  startRow: true,
+                  // optionDataSource: rolesDS
+                  layoutStyle: 'vertical'
+                  // ,displayField: "entry",
+                  // valueField: "entry",
+                  // autoFetchData: true
+              }, fields.roles2)
           ]
       };
               
@@ -161,11 +291,11 @@ define
                   //     console.log('change to roles', arguments);
                   // },
                   editorType: "MultiComboBoxItem",
-                  optionDataSource: availabilityDS,
+                  // optionDataSource: availabilityDS,
                   layoutStyle: 'vertical'
-                  ,displayField: "entry",
-                  valueField: "entry",
-                  autoFetchData: true
+                  // ,displayField: "entry",
+                  // valueField: "entry",
+                  // autoFetchData: true
               }, fields.availability)
           ]
       };
@@ -231,6 +361,7 @@ define
       var contactForm = isc.DynamicForm.create(contactFormConfig);
       var notesForm = isc.DynamicForm.create(notesFormConfig);
       var rolesForm = isc.DynamicForm.create(rolesFormConfig);
+      
       
       window.rolesForm = rolesForm;
       // var rolesForm = rolesPane;
@@ -418,7 +549,7 @@ define
               // person.rolesStr= JSON.stringify(person.roles);
               // person.availabilityStr = JSON.stringify(person.availability);
               // person.roles = "";
-             // person.availability = "";
+              // person.availability = "";
               
               typesAndFields.removeUnderscoreFields(person);
               console.log('no underscores?', person);
@@ -460,8 +591,10 @@ define
                      ,addressForm
                      ,contactForm
                      ,notesForm
-                     ,rolesForm
-                     ,availabilityForm
+                     // ,rolesForm
+                     ,rolesPane
+                     ,availabilityPane
+                     // ,availabilityForm
                    ]
       });
       
@@ -493,6 +626,126 @@ define
                          }, action)
           ]
       });
+      
+      function getLocations() {
+          function setDS() {
+              var ds = isc.DataSource.create({
+                  fields:[
+                      {name:"name"}
+                  ],
+                  clientOnly: true,
+                  testData: locations
+              });
+              availabilityGridSource.setDataSource(ds);
+              availabilityGridSource.fetchData();
+              ds = isc.DataSource.create({
+                  fields:[
+                      {name:"role"}
+                  ],
+                  clientOnly: true,
+                  testData: roles
+              });
+              rolesGridSource.setDataSource(ds);
+              rolesGridSource.fetchData();
+          }
+          $.ajax({
+              url: locationsDocUrl,
+              type: 'get',
+              dataType: 'json',
+              success: function(data) {
+                  console.log('success');
+                  locations = data;
+                  delete locations._id;
+                  delete locations._rev;
+                  console.log(locations);
+                  locations = Object.keys(locations).map(function(r) {
+                      return locations[r];
+                  });
+                                          
+                  var newRoles = ['read', 'write'];
+                  locations.forEach(function(l) {
+                      newRoles.push('read_location-' + l.dbName );
+                      newRoles.push('write_location-' + l.dbName );
+                  });
+                  roles = newRoles.concat(rolesArray);
+                  roles = roles.map(function(r) {
+                      return { role: r };
+                  });
+              }
+              ,error: function(err) {
+                  // helpLabel.setContents("Could not fetch list.<p></p>" + err.responseText);
+                  console.log('failed', err);
+              }
+              ,complete: function() {
+                  console.log('completed', arguments);
+                  setDS();
+              }
+          });
+      }
+      
+      // /** Get locations */
+      // function getLocations() {
+          
+      //     var helpLabel = isc.Label.create({
+      //         // ID:'test',
+      //         width: 300,
+      //         height: '100%',
+      //         margin: 10
+      //         ,contents: 'When you click Ok a list of locations will be fetched. This will help in setting the roles and availability.<p>' 
+      //     });
+            
+      //     var window = isc.Window.create({
+      //         title: "Get locations"
+      //         ,autoSize: true
+      //         // ,height:200
+      //         // ,width:300
+      //         // ,autoSize: true
+      //         ,canDragReposition: true
+      //         ,canDragResize: false
+      //         ,showMinimizeButton:false
+      //         ,showCloseButton:false
+      //         ,autoCenter: true
+      //         ,isModal: true
+      //         ,showModalMask: true
+      //         ,autoDraw: false
+              
+      //         ,items: [
+      //             helpLabel,
+      //             isc.HLayout.create({
+      //                 layoutMargin: 6,
+      //                 membersMargin: 6,
+      //                 // border: "1px dashed blue",
+      //                 height: 20,
+      //                 width:'100%',
+      //                 members: [
+      //                     isc.LayoutSpacer.create()
+      //                     ,isc.Button.create({
+      //                         title: 'Cancel'
+      //                         // ,visibility: cancellable ? 'inherit' : 'hidden'
+      //                         // ,startRow: false
+      //                         ,click: function() {
+      //                             window.hide();
+      //                         }  
+                              
+      //                     })
+      //                     ,isc.Button.create({
+      //                         // ID: 'passwordOk',
+      //                             title: 'Ok'
+      //                         ,startRow: true
+      //                         ,disabled: false
+      //                         ,click: function() {
+      //                             console.log(locations);
+                                      
+      //                         }  
+      //                     })
+      //                     ,isc.LayoutSpacer.create()
+      //                 ]
+      //             })
+      //         ] 
+      //     });
+      //     window.show();
+          
+      // }
 
       
       /** Pick a password */
@@ -517,7 +770,7 @@ define
                   { type: 'password', name: 'pwd1', title: 'Password:', 
                     titleOrientation: 'top', startRow: true,
                     change:function() {
-                        pwd1 = arguments[2];
+                            pwd1 = arguments[2];
                         checkPwd();
                     }
                   }
@@ -541,7 +794,7 @@ define
           });
             
           var window = isc.Window.create({
-                  title: "Set a password"
+              title: "Set a password"
               ,autoSize: true
               // ,height:200
               // ,width:300
@@ -645,8 +898,8 @@ define
         
       function generateSalt(len) {
           var set = '0123456789abcdefghijklmnopqurstuvwxyz',
-              setLen = set.length,
-              salt = '';
+          setLen = set.length,
+          salt = '';
           for (var i = 0; i < len; i++) {
               var p = Math.floor(Math.random() * setLen);
               salt += set[p];
@@ -656,21 +909,20 @@ define
        
       
       function action(e) {
-          switch (e) {
-            case 'Main': formLayout.setVisibleMember(mainLayout); break;
-            case 'Address': formLayout.setVisibleMember(addressForm); break;
-            case 'Contact': formLayout.setVisibleMember(contactForm); break;
-            case 'Notes': formLayout.setVisibleMember(notesForm); break; 
-            case 'Roles': formLayout.setVisibleMember(rolesForm); break; 
-            case 'Availability': formLayout.setVisibleMember(availabilityForm); break; 
-            case 'Password': pickPwd();
-              break;
+              switch (e) {
+                case 'Main': formLayout.setVisibleMember(mainLayout); break;
+                case 'Address': formLayout.setVisibleMember(addressForm); break;
+                case 'Contact': formLayout.setVisibleMember(contactForm); break;
+                case 'Notes': formLayout.setVisibleMember(notesForm); break; 
+                case 'Roles': getLocations(); formLayout.setVisibleMember(rolesPane); break; 
+                case 'Availability': getLocations(); formLayout.setVisibleMember(availabilityPane); break; 
+                case 'Password': pickPwd(); break;
               
-            case 'Save': addPerson(); break; 
-            case 'Discard': editorManager.cancel(person); break; 
-            case 'Delete': editorManager.remove(person); break;
-          default: alert('unknown action in function action!!');
-          }
+                case 'Save': addPerson(); break; 
+                case 'Discard': editorManager.cancel(person); break; 
+                case 'Delete': editorManager.remove(person); break;
+              default: alert('unknown action in function action!!');
+              }
           console.log(e);
       }
       

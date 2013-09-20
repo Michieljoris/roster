@@ -220,6 +220,12 @@ define
                 ,required: false
                 ,type:'array'
             }
+            ,roles2: {
+                name: "roles2",
+                title: "Roles"
+                ,required: false
+                ,type:'array'
+            }
             ,availability: {
                 name: "availability",
                 title: "Availability"
@@ -329,7 +335,7 @@ define
             ,person: {
                 fields: ['pwd', 'firstName', 'lastName', 'dswCALevel',
                          'payrollNumber', 'status', 'address', 'suburb','postalCode',
-                         'state', 'phone', 'mob', 'email', 'notes', 'colorFg', 'colorBg', 'roles', 'availability']
+                         'state', 'phone', 'mob', 'email', 'notes', 'colorFg', 'colorBg', 'roles','roles2', 'availability']
                 ,icon: 'person.png'
 
             }};
