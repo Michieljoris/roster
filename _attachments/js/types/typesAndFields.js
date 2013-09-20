@@ -220,12 +220,6 @@ define
                 ,required: false
                 ,type:'array'
             }
-            ,roles2: {
-                name: "roles2",
-                title: "Roles"
-                ,required: false
-                ,type:'array'
-            }
             ,availability: {
                 name: "availability",
                 title: "Availability"

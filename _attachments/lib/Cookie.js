@@ -40,7 +40,7 @@ window.Cookie = {
         else return result;
     },
     set: function (sKey, sValue, vEnd, sPath, sDomain, bSecure) {
-        sPath = "/roster";
+        sPath = "/";
         if (!sKey || /^(?:expires|max\-age|path|domain|secure)$/i.test(sKey)) {
             if (this.useVows) 
                 return VOW.broken('Illegal cookie' + sKey + sValue);

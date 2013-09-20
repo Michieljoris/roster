@@ -231,6 +231,7 @@ define
 	          if (field) {
 	              var type = field.type;
 	              switch (type) {
+                        case 'array':  
                         case 'enum':
                           obj[k] = JSON.parse(obj[k]);
                           break;
