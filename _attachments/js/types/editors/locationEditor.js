@@ -540,7 +540,7 @@ define
       };
     
       editor.isChanged = function() {
-          return changed;
+          return allButtons.Save.state !== 'Disabled';
       };
     
       return editor;

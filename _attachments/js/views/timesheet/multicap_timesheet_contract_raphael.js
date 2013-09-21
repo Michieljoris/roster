@@ -378,7 +378,8 @@ define
                  { align: 'start' } , {weight: 'normal'});
             // cont();
             // setFields({name: 'hello'});
-            paper.image("images/multicap_logo.png", 820,0,120,60);
+            // paper.image("images/multicap_logo.png", 820,0,120,60);
+            paper.image(myimage, 820,0,120,60);
             // text("Multicap",
             //      {x:0, y: 0,
             //       w: 100, h: ys*2},

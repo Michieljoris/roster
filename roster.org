@@ -375,7 +375,12 @@ long as there is enough memory.
 ** Add testing
   
 * Todo
+
+** Fork node-couchapp.js and apply fix
+   https://github.com/mikeal/node.couchapp.js
 ** fix logo printing of time sheet   
+** Use jspdf to bulk print timesheets and a roster
+** use http://arshaw.com/fullcalendar/docs/   
 ** warn for overlapping shifts  
 ** Editing shift in month view or day view doesn't update 
 the shifts in weekview nor does the editor reflect the new values
@@ -384,13 +389,10 @@ refreshevents on updateevent and on viewchange
 Check the uniquenames of persons before creating css classes having
 their name in them!!!
 
-
-** Use jspdf to bulk print timesheets and a roster
 ** Summary sheet and easy roster sheet
-** use http://arshaw.com/fullcalendar/docs/   
+** Email shifts due to staff view   
 ** Login to start shift and logout to stop
   
-   
 ** fetch in pouchDB.js fetches all docs, no good..
 line  267: using allDocs, should use a view, and pagination etc..
 ** Public holiday setting, make an editor for it.
@@ -405,12 +407,11 @@ line  267: using allDocs, should use a view, and pagination etc..
 ** Recurrent shifts/events
    
 * More todo   
-  
 ** Change shift calculation for different locations
 Only do that when entering the shift, not when calculating the timesheet,
 so if you change the hours for a house, it won't be reflected in the
 shift and timesheet, till you edit and update it. No biggie, these
-hourse should change often, and now the shifts remember what the day
+hourse shouldn't change often, and now the shifts remember what the day
 hours were when they were entered, but obviously proper temporal tags
 are better, and then calculate all hours bases on location, person,
 shift, patternsobject and time of the shift to recall historical
@@ -418,7 +419,6 @@ values for all the tags.
 
 ** control logger and what it prints out when
 ** Hover tips everywhere
-** Add extensible calendar
 ** Print out black and white calendar, reset the css
 ** Drag and Drop person and location selector
 ** Generate all shift time data and tags from just the start and endDate
@@ -464,7 +464,6 @@ I think especially when using the filter
 ** Saving of person in the shift event
 I JSONed it, shouldn't be necessary, and it's a dirty hack.
 
-** shift doesn't always gets its color!
 
    
 

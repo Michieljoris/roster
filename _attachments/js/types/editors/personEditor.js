@@ -517,11 +517,11 @@ define
       // var availabilityForm = isc.DynamicForm.create(availabilityFormConfig);
       
       var newRoles, newAvailability;
-      var changed;
+      // var changed;
       
       function formChanged(item, newValue) {
           if (ignoreChanges) return;
-          changed = false;
+          var changed = false;
           console.log(item, newValue);
           log.d('ITEMCHANGED', vm.valuesHaveChanged(), vm.getChangedValues());
           changed = vm.valuesHaveChanged();
@@ -706,6 +706,8 @@ define
       function updateVm(record) {
           console.log('updateVm');
           vm.setValues(record);
+          log.d('Disabling save button');
+          // changed = !settings.isNewRecord;
           allButtons.Save.setDisabled(!settings.isNewRecord);
           editorManager.changed(editor, false);
       }
@@ -1076,7 +1078,7 @@ define
           // person.roles = person.roles || [''];
           // person.availability = person.availability || [''];
           vm.setValues(person);
-          changed = false;
+          // changed = false;
           ignoreChanges = false;
       };
       
@@ -1086,7 +1088,8 @@ define
       };
       
       editor.isChanged = function() {
-          return changed;
+          log.d('returning changed', allButtons.Save.state);
+          return allButtons.Save.state !== 'Disabled';
       };
       
       addButton.setTop(14);
