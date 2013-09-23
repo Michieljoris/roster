@@ -142,7 +142,11 @@ define
                   console.log('Authenticated!!', userName, db);
                   authenticated = true;
                   if (mode !== 'authorize') getUser();
-                  else vow.keep(userName);
+                  else {
+                      Cookie.set('lastLogin', userName,
+                                 Date.today().addYears(10));
+                      vow.keep(userName);   
+                  }
               },
               function() {
                   console.log('Not authenticated..', userName, db);

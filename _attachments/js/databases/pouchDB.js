@@ -12,17 +12,6 @@ define
       var pouchDS;
       var url = '';
       var newDatabase = false; 
-      // var dbviews;
-      // var authenticatedUser;
-      // var settingsCache;
-      
-      
-      // var defaultSettings = {
-      //     type: 'settings'
-      //     ,fortnightStart: true   
-      //     ,dataSource: 'pouchDS'
-      // };
-      
       
       function getUrl() {
           return url;
@@ -233,7 +222,9 @@ define
 	              switch (type) {
                         case 'array':  
                         case 'enum':
-                          obj[k] = JSON.parse(obj[k]);
+                          try {
+                              obj[k] = JSON.parse(obj[k]);
+                          } catch(e) { console.log('Failed to parse field ' + k + ' of ' , obj); }
                           break;
                         case 'time' : 
                         case 'date' :
@@ -296,8 +287,8 @@ define
 				     typefyProps(key); 
                                      addTimezoneOffset(key);
                                      // if (key.person) {
-                                         // log.d('found person', key.person);
-                                         // key.person = JSON.parse(key.person);    
+                                     // log.d('found person', key.person);
+                                     // key.person = JSON.parse(key.person);    
                                      // }
 				     // dsResponse.data.push({ _id:key._id, _rev:key._rev, text:key.text});
 				     dsResponse.data.push(key);
@@ -388,6 +379,25 @@ define
               }
           );
       }
+      
+      function removeUser(data) {
+          if (!url.startsWith('http')) return;
+          if (!data || data.type !== 'person' ) return;
+          
+	  pouchDbHandle.get('org.couchdb.user:' + data._id,
+		            function (err,doc){
+			        if (err) { log.d('ERRROR: can\'t find doc ', 
+					         err.error, err.reason); 
+				           return; }
+                                pouchDbHandle.remove(doc, function(err) {
+			            if (err) {
+                                        alert('Error removing record from database. Reason: ' + err.reason);
+                                        log.d('ERRROR: can\'t find doc ', 
+					      err.error, err.reason); }
+                                    else console.log('Removed ' + doc._id);
+                                });
+                            });
+      } 
 
       
       pouchDS = isc.DataSource.create(
@@ -407,7 +417,7 @@ define
                                           ,reduce: false};
                       // log.d('about to switch......', dsRequest);
                       // if (dsRequest.componentId === 'isc_ShiftCalendar') {
-                      //     fetchView = dbviews.shift;  
+                          //     fetchView = dbviews.shift;  
 	              //     log.d('in shiftCalendar', fetchView); 
                       // } 
                       // if (dsRequest.view) {
@@ -442,6 +452,7 @@ define
 	              break;
 	            case "remove" :
 	              log.d("remove"); 
+                      removeUser(dsRequest.data);
 	              dsResponse = {
 	                  clientContext: dsRequest.clientContext,
 	                  status: 1};
@@ -484,110 +495,12 @@ define
       //section of the settings file attached to a user and act
       //accordingly. 
       
-      // var defaultUserId = 'guest';
       var defaultUser = {
           _id: 'guest'
           ,type: 'person'
           ,status: 'permanent'
       };
       
-      // var userCriteria = {
-      //     _constructor:"AdvancedCriteria",
-      //     operator:"and",
-      //     criteria: [personCriterion, loginCriterion]
-               
-      // };
-      
-      // var personCriterion = {
-      //     fieldName: 'type',
-      //     operator:'equals',
-      //     value: 'person'
-      // };
-          
-      // var loginCriterion = {
-      //     fieldName: '_id',
-      //     operator:'equals'
-      // };
-        
-      
-      // function getUser(credentials) { 
-      //     var vow = VOW.make();
-      //     var login = credentials.username;
-      //     log.d('LOGIN IS' , credentials);
-      //     getDoc(login).when(
-      //         function(doc) {
-      //             var key = new PBKDF2(credentials.password, doc.iterations, doc.salt).deriveKey();
-                  
-      //             console.log('KEY ', credentials.password, key, doc);
-      //             if (!doc.derived_key ||
-      //                 doc.derived_key === key) vow.keep(doc);
-      //             else vow['break']('Wrong password');
-                  
-      //         },
-      //         function() {
-      //             vow['break']('A person with this login does not exist in this database:' +
-      //                          login);
-      //         }
-      //     ); 
-      //     return vow.promise;
-      // } 
-      
-      // function createLoginDialog(aVow, user) {
-          
-      //     var vow = aVow;
-      //         function checkCredentials(credentials, reportToLoginDialog) {
-      //             getUser(credentials).when(
-      //                 function(anAuthenticatedUser) {
-      //                     var authenticatedUser = anAuthenticatedUser;
-      //                     Cookie.set('lastLogin', authenticatedUser._id,
-      //                                Date.today().addYears(10));
-      //                     log.i(authenticatedUser._id + ' logged in.');
-      //                     vow.keep(authenticatedUser);
-      //                     reportToLoginDialog(true);
-      //                 },
-      //                 function(err) {
-      //                     log.w(err);
-      //                     reportToLoginDialog(false);
-      //                 }
-      //             );
-      //         }
-      
-      //     function showLoginDialog() {
-      //         log.d(user);
-      //         isc.showLoginDialog(checkCredentials,
-      //   		          {username: user._id, password: '',
-      //   		           dismissable:true});
-      //     } 
-          
-      //     return {
-      //         show: showLoginDialog
-      //     };
-      // }
-      // function set(vow, userId) {
-      //     getDoc(userId).when(
-      //         function(user) {
-      //             if (!user.derived_key) {
-      //                 log.i(user._id + ' logged in (no pwd).');
-      //                 vow.keep(user);
-      //             }
-      //             // else  createLoginDialog(vow, user).show();
-      //             else  authWindow.show('identify', vow, user._id).show();
-      //         },
-      //         function() {
-      //             if (userId === defaultUser._id) {
-      //                 putDoc(defaultUser, defaultUser).when(
-      //                     function() {
-      //                         log.d('Created default user (guest)..');
-      //                         vow.keep(defaultUser);
-      //                     },
-      //                     vow['break']
-      //                 );
-                      
-      //             } else authWindow.show('identify', vow,
-      //             defaultUser).show(); // else
-      //             createLoginDialog(vow, defaultUser).show(); } );
-      //             }
-
 
       
       function changeUser() {
@@ -717,34 +630,6 @@ define
                   });
           return vow.promise;
       }
-      // if (url.startsWith('http')) {
-      //     // var db = url.slice(url.lastIndexOf('/') + 1);
-      //     couch.session().when(
-      //         function(data) {
-      //             return getDoc(data.userCtx.userName);
-      //         }
-      //     ).when(
-      //         vow.keep,
-      //         function(data) {
-      //             console.log('no session!', data);
-      //             authWindow.show('identify', vow);
-      //         }
-      //     );
-      // }
-      // else {
-      //     Cookie.get('lastLogin').when(
-      //         function(userId) {
-      //             set(vow, userId);
-      //         }
-      //         ,function() {
-      //             //try to login as default user
-      //             set(vow, defaultUser._id);     
-      //         }
-      //     );
-              
-      // }
-      // return vow.promise;
-      // }
       
       //##getSettings
       /**Get settings by type (look, behaviour or permissions) *
@@ -779,7 +664,7 @@ define
               // urlPrefix: 'http://',
               urlPrefix: '',
               adapter: 'pouchDB',
-              promptUrl: 'http://multicapdb.iriscouch.com',
+              promptUrl: 'http://localhost:5984',
               prompt: '',
               defaultUrls: [
                   'http://localhost:5984',
@@ -807,8 +692,8 @@ define
       });
       
       var self = {
-              // name: 'pouchDB'
-              // ,shortName: 'Browser local storage (idb)'
+          // name: 'pouchDB'
+          // ,shortName: 'Browser local storage (idb)'
           // ,description: 'The data will '
           getDS: function() { return pouchDS; }
           // ,urlPrefix: 'idb://' 

@@ -15,8 +15,8 @@ define
       var person;   
       var defaultSettings = {};
       var settings = {}; 
-      var locationsDocUrl = "http://localhost:5984/multicap/locations";
-      // var locationsDocUrl = "https://ssl.axion5.net/multicap/locations";
+      // var locationsDocUrl = "http://localhost:5984/multicap/locations";
+      var locationsDocUrl = "https://ssl.axion5.net/multicap/locations";
       var ajaxedLocations;
       
       var rolesArray =[
@@ -210,12 +210,12 @@ define
               ,complete: function() {
                   console.log('completed', arguments);
                   
-                  availabilityGridSource.setData(locations);
+                  availabilityGridSource.setData(locations)
                   
-                  var newRoles = ['read', 'write', 'read-persons', 'write-persons','read-locations','write-locations'];
+                  var newRoles = ['read', 'write', 'read_persons', 'write_persons','read_locations','write_locations'];
                   locations.forEach(function(l) {
-                      newRoles.push('read_location-' + l.dbName );
-                      newRoles.push('write_location-' + l.dbName );
+                      newRoles.push('read_' + l.dbName );
+                      newRoles.push('write_' + l.dbName );
                   });
                   roles = newRoles.concat(rolesArray);
                   roles = roles.map(function(r) {
@@ -312,7 +312,7 @@ define
           width: 280,
           height: 20,
           // margin: 10
-          contents: 'Roles assigned to this user;'
+          contents: 'Roles assigned to this user:'
       });
       
       var availSourceLabel = isc.Label.create({
@@ -503,6 +503,17 @@ define
               
           ]
       };
+      
+      
+      var personEditorHelpLabel = isc.Label.create({
+          // ID:'test',
+          width: 280,
+          height: 20,
+          margin: 10,
+          contents: 'If save doesn\'t work please check that Status under Main has been filled in.<p></p>' +
+              'For a person to be allowed to log in under his own name please assign a password.<p></p>' +
+              'Assign at the very least a role of read or for instance read_location-waterford-west for a user to be able to read any data.'
+      });
       
       var mainForm = isc.DynamicForm.create(mainFormConfig);
       window.personmainForm = mainForm;
@@ -738,6 +749,7 @@ define
                      // ,rolesForm
                      ,rolesPane
                      ,availabilityPane
+                     ,personEditorHelpLabel
                      // ,availabilityForm
                    ]
       });
@@ -751,7 +763,7 @@ define
                   width: "70%",
                   members: [
                       buttonBar(allButtons, 'vertical', 180, 50,
-                                ['Main', 'Address', 'Contact', 'Notes', 'Password', 'Roles', 'Availability'],
+                                ['Main', 'Address', 'Contact', 'Notes', 'Password', 'Roles', 'Availability', 'Help'],
                                 { // baseStyle: "cssButton",
                                     left: 200,
                                     showRollOver: true,
@@ -942,6 +954,7 @@ define
             case 'Roles': getLocations(); formLayout.setVisibleMember(rolesPane); break; 
             case 'Availability': getLocations(); formLayout.setVisibleMember(availabilityPane); break; 
             case 'Password': pickPwd(); break;
+            case 'Help': formLayout.setVisibleMember(personEditorHelpLabel); break;
               
             case 'Save': addPerson(); break; 
             case 'Discard': editorManager.cancel(person); break; 
