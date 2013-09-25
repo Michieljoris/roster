@@ -16,6 +16,7 @@ define
       var defaultSettings = {};
       var settings = {}; 
       var MINSCORE = 2;
+      var allButtons = {};
       // var locationsDocUrl = "http://localhost:5984/multicap/locations";
       var locationsDocUrl = "https://ssl.axion5.net/multicap/locations";
       var ajaxedLocations;
@@ -27,14 +28,14 @@ define
           , "allow_*_type:'location'"
           , "allow_*_type:'person'"
           , "allow_*_type:'person';_id:user"
-          , "allow_*_type:'person';_id:user|ONLY derivedKey salt lastEditedAt"
-          , "allow_*_type:'person';_id:user|NOT roles derivedKey salt"
-          , "allow_*_type:'person';_id:user|NOT roles"
+          , "allow_*_type:'person';_id:user|ONLY: derivedKey salt lastEditedAt"
+          , "allow_*_type:'person';_id:user|NOT: roles derivedKey salt"
+          , "allow_*_type:'person';_id:user|NOT: roles"
           , "allow_*_type:'settings';lastEditedBy:user"
           , "allow_*_type:'user'"
           , "allow_*_type:'user';_id:user"
-          , "allow_*_type:'user';_id:user|ONLY derivedKey salt"
-          , "allow_*_type:'user';_id:user|NOT roles"
+          , "allow_*_type:'user';_id:user|ONLY: derivedKey salt"
+          , "allow_*_type:'user';_id:user|NOT: roles"
       ];
       
       var roles = rolesArray.map(function(r) {
@@ -211,7 +212,8 @@ define
               ,complete: function() {
                   console.log('completed', arguments);
                   
-                  availabilityGridSource.setData(locations)
+                  availabilityGridSource.setData(locations);
+                  houseListGrid.setData(locations);
                   
                   var newRoles = ['read', 'write', 'read_persons', 'write_persons','read_locations','write_locations'];
                   locations.forEach(function(l) {
@@ -359,9 +361,29 @@ define
               formChanged('roles', rolesGrid.getData().map(function(r) { return r.role; }));
           }
       });
+      
+      
+      var houseListGrid = isc.AvailabilityGrid.create({
+          ID:"houseListGrid",
+          data:locations
+          // canDragRecordsOut: true,
+          // canAcceptDroppedRecords: true,
+          // canReorderRecords: true,
+          // dragDataAction: "move"
+          // ,onRecordDrop: function(records) {
+          //     console.log(records);
+          //     records = records.map(function(r) {
+          //         return r.name;
+          //     });
+          //     var locations = availabilityGrid.getData().filter(function(a) {
+          //         return records.indexOf(a.name) === -1;
+          //     });
+          //     formChanged('avail', locations.map(function(a) { return a.name; }));
+          // }
+      });
+      
 
-
-      var rolesPane = isc.VStack.create({layoutLeftMargin:20, membersMargin:10, height:160, members:[
+      var rolesPaneEditor = isc.VStack.create({layoutLeftMargin:20, membersMargin:10, height:160, members:[
           isc.VStack.create({layoutLeftMargin:0, membersMargin:3, height:40, members:[
               editLabel,
               isc.HStack.create({layoutLeftMargin:0, membersMargin:2, height:20, members:[
@@ -392,6 +414,103 @@ define
                   rolesGrid]})
           ]})
       ]});
+      
+      var rolesPane = isc.HStack.create({layoutLeftMargin:10, membersMargin:5, height:20, members:[
+          rolesPaneEditor, 
+          isc.VStack.create({layoutLeftMargin:0, membersMargin:10, height:160, members:[
+              isc.Label.create({
+                  width: 80,
+                  height: 20,
+                  contents: 'Presets:'
+              }),
+              buttonBar(allButtons, 'vertical', 180, 50,
+                        ['super admin', 'person admin', 'location admin', 'coordinator', 'teamleader', 'staff member', 'guest', 'no roles'],
+                        { // baseStyle: "cssButton",
+                            left: 200,
+                            showRollOver: true,
+                            showDisabled: true,
+                            showDown: true
+                            //icon: "icons/16/icon_add_files.png"
+                        },
+                        action)
+          ]})
+          ,isc.VStack.create({layoutLeftMargin:0, membersMargin:10, height:160, members:[
+              isc.Label.create({
+                  width: 150,
+                  height: 20,
+                  contents: 'Select houses for the preset (ctrl-click for multiselect)'
+              })
+          ,houseListGrid
+          ]})
+      ]});
+      
+      var rolePresets = {
+          "super admin" : [ "read", "write", "allow_*_"]
+          ,"person admin" : [
+              "write_persons",
+              "allow_*_type:'person'",
+              "allow_*_type:'settings'",
+              "allow_*_type:'user'"
+          ]
+          ,"location admin" : [
+              "write_locations",
+              "allow_*_type:'location'"
+          ]
+          ,"coordinator": [
+              "write_persons",
+              "write_locations",
+              "allow_*_type:'user'",
+              "allow_*_type:'location'",
+              "allow_*_type:'person'",
+              "allow_*_type:'settings'"
+          ]
+          ,"teamleader" : [
+              "read_locations",
+              "write_persons",
+              // "allow_*_type:'shift'",
+              "allow_*_type:'person';_id:user|NOT: roles",
+              "allow_*_type:'settings';lastEditedBy:user",
+              "allow_*_type:'user';_id:'org.couchdb.user:'+user|NOT: roles"
+          ]
+          ,"staff member": [
+              "write_persons",
+              "read_locations",
+              "allow_*_type:'settings';lastEditedBy:user",
+              "allow_*_type:'person';_id:user|ONLY: derivedKey salt lastEditedAt",
+              "allow_*_type:'user';_id:'org.couchdb.user:'+user|ONLY: derivedKey salt lastEditedAt"
+          ]
+          ,"guest" : [
+              "read_persons",
+              "read_locations"
+          ]
+          ,"no roles" : []
+      };
+      
+      function setRoles(t) {
+          var presetRoles = rolePresets[t].slice();
+          var dbs = houseListGrid.getSelectedRecords();
+              // .map(
+              // function(h) { return h.dbName; });                         
+          if (t !== 'super admin' && t !== 'no roles')
+              dbs.forEach(function(db) {
+                  var dbName = db.dbName;
+                  if(t !== "guest") presetRoles.push('write_' + dbName);
+                  else presetRoles.push('read_' + dbName);
+                  if (t === 'teamleader')
+                      presetRoles.push("allow_*_type:'shift';location:'" + db.name + "'" );
+              });
+          rolesGrid.setData(
+              presetRoles.map(function(r) {
+                  return { role: r };
+              }));
+          var filteredRoles = roles.filter(function(r) {
+              return  presetRoles.indexOf(r.role) === -1;
+          });
+          rolesGridSource.setData(filteredRoles);
+          formChanged('roles', presetRoles);
+      }
+
+      
       var availabilityGridSource = isc.AvailabilityGrid.create({
           ID:"availabilityGridSource",
           data:locations,
@@ -447,7 +566,7 @@ define
               availabilityGrid
           ]})
       ]});
-
+      
       //*****************************************************************************************************
       //******************************************************************************************************************
       //**************************************************************************************************************************************
@@ -740,7 +859,6 @@ define
       // });
       
       
-      var allButtons = {};
       
       var formLayout = isc.HLayout.create({
           members: [ mainLayout
@@ -944,7 +1062,6 @@ define
           }
           return salt;
       }
-       
       
       function action(e) {
           switch (e) {
@@ -960,6 +1077,14 @@ define
             case 'Save': addPerson(); break; 
             case 'Discard': editorManager.cancel(person); break; 
             case 'Delete': editorManager.remove(person); break;
+            case 'super admin' : setRoles(e); break;
+            case 'person admin' : setRoles(e); break;
+            case 'location admin' : setRoles(e); break;
+            case 'coordinator' : setRoles(e); break;
+            case 'teamleader' : setRoles(e); break;
+            case 'staff member' : setRoles(e); break;
+            case 'guest' : setRoles(e); break;
+            case 'no roles' : setRoles(e); break;
           default: alert('unknown action in function action!!');
           }
           console.log(e);
