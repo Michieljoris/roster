@@ -15,6 +15,7 @@ define
       var person;   
       var defaultSettings = {};
       var settings = {}; 
+      var MINSCORE = 2;
       // var locationsDocUrl = "http://localhost:5984/multicap/locations";
       var locationsDocUrl = "https://ssl.axion5.net/multicap/locations";
       var ajaxedLocations;
@@ -788,7 +789,7 @@ define
       /** Pick a password */
       function pickPwd(){
           
-          var pwdHelp = "You will have to fill in a password with a score of at least 3. The password is relatively secure but try not to use a password you already use somewhere else.<p>Feel free to write it down on a piece of paper if you like,just take care never to type it in anywhere except when logging into this app.<p>For more security you can set the password directly in the user database. For how to do this and for more info on security and this app click <a target='_blank' href='http://roster_help.michieljoris.net'>here</a>.";
+          var pwdHelp = "You will have to fill in a password with a score of at least "+MINSCORE +". The password is relatively secure but try not to use a password you already use somewhere else.<p>Feel free to write it down on a piece of paper if you like,just take care never to type it in anywhere except when logging into this app.<p>For more security you can set the password directly in the user database. For how to do this and for more info on security and this app click <a target='_blank' href='http://roster_help.michieljoris.net'>here</a>.";
           var pwd1 = '', pwd2 = '';
           var score = 0;
           
@@ -796,7 +797,7 @@ define
               score = zxcvbn(pwd1);
               var equal = pwd1 === pwd2 ? 'Passwords identical!!' : 'Passwords not identical';
               helpLabel.setContents('Score: ' + score.score + '<br>Time to crack: ' + score.crack_time_display + '<br><br>' + equal + '<p>' + pwdHelp);
-              passwordOk.setDisabled(score.score > 2  && pwd1 === pwd2 ? false: true);
+              passwordOk.setDisabled(score.score >= MINSCORE  && pwd1 === pwd2 ? false: true);
               // passwordOk.setDisabled(false);
               return score;
           }
@@ -878,7 +879,7 @@ define
                                   
                                   // var key2 = new PBKDF2(pwd2).deriveKey();
                                   
-                                  if (pwd1 === pwd2 && score.score > 2){
+                                  if (pwd1 === pwd2 && score.score >= MINSCORE){
                                       var salt = generateSalt(64);
                                       var iterations = ITERATIONS;
                                       var key = calcKey(pwd1, iterations, salt);
