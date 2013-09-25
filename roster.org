@@ -376,11 +376,24 @@ long as there is enough memory.
   
 * Todo
 
-** Fork node-couchapp.js and apply fix
-   https://github.com/mikeal/node.couchapp.js
-** fix logo printing of time sheet   
+*aXb* give manuel a password
+** put folder icon under + icon in viewTree
+** just put name left top. Logs out on click or
+dropdown menu with logout option and connect option
+  
+** remove save settings, set timer from last change
+and save after some interval of idleness
+** add option to log out after some interval of time automatically
+5 10 20 30 45 1h 2h 4h 6h 8h 10h never
+** see quilt.org for other thinks
+** wipe all users option in quilt simple setup
+** add warning that sync might take a little while and 
+to refresh and click again if the done dialog doesn't pop up
+   
+
 ** Use jspdf to bulk print timesheets and a roster
 ** use http://arshaw.com/fullcalendar/docs/   
+   
 ** warn for overlapping shifts  
 ** Editing shift in month view or day view doesn't update 
 the shifts in weekview nor does the editor reflect the new values

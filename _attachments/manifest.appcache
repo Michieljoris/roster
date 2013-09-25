@@ -1,8 +1,6 @@
 CACHE MANIFEST
 
-#version 1.0 2-16-2013
-#version 0.2.4c
-
+#version 0.3.0.
 
 CACHE:
 
@@ -136,6 +134,7 @@ lib/browserDetect.js
 lib/logger.js
 lib/bootstrap.js
 js/main.js
+js/image.js
 lib/Cookie.js
 js/loaders/backend.js
 js/user.js
