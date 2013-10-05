@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-#version 0.3.2.
+#version 0.3.4
 
 CACHE:
 
@@ -24,7 +24,7 @@ images/timesheet.png
 images/multicap_logo.png
 images/sync.png
 images/logout.png
-images/setting_32.png
+images/settings_32.png
 images/data.png
 images/folder.png
 

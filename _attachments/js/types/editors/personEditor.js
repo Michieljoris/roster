@@ -205,11 +205,13 @@ define
                   locations = Object.keys(locations).map(function(r) {
                       return locations[r];
                   });                      
-                  localStorage.setItem('roster_locations', locations);
+                  localStorage.setItem('roster_locations', JSON.stringify(locations));
               }
               ,error: function(err) {
                   console.log('failed to get locations from database', err);
-                  locations = localStorage.getItem('roster_locations') || [];
+                  try {
+                      locations = JSON.parse(localStorage.getItem('roster_locations'));
+                  } catch(e) { locations = []; }
               }
               ,complete: function() {
                   console.log('completed', arguments);
