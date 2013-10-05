@@ -225,7 +225,21 @@ define(
             ,addObserver: addObserver
             ,getHelpText: getHelpText
             ,getName: getName
-            ,logOut: function() {
+            ,logOut: function(cb) {
+                user = false;
+                var url = backend.getUrl();
+                if (url.startsWith('http')) {
+                    couch.login('98u9da89d89f07dfa897df8as87f9as78fa8asdf', '_____').when(
+                        function() {
+                            console.log('What????');
+                            alert("No! Tried to logout with a impossible user, since the regular lout fails in Firefox for some reason. This user can't exist. Can't be!!!");
+                            cb();
+                        },function() {
+                             cb();
+                        });
+                  
+                }
+                else cb();
                 
             }
             ,setBackend: function(aBackend) {

@@ -42,7 +42,7 @@ define
           return { role: r };
       });
       
-      var locations = [ 'Waterford West', "Runcorn 9" ];
+      var locations = [ ];
       locations = locations.map(function(r) {
           return { name: r };
       });
@@ -205,9 +205,11 @@ define
                   locations = Object.keys(locations).map(function(r) {
                       return locations[r];
                   });                      
+                  localStorage.setItem('roster_locations', locations);
               }
               ,error: function(err) {
                   console.log('failed to get locations from database', err);
+                  locations = localStorage.getItem('roster_locations') || [];
               }
               ,complete: function() {
                   console.log('completed', arguments);
@@ -915,7 +917,7 @@ define
               score = zxcvbn(pwd1);
               var equal = pwd1 === pwd2 ? 'Passwords identical!!' : 'Passwords not identical';
               helpLabel.setContents('Score: ' + score.score + '<br>Time to crack: ' + score.crack_time_display + '<br><br>' + equal + '<p>' + pwdHelp);
-              passwordOk.setDisabled(score.score >= MINSCORE  && pwd1 === pwd2 ? false: true);
+              passwordOk.setDisabled((score.score >= MINSCORE || person._id === pwd1)  && pwd1 === pwd2 ? false: true);
               // passwordOk.setDisabled(false);
               return score;
           }
@@ -997,7 +999,7 @@ define
                                   
                                   // var key2 = new PBKDF2(pwd2).deriveKey();
                                   
-                                  if (pwd1 === pwd2 && score.score >= MINSCORE){
+                                  if (pwd1 === pwd2 && (score.score >= MINSCORE || person._id === pwd1)) {
                                       var salt = generateSalt(64);
                                       var iterations = ITERATIONS;
                                       var key = calcKey(pwd1, iterations, salt);

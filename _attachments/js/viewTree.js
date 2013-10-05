@@ -9,6 +9,15 @@ define
       "use strict";
       var log = logger('viewTree');
       var newViewMenu = [];
+      
+      newViewMenu.push({
+          name: 'Empty folder'
+          ,click: newFolder
+          ,icon: "folder.png"
+      });
+      
+      newViewMenu.push({isSeparator: true});
+      
       views = (function() {
           var result = {};
           views.forEach(function(v) {
@@ -26,17 +35,74 @@ define
           return result;
       })();
       
+      var logoutTimer;
+      var adminMenu = [
+          { name: 'Logout after idle for..',
+            click: function() {
+                var idleMinutes = user.getBehaviour('idleLogout') || 0;
+                idleMinutes = prompt(
+                    "Enter number of idle minutes after which the app will log you out automatically (0 to disable).\n" +
+                        (idleMinutes !== 0 ? "Current value is " + idleMinutes + " minutes." :
+                        "Disabled")
+                );
+                idleMinutes = parseInt(idleMinutes, 10);
+                if (!idleMinutes) {
+                    clearTimeout(logoutTimer);
+                    user.setBehaviour('idleLogout', 0);
+                    return;
+                }
+                user.setBehaviour('idleLogout', idleMinutes);
+                
+                logoutTimer = setTimeout(function() {
+                    saveTreeToDb(function() {
+                        logout();
+                    });
+                }, idleMinutes * 60 * 1000);
+                console.log(idleMinutes);
+            } 
+            ,icon: 'logout.png'
+          } 
+          ,{ name: 'Logout',
+             click: function() {
+                 if (viewModified || treeModified) {
+                     saveTreeToDb(function() {
+                         logout();
+                     });
+                 }
+                 else logout();
+                 console.log('logging out');
+             } 
+             ,icon: 'logout.png'
+           } 
+          ,{isSeparator: true}
+          ,{ name: 'Change database',
+             click: function() {
+                 authWindow.show('connect', backend.get());
+             } 
+             ,icon: 'data.png'
+           } 
+      ];     
+      
+      function logout() {
+          user.logOut(function() {
+              user.change();
+          });
+      }
+      
+      
       var show, //To be set by layout so we can show/hide views in the layout
-          treeModified, //Whether the ui has changed
-          viewModified,
-          viewInstanceShowing;
+      treeModified, //Whether the ui has changed
+      viewModified,
+      viewInstanceShowing;
       
       //--------------------HANDLING STATE OF THE VIEWTREE-------------------------- 
       function notify() {
           log.d('viewTree got notified of a change of user!');
           // var viewTreeState = isc.JSON.decode(newState);
           var viewTreeState = user.getLook();
-          loginButton.setTitle(user.get()._id);
+          // loginButton.setTitle(user.get()._id);
+          // adminButton.setTitle(user.get()._id);
+          userLabel.setContents(user.get()._id);
           if (viewTreeState) {
               //width of side bar
               viewTree.setWidth(viewTreeState.width);
@@ -55,7 +121,7 @@ define
 	      setTreeModified(false);
               //so set a interval time to see if the state is really
               //different from the stored state and if so setModified to true
-              window.setTimeout(checkState, 2000);
+              // window.setTimeout(checkState, 2000);
               // window.setImmediate(checkState);
               //now any changes made by user will be stored in the
               //leaf and tree when opening up another leaf, when the
@@ -69,15 +135,15 @@ define
           
       } 
       
-      function checkState() {
-	  // var selRecord = viewTree.getSelectedRecord();
-          // if (selRecord && !selRecord.isFolder) { 
-	  //     open(selRecord);
-	  // }
-          log.d("Checking state");
-          // setModified(!isEqual(table.getState(), leafShowing.viewState));
-          // setModified(!isEqual(views[viewShowing.type].getState(),viewShowing.viewState));
-      }
+      // function checkState() {
+      // var selRecord = viewTree.getSelectedRecord();
+      // if (selRecord && !selRecord.isFolder) { 
+      //     open(selRecord);
+      // }
+      // log.d("Checking state");
+      // setModified(!isEqual(table.getState(), leafShowing.viewState));
+      // setModified(!isEqual(views[viewShowing.type].getState(),viewShowing.viewState));
+      // }
       
       //reads state of tree
       function getTreeState() {
@@ -103,19 +169,49 @@ define
                  };
       }
       
+      var saveTimer;
+      function setSaveTimer() {
+          clearTimeout(saveTimer);
+          saveTimer = setTimeout(function() {
+              saveTreeToDb();
+          }, 30 * 1000);
+      }
+
+      function setLogoutTimer() {
+          clearTimeout(logoutTimer);
+          var idleMinutes = user.getBehaviour('idleLogout');
+          console.log('idle MINUTES' , idleMinutes);
+          if (!idleMinutes) return;
+          logoutTimer = setTimeout(function() {
+              if (viewModified || treeModified) {
+                  saveTreeToDb(function() {
+                      logout();
+                  });
+              }
+              else logout();
+          }, idleMinutes * 60 * 1000);
+      }
       //Whenver the state of the navigation tree changes this gets called
       function setTreeModified(bool) {
           // log.d('modified =' + bool);
+          setLogoutTimer();
           treeModified = bool;
-          if (bool) saveButton.show(true);
+          if (bool) {
+              saveButton.show(true);   
+              setSaveTimer();
+          }
           else {saveButton.hide(true);}                
       }
       
       //Gets called by currently showing views when their state changes
       function setViewModified(bool) {
           // log.d('modified =' + bool);
+          setLogoutTimer();
           viewModified = bool;
-          if (bool) saveButton.show(true);
+          if (bool) {
+              saveButton.show(true);   
+              setSaveTimer();
+          }
           else {saveButton.hide(true);}                
       }
       
@@ -130,6 +226,7 @@ define
       function treeStateChanged(origin) {
           log.d('******************tree changed: ' +  origin);
           setTreeModified(true);
+          
           // if (saveOnChange) saveTreeToDb();
       }
       
@@ -191,7 +288,7 @@ define
       //     });
       // }
       
-      function saveTreeToDb(callback) {
+      function saveTreeToDb(cb) {
           console.log('saving');
           if (viewInstanceShowing) views[viewInstanceShowing.type].sync();
           // debugger;
@@ -202,12 +299,15 @@ define
           user.saveSettings().when(
               function() {
                   log.d('Saved UI successfully');
+                  if (cb) cb();
               },
               function(err) {
                   var msg = 'Error: Could not save the UI state of the app!!';
                   log.d(msg + err);
                   isc.warn(msg + err);
                   alert(msg + err);
+                  setSaveTimer = function() {};
+                  if (cb) cb();
               }
               
           );
@@ -221,9 +321,9 @@ define
 	  //         globals.user._rev = response.rev;
           //         log.d('save',globals.user.viewTreeState);
           //     }
-              setTreeModified(false);
-              setViewModified(false);
-              // window.onbeforeunload = function() { };
+          setTreeModified(false);
+          setViewModified(false);
+          // window.onbeforeunload = function() { };
       }
       
       // function setSaveOnChange(bool) { saveOnChange = bool; //
@@ -277,7 +377,7 @@ define
           //make sure the state of the view is synced with data structures.
           views[type].sync();
           var viewInstance = tree.add({
-              id:isc.timeStamp(),isFolder:false, 
+                  id:isc.timeStamp(),isFolder:false, 
               // name:newName, type: type , icon: 'timesheet.png' //''icon: views[type].getIcon()
               name:newName, type: type , icon: views[type].getIcon()
               ,state: views[type].create()
@@ -332,38 +432,38 @@ define
       
       //TODO different menu for when you click not on a leaf or node?
       var rightClickMenu2 = isc.Menu.create(
-          {// ID:"rightClickMenu",
-              width:150
-              ,data:[
-                  // {title:"Select"
-	          //  // ,icon: isc.Page.getSkinDir() +"images/RichTextEditor/copy.png"
-	          //  ,click: function() { select(); } 
-	          // } 
-	          // ,{isSeparator:true}
-	          // {title:"Clone"
-		  //   ,icon: isc.Page.getSkinDir() +"images/RichTextEditor/copy.png"
-		  //   ,click: function() { clone(); } 
-	          //  } 
-                  // ,{isSeparator:true}
-	          {title:"New folder"
-		   ,icon: isc.Page.getSkinDir() +"images/FileBrowser/createNewFolder.png"
-		   ,click: function() { newFolder(); } 
-	          } 
-	          // ,{title:"Rename"
-		  //   ,icon: isc.Page.getSkinDir() +"images/actions/edit.png"
-		  //   ,click: function() { rename(); } 
-	          //  },
-	          // {title:"Remove"
-		  //   ,icon: isc.Page.getSkinDir() +"images/actions/remove.png"
-		  //   ,click: function() { remove(); } 
-	          //  }
-	          // , {isSeparator:true}
-	          // ,{title:"Save tree"
-		  //   ,icon: isc.Page.getSkinDir() +"images/actions/save.png"
-		  //   ,click: function() { saveTreeToDb(); }
-	          //  }
-              ]
-          });
+              {// ID:"rightClickMenu",
+                  width:150
+                  ,data:[
+                      // {title:"Select"
+	              //  // ,icon: isc.Page.getSkinDir() +"images/RichTextEditor/copy.png"
+	              //  ,click: function() { select(); } 
+	              // } 
+	              // ,{isSeparator:true}
+	              // {title:"Clone"
+		      //   ,icon: isc.Page.getSkinDir() +"images/RichTextEditor/copy.png"
+		      //   ,click: function() { clone(); } 
+	              //  } 
+                      // ,{isSeparator:true}
+	              {title:"New folder"
+		       ,icon: isc.Page.getSkinDir() +"images/FileBrowser/createNewFolder.png"
+		       ,click: function() { newFolder(); } 
+	              } 
+	              // ,{title:"Rename"
+		      //   ,icon: isc.Page.getSkinDir() +"images/actions/edit.png"
+		      //   ,click: function() { rename(); } 
+	              //  },
+	              // {title:"Remove"
+		      //   ,icon: isc.Page.getSkinDir() +"images/actions/remove.png"
+		      //   ,click: function() { remove(); } 
+	              //  }
+	              // , {isSeparator:true}
+	              // ,{title:"Save tree"
+		      //   ,icon: isc.Page.getSkinDir() +"images/actions/save.png"
+		      //   ,click: function() { saveTreeToDb(); }
+	              //  }
+                  ]
+              });
       
       var rightClickMenu = isc.Menu.create(
           {// ID:"rightClickMenu",
@@ -399,34 +499,33 @@ define
               ]
           });
       
-      var databaseButton = isc.ToolStripButton.create(
-          {   align:'left' 
-              ,icon: "database.png"
-              ,prompt: 'Change the database the app works against. '
-              ,action: function() {
-                  // pickDbWindow.init();
-                  authWindow.show('connect', backend.get());
-                  // backend.pick(function(aBackend, name, url){
-                  //     VOW.every([
-                  //         Cookie.set('backendName', name, Date.today().addYears(10))
-                  //         ,Cookie.set('backendUrl', url, Date.today().addYears(10))]
-                  //              ).when(
-                  //                  function() { log.d('Saved backend cookie.');
-                  //                               location.reload();
-                  //                             }
-                  //                  ,function() {
-                  //                      log.e('Unable to set the backend or url cookie!!'); }
-                  //              );
-                  // }, 'cancellable');
-              }
-          }); 
+      // var databaseButton = isc.ToolStripButton.create(
+      //     {   align:'left' 
+      //         ,icon: "database.png"
+      //         ,prompt: 'Change the database the app works against. '
+      //         ,action: function() {
+      //             // pickDbWindow.init();
+      //             authWindow.show('connect', backend.get());
+      //             // backend.pick(function(aBackend, name, url){
+      //             //     VOW.every([
+      //             //         Cookie.set('backendName', name, Date.today().addYears(10))
+      //             //         ,Cookie.set('backendUrl', url, Date.today().addYears(10))]
+      //             //              ).when(//                  function() { log.d('Saved backend cookie.');
+      //             //                               location.reload();
+      //             //                             }
+      //             //                  ,function() {
+      //             //                      log.e('Unable to set the backend or url cookie!!'); }
+      //             //              );
+      //             // }, 'cancellable');
+      //         }
+      //         }); 
       
-      var loginButton = isc.ToolStripButton.create(
-          {   align:'left' 
-	      ,action: user.change 
-              ,icon: "person.png"
-              ,prompt: 'Logout, or login with different credentials.'
-          }); 
+      // var loginButton = isc.ToolStripButton.create(
+      //     {   align:'left' 
+      //         ,action: user.change 
+      //         ,icon: "person.png"
+      //         ,prompt: 'Logout, or login with different credentials.'
+      //     }); 
       
       var saveButton = isc.ToolStripButton.create({
 	  icon: "saveui.png",
@@ -436,12 +535,29 @@ define
 
       var toolStrip = isc.ToolStrip.create(
           {members: [
-              loginButton
-              ,databaseButton
+              isc.IconMenuButton.create({title:''
+				         ,ID:'adminButton'
+				         // ,iconClick: "this.showMenu()"
+				         ,click: "this.showMenu()"
+				         ,showMenuIcon:false
+				         ,width :15
+				         ,icon: "settings_32.png"
+				         ,prompt: "Logout or connect to a different database."
+				         ,menu: {width:150 ,data: adminMenu}
+				        })
+              // ,loginButton
+              // ,databaseButton
+              ,isc.ToolStripSeparator.create({})
+              ,isc.Label.create({
+                  ID:'userLabel',
+                  width:'100%'
+                  ,contents:''
+              })
               ,isc.LayoutSpacer.create({  width:"*" })
+	      ,saveButton     
               ,isc.IconMenuButton.create({title:''
 				          ,ID:'addButton'
-				          ,iconClick: "this.showMenu()"
+				          ,click: "this.showMenu()"
 				          ,showMenuIcon:false
 				          ,width :20
 				          ,icon: "[SKIN]/actions/add.png", 
@@ -453,12 +569,11 @@ define
 	      //     prompt: "Clone selected view"
 	      //     ,click: function() { clone(); }
               // })
-              ,isc.ToolStripButton.create({
-	          icon: "[SKIN]/FileBrowser/createNewFolder.png", 
-	          prompt: "Create a new folder"
-	          ,click: function() { newFolder(); }
-              })
-	      ,saveButton     
+              // ,isc.ToolStripButton.create({
+	      //     icon: "[SKIN]/FileBrowser/createNewFolder.png", 
+	      //     prompt: "Create a new folder"
+	      //     ,click: function() { newFolder(); }
+              // })
               // ,isc.ToolStripButton.create({
 	      //     icon: "[SKIN]/actions/edit.png",
 	      //     prompt: "Rename selected item"
@@ -469,7 +584,7 @@ define
 	      //     prompt: "Remove selected item"
 	      //     ,click: function() { remove(); }
               // })
-          ]
+              ]
           });
       
       //------------------@VIEWTREE------------------

@@ -511,7 +511,7 @@ define
        var addRecordButton = isc.IconMenuButton.create({
            title:''
 	       ,ID:'iconButton'
-	   ,iconClick: "this.showMenu()"
+	   ,click: "this.showMenu()"
 	   ,showMenuIcon:false
 	   ,width :20
 	   ,icon: "[SKIN]/actions/add.png", 

@@ -1,14 +1,3 @@
-
-* non smart client calendars
-  http://www.dhtmlx.com/docs/products/dhtmlxScheduler/
-  http://www.web-delicious.com/jquery-events-calendar-wdcalendar/
-  http://arshaw.com/fullcalendar/
-https://github.com/angular-ui/ui-calendar for the arshaw calendar
-http://www.dillingermediaonline.com/atlanta-web-developer/angularjs-calendar-2261/?utm_source=rss&utm_medium=rss&utm_campaign=angularjs-calendar
-* tables
-https://github.com/lorenzofox3/Smart-Table
-http://angular-ui.github.io/ng-grid/
-http://kendo-labs.github.io/angular-kendo/#/ (purchase $400)
 * Done
 ** DONE get rid of version get request  I am using lgpl now, with a commenting out of a warning that I am
    using server components, which I am not.. Using my own server, by
@@ -271,78 +260,80 @@ and port.
    Are they 2 different things? 
   
    
-* maybe not
-** Use of different database backends:
-   In other words: make a couchdb datasource, being very ambitious you
-   could make a mysql or even a a mongodb datasource. 
+  
+  
 
-** Context menus everywhere
-** Custom tags
-  custom types (simpleType) and validators
-** Customized form display
-  Being able to move the input components around 
+* Todo
+** Use jspdf to bulk print timesheets and a roster
+** use http://arshaw.com/fullcalendar/docs/   
    
-** Open app from the filesystem
-  Only with a script that starts node first. Pouchdb doesn't work
-  loaded from file system.
-   
+** warn for overlapping shifts  
+** Editing shift in month view or day view doesn't update 
+the shifts in weekview nor does the editor reflect the new values
+refreshevents on updateevent and on viewchange
+** css classes can't have odd chars in them!!!
+Check the uniquenames of persons before creating css classes having
+their name in them!!!
 
-* maybe
-** Serve app from couchdb?
-** Export data to clipboard
-There is a bug in zeroclipboard that prevents the plugin from loading
-in linux/chrome at least.
+** Summary sheet and easy roster sheet
+** Email shifts due to staff view   
+** Login to start shift and logout to stop
+** fetch in pouchDB.js fetches all docs, no good..
+line  267: using allDocs, should use a view, and pagination etc..
+** Public holiday setting, make an editor for it.
+** Concatenate consecutive continuing shifts, of course!!!
+** Drag and drop people into a shift
+** Running totals while editing shifts in the calendar
+  Maybe not just the total length, but other qualifiers as well. 
+** Open shifteditor dialog at timesheet?
+   
+* More todo   
+** More features:
+*** Recurrent shifts/events
+*** Rotating queries
+    The date in the filter can be set as relative to some other date 
 
-  
-  
-* Basic pluggable structure
-** Types
-   Data is classified according to type. They will have their specific
-   fields and their editors Editing and viewing of single records So
-   far I have shifts, locations, user, settings
-*** uistate
-   Is part of a settings object, with user linked to it. Could
-   eventually be a shoppable thing. As in user could share one, or
-   clone good ones.
-*** user
-   Fundamental, since one and one only has to be always logged in. 
-    
-** Views
-   Interacting with collections of records
-   
-   
-*** Datasource pagination and caching
-    
-** Backends
-  Data can come from different backends. Sofar pouchdb and coucdb 
-    
-  
-* Importing/exporting data  
-- Printing, xlsx, couchdb
-- Use a custom view to do some of this stuff
-- Couchdb (selective) replicating and syncing
-- Node server for Cors-Proxy to access a couchhdb See pouchdb repo 
-- Printing out of data and views, like the table
-- Printing of data: canvas.showPrintPreview();
-  
-  
-* Features:
-** Temporal fields
-   To be implemented by the datasource. It serves the tag fields of an
-   object as dependent on a date in one mode or all the values in tag
-   edit mode, where the value of a tag is list of pairs of (date,value).
-** Inherited fields
-  Can tags have rules as value? To apply to its object and to objects
-  that inherit tags of this object? 
-   
-** Roles and permissions
-   Do you assign permissions to groups and users, and give these
-   labels to people? Or assign permissions directly with a inherit
-   system, where your permissions object can inherit permissions from
-   a parent permissions object. Is there a difference in setup?
-   
-* Production build
-** Standalone app in chrome using manifest declaration
+*** Temporal fields
+    To be implemented by the datasource. It serves the tag fields of an
+    object as dependent on a date in one mode or all the values in tag
+    edit mode, where the value of a tag is list of pairs of
+    (date,value).
+*** non-smartclient implementation
+**** non smart client calendars
+  http://www.dhtmlx.com/docs/products/dhtmlxScheduler/
+  http://www.web-delicious.com/jquery-events-calendar-wdcalendar/
+  http://arshaw.com/fullcalendar/
+https://github.com/angular-ui/ui-calendar for the arshaw calendar
+http://www.dillingermediaonline.com/atlanta-web-developer/angularjs-calendar-2261/?utm_source=rss&utm_medium=rss&utm_campaign=angularjs-calendar
+
+**** tables
+https://github.com/lorenzofox3/Smart-Table
+http://angular-ui.github.io/ng-grid/
+http://kendo-labs.github.io/angular-kendo/#/ (purchase $400)
+
+*** Basic pluggable structure
+**** Types
+     Data is classified according to type. They will have their specific
+     fields and their editors Editing and viewing of single records So
+     far I have shifts, locations, user, settings
+***** uistate
+     Is part of a settings object, with user linked to it. Could
+     eventually be a shoppable thing. As in user could share one, or
+     clone good ones.
+***** user
+     Fundamental, since one and one only has to be always logged in. 
+      
+**** Views
+     Interacting with collections of records
+     
+     
+***** Datasource pagination and caching
+      
+**** Backends
+    Data can come from different backends. Sofar pouchdb and coucdb 
+      
+** Production build
+*** Standalone app in chrome using manifest declaration
  update mechanism 
   Use manifest, sync it with backend, cache gives problems. Set server
   not to cache manifest etc
@@ -360,7 +351,7 @@ Appcache manifest. Sync the app to a server, where everybody will load
 the app from initially, and then update from it. Still need to find
 out whether serving files with cache headers will be updated even when
 the manifest file is reloaded and tries to reload all resources.
-** Performance tuning:
+*** Performance tuning:
 - Load all javascript files and other resources efficiently.
 - Minimize and gzip all resources
 - Instead of filling a view with new data, without redrawing the view,
@@ -369,58 +360,18 @@ long as there is enough memory.
 - Lazy creation of views
 - Update bootstrap to produce a single file to download.
    
-** Mass data...  produce sample fake data, lots of it
- it needs to cache, load by page etc 
-   
-** Add testing
+*** Add testing
+** Importing/exporting data  
+- Printing, xlsx, couchdb
+- Use a custom view to do some of this stuff
+- Couchdb (selective) replicating and syncing
+- Node server for Cors-Proxy to access a couchhdb See pouchdb repo 
+- Printing out of data and views, like the table
+- Printing of data: canvas.showPrintPreview();
   
-* Todo
-
-*aXb* give manuel a password
-** put folder icon under + icon in viewTree
-** just put name left top. Logs out on click or
-dropdown menu with logout option and connect option
   
-** remove save settings, set timer from last change
-and save after some interval of idleness
-** add option to log out after some interval of time automatically
-5 10 20 30 45 1h 2h 4h 6h 8h 10h never
-** see quilt.org for other thinks
-** wipe all users option in quilt simple setup
-** add warning that sync might take a little while and 
-to refresh and click again if the done dialog doesn't pop up
    
-
-** Use jspdf to bulk print timesheets and a roster
-** use http://arshaw.com/fullcalendar/docs/   
-   
-** warn for overlapping shifts  
-** Editing shift in month view or day view doesn't update 
-the shifts in weekview nor does the editor reflect the new values
-refreshevents on updateevent and on viewchange
-** css classes can't have odd chars in them!!!
-Check the uniquenames of persons before creating css classes having
-their name in them!!!
-
-** Summary sheet and easy roster sheet
-** Email shifts due to staff view   
-** Login to start shift and logout to stop
-  
-** fetch in pouchDB.js fetches all docs, no good..
-line  267: using allDocs, should use a view, and pagination etc..
-** Public holiday setting, make an editor for it.
-** Concatenate consecutive continuing shifts, of course!!!
-** Drag and drop people into a shift
-** Running totals while editing shifts in the calendar
-  Maybe not just the total length, but other qualifiers as well. 
-** Open shifteditor dialog at timesheet?
-** Rotating queries
-   The date in the filter can be set as relative to some other date 
-
-** Recurrent shifts/events
-   
-* More todo   
-** Change shift calculation for different locations
+*** Change shift calculation for different locations
 Only do that when entering the shift, not when calculating the timesheet,
 so if you change the hours for a house, it won't be reflected in the
 shift and timesheet, till you edit and update it. No biggie, these
@@ -430,37 +381,37 @@ are better, and then calculate all hours bases on location, person,
 shift, patternsobject and time of the shift to recall historical
 values for all the tags.
 
-** control logger and what it prints out when
-** Hover tips everywhere
-** Print out black and white calendar, reset the css
-** Drag and Drop person and location selector
-** Generate all shift time data and tags from just the start and endDate
+*** control logger and what it prints out when
+*** Hover tips everywhere
+*** Print out black and white calendar, reset the css
+*** Drag and Drop person and location selector
+*** Generate all shift time data and tags from just the start and endDate
 So no more endTime, startTime, endTijd etc, clogging up the shift records
    
-** Refactor to make types pluggable
+*** Refactor to make types pluggable
 Integrate postal.js perhaps for that?
    
-** Wouldn't we like to search through timesheet result numbers
-   Make another type? For calculated timesheets? For entered and payed
-   timesheets? Or have a separate view aggregated data for a period,
-   calculate all the timesheet data and then present that data?
-** How to get the data from these sheets into Multicap's system? 
+*** Wouldn't we like to search through timesheet result numbers
+    Make another type? For calculated timesheets? For entered and payed
+    timesheets? Or have a separate view aggregated data for a period,
+    calculate all the timesheet data and then present that data?
+*** How to get the data from these sheets into Multicap's system? 
 How to export it? how to aggregate it? Only need the totals, make a
 separate view for that? To display it and print/export it?
 
-** Tweaking of final timesheet in Excel
+*** Tweaking of final timesheet in Excel
 Or just export it to excel, copy paste it into a timesheet and edit
 that? 
 Or Make a separate editor for this 
 
-** dates and their formatter
+*** dates and their formatter
 windows has strange formatting in the calendar
 
-** printing of monthview works only online   
-  smartclient dynamically gets a print.html, doesn't work offline then
-  of course.
+*** printing of monthview works only online   
+   smartclient dynamically gets a print.html, doesn't work offline then
+   of course.
 
-** Update to the latest smartclient, especially for the pick columns bit
+*** Update to the latest smartclient, especially for the pick columns bit
 Calendar still has bug in it, can't move event to top of column. 
  Can't move shift to top of calendar!!!
    This seems to be a fault of smartclient. Barebones calendar also
@@ -481,5 +432,40 @@ I JSONed it, shouldn't be necessary, and it's a dirty hack.
    
 
    
+   
+
+
+** Export data to clipboard
+There is a bug in zeroclipboard that prevents the plugin from loading
+in linux/chrome at least.
+
+  
+
+
+
+* maybe not
+** Use of different database backends:
+   In other words: make a couchdb datasource, being very ambitious you
+   could make a mysql or even a a mongodb datasource. 
+
+** Context menus everywhere
+** Custom tags
+  custom types (simpleType) and validators
+** Customized form display
+  Being able to move the input components around 
+   
+** Open app from the filesystem
+  Only with a script that starts node first. Pouchdb doesn't work
+  loaded from file system.
+   
+** Inherited fields (maybe not, don't see the need)
+  Can tags have rules as value? To apply to its object and to objects
+  that inherit tags of this object? 
+   
+** Roles and permissions (maybe not, using couchdb security)
+   Do you assign permissions to groups and users, and give these
+   labels to people? Or assign permissions directly with a inherit
+   system, where your permissions object can inherit permissions from
+   a parent permissions object. Is there a difference in setup?
    
 

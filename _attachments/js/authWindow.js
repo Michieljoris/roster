@@ -90,7 +90,7 @@ define
                   if (!user.derived_key ||
                       user.derived_key === key)
                       return userManager.init(user);
-                  else return VOW.broken('Wrong password.');
+                  else return VOW.broken({reason: 'Wrong password.'});
               }).when(
                   function(user) {
                       editorWindow.hide();
@@ -104,7 +104,7 @@ define
                   },
                   function(data) {
                       console.log(data);
-                      msg(data);
+                      msg(data.reason);
                   }); 
       }
       
@@ -398,28 +398,27 @@ define
           }  
       });
       
-      function logOut() {
+      
+      function reset(url) {
+          Cookie.remove('lastLogin');
+          cancelButton.setVisibility('hidden');
+          logoutButton.setVisibility('hidden');
+          loginButton.setVisibility('inherit');
+          identifyForm.setVisibility('inherit');
+          mainLayout.setVisibility('hidden');
+          currentDbLabel.setContents(
+              'Please log in at <i><b>' +
+                  url + '</i></b>' +
+                  (!url.startsWith('http') ? ' (internal)' : '') );
       }
       
+
       var logoutButton = isc.Button.create({
           title: 'Logout'
           // ,visibility: cancellable ? 'inherit' : 'hidden'
           // ,startRow: false
           ,click: function() {
               var url = backend.getUrl();
-              function reset() {
-                  Cookie.remove('lastLogin');
-                  cancelButton.setVisibility('hidden');
-                  logoutButton.setVisibility('hidden');
-                  loginButton.setVisibility('inherit');
-                  identifyForm.setVisibility('inherit');
-                  mainLayout.setVisibility('hidden');
-                  currentDbLabel.setContents(
-                      'Please log in at <i><b>' +
-                          url + '</i></b>' +
-                          (!url.startsWith('http') ? ' (internal)' : '') );
-                  console.log("Logged out..");
-              }
               userManager.logOut();
               if (url.startsWith('http')) {
                   couch.login('98u9da89d89f07dfa897df8as87f9as78fa8asdf', '_____').when(
@@ -427,26 +426,26 @@ define
                           console.log('What????');
                           alert("No! Tried to logout with a impossible user, since the regular lout fails in Firefox for some reason. This user can't exist. Can't be!!!");
                       },function() {
-                          reset();
+                          reset(url);
                       });
                   
               }
-              else reset();
+              else reset(url);
           }  
       });
       
       var connectButtonsLayout =isc.HLayout.create({
           // border: "1px dashed blue",
           height: 25,
-          members: [
-              isc.LayoutSpacer.create({ width: 8 , height:25}),
-              connectButton
-          ]
+              members: [
+                  isc.LayoutSpacer.create({ width: 8 , height:25}),
+                  connectButton
+              ]
       });
       
       var logButtonsLayout =isc.HLayout.create({
           // border: "1px dashed blue",
-          height: 25,
+              height: 25,
           members: [
               isc.LayoutSpacer.create({ width: 8 , height:25}),
               loginButton, logoutButton
@@ -507,12 +506,13 @@ define
           ]
       });
 
+
       
       
       var cancelButton = isc.Button.create({
           title: 'Close'
           // ,visibility: cancellable ? 'inherit' : 'hidden'
-              // ,startRow: false
+          // ,startRow: false
           ,click: function() {
               editorWindow.hide();
               // vow.break("No credentials provided..");
@@ -522,7 +522,7 @@ define
       var editorWindow = isc.Window.create({
           title: ""
           ,autoSize: true
-          // ,height: 490
+              // ,height: 490
           // ,width: 500
           ,headerIconDefaults: { width:16, height:16, src: 'sync.png'}
           ,canDragReposition: false
@@ -564,7 +564,7 @@ define
               statusLine = 'Currently <b><i>'+ userManager.getName() +
                   '</i></b> is logged in at <b><i>' + url + '</i></b>' + 
                   (!url.startsWith('http') ? ' (internal)' :
-                  (authenticated ? '' : ' but is <b>not</b> authenticated against CouchDB'));
+                   (authenticated ? '' : ' but is <b>not</b> authenticated against CouchDB'));
           }
                   
           currentDbLabel.setContents(statusLine);
@@ -604,6 +604,7 @@ define
           //     backend = aBackend;
           // },
           //promises a logged in user
+          reset: reset,
           show: function(tab, aBackend) {
               backend = aBackend;
               // vow = aVow;
@@ -626,11 +627,13 @@ define
                   loginButton.setVisibility('hidden');   
                   identifyForm.setVisibility('hidden');
                   cancelButton.setVisibility('inherit');
+                  mainLayout.setVisibility('inherit');
               }
               else {  logoutButton.setVisibility('hidden');   
                       loginButton.setVisibility('inherit');   
                       identifyForm.setVisibility('inherit');
                       cancelButton.setVisibility('hidden');
+                      mainLayout.setVisibility('hidden');
                    }
               
               return vow.promise;

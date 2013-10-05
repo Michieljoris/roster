@@ -1,6 +1,6 @@
 CACHE MANIFEST
 
-#version 0.3.1.
+#version 0.3.2.
 
 CACHE:
 
@@ -23,6 +23,10 @@ images/table.png
 images/timesheet.png
 images/multicap_logo.png
 images/sync.png
+images/logout.png
+images/setting_32.png
+images/data.png
+images/folder.png
 
 lib/isomorphic/skins/Enterprise/images/actions/column_preferences.png
 lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_Over_end.png
@@ -37,7 +41,6 @@ lib/isomorphic/skins/Enterprise/images/DynamicForm/checked.png
 lib/isomorphic/skins/Enterprise/images/DynamicForm/date_control.png
 lib/isomorphic/skins/Enterprise/images/DynamicForm/unchecked.png
 lib/isomorphic/skins/Enterprise/images/DynamicForm/unsetcheck.png
-lib/isomorphic/skins/Enterprise/images/FileBrowser/createNewFolder.png
 lib/isomorphic/skins/Enterprise/images/ListGrid/sort_descending.png
 lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_Disabled_end.png
 lib/isomorphic/skins/Enterprise/images/Scrollbar/hscroll_Disabled_start.png
