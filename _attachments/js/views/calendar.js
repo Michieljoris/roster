@@ -8,6 +8,16 @@ define
    factory: function(View, editors, Shift, backend, utils) 
    { "use strict";
      var log = logger('calendar');
+     var LEFT = 200;
+     var offsets = {
+         weekIndicator: LEFT,
+         locationIcon: LEFT + 30, //200,
+         locationForm: LEFT + 50, //220,
+         personIcon: LEFT + 235, //405,
+         personForm: LEFT + 255, //425,
+         printButton: LEFT + 410 //580
+         
+     };
      
      var view = View.create({
          type: 'Calendar'
@@ -234,7 +244,7 @@ define
 	 icon:"person.png",
          // top:0,
          height: 20, 
-         left:405 
+         left:offsets.personIcon //405
          ,click: function() { //var f = personForm.getField('person');
              // if (f.disabled) f.enable(); else f.disable();
              // personIcon.active = !personIcon.active;
@@ -252,7 +262,7 @@ define
 	 // icon:"person.png",
          // top:0,
          height: 20, 
-         left:170 
+         left: offsets.weekIndicator //170 
          
      });
      
@@ -274,7 +284,8 @@ define
           
           ,top: 0
           ,height: 20
-          ,left: 425 });
+          ,left: offsets.personForm //425
+         });
       
      var locationIcon = isc.Label.create({
          // width:buttonWidth,				
@@ -282,7 +293,7 @@ define
 	 icon:"home.png",
          top: 0,
          height: 20,
-         left:200
+         left: offsets.locationIcon //200
          ,click: function() {
              var state = view.getState();
              state.locationActive = !state.locationActive;
@@ -294,7 +305,8 @@ define
      var locationForm = isc.DynamicForm.create({fields: [locationPickList]
                                                 ,top: 0
                                                 ,height: 20
-                                                ,left: 220 });
+                                                ,left: offsets.locationForm //220
+                                               });
      
      function applyCriteria(state) {
          calendar.setCriteria(createCriteria(state));
@@ -680,7 +692,7 @@ define
          }
          ,top: 2
          ,height: 20
-         ,left: 580 
+         ,left: offsets.printButton //580 
      });
      
      calendar.controlsBar.addChild(weekIndicator);

@@ -1,3 +1,8 @@
+Install couchdb
+Install couchapp from my own repos (see included README.md)
+couchapp push . http://root:root@localhost:5984/app
+
+//obsolete
 To push to couchdb and to update:
 couchapp push . http://root:root@localhost:5984/app
 or:

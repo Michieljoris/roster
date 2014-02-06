@@ -127,41 +127,28 @@ define
           // },
       },
       publicHolidays : { 
-          christmas: { type: 'publicHoliday', //Christmas
+//yearly:
+          newYearsDay: { type: 'publicHoliday', 
+                       date: Date.parse('1 Jan 2000 0:00am'),
+                       pattern: [1],
+                       unit: 'year',
+                       length: 24,
+                       rank: 300
+                     }
+          ,christmas: { type: 'publicHoliday', //Christmas
                        date: Date.parse('25 dec 2000 0:00am'),
                        pattern: [1],
                        unit: 'year',
                        length: 24,
                        rank: 300
-                     },
-          boxing: { type: 'publicHoliday', //Boxing day
+                     }
+          ,boxing: { type: 'publicHoliday', //Boxing day
                     date: Date.parse('26 dec 2000 0:00am'),
                     pattern: [1],
                     unit: 'year',
                     length: 24,
                     rank: 300
                   }
-          ,goodFriday: { type: 'publicHoliday', //Boxing day
-                         date: Date.parse('29 March 2013 0:00am'),
-                         pattern: [1],
-                         unit: 'year',
-                         length: 24,
-                         rank: 300
-                       }
-          ,easter1: { type: 'publicHoliday', //Boxing day
-                      date: Date.parse('30 March 2013 0:00am'),
-                      pattern: [1],
-                      unit: 'year',
-                      length: 24,
-                      rank: 300
-                    }
-          ,easter2: { type: 'publicHoliday', //Boxing day
-                      date: Date.parse('April 1 2013 0:00am'),
-                      pattern: [1],
-                      unit: 'year',
-                      length: 24,
-                      rank: 300
-                    }
           ,anzac: { type: 'publicHoliday', 
                       date: Date.parse('April 25 2013 0:00am'),
                       pattern: [1],
@@ -169,27 +156,122 @@ define
                       length: 24,
                       rank: 300
                     }
+          
+          //2013
+          ,goodFriday: { type: 'publicHoliday', 
+                         date: Date.parse('29 March 2013 0:00am'),
+                         pattern: [],
+                         // unit: 'year',
+                         length: 24,
+                         rank: 300
+                       }
+          ,easter1: { type: 'publicHoliday', 
+                      date: Date.parse('30 March 2013 0:00am'),
+                      pattern: [],
+                      // unit: 'year',
+                      length: 24,
+                      rank: 300
+                    }
+          ,easter2: { type: 'publicHoliday', 
+                      date: Date.parse('April 1 2013 0:00am'),
+                      pattern: [],
+                      // unit: 'year',
+                      length: 24,
+                      rank: 300
+                    }
           ,queensbirthday: { type: 'publicHoliday',
                       date: Date.parse('10 June 2013 0:00am'),
-                      pattern: [1],
-                      unit: 'year',
+                      pattern: [],
+                      // unit: 'year',
                       length: 24,
                       rank: 300
                     }
           ,ecca: { type: 'publicHoliday',
                       date: Date.parse('August 14 2013 0:00am'),
-                      pattern: [1],
-                      unit: 'year',
+                      pattern: [],
+                      // unit: 'year',
                       length: 24,
                       rank: 300
                     } 
           ,labourday: { type: 'publicHoliday',
                       date: Date.parse('7 October 2013 0:00am'),
-                      pattern: [1],
-                      unit: 'year',
+                      pattern: [],
+                      // unit: 'year',
                       length: 24,
                       rank: 300
                     }
+          ,australiaDay: { type: 'publicHoliday',
+                      date: Date.parse('28 January 2013 0:00am'),
+                      pattern: [],
+                      // unit: 'year',
+                      length: 24,
+                      rank: 300
+                    }
+          ,g20: { type: 'publicHoliday',
+                      date: Date.parse('7 October 2013 0:00am'),
+                      pattern: [],
+                      // unit: 'year',
+                      length: 24,
+                      rank: 300
+                    }
+          //2014
+          
+          ,australiaDay14: { type: 'publicHoliday',
+                      date: Date.parse('27 January 2014 0:00am'),
+                      pattern: [],
+                      // unit: 'year',
+                      length: 24,
+                      rank: 300
+                    }
+          ,goodFriday14: { type: 'publicHoliday', 
+                         date: Date.parse('18/4/2014 0:00am'),
+                         pattern: [],
+                         // unit: 'year',
+                         length: 24,
+                         rank: 300
+                       }
+          ,easter1_14: { type: 'publicHoliday', 
+                      date: Date.parse('19/4/2014 0:00am'),
+                      pattern: [],
+                      // unit: 'year',
+                      length: 24,
+                      rank: 300
+                   } 
+          ,easter2_14: { type: 'publicHoliday', 
+                      date: Date.parse('April 21 2014 0:00am'),
+                      pattern: [],
+                      // unit: 'year',
+                      length: 24,
+                      rank: 300
+                    }
+          ,queensbirthday_14: { type: 'publicHoliday',
+                      date: Date.parse('9 June 2014 0:00am'),
+                      pattern: [],
+                      // unit: 'year',
+                      length: 24,
+                      rank: 300
+                    }
+          ,ecca_14: { type: 'publicHoliday',
+                      date: Date.parse('August 13 2014 0:00am'),
+                      pattern: [],
+                      // unit: 'year',
+                      length: 24,
+                      rank: 300
+                    } 
+          ,labourday_14: { type: 'publicHoliday',
+                      date: Date.parse('6 October 2014 0:00am'),
+                      pattern: [],
+                      // unit: 'year',
+                      length: 24,
+                      rank: 300
+                    }
+          // ,g20: { type: 'publicHoliday',// only in Brisbane City Council Area
+                    //   date: Date.parse('14 November 2013 0:00am'),
+                    //   pattern: [],
+                    //   // unit: 'year',
+                    //   length: 24,
+                    //   rank: 300
+                    // }
           // ,test: { type: 'publicHoliday', //Boxing day
           //           date: Date.parse('19 feb  2000 6am'),
           //           pattern: [1],
