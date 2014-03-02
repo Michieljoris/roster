@@ -28,7 +28,7 @@ define
              eventSnapGap: 15, //only works with a refresh
              workdayStart: '6:00am',
              workdayEnd: '10:00pm',
-             currentViewName: 'day', //day, week or month
+             currentViewName: 'week', //day, week or month
              chosenDate: new Date(),
              person: { ids: [], idsString: '', names: '' },
              location: { ids: [], name: ''}
@@ -36,6 +36,7 @@ define
          ,init: function() {
              var dataSource = View.getBackend().getDS(); 
              calendar.setDataSource(dataSource);
+             
              // setCssClasses();
              personForm.getField('person').setOptionDataSource(dataSource);
              locationForm.getField('location').setOptionDataSource(dataSource);
@@ -47,13 +48,16 @@ define
              state.currentViewName = calendar.getCurrentViewName();
          }
          ,set: function(state) {
-             log.d('Calendar is being set!!!');
+             log.d('Calendar is being set!!!', state);
              
+             // state.workdayStart = state.workDayStart.getHours() + ':' +
+             //     state.dayStart.getMinutes();
+             // state.workdayEnd = state.workDayEnd.getHours() + ':' +
+             //     state.dayEnd.getMinutes();
              // calendar.workdayStart = state.dayStart;
              // calendar.workdayEnd = state.dayEnd;
              var person = state.person, location = state.location;
-             calendar.setChosenDate(new Date(state.chosenDate));
-             calendar.setCurrentViewName(state.currentViewName);
+             // calendar.setCurrentViewName(state.currentViewName);
              personForm.setValue('person', person.ids);
              personForm.setValue('availableOnly', state.availableOnly);
              locationForm.setValue('location', location.ids);
@@ -70,6 +74,9 @@ define
              // }
              // else calendar.setCriteria(criteria);
              setDayCss(state);
+             setTimeout(function() {
+                 calendar.setChosenDate(new Date(state.chosenDate));
+             }, 0);
              
              // isc_ShiftCalendar_previousButton.setLeft(isc_ShiftCalendar_previousButton.left + 20);
              // isc_ShiftCalendar_nextButton.setLeft(isc_ShiftCalendar_nextButton.left + 20);
@@ -84,22 +91,29 @@ define
              backend.get().getDoc(state.location.ids[0]).when(
                  function(location) { log.d("One location picked, setting calendar night shade");
                                       log.d(location.dayStart, location.dayEnd);
+                                      calendar.showWorkday = true;
                                       var dayStart = location.dayStart;
                                       var dayEnd = location.dayEnd; 
                                       if (dayEnd.getHours() === 0)
                                           dayEnd.addMinutes(-1);
                                       if ((dayStart.getHours() + dayStart.getMinutes()/60) >
-                                         (dayEnd.getHours() + dayEnd.getMinutes()/60)) {
+                                          (dayEnd.getHours() + dayEnd.getMinutes()/60)) {
                                           calendar.workdayStart = '0am';
                                           calendar.workdayEnd = '23:59';
                                       }
                                       else {
-                                          calendar.workdayEnd = dayEnd;
-                                          calendar.workdayStart = dayStart;
+                                      calendar.workdayStart = dayStart.getHours() + ':' + dayStart.getMinutes();
+                                      calendar.workdayEnd = dayEnd.getHours() + ':' + dayEnd.getMinutes();
                                       }
                                       // calendar.workdayStart = '10am'; 
                                       // calendar.workdayEnd = '6pm'; 
+                                      
+                                      calendar.scrollToWorkday = true;
+                                      // calendar.chosenDate = new Date(state.chosenDate);
+                                      
+                                      console.log('STATESTATESTATE', calendar);
                                       calendar.redraw();
+                                      
                                     }
                  ,function(value) { log.d('Error', value); }
              );
@@ -107,7 +121,8 @@ define
          else {
              setTimeout(function() {
                  calendar.workdayStart = '0am'; 
-                 calendar.workdayEnd = '23:59'; 
+                 calendar.workdayEnd = '23:59pm'; 
+                 // calendar.showWorkday = false;
                  calendar.redraw();
              }, 0);
          }
@@ -403,7 +418,7 @@ define
                      persons.forEach(function(p) {
                          var fg = p.colorFg ? p.colorFg : 'black';
                          var bg = p.colorBg ? p.colorBg : 'f0f8ff';
-                         log.d('setting css classes' , p._id, fg, bg);
+                         // log.d('setting css classes' , p._id, fg, bg);
                          utils.createCSSClass('.eventColor' + p._id,
                                               'background-color:' + bg +
                                               '; color:' + fg + ';');
@@ -440,6 +455,7 @@ define
              // ,fetchMode: 'paged'
              // ,showControlsBar : false
              // ,eventWindowStyle: 'eventWindow'
+             ,currentViewName: 'week'
              ,eventOverlapIdenticalStartTimes: true
              ,eventOverlap:false
              ,firstDayOfWeek: 6

@@ -20,6 +20,13 @@ define
             grid: []
         };
         
+// Logo needs to be on left top side of page
+        
+// Beside  block  at top (t/Sheet Perm Employee - Disability Employee) should go PERMANENT EMPLOYEES ONLY
+        
+// Under Excursion Allowance - shd be another line - ADDITIONAL COMMENTS
+        
+// Bottom  shd read Employee Signature  not Employee"s Signature and Supervisor's Signature  not Manager"s Signature 
        
         //Dimensions:
         var portWidth = 950
@@ -30,7 +37,7 @@ define
         ,totalBoxWidth = 120 
         ,topRows = 4
         ,gridColumns =14 
-        ,gridRows = 27
+        ,gridRows = 28
         ,bottomRows = 4
         ,rows = topRows + gridRows + bottomRows
         ,gxs = Math.floor((portWidth-labelBoxWidth-totalBoxWidth)/gridColumns)
@@ -76,6 +83,7 @@ define
             // ,{ title: 'PUBLIC HOL WORK 2.5', name: 'publicHolWork2p5' }
             ,{ title: '*SLEEP OVER 8 HRS', name: 'sleepOver' }
             ,{ title: '*EXCURSION ALLOWANCE', name: 'awayFromBase' }
+            ,{ title: '*ADDITIONAL COMMENTS', name: 'additionalComments' }
             ,{ title: '*ADMIN HOURS USED', name: 'adminHoursUsed' }
             ,{ title: '*DISTURBED SLEEP HOURS', name: 'disturbedSleepHours' }
         ]
@@ -88,10 +96,10 @@ define
         ,line1Pos = [0,data1.name, 35, data1.payrollNumber, 67, data1.phone, 100] 
         
         ,line2 = [ 'FULLTIME:', '', 'PART TIME:','', 'DSW EA LEVEL:','', 'HIGHER DUTIES LEVEL:','', 'PERIOD ENDING:','']
-        ,data2 = {permanent:6.5, 'parttime':15, dswCALevel: 44.5, dsw2:62.3, ending:77}
+        ,data2 = {permanent:6.5, 'parttime':15, dswCALevel: 44.5, dsw2:62.3, ending:78}
         ,line2Pos = [0,data2.fulltime, 8, data2.parttime, 35, data2.dsw, 48, data2.dsw2, 67, data2.ending, 102] 
-        ,employeeSign = ['EMPLOYEE"S SIGNATURE:_____________________________________________________  DATE:_____________']
-        ,managerSign =  ['MANAGER"S SIGNATURE:______________________________________________________  DATE:_____________']
+        ,employeeSign = ["EMPLOYEE SIGNATURE:_____________________________________________________  DATE:_____________"]
+        ,managerSign =  ["SUPERVISOR'S SIGNATURE:______________________________________________________  DATE:_____________"]
         // ,line5 = 'PLEASE NOTE ALL HOURS TO BE IN 24 HOUR TIME'
         ,days = ['SAT', 'SUN', 'MON', 'TUES', 'WED', 'THURS', 'FRI' ]
         ,totalHours = 'TOTAL HOURS'
@@ -110,7 +118,7 @@ define
         function drawTopLines() {
             for (var i = 0; i< line1.length; i++) {
                 text(line1[i],
-                     { x: line1Pos[i] * unit, y : ys *2, h: ys*1, w: line1Pos[i+1]* unit },{align: 'start'},
+                     { x: line1Pos[i] * unit, y : ys *2 + 5, h: ys*1, w: line1Pos[i+1]* unit },{align: 'start'},
                      {weight: 'bold'});
             }
             for (i = 0; i< line2.length; i++) {
@@ -205,7 +213,7 @@ define
             var element;
             if (dataCells[key]) dataCells[key].remove();
             if (data1[key]) {
-                element = text(value, { x: data1[key] * unit, y : ys *2, h: ys*1, w: 999 },{align: 'start'},
+                element = text(value, { x: data1[key] * unit, y : ys *2 + 5, h: ys*1, w: 999 },{align: 'start'},
                                {weight: 'normal'});
             } 
             else if (data2[key]) {
@@ -379,7 +387,7 @@ define
             // cont();
             // setFields({name: 'hello'});
             // paper.image("images/multicap_logo.png", 820,0,120,60);
-            paper.image(myimage, 820,0,120,60);
+            paper.image(myimage, 0,0,100,45);
             // text("Multicap",
             //      {x:0, y: 0,
             //       w: 100, h: ys*2},

@@ -224,7 +224,9 @@ define
                         case 'enum':
                           try {
                               obj[k] = JSON.parse(obj[k]);
-                          } catch(e) { console.log('Failed to parse field ' + k + ' of ' , obj); }
+                          } catch(e) {
+                              // console.log('Failed to parse field ' + k + ' of ' , obj);
+                          }
                           break;
                         case 'time' : 
                         case 'date' :

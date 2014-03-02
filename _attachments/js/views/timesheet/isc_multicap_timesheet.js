@@ -17,13 +17,13 @@ define
        var  timesheet;
        
        function setData(state) {
-           log.d('WHAT IS STATE?', state);
+           // log.d('WHAT IS STATE?', state);
            fetchShifts(state.person, state.location, state.fortnight, process);
        }
        
        
        function process(data) {
-           log.d('IN PROCESS');
+           // log.d('IN PROCESS');
            var person = data.person;
            function showSheet(aTimesheet) {
                timesheet = aTimesheet;
@@ -53,14 +53,14 @@ define
                alert('Can\'t create the timesheet. Is ' + person._id + ' casual or on contract? ');
                return;
            }
-           log.d("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+           // log.d("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
                
        }
        
        
        function printDiv(type)
        {
-           log.d('TYPE',type);
+           // log.d('TYPE',type);
            var divToPrint=document.getElementById('timesheet' + type);
            var newWin= window.open("");
            newWin.document.write(divToPrint.outerHTML);
@@ -81,7 +81,7 @@ define
            // call superclass method to draw, then have
            // timesheet canvas draw itself
            draw : function () {
-               log.d('drawing............................');
+               // log.d('drawing............................');
                if (!this.readyToDraw()) return this;
                this.Super("draw", arguments);
                this.timesheet.draw("timesheet" + this.timesheet.type);

@@ -60,7 +60,7 @@ define
      //Create css classes on the fly. Use like this:
      //`createCSSClass('.mycssclass', 'display:none');`
      function createCSSClass(selector, style) {
-         log.d('Creating css classes!!!!!!!!!!!!!!!',  selector, style);
+         // log.d('Creating css classes!!!!!!!!!!!!!!!',  selector, style);
          if (!document.styleSheets) {
              return;
          }

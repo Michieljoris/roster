@@ -1,6 +1,10 @@
 Install couchdb
 Install couchapp from my own repos (see included README.md)
-couchapp push . http://root:root@localhost:5984/app
+cd to roster/app:
+couchapp push app.js http://admin:[pwd]@couchdb.axion5.net/roster_app
+or:
+couchapp push app.js http://admin:[pwd]@localhost/roster_app
+        
 
 //obsolete
 To push to couchdb and to update:
