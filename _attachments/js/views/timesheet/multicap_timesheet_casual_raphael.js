@@ -379,7 +379,8 @@ define
             // cont();
             // setFields({name: 'hello'});
             // paper.image("images/multicap_logo.png", 820,0,120,60);
-            paper.image(myimage, 820,0,120,60);
+            paper.image(myimage, 0,0,100,45);
+            // paper.image(myimage, 820,0,120,60);
             // paper.text('Multicap', 820,0);
             
             // text("Multicap",
